@@ -1,0 +1,2 @@
+commmand: java -Dswing.defaultlaf=com.sun.java.swing.plaf.windows.WindowsLookAndFeel -jar "c:\w2nb\host\apps\org.webpki.w2nb.sample1\org.webpki.w2nb.sample1.jar" "c:\w2nb\host\logs\org.webpki.w2nb.sample1.log" file:///C:/w2nb/demo/demo.html --parent-window=0 chrome-extension://efdhhckhjnbipcdphijachdilmmpgflg/
+Error: 'No such process' 3

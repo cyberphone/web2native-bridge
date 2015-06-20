@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>Sample #1</title><style type="text/css">
+input[type="button"] {margin-top:8pt;width:50pt}</style></head><body><script>
+"use strict";
+
+function appendString(string) {
+    document.getElementById("response").innerHTML = new Date().toISOString().substring(0,19) + " " +
+        string + "<br>" + document.getElementById("response").innerHTML;
+}
+
+function appendJSONMessage(message) {
+    var raw = JSON.stringify(message);
+    var text = "";
+    for (var n = 0; n < raw.length; n++) {
+         var c = raw.charAt(n);
+         text += c == "<" ? "&lt;" : c == ">" ? "&gt;" : c;
+    }
+    appendString(text);
+}
+
+var nativePort = null;
+
+function closeExtension() {
+    if (nativePort) {
+        nativePort.disconnect();
+        nativePort = null;
+    }
+}
+
+function activateExtension() {
+    if (nativePort) {
+        closeExtension();
+    }
+    navigator.nativeConnect("org.webpki.w2nb.sample1").then(function(port) {
+        nativePort = port;
+        console.debug('conn=' + JSON.stringify(port));
+        port.addMessageListener(function(message) {
+            appendJSONMessage(message);
+        });
+        port.addDisconnectListener(function() {
+            appendString("Disconnected!");
+            nativePort = null;
+        });
+    }, function(err) {
+        console.debug(err);
+    });
+}
+
+function postExtensionData() {
+    if (nativePort) {
+        var message = {};
+        message.web = document.getElementById("data").value;
+        nativePort.postMessage(message);
+        appendJSONMessage(message);
+    } else {
+        appendString("No active client!");
+    }
+}
+
+window.addEventListener("beforeunload", function(event) {
+    closeExtension();
+});
+
+</script>
+<h2>Web2Native Bridge &quot;Emulator&quot; - Sample #1</h2>
+<input type="button" value="Activate" onclick="activateExtension()"><br>
+<input type="button" value="Close" onclick="closeExtension()"><br>
+<input type="button" value="Send" onclick="postExtensionData()">
+<input type="text" id="data" placeholder="Data to send" size="50" style="margin-left:12pt"><br>
+<h3>Messages:</h3>
+<div id="response" style="font-family:courier"></div>
+</body></html>

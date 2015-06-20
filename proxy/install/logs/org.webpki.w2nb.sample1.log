@@ -1,0 +1,8 @@
+Jun 20, 2015 6:09:47 PM org.webpki.w2nb.sample1.NativeClient main
+INFO: ARG[0]=c:\w2nb\host\logs\org.webpki.w2nb.sample1.log
+Jun 20, 2015 6:09:47 PM org.webpki.w2nb.sample1.NativeClient main
+INFO: ARG[1]=file:///C:/w2nb/demo/demo.html
+Jun 20, 2015 6:09:47 PM org.webpki.w2nb.sample1.NativeClient main
+INFO: ARG[2]=--parent-window=0
+Jun 20, 2015 6:09:47 PM org.webpki.w2nb.sample1.NativeClient main
+INFO: ARG[3]=chrome-extension://efdhhckhjnbipcdphijachdilmmpgflg/
