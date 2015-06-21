@@ -42,4 +42,4 @@ navigator.nativeConnect('com.example.w2nb.sample').then(function(port) {
     console.debug(err);
 });
 ```
-The argument to **nativeConnect** holds the name of the specifically adapted local application to invoke.   The current scheme uses a Java&reg;-inspired path pointing to a subdirectory and JAR-application having this name.
+The argument to **nativeConnect** holds the name of the specifically adapted local application to invoke.   The current scheme uses a Java-inspired path pointing to a subdirectory and JAR-application having this name.
