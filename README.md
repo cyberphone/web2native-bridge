@@ -21,7 +21,7 @@ The **port** object supports the following methods and events:
 * **addMessageListener**(function(*JSONObject*))
 * **addDisconnectListener**(function())
 
-An example which could be hosted in a standard web page:
+An example which could be hosted in an ordinary (*non-privileged*) web page:
 ```javascript
 navigator.nativeConnect('com.example.w2nb.sample').then(function(port) {
 
