@@ -1,3 +1,4 @@
 /install/*.exe
 /build-proxy-windows/w2nb-proxy/Debug
 /build-proxy-windows/w2nb-proxy.sdf
+/install/logs/*.*
