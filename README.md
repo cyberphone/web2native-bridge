@@ -26,14 +26,14 @@ An example:
 navigator.nativeConnect('com.example.w2nb.sample').then(function(port) {
 
     port.addMessageListener(function(message) {
-        // We got a message...
+        // We got a message from the native application...
     });
 
     port.addDisconnectListener(function() {
         // Native application disconnected...
     });
 
-    port.postMessage({greeting:'Native messaging is awesome!'});
+    port.postMessage({greeting:'Native app, how are you doing?'});
     // Note: JS serialization makes the above a genuine JSON object
 
     port.disonnect();  // Not much of a conversation going on here...
