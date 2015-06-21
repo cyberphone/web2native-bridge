@@ -44,6 +44,15 @@ navigator.nativeConnect('com.example.w2nb.sample').then(function(port) {
 ```
 The argument to **nativeConnect** holds the name of the specifically adapted local application to invoke.   The current scheme uses a Java-inspired path pointing to a subdirectory and JAR-application having this name.
 
+### Architecture
+The Web2Native Bridge emulator always invokes a central proxy located at <code>install/w2nb-proxy</code>.<br>
+The proxy in turn delegates a call to a specific target application located at<br><code>
+install/apps/</code>*dottedpath*<code>/</code>*dottedpath*<code>.jar</code>.
+
+All I/O is performed through <code>stdin</code> and <code>stdout</code>.
+
+For easing debugging there is also a logging system available at <code>install/logs</code>.
+
 ### Security Considerations
 Since an emulator *by definion* isn't the "real thing" some limitations apply. That is, the Web2Native Bridge
 emulator is *not intended for production* since it lacks the following security features:
