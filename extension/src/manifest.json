@@ -1,5 +1,5 @@
 {
-  "name": "Web2Native Bridge proxy",
+  "name": "Web2Native Bridge emulator",
   "version": "1.0",
   "manifest_version": 2,
   "description": "Chrome Extension for emulating the Web2Native Bridge scheme",
