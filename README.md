@@ -51,7 +51,7 @@ install/apps/</code>*dottedpath*<code>/</code>*dottedpath*<code>.jar</code>.
 
 All I/O is between the components is performed through <code>stdin</code> and <code>stdout</code>.
 
-For easing debugging there is also a logging system available at <code>install/logs</code>.
+For debugging purposes there is also a logging system available at <code>install/logs</code>.
 
 ### Security Considerations
 Since an emulator *by definion* isn't the "real thing" some limitations apply. That is, the Web2Native Bridge
