@@ -46,7 +46,7 @@ The argument to **nativeConnect** holds the name of the specifically adapted loc
 
 ### Security Considerations
 Since an emulator (by definion) isn't the "real thing" some limitations apply. That is, the Web2Native Bridge
-emulator is **not** intended for *production* since it lacks the following security features:
+emulator is *not intended for production* since it lacks the following security features:
 * Vetted application infrastructure
 * HTTPS information (not available in the Chrome native messaging interface)
 
