@@ -29,10 +29,10 @@
 #ifdef WIN32
 #define FILE_SEPARATOR   '\\'
 #define _CRT_SECURE_NO_WARNINGS
-#define JAVAPLAF " -Dswing.defaultlaf=com.sun.java.swing.plaf.windows.WindowsLookAndFeel"
+#define JAVA_PLAF " -Dswing.defaultlaf=com.sun.java.swing.plaf.windows.WindowsLookAndFeel"
 #else
 #define FILE_SEPARATOR   '/'
-#define JAVAPLAF ""
+#define JAVA_PLAF ""
 #endif
 
 #include <stdio.h>
@@ -45,101 +45,101 @@ static char *res;
 
 static char* getJSONProperty (char *name) {
     char *start = strstr(res, name);
-	if (!start)	{
-		exit(EXIT_FAILURE);
-	}
-	start += strlen(name);
-	if (*start++ != '"') {
-		exit(EXIT_FAILURE);
-	}
-	char *end = strstr(start, "\"");
-	if (!end) {
-		exit(EXIT_FAILURE);
-	}
-	int length = end - start + 1;
-	char *property = new char[length--];
-	strncpy(property, start, length);
-	property[length] = 0;
-	return property;
+    if (!start)    {
+        exit(EXIT_FAILURE);
+    }
+    start += strlen(name);
+    if (*start++ != '"') {
+        exit(EXIT_FAILURE);
+    }
+    char *end = strstr(start, "\"");
+    if (!end) {
+        exit(EXIT_FAILURE);
+    }
+    int length = end - start + 1;
+    char *property = new char[length--];
+    strncpy(property, start, length);
+    property[length] = 0;
+    return property;
 }
 
 int main(int argc, char *argv[]) {
-	// Reading an initial JSON message which can be of two kinds:
-	// 1. Proxy verification which consists of an object {"proxyVersion":"n.nn"}
-	// 2. Java application call which consists of an object ("application":"dotted-path",
-	//                                                       "url":"invocation-url"}
-	int length = 0;
-	for (int i = 0; i < 32; i += 8)	{
-		length += getchar() << i;
-	}
-	res = new char[length + 1];
-	int actual = 0;
-	while (length-- > 0) {
-		int c = getchar();
-		if (c != ' ') {
-			res[actual++] = c;
-		}
-	}
-	res[actual] = 0;
+    // Reading an initial JSON message which can be of two kinds:
+    // 1. Proxy verification which consists of an object {"proxyVersion":"n.nn"}
+    // 2. Java application call which consists of an object ("application":"dotted-path",
+    //                                                       "url":"invocation-url"}
+    int length = 0;
+    for (int i = 0; i < 32; i += 8)    {
+        length += getchar() << i;
+    }
+    res = new char[length + 1];
+    int actual = 0;
+    while (length-- > 0) {
+        int c = getchar();
+        if (c != ' ') {
+            res[actual++] = c;
+        }
+    }
+    res[actual] = 0;
 
-	// Are we doing proxy verification?
-	if (strstr(res, "\"proxyVersion\":")) {
-		if (strcmp(PROXY_VERSION, getJSONProperty("\"proxyVersion\":"))) {
-			exit(EXIT_FAILURE);
-		}
-		char zeroObject[] = { 2,0,0,0,'{','}' };
-		for (int n = 0; n < sizeof(zeroObject); n++) {
-			putchar(zeroObject[n]);
-		}
-		fclose(stdout);
-		exit(EXIT_SUCCESS);
-	}
+    // Are we doing proxy verification?
+    if (strstr(res, "\"proxyVersion\":")) {
+        if (strcmp(PROXY_VERSION, getJSONProperty("\"proxyVersion\":"))) {
+            exit(EXIT_FAILURE);
+        }
+        char zeroObject[] = { 2,0,0,0,'{','}' };
+        for (int n = 0; n < sizeof(zeroObject); n++) {
+            putchar(zeroObject[n]);
+        }
+        fclose(stdout);
+        exit(EXIT_SUCCESS);
+    }
 
-	// No, we are executing a Java target application
-	char cmd[2000] = "java" JAVAPLAF " -jar ";
-	char path[500] = "\"";
-	strcat(path, argv[0]);
-	int i = strlen (path);
-	while (path[--i] != FILE_SEPARATOR)
-	  ;
-	path[++i] = 0;
-	char fs[] = {FILE_SEPARATOR,0};
+    // No, we are executing a Java target application
+    char cmd[2000] = "java" JAVA_PLAF " -jar ";
+    char path[500] = "\"";
+    strcat(path, argv[0]);
+    int i = strlen (path);
+    while (path[--i] != FILE_SEPARATOR)
+      ;
+    path[++i] = 0;
+    char fs[] = {FILE_SEPARATOR,0};
 
-	char *application = getJSONProperty("\"application\":");
+    char *application = getJSONProperty("\"application\":");
 
-	strcat(cmd, path);
-	strcat(cmd, "apps");
-	strcat(cmd, fs);
-	strcat(cmd, application);
-	strcat(cmd, fs);
-	strcat(cmd, application);
-	strcat(cmd, ".jar\" ");
+    strcat(cmd, path);
+    strcat(cmd, "apps");
+    strcat(cmd, fs);
+    strcat(cmd, application);
+    strcat(cmd, fs);
+    strcat(cmd, application);
+    strcat(cmd, ".jar\" ");
 
-	strcat(cmd, path);
-	strcat(cmd, "logs");
-	strcat(cmd, fs);
-	strcat(cmd, application);
-	strcat(cmd, ".log\" ");
+    strcat(cmd, path);
+    strcat(cmd, "logs");
+    strcat(cmd, fs);
+    strcat(cmd, application);
+    strcat(cmd, ".log\" ");
 
-	strcat(cmd, getJSONProperty("\"url\":"));
+    strcat(cmd, getJSONProperty("\"url\":"));
 
-	for (int i = 1; i < argc; i++) {
-		strcat(cmd," ");
-		strcat(cmd, argv[i]);
-	}
-	char fileName[500];
-	strcpy(fileName, path + 1);
+    for (int i = 1; i < argc; i++) {
+        strcat(cmd," ");
+        strcat(cmd, argv[i]);
+    }
+    char fileName[500];
+    strcpy(fileName, path + 1);
     strcat(fileName, "logs");
     strcat(fileName, fs);
     strcat(fileName, "last-init-application.log");
-	FILE* logFile = fopen(fileName, "w");
-	fprintf(logFile, "commmand: %s\n", cmd);
-	int returnCode = system(cmd);
-	if (returnCode)	{
-		fprintf(logFile, "Error: '%s' %d\n", strerror(returnCode), returnCode);
-	}
-	fclose(logFile);
-	return 0;
+    FILE* logFile = fopen(fileName, "w");
+    fprintf(logFile, "commmand: %s\n", cmd);
+    int returnCode = system(cmd);
+    if (returnCode)    {
+        fprintf(logFile, "Error: '%s' %d\n", strerror(returnCode), returnCode);
+    }
+    fclose(logFile);
+    return 0;
 }
 
 
