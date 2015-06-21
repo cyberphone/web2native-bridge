@@ -7,9 +7,9 @@ on the Chrome (desktop) browser.
 The emulator code exploits Chrome's native messaging (https://developer.chrome.com/extensions/nativeMessaging)
 featured in a single universal Chrome extension.
 
-The applications callable by Web2Native Bridge emulator must be written in Java and stored in a specific
-directory.  This ensures that you will not be subjected to unpleasant
-surprises (an improperly designed native message extension could enable access to *any* application!)
+Applications callable by Web2Native Bridge emulator **must** be written in Java and stored in a specific
+directory.  This limits unpleasant surprises
+(an improperly designed native message extension could enable access to *any* application!)
 if you accindentally navigate to a malicious page.
 ## API
 The Web2Native Bridge emulator extends the **navigator** object by a *single* method **nativeConnect**(*NameOfTargetApplication*) which
