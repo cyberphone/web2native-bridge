@@ -62,7 +62,7 @@ Prerequisite: You need to have Java SE version 7 or 8 installed to run the Web2N
 4. Run the <code>install/install-proxy</code> script that suits your platform
 
 ### Sample Application
-In the directory <code>sample1/demo/sample1.html</code> there is an HTML file that does approximately
+The HTML file <code>sample1/demo/sample1.html</code> does approximately
 the same thing as the application depicted in
 http://www.cnet.com/news/google-paves-over-hole-left-by-chrome-plug-in-ban/
 albeit with two major differences:
