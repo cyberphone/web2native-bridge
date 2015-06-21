@@ -9,10 +9,10 @@ featured in a single universal Chrome extension.
 
 The applications callable by Web2Native Bridge emulator must be written in Java and stored in a specific
 directory.  This ensures that you will not be subjected to unpleasant
-surprises (an improperly designed native message extension could enable access to any application!)
+surprises (an improperly designed native message extension could enable access to *any* application!)
 if somebody succeeds making you navigate to a malicious page.
 ## API
-The Web2Native Bridge emulator extends the **navigator** object by a method **nativeConnect**(*NameOfTargetApplication*) which
+The Web2Native Bridge emulator extends the **navigator** object by a *single* method **nativeConnect**(*NameOfTargetApplication*) which
 returns a promise holding a **port** object.
 
 The **port** object supports the following methods and events:
