@@ -49,4 +49,6 @@ Since an emulator (by definion) isn't the "real thing" some limitations apply. T
 emulator is **not** intended for *production* since it lacks the following security features:
 * Vetted application infrastructure
 * HTTPS information (not available in the Chrome native messaging interface)
-* Injects code in every web page vistited (a core "feature" of Chrome extensions)
+
+In addition, the scheme injects code in every web page vistited which is a core "feature" of Chrome extensions
+slowing down execution.  It is probably wise disabling (using Chrome *settings*) the extension when not using it.
