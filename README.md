@@ -42,7 +42,7 @@ navigator.nativeConnect('com.example.w2nb.sample').then(function(port) {
     console.debug(err);
 });
 ```
-The argument to **nativeConnect** holds the name of the specifically adapted local application to invoke.   The current scheme uses a Java-inspired path pointing to a subdirectory and JAR-application having this name.
+The argument to **nativeConnect** holds the name of the specifically adapted local application to invoke.   The current scheme uses a Java-inspired dotted path pointing to a subdirectory and JAR-application having this name.
 
 ### Architecture
 The Web2Native Bridge emulator always invokes a central proxy located at <code>install/w2nb-proxy</code>.<br>
@@ -68,6 +68,8 @@ http://www.cnet.com/news/google-paves-over-hole-left-by-chrome-plug-in-ban/
 albeit with two major differences:
 * The sample application runs in an ordinary web page
 * The Web2Native Bridge browser extension is fully generic
+
+The native part of the sample application resides in <code>install/apps/org.webpki.w2nb.sample1/org.webpki.w2nb.sample1.jar</code>.
 
 ### Security Considerations
 Since an emulator *by definion* isn't the "real thing" some limitations apply. That is, the Web2Native Bridge
