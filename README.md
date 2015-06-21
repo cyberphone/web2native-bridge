@@ -49,7 +49,7 @@ The Web2Native Bridge emulator always invokes a central proxy located at <code>i
 The proxy in turn delegates a call to the specific target application located at<br><code>
 install/apps/</code>*dottedpath*<code>/</code>*dottedpath*<code>.jar</code>.
 
-All I/O is performed through <code>stdin</code> and <code>stdout</code>.
+All I/O is between the components is performed through <code>stdin</code> and <code>stdout</code>.
 
 For easing debugging there is also a logging system available at <code>install/logs</code>.
 
