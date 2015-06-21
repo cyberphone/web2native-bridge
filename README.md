@@ -53,6 +53,14 @@ All I/O is between the components is performed through <code>stdin</code> and <c
 
 For debugging purposes there is also a logging system available at <code>install/logs</code>.
 
+### Sample Application
+In the directory <code>sample1/demo/sample.html</code> there is an HTML file that does approximately
+the same thing as the application depicted in
+http://www.cnet.com/news/google-paves-over-hole-left-by-chrome-plug-in-ban/
+albeit with two major differences:
+* The application runs in an ordinary web page
+* The Chrome browser extension is generic
+
 ### Security Considerations
 Since an emulator *by definion* isn't the "real thing" some limitations apply. That is, the Web2Native Bridge
 emulator is *not intended for production* since it lacks the following security features:
