@@ -5,4 +5,4 @@ Chrome's native messaging and a single universal Chrome extension.
 
 The called applications must be written in Java and stored in a specific
 directory.  This ensures that you will not be subjected to unwanted
-surprises if somebody succeeds making you navigate go a malicious page.
+surprises if somebody succeeds making you navigate to a malicious page.
