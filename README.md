@@ -11,3 +11,35 @@ The applications callable by Web2Native Bridge emulator must be written in Java 
 directory.  This ensures that you will not be subjected to unpleasant
 surprises (an improperly designed native message extension could enable access to any application!)
 if somebody succeeds making you navigate to a malicious page.
+## API
+The Web2Native Bridge emulator extends the **navigator** object by a method **nativeConnect**(*NameOfTargetApplication*) which
+returns a promise holding a **port** object.
+
+The **port** object supports the following methods and events:
+* **postMessage**(*JSONObject*)
+* **disconnect**()
+* **addMessageListener**(function(*JSONObject*))
+* **addDisconnectListener**(function())
+
+An example:
+```javascript
+navigator.nativeConnect('com.example.w2nb.sample').then(function(port) {
+
+    port.addMessageListener(function(message) {
+        // We got a message...
+    });
+
+    port.addDisconnectListener(function() {
+        // Native application disconnected...
+    });
+
+    port.postMessage({greeting:'Native messaging is awesome!'});
+    // Note: JS serialization makes the above a genuine JSON object
+
+    port.disonnect();  // Not much of a conversation going on here...
+
+}, function(err) {
+    console.debug(err);
+});
+```
+The argument to **nativeConnect** holds the name of the specifically adapted local application to invoke.   The current scheme uses a java-inspired path pointing to a subdirectory and application having this name.
