@@ -11,7 +11,7 @@ Applications callable by the Web2Native Bridge emulator **must** be written in J
 dedicated directory.  This limits unpleasant surprises
 (an improperly designed native message extension could enable access to *any* application!)
 if you accindentally navigate to a malicious page.
-## API
+### API
 The Web2Native Bridge emulator extends the **navigator** object by a *single* method **nativeConnect**(*NameOfTargetApplication*) which
 returns a promise holding a **port** object.
 
@@ -43,3 +43,10 @@ navigator.nativeConnect('com.example.w2nb.sample').then(function(port) {
 });
 ```
 The argument to **nativeConnect** holds the name of the specifically adapted local application to invoke.   The current scheme uses a Java-inspired path pointing to a subdirectory and JAR-application having this name.
+
+### Security Considerations
+Since an emulator (by definion) isn't the "real thing" some limitations apply. That is, the Web2Native Bridge
+emulator is **not** intended for *production* since it lacks the following security features:
+* Vetted application infrastructure
+* HTTPS information (not available in the Chrome native messaging interface)
+* Injects code in every web page vistited (a core "feature" of Chrome extensions)
