@@ -27,6 +27,8 @@ import java.awt.Toolkit;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -53,120 +55,144 @@ import org.webpki.json.JSONOutputFormats;
 import org.webpki.util.ISODateTime;
 
 class ApplicationFrame extends Thread {
-	DataInputStream dis = new DataInputStream(System.in);
-	JTextArea textArea;
-	JTextField sendText;
+    DataInputStream dis = new DataInputStream(System.in);
+    JTextArea textArea;
+    JTextField sendText;
 
-	ApplicationFrame(Container pane) {
-		int fontSize = Toolkit.getDefaultToolkit().getScreenResolution() / 7;
-		JLabel msgLabel = new JLabel("\u00a0Messages:\u00a0");
-		Font font = msgLabel.getFont();
-		if (font.getSize() > fontSize) {
-			fontSize = font.getSize();
-		}
-		pane.setLayout(new GridBagLayout());
-		JPanel myPanel = new JPanel();
-		textArea = new JTextArea(20, 50);
-		textArea.setFont(new Font("Courier", Font.PLAIN, fontSize));
-		textArea.setEditable(false);
-		JScrollPane scrollPane = new JScrollPane(textArea);
-		myPanel = new JPanel();
-		msgLabel.setFont(new Font(font.getFontName(), font.getStyle(), fontSize));
-		myPanel.add(msgLabel);
-		myPanel.add(scrollPane);
-		pane.add(myPanel);
-		JPanel myPanel2 = new JPanel();
-		sendText = new JTextField(50);
-		sendText.setFont(new Font("Courier", Font.PLAIN, fontSize));
-		myPanel2.add(sendText);
-		JButton sendBut = new JButton("\u00a0\u00a0\u00a0Send\u00a0\u00a0\u00a0");
-		sendBut.setFont(new Font(font.getFontName(), font.getStyle(), fontSize));
-		sendBut.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent event) {
-				try {
-					byte[] utf8 = new JSONObjectWriter().setString("native",
-							sendText.getText()).serializeJSONObject(JSONOutputFormats.NORMALIZED);
-					update(new String(utf8, "UTF-8"));
-					int l = utf8.length;
-					byte[] blob = new byte[l + 4];
-					blob[0] = (byte) l;
-					blob[1] = (byte) (l >>> 8);
-					blob[2] = (byte) (l >>> 16);
-					blob[3] = (byte) (l >>> 24);
-					for (int i = 0; i < l; i++) {
-						blob[4 + i] = utf8[i];
-					}
-					System.out.write(blob);
-				} catch (IOException e) {
-					NativeClient.logger.log(Level.SEVERE, "Writing", e);
-					System.exit(3);
-				}
-			}
-		});
-		myPanel2.add(sendBut);
-		GridBagConstraints c = new GridBagConstraints();
-		c.gridx = 0;
-		c.gridy = 1;
-		pane.add(myPanel2, c);
-	}
+    ApplicationFrame(Container pane) {
+        int fontSize = Toolkit.getDefaultToolkit().getScreenResolution() / 7;
+        JLabel msgLabel = new JLabel("\u00a0Messages:\u00a0");
+        Font font = msgLabel.getFont();
+        if (font.getSize() > fontSize) {
+            fontSize = font.getSize();
+        }
+        pane.setLayout(new GridBagLayout());
+        JPanel myPanel = new JPanel();
+        textArea = new JTextArea(20, 50);
+        textArea.setFont(new Font("Courier", Font.PLAIN, fontSize));
+        textArea.setEditable(false);
+        JScrollPane scrollPane = new JScrollPane(textArea);
+        myPanel = new JPanel();
+        msgLabel.setFont(new Font(font.getFontName(), font.getStyle(), fontSize));
+        myPanel.add(msgLabel);
+        myPanel.add(scrollPane);
+        pane.add(myPanel);
+        JPanel myPanel2 = new JPanel();
+        sendText = new JTextField(50);
+        sendText.setFont(new Font("Courier", Font.PLAIN, fontSize));
+        myPanel2.add(sendText);
+        JButton sendBut = new JButton("\u00a0\u00a0\u00a0Send\u00a0\u00a0\u00a0");
+        sendBut.setFont(new Font(font.getFontName(), font.getStyle(), fontSize));
+        sendBut.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                try {
+                    byte[] utf8 = new JSONObjectWriter().setString("native",
+                            sendText.getText()).serializeJSONObject(JSONOutputFormats.NORMALIZED);
+                    update(new String(utf8, "UTF-8"));
+                    int l = utf8.length;
+                    byte[] blob = new byte[l + 4];
+                    blob[0] = (byte) l;
+                    blob[1] = (byte) (l >>> 8);
+                    blob[2] = (byte) (l >>> 16);
+                    blob[3] = (byte) (l >>> 24);
+                    for (int i = 0; i < l; i++) {
+                        blob[4 + i] = utf8[i];
+                    }
+                    System.out.write(blob);
+                } catch (IOException e) {
+                    NativeClient.logger.log(Level.SEVERE, "Writing", e);
+                    System.exit(3);
+                }
+            }
+        });
+        myPanel2.add(sendBut);
+        GridBagConstraints c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = 1;
+        pane.add(myPanel2, c);
+    }
 
-	void update(String text) {
-		textArea.setText(ISODateTime.formatDateTime(new Date(), false).substring(0, 19) + 
-		    " " + text + "\n" + textArea.getText());
-		NativeClient.logger.info(text);
-	}
+    void update(String text) {
+        textArea.setText(ISODateTime.formatDateTime(new Date(), false).substring(0, 19) + 
+            " " + text + "\n" + textArea.getText());
+        NativeClient.logger.info(text);
+    }
 
-	@Override
-	public void run() {
-		while (true) {
-			try {
-				byte[] byteBuffer = new byte[4];
-				dis.readFully(byteBuffer, 0, 4);
-				int l = (byteBuffer[3]) << 24 | (byteBuffer[2] & 0xff) << 16
-						| (byteBuffer[1] & 0xff) << 8 | (byteBuffer[0] & 0xff);
-				if (l == 0)
-					System.exit(3);
-				byte[] string = new byte[l];
-				dis.read(string);
-				update(new String(string, "UTF-8"));
-			} catch (IOException e) {
-				NativeClient.logger.log(Level.SEVERE, "Reading", e);
-				System.exit(3);
-			}
-		}
-	}
+    @Override
+    public void run() {
+        while (true) {
+            try {
+                byte[] byteBuffer = new byte[4];
+                dis.readFully(byteBuffer, 0, 4);
+                int l = (byteBuffer[3]) << 24 | (byteBuffer[2] & 0xff) << 16
+                        | (byteBuffer[1] & 0xff) << 8 | (byteBuffer[0] & 0xff);
+                if (l == 0)
+                    System.exit(3);
+                byte[] string = new byte[l];
+                dis.read(string);
+                update(new String(string, "UTF-8"));
+            } catch (IOException e) {
+                NativeClient.logger.log(Level.SEVERE, "Reading", e);
+                System.exit(3);
+            }
+        }
+    }
 }
 
 public class NativeClient {
-	static Logger logger = Logger.getLogger("MyLog");
+    static Logger logger = Logger.getLogger("MyLog");
 
-	private static void initLogger(String logFile) {
-		// This block configure the logger with handler and formatter
-		try {
-			FileHandler fh = new FileHandler(logFile);
-			logger.addHandler(fh);
-			SimpleFormatter formatter = new SimpleFormatter();
-			fh.setFormatter(formatter);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
+    private static void initLogger(String logFile) {
+        // This block configure the logger with handler and formatter
+        try {
+            FileHandler fh = new FileHandler(logFile);
+            logger.addHandler(fh);
+            SimpleFormatter formatter = new SimpleFormatter();
+            fh.setFormatter(formatter);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-	public static void main(String[] args) {
-		initLogger(args[0]);
-		for (int i = 0; i < args.length; i++) {
-			logger.info("ARG[" + i + "]=" + args[i]);
-		}
+    public static void main(String[] args) {
+        initLogger(args[0]);
+        for (int i = 0; i < args.length; i++) {
+            logger.info("ARG[" + i + "]=" + args[i]);
+        }
 
-		JDialog frame = new JDialog(new JFrame(), "W2NB - Sample #1 [" + args[1] + "]");
-		frame.setResizable(false);
-		ApplicationFrame md = new ApplicationFrame(frame.getContentPane());
-		frame.pack();
-		frame.setAlwaysOnTop(true);
-		frame.setLocationRelativeTo(null);
-		frame.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-		frame.setVisible(true);
-		md.start();
-	}
+        JDialog frame = new JDialog(new JFrame(), "W2NB - Sample #1 [" + args[1] + "]");
+        frame.setResizable(false);
+        ApplicationFrame md = new ApplicationFrame(frame.getContentPane());
+        frame.pack();
+        frame.setAlwaysOnTop(true);
+        frame.setLocationRelativeTo(null);
+        frame.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        frame.addWindowListener(new WindowListener() {
+            @Override
+            public void windowClosing(WindowEvent event) {
+                System.exit(0);
+            }
+
+            @Override
+            public void windowActivated(WindowEvent event) { }
+
+            @Override
+            public void windowClosed(WindowEvent event) { }
+
+            @Override
+            public void windowDeactivated(WindowEvent event) { }
+
+            @Override
+            public void windowDeiconified(WindowEvent event) { }
+
+            @Override
+            public void windowIconified(WindowEvent event) { }
+
+            @Override
+            public void windowOpened(WindowEvent event) { }
+        });
+        frame.setVisible(true);
+        md.start();
+    }
 }
