@@ -141,5 +141,3 @@ int main(int argc, char *argv[]) {
     fclose(logFile);
     return 0;
 }
-
-
