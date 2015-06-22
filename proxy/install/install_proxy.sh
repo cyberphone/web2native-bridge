@@ -3,37 +3,55 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# Adapted for the Web2Native Bridge by Anders Rundgren
+
 set -e
 
 DIR="$( cd "$( dirname "$0" )" && pwd )"
-if [ "$(uname -s)" == "Darwin" ]; then
-  if [ "$(whoami)" == "root" ]; then
+if [ "$(uname -s)" = "Darwin" ]; then
+  CPP=clang
+  if [ "$(whoami)" = "root" ]; then
     TARGET_DIR="/Library/Google/Chrome/NativeMessagingHosts"
   else
     TARGET_DIR="$HOME/Library/Application Support/Google/Chrome/NativeMessagingHosts"
   fi
 else
-  if [ "$(whoami)" == "root" ]; then
+  CPP=g++
+  if [ "$(whoami)" = "root" ]; then
     TARGET_DIR="/etc/opt/chrome/native-messaging-hosts"
   else
-    TARGET_DIR="$HOME/.config/google-chrome/NativeMessagingHosts"
+    if [ -d "$HOME/.config/chromium" ]; then
+      CHROME_VARIANT=chromium
+    else 
+      if [ -d "$HOME/.config/google-chrome" ]; then
+        CHROME_VARIANT=google-chrome
+      else
+        echo "Can't find Chrome variant!"
+        exit 1
+      fi
+    fi
+    TARGET_DIR="$HOME/.config/$CHROME_VARIANT/NativeMessagingHosts"
   fi
 fi
 
-HOST_NAME=com.google.chrome.example.echo
+HOST_NAME=org.webpki.w2nb
+EXECUTABLE=w2nb-proxy
+HOST_PATH=$DIR/$EXECUTABLE
+MANIFEST=$HOST_NAME.json
+
+echo "Compiling proxy source to $HOST_PATH"
+"$CPP" -w -o $HOST_PATH $DIR/../src/$EXECUTABLE.cpp
 
 # Create directory to store native messaging host.
 mkdir -p "$TARGET_DIR"
 
 # Copy native messaging host manifest.
-cp "$DIR/$HOST_NAME.json" "$TARGET_DIR"
+cp "$DIR/$MANIFEST" "$TARGET_DIR"
 
 # Update host path in the manifest.
-HOST_PATH=$DIR/native-messaging-example-host
-ESCAPED_HOST_PATH=${HOST_PATH////\\/}
-sed -i -e "s/HOST_PATH/$ESCAPED_HOST_PATH/" "$TARGET_DIR/$HOST_NAME.json"
+sed -i -e "s%$EXECUTABLE.exe%$HOST_PATH%" "$TARGET_DIR/$MANIFEST"
 
 # Set permissions for the manifest so that all users can read it.
-chmod o+r "$TARGET_DIR/$HOST_NAME.json"
+chmod o+r "$TARGET_DIR/$MANIFEST"
 
-echo "Native messaging host $HOST_NAME has been installed."
+echo "Native messaging host $TARGET_DIR/$MANIFEST has been installed"
