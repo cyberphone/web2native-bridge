@@ -54,7 +54,8 @@ All I/O is between the components is performed through <code>stdin</code> and <c
 For debugging purposes there is also a logging system writing data in <code>proxy/install/logs</code>.
 
 ### Installation
-Prerequisite: You need to have Java SE version 7 or 8 installed to run the Web2Native Bridge emulator.
+Prerequisites: You need to have Java SE version 7 or 8 installed to run the Web2Native Bridge emulator. OS/X and Linux
+installations also presume that <code>clang</code> respectively <code>g++</code> is available.
 
 1. Clone the <code>web2native-bridge</code> project or just download the ZIP via GitHub to any free directory
 2. Install the Chrome browser extension available in <code>extension/src</code> as described in https://developer.chrome.com/extensions/getstarted#unpacked
