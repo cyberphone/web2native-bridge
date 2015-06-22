@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\proxy-src\w2nb-proxy.cpp">
+    <ClCompile Include="..\..\src\w2nb-proxy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
