@@ -70,22 +70,22 @@ int main(int argc, char *argv[]) {
     // 2. Java application call which consists of an object ("application":"dotted-path",
     //                                                       "url":"invocation-url"}
 
-	// Chrome presumes message length in native order. Not very cool.
-	// The following code therefore only runs on little-endian CPUs.
+    // Chrome presumes message length in native order. Not very cool.
+    // The following code therefore only runs on little-endian CPUs.
     int length = 0;
     for (int i = 0; i < 32; i += 8)    {
         length += getchar() << i;
     }
 
-	// We expect a tiny JSON object
-	if (length > 10000) {
-		exit(EXIT_FAILURE);
-	}
+    // We expect a tiny JSON object
+    if (length > 10000) {
+        exit(EXIT_FAILURE);
+    }
 
-	// OK. Read the JSON string
+    // OK. Read the JSON string
     res = new char[length + 1];
     for (int n = 0; n < length; n++) {
-		res[n] = getchar();
+        res[n] = getchar();
     }
     res[length] = 0;
 
