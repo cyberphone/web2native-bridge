@@ -50,9 +50,12 @@ The Web2Native Bridge emulator always invokes a central proxy located at <code>p
 The proxy in turn delegates a call to the specific target application located at<br><code>
 proxy/install/apps/</code>*dottedpath*<code>/</code>*dottedpath*<code>.jar</code>.
 
-All I/O is between the components is performed through <code>stdin</code> and <code>stdout</code>.
+Common Java libraries may be stored in <code>proxy/install/libs</code>.
 
 For debugging purposes there is also a logging system writing data in <code>proxy/install/logs</code>.
+
+All local I/O is between the browser, proxy and the callable applications
+is performed through <code>stdin</code> and <code>stdout</code>.
 
 ### Installation
 Prerequisites: You need to have Java SE version 7 or 8 installed to run the Web2Native Bridge emulator. OS/X and Linux
