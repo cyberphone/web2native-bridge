@@ -20,13 +20,17 @@ else
   if [ "$(whoami)" = "root" ]; then
     TARGET_DIR="/etc/opt/chrome/native-messaging-hosts"
   else
-    if [ -d "$HOME/.config/chromium" ]; then
-      CHROME_VARIANT=chromium
+    if [ -d "$HOME/.config/google-chrome" ]; then
+      CHROME_VARIANT=google-chrome
+      if [ -d "$HOME/.config/chromium" ]; then
+        echo "You have both Chrome and Chromium installed. Please patch the script!"
+        exit 1
+      fi
     else 
-      if [ -d "$HOME/.config/google-chrome" ]; then
-        CHROME_VARIANT=google-chrome
+      if [ -d "$HOME/.config/chromium" ]; then
+        CHROME_VARIANT=chromium
       else
-        echo "Can't find Chrome variant!"
+        echo "Can't find any Chrome variant!"
         exit 1
       fi
     fi
