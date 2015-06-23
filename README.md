@@ -47,7 +47,8 @@ The argument to **nativeConnect** holds the name of the specifically adapted loc
 
 ### Architecture
 The Web2Native Bridge emulator always invokes a central proxy located at <code>proxy/install/w2nb-proxy</code>.<br>
-The proxy in turn delegates a call to the specific target application located at<br><code>
+
+The proxy in turn dispatches a call to the specific target application located at<br><code>
 proxy/install/apps/</code>*dottedpath*<code>/</code>*dottedpath*<code>.jar</code>.
 
 Common Java libraries may be stored in <code>proxy/install/libs</code>.
