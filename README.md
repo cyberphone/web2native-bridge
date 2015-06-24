@@ -80,7 +80,7 @@ The native part of the sample application resides in <code>proxy/install/apps/or
 ### Security Considerations
 Since an emulator *by definition* isn't the "real thing" some limitations apply. That is, the Web2Native Bridge
 emulator is *not intended for production* since it doesn't support the following security measures:
-* Vetted native application infrastructure
+* Native application vetting infrastructure
 * HTTPS information
 * Site-blocking support and associated administration
  
