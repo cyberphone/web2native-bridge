@@ -67,8 +67,7 @@ static char* getJSONProperty (char *name) {
 int main(int argc, char *argv[]) {
     // Reading an initial JSON message which can be of two kinds:
     // 1. Proxy verification which consists of an object {"proxyVersion":"n.nn"}
-    // 2. Java application call which consists of an object ("application":"dotted-path",
-    //                                                       "url":"invocation-url"}
+    // 2. Java application call which consists of an object ("application":"dotted-path", "url":"invocation-url"}
 
     // Chrome presumes message length in native order. Not very cool.
     // The following code therefore only runs on little-endian CPUs.
@@ -141,6 +140,8 @@ int main(int argc, char *argv[]) {
     strcat(fileName, "last-init-application.log");
     FILE* logFile = fopen(fileName, "w");
     fprintf(logFile, "commmand: %s\n", cmd);
+
+    // This is not the recommended solution for POSIX-compliant systems but hey, this is a PoC...
     int returnCode = system(cmd);
     if (returnCode)    {
         fprintf(logFile, "Error: '%s' %d\n", strerror(returnCode), returnCode);
