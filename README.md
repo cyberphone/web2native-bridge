@@ -81,10 +81,12 @@ The native part of the sample application resides in <code>proxy/install/apps/or
 
 ### Security Considerations
 Since an emulator *by definition* isn't the "real thing" some limitations apply. That is, the Web2Native Bridge
-emulator is *not intended for production* since it lacks the following security features:
-* Vetted native application infrastructure (also absent from Google's take on the matter)
-* HTTPS information (unavailable in the Chrome native messaging interface)
+emulator is *not intended for production* since it doesn't support the following security measures:
+* Vetted native application infrastructure
+* HTTPS information
 * Site-blocking support and associated administration
+ 
+Although not entirely comforting, Chrome's native messaging framework also lacks these mechanisms...
 
 In addition, the scheme injects code in every web page visited which is a core "feature" of Chrome extensions
 slowing down execution.  It is probably wise disabling the extension (using Chrome *settings*) when not using it.
