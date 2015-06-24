@@ -73,7 +73,7 @@ the same thing as the application depicted in
 http://www.cnet.com/news/google-paves-over-hole-left-by-chrome-plug-in-ban/
 albeit with two major differences:
 * The sample application runs in an ordinary web page
-* The Web2Native Bridge browser extension is fully generic
+* The Web2Native Bridge browser extension is fully generic and can simultaneously support any number of very different applications
 
 The native part of the sample application resides in <code>proxy/install/apps/org.webpki.w2nb.sample1/org.webpki.w2nb.sample1.jar</code>.
 
