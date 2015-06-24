@@ -84,7 +84,7 @@ emulator is *not intended for production* since it doesn't support the following
 * HTTPS information
 * Site-blocking support and associated administration
  
-Although not entirely comforting, Chrome's native messaging framework also lacks these mechanisms...
+Although not entirely comforting, Chrome's native messaging framework also lacks these qualities...
 
 In addition, the scheme injects code in every web page visited which is a core "feature" of Chrome extensions
 slowing down execution.  It is probably wise disabling the extension (using Chrome *settings*) when not using it.
