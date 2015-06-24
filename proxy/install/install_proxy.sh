@@ -10,6 +10,7 @@ set -e
 DIR="$( cd "$( dirname "$0" )" && pwd )"
 if [ "$(uname -s)" = "Darwin" ]; then
   CPP=clang
+  CPP_OPTION=-lc++
   if [ "$(whoami)" = "root" ]; then
     TARGET_DIR="/Library/Google/Chrome/NativeMessagingHosts"
   else
@@ -17,6 +18,7 @@ if [ "$(uname -s)" = "Darwin" ]; then
   fi
 else
   CPP=g++
+  CPP_OPTION=
   if [ "$(whoami)" = "root" ]; then
     TARGET_DIR="/etc/opt/chrome/native-messaging-hosts"
   else
@@ -44,7 +46,7 @@ HOST_PATH=$DIR/$EXECUTABLE
 MANIFEST=$HOST_NAME.json
 
 echo "Compiling proxy source to $HOST_PATH"
-"$CPP" -w -o $HOST_PATH $DIR/../src/$EXECUTABLE.cpp
+$CPP $CPP_OPTION -w -o $HOST_PATH $DIR/../src/$EXECUTABLE.cpp
 
 # Create directory to store native messaging host.
 mkdir -p "$TARGET_DIR"
