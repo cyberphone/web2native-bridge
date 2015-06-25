@@ -1,0 +1,43 @@
+<project name="webpayment client" default="build" basedir=".">
+
+  <!-- set global properties for this build -->
+
+  <property name="temp_dir" location=".tmp" />
+  <property name="src_dir" value="src/"/>
+  <property name="dist_dir" value="../proxy/install/apps/"/>
+  <property name="lib_dir" value="../proxy/install/libs/"/>
+  <property name="app_path" value="org.webpki.w2nb.webpayment"/>
+  <property name="javaversion" value="1.7" />
+
+  <path id="compile.classpath">
+	 <fileset dir="${lib_dir}">
+	   <include name="*.jar"/>
+    </fileset>
+  </path>
+  
+  <target name="clean">
+    <delete dir="${temp_dir}"/>
+    <delete dir="${dist_dir}/${app_path}"/>
+  </target>
+  
+  <target name="build" depends="clean">
+    <mkdir dir="${temp_dir}" />
+    <mkdir dir="${dist_dir}/${app_path}" />
+    <javac debug="${debug}"
+           source="${javaversion}"
+           target="${javaversion}"
+           srcdir="${src_dir}"
+           destdir="${temp_dir}" 
+           classpathref="compile.classpath"
+           includeAntRuntime="false">
+    </javac>
+    <jar jarfile="${dist_dir}/${app_path}/${app_path}.jar">
+      <fileset dir="${temp_dir}"/>
+      <manifest>
+        <attribute name="Main-Class" value="${app_path}.Wallet"/>
+        <attribute name="Class-path" value="../../libs/webpki.org-libext-1.00.jar"/>
+      </manifest>
+    </jar>
+  </target>
+  
+</project>
