@@ -1,5 +1,5 @@
 ###Sample 1
-This project holds a miniscule Web application which high-lights
+This project holds a miniscule application which high-lights
 the Web2Native Bridge API and technology.
 
 The application consists of two parts:
