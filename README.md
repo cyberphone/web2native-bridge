@@ -69,7 +69,7 @@ installations also presume that **clang** respectively **g++** is available.
 
 Now you can try the sample application (see next section) since it is installed by default.
 
-Please don't hesitate contacting me if you run into any kind of problem!
+Please don't hesitate contacting me if you run into problems during installation or execution of the emulator!
 
 ### Sample Application
 The HTML file <code>sample1/demo/sample1.html</code> does approximately
