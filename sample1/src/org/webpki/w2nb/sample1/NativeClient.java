@@ -28,7 +28,7 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
+import java.awt.event.WindowAdapter;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -168,29 +168,11 @@ public class NativeClient {
         frame.setAlwaysOnTop(true);
         frame.setLocationRelativeTo(null);
         frame.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-        frame.addWindowListener(new WindowListener() {
+        frame.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent event) {
                 System.exit(0);
             }
-
-            @Override
-            public void windowActivated(WindowEvent event) { }
-
-            @Override
-            public void windowClosed(WindowEvent event) { }
-
-            @Override
-            public void windowDeactivated(WindowEvent event) { }
-
-            @Override
-            public void windowDeiconified(WindowEvent event) { }
-
-            @Override
-            public void windowIconified(WindowEvent event) { }
-
-            @Override
-            public void windowOpened(WindowEvent event) { }
         });
         frame.setVisible(true);
         md.start();
