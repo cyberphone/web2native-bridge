@@ -30,7 +30,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowAdapter;
 
-import java.io.DataInputStream;
 import java.io.IOException;
 
 import java.util.Date;
@@ -50,12 +49,15 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 import org.webpki.json.JSONObjectWriter;
-import org.webpki.json.JSONOutputFormats;
 
 import org.webpki.util.ISODateTime;
 
+import org.webpki.w2nbproxy.StdinJSONPipe;
+import org.webpki.w2nbproxy.StdoutJSONPipe;
+
 class ApplicationFrame extends Thread {
-    DataInputStream dis = new DataInputStream(System.in);
+    StdinJSONPipe stdin = new StdinJSONPipe();
+    StdoutJSONPipe stdout = new StdoutJSONPipe();
     JTextArea textArea;
     JTextField sendText;
 
@@ -87,19 +89,8 @@ class ApplicationFrame extends Thread {
             @Override
             public void actionPerformed(ActionEvent event) {
                 try {
-                    byte[] utf8 = new JSONObjectWriter().setString("native",
-                            sendText.getText()).serializeJSONObject(JSONOutputFormats.NORMALIZED);
-                    update(new String(utf8, "UTF-8"));
-                    int l = utf8.length;
-                    byte[] blob = new byte[l + 4];
-                    blob[0] = (byte) l;
-                    blob[1] = (byte) (l >>> 8);
-                    blob[2] = (byte) (l >>> 16);
-                    blob[3] = (byte) (l >>> 24);
-                    for (int i = 0; i < l; i++) {
-                        blob[4 + i] = utf8[i];
-                    }
-                    System.out.write(blob);
+                    update(stdout.writeJSONObject(new JSONObjectWriter().setString("native",
+                                                                                   sendText.getText())));
                 } catch (IOException e) {
                     NativeClient.logger.log(Level.SEVERE, "Writing", e);
                     System.exit(3);
@@ -114,7 +105,8 @@ class ApplicationFrame extends Thread {
     }
 
     void update(String text) {
-        textArea.setText(ISODateTime.formatDateTime(new Date(), false).substring(0, 19) + 
+        String localTime = ISODateTime.formatDateTime(new Date(), false);
+        textArea.setText(localTime.substring(0, 10) + " " + localTime.substring(11, 19) +
             " " + text + "\n" + textArea.getText());
         NativeClient.logger.info(text);
     }
@@ -123,15 +115,8 @@ class ApplicationFrame extends Thread {
     public void run() {
         while (true) {
             try {
-                byte[] byteBuffer = new byte[4];
-                dis.readFully(byteBuffer, 0, 4);
-                int l = (byteBuffer[3]) << 24 | (byteBuffer[2] & 0xff) << 16
-                        | (byteBuffer[1] & 0xff) << 8 | (byteBuffer[0] & 0xff);
-                if (l == 0)
-                    System.exit(3);
-                byte[] string = new byte[l];
-                dis.read(string);
-                update(new String(string, "UTF-8"));
+                stdin.readJSONObject();  // Just syntax checking used in our crude sample
+                update(stdin.getJSONString());
             } catch (IOException e) {
                 NativeClient.logger.log(Level.SEVERE, "Reading", e);
                 System.exit(3);

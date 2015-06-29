@@ -2,5 +2,6 @@
 <classpath>
 	<classpathentry kind="src" path="src.java"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="install/libs/webpki.org-libext-1.00.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

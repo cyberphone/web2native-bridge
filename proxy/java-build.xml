@@ -1,28 +1,27 @@
-<project name="native client stuff" default="build" basedir=".">
+<project name="web2name bridge proxy java support" default="build" basedir=".">
 
   <!-- set global properties for this build -->
 
   <property name="temp_dir" location=".tmp" />
-  <property name="src_dir" value="src/"/>
-  <property name="dist_dir" value="../proxy/install/apps/"/>
-  <property name="lib_dir" value="../proxy/install/libs/"/>
-  <property name="app_path" value="org.webpki.w2nb.sample1"/>
+  <property name="src_dir" value="src.java/"/>
+  <property name="lib_dir" value="install/libs/"/>
+  <property name="library" value="webpki.org-libext-1.00.jar"/>
+  <property name="app_name" value="proxy-support.jar"/>
   <property name="javaversion" value="1.7" />
 
   <path id="compile.classpath">
 	 <fileset dir="${lib_dir}">
-	   <include name="*.jar"/>
+	   <include name="${library}"/>
     </fileset>
   </path>
   
   <target name="clean">
     <delete dir="${temp_dir}"/>
-    <delete dir="${dist_dir}/${app_path}"/>
+    <delete file="${lib_dir}/${app_name}"/>
   </target>
   
   <target name="build" depends="clean">
     <mkdir dir="${temp_dir}" />
-    <mkdir dir="${dist_dir}/${app_path}" />
     <javac debug="${debug}"
            source="${javaversion}"
            target="${javaversion}"
@@ -31,11 +30,11 @@
            classpathref="compile.classpath"
            includeAntRuntime="false">
     </javac>
-    <jar jarfile="${dist_dir}/${app_path}/${app_path}.jar">
+    <jar jarfile="${lib_dir}/${app_name}">
       <fileset dir="${temp_dir}"/>
       <manifest>
-        <attribute name="Main-Class" value="${app_path}.NativeClient"/>
-        <attribute name="Class-path" value="../../libs/webpki.org-libext-1.00.jar ../../libs/proxy-support.jar"/>
+        <attribute name="Main-Class" value="t.b.d"/>
+        <attribute name="Class-path" value="${library}"/>
       </manifest>
     </jar>
   </target>

@@ -4,12 +4,13 @@ input[type="button"] {margin-top:8pt;width:50pt}</style></head><body><script>
 "use strict";
 
 function appendString(string) {
-    var date = new Date();
+    var date = new Date()
     var time = date.getTime();
     date.setTime(time - date.getTimezoneOffset() * 60000);
+    var localTime = date.toISOString();
     
-    document.getElementById("response").innerHTML = date.toISOString().substring(0,19) + " " +
-        string + "<br>" + document.getElementById("response").innerHTML;
+    document.getElementById("response").innerHTML = localTime.substring(0,10) + " " +
+        localTime.substring(11,19) + " " + string + "<br>" + document.getElementById("response").innerHTML;
 }
 
 function appendJSONMessage(message) {
