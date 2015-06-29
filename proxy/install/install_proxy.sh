@@ -46,7 +46,7 @@ HOST_PATH=$DIR/$EXECUTABLE
 MANIFEST=$HOST_NAME.json
 
 echo "Compiling proxy source to $HOST_PATH"
-$CPP $CPP_OPTION -w -o $HOST_PATH $DIR/../src/$EXECUTABLE.cpp
+$CPP $CPP_OPTION -w -o $HOST_PATH $DIR/../src.cpp/$EXECUTABLE.cpp
 
 # Create directory to store native messaging host.
 mkdir -p "$TARGET_DIR"

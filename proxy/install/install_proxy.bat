@@ -7,4 +7,4 @@
 :: Change HKCU to HKLM if you want to install globally.
 :: %~dp0 is the directory containing this bat script and ends with a backslash.
 REG ADD "HKCU\Software\Google\Chrome\NativeMessagingHosts\org.webpki.w2nb" /ve /t REG_SZ /d "%~dp0org.webpki.w2nb.json" /f
-COPY /Y "%~dp0..\build-proxy-windows\Debug\w2nb-proxy.exe" "%~dp0"
+COPY /Y "%~dp0..\windows-build\Debug\w2nb-proxy.exe" "%~dp0"
