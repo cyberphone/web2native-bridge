@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual C++ Express 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "w2nb-proxy", "w2nb-proxy\w2nb-proxy.vcxproj", "{F1D8380D-1477-4341-BFD2-9706D40EDC3A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F1D8380D-1477-4341-BFD2-9706D40EDC3A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F1D8380D-1477-4341-BFD2-9706D40EDC3A}.Debug|Win32.Build.0 = Debug|Win32
+		{F1D8380D-1477-4341-BFD2-9706D40EDC3A}.Release|Win32.ActiveCfg = Release|Win32
+		{F1D8380D-1477-4341-BFD2-9706D40EDC3A}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
