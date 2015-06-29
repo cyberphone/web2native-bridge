@@ -4,3 +4,4 @@
 /windows-build/w2nb-proxy/Debug
 /windows-build/w2nb-proxy.sdf
 /install/logs/*.*
+/install/apps/org.webpki.w2nb.webpayment.client/

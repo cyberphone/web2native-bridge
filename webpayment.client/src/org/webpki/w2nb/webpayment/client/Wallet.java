@@ -24,17 +24,13 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Toolkit;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
-
-import java.io.DataInputStream;
+import java.awt.event.WindowAdapter;
 import java.io.IOException;
-
+import java.security.Security;
 import java.util.Date;
-
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -50,12 +46,14 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 import org.webpki.json.JSONObjectWriter;
-import org.webpki.json.JSONOutputFormats;
-
 import org.webpki.util.ISODateTime;
+import org.webpki.w2nbproxy.StdinJSONPipe;
+import org.webpki.w2nbproxy.StdoutJSONPipe;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 class ApplicationFrame extends Thread {
-    DataInputStream dis = new DataInputStream(System.in);
+    StdinJSONPipe stdin = new StdinJSONPipe();
+    StdoutJSONPipe stdout = new StdoutJSONPipe();
     JTextArea textArea;
     JTextField sendText;
 
@@ -87,19 +85,8 @@ class ApplicationFrame extends Thread {
             @Override
             public void actionPerformed(ActionEvent event) {
                 try {
-                    byte[] utf8 = new JSONObjectWriter().setString("native",
-                            sendText.getText()).serializeJSONObject(JSONOutputFormats.NORMALIZED);
-                    update(new String(utf8, "UTF-8"));
-                    int l = utf8.length;
-                    byte[] blob = new byte[l + 4];
-                    blob[0] = (byte) l;
-                    blob[1] = (byte) (l >>> 8);
-                    blob[2] = (byte) (l >>> 16);
-                    blob[3] = (byte) (l >>> 24);
-                    for (int i = 0; i < l; i++) {
-                        blob[4 + i] = utf8[i];
-                    }
-                    System.out.write(blob);
+                    update(stdout.writeJSONObject(new JSONObjectWriter().setString("native",
+                                                                                   sendText.getText())));
                 } catch (IOException e) {
                     Wallet.logger.log(Level.SEVERE, "Writing", e);
                     System.exit(3);
@@ -114,7 +101,8 @@ class ApplicationFrame extends Thread {
     }
 
     void update(String text) {
-        textArea.setText(ISODateTime.formatDateTime(new Date(), false).substring(0, 19) + 
+        String localTime = ISODateTime.formatDateTime(new Date(), false);
+        textArea.setText(localTime.substring(0, 10) + " " + localTime.substring(11, 19) +
             " " + text + "\n" + textArea.getText());
         Wallet.logger.info(text);
     }
@@ -123,15 +111,8 @@ class ApplicationFrame extends Thread {
     public void run() {
         while (true) {
             try {
-                byte[] byteBuffer = new byte[4];
-                dis.readFully(byteBuffer, 0, 4);
-                int l = (byteBuffer[3]) << 24 | (byteBuffer[2] & 0xff) << 16
-                        | (byteBuffer[1] & 0xff) << 8 | (byteBuffer[0] & 0xff);
-                if (l == 0)
-                    System.exit(3);
-                byte[] string = new byte[l];
-                dis.read(string);
-                update(new String(string, "UTF-8"));
+                stdin.readJSONObject();  // Just syntax checking used in our crude sample
+                update(stdin.getJSONString());
             } catch (IOException e) {
                 Wallet.logger.log(Level.SEVERE, "Reading", e);
                 System.exit(3);
@@ -160,37 +141,20 @@ public class Wallet {
         for (int i = 0; i < args.length; i++) {
             logger.info("ARG[" + i + "]=" + args[i]);
         }
+        Security.insertProviderAt(new BouncyCastleProvider(), 1);
 
-        JDialog frame = new JDialog(new JFrame(), "W2NB - Sample #1 [" + args[1] + "]");
+        JDialog frame = new JDialog(new JFrame(), "Wellet [" + args[1] + "]");
         frame.setResizable(false);
         ApplicationFrame md = new ApplicationFrame(frame.getContentPane());
         frame.pack();
         frame.setAlwaysOnTop(true);
         frame.setLocationRelativeTo(null);
         frame.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-        frame.addWindowListener(new WindowListener() {
+        frame.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent event) {
                 System.exit(0);
             }
-
-            @Override
-            public void windowActivated(WindowEvent event) { }
-
-            @Override
-            public void windowClosed(WindowEvent event) { }
-
-            @Override
-            public void windowDeactivated(WindowEvent event) { }
-
-            @Override
-            public void windowDeiconified(WindowEvent event) { }
-
-            @Override
-            public void windowIconified(WindowEvent event) { }
-
-            @Override
-            public void windowOpened(WindowEvent event) { }
         });
         frame.setVisible(true);
         md.start();

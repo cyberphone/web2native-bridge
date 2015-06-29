@@ -6,7 +6,7 @@
   <property name="src_dir" value="src/"/>
   <property name="dist_dir" value="../proxy/install/apps/"/>
   <property name="lib_dir" value="../proxy/install/libs/"/>
-  <property name="app_path" value="org.webpki.w2nb.webpayment"/>
+  <property name="app_path" value="org.webpki.w2nb.webpayment.client"/>
   <property name="javaversion" value="1.7" />
 
   <path id="compile.classpath">
@@ -35,7 +35,7 @@
       <fileset dir="${temp_dir}"/>
       <manifest>
         <attribute name="Main-Class" value="${app_path}.Wallet"/>
-        <attribute name="Class-path" value="../../libs/webpki.org-libext-1.00.jar"/>
+        <attribute name="Class-path" value="../../libs/webpki.org-libext-1.00.jar ../../libs/proxy-support.jar ../../libs/bcprov-jdk6-145.jar"/>
       </manifest>
     </jar>
   </target>
