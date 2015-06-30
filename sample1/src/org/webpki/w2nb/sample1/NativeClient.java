@@ -24,6 +24,7 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Toolkit;
+import java.awt.Insets;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -63,26 +64,35 @@ class ApplicationFrame extends Thread {
 
     ApplicationFrame(Container pane) {
         int fontSize = Toolkit.getDefaultToolkit().getScreenResolution() / 7;
-        JLabel msgLabel = new JLabel("\u00a0Messages:\u00a0");
+        JLabel msgLabel = new JLabel("Messages:");
         Font font = msgLabel.getFont();
         if (font.getSize() > fontSize) {
             fontSize = font.getSize();
         }
+        int stdInset = fontSize/3;
+        msgLabel.setFont(new Font(font.getFontName(), font.getStyle(), fontSize));
         pane.setLayout(new GridBagLayout());
-        JPanel myPanel = new JPanel();
-        textArea = new JTextArea(20, 50);
+        GridBagConstraints c = new GridBagConstraints();
+        c.weightx = 0.0;
+        c.anchor = GridBagConstraints.WEST;
+        c.fill = GridBagConstraints.NONE;
+        c.gridx = 0;
+        c.gridy = 0;
+        c.gridwidth = 2;
+        c.insets = new Insets(stdInset, stdInset, stdInset, stdInset);
+        pane.add(msgLabel, c);
+
+        textArea = new JTextArea();
+        textArea.setRows(20);
         textArea.setFont(new Font("Courier", Font.PLAIN, fontSize));
         textArea.setEditable(false);
         JScrollPane scrollPane = new JScrollPane(textArea);
-        myPanel = new JPanel();
-        msgLabel.setFont(new Font(font.getFontName(), font.getStyle(), fontSize));
-        myPanel.add(msgLabel);
-        myPanel.add(scrollPane);
-        pane.add(myPanel);
-        JPanel myPanel2 = new JPanel();
-        sendText = new JTextField(50);
-        sendText.setFont(new Font("Courier", Font.PLAIN, fontSize));
-        myPanel2.add(sendText);
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.gridwidth = 2;
+        c.gridy = 1;
+        c.insets = new Insets(0, stdInset, 0, stdInset);
+        pane.add(scrollPane , c);
+
         JButton sendBut = new JButton("\u00a0\u00a0\u00a0Send\u00a0\u00a0\u00a0");
         sendBut.setFont(new Font(font.getFontName(), font.getStyle(), fontSize));
         sendBut.addActionListener(new ActionListener() {
@@ -97,11 +107,17 @@ class ApplicationFrame extends Thread {
                 }
             }
         });
-        myPanel2.add(sendBut);
-        GridBagConstraints c = new GridBagConstraints();
-        c.gridx = 0;
-        c.gridy = 1;
-        pane.add(myPanel2, c);
+        c.fill = GridBagConstraints.NONE;
+        c.gridwidth = 1;
+        c.gridy = 2;
+        c.insets = new Insets(stdInset, stdInset, stdInset, 0);
+        pane.add(sendBut, c);
+
+        sendText = new JTextField(50);
+        sendText.setFont(new Font("Courier", Font.PLAIN, fontSize));
+        c.gridx = 1;
+        c.insets = new Insets(stdInset, stdInset, stdInset, stdInset);
+        pane.add(sendText, c);
     }
 
     void update(String text) {

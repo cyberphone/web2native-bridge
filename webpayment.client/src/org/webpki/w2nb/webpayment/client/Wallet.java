@@ -19,6 +19,7 @@
 
 package org.webpki.w2nb.webpayment.client;
 
+import java.awt.CardLayout;
 import java.awt.Container;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -44,6 +45,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.util.ISODateTime;
@@ -57,13 +60,26 @@ class ApplicationFrame extends Thread {
     JTextArea textArea;
     JTextField sendText;
 
-    ApplicationFrame(Container pane) {
+    ApplicationFrame(final Container cards) {
         int fontSize = Toolkit.getDefaultToolkit().getScreenResolution() / 7;
         JLabel msgLabel = new JLabel("\u00a0Messages:\u00a0");
         Font font = msgLabel.getFont();
         if (font.getSize() > fontSize) {
             fontSize = font.getSize();
         }
+        cards.setLayout(new CardLayout());
+        JButton payButton = new JButton("Pay!");
+        JPanel cardView = new JPanel();
+        cardView.add(payButton);
+        cards.add(cardView,"PAY");
+        payButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                ((CardLayout)cards.getLayout()).show(cards, "DO");
+            }
+        });
+        JPanel pane = new JPanel();
+        cards.add(pane,"DO");
         pane.setLayout(new GridBagLayout());
         JPanel myPanel = new JPanel();
         textArea = new JTextArea(20, 50);
