@@ -3,9 +3,9 @@
   <!-- set global properties for this build -->
 
   <property name="temp_dir" location=".tmp" />
-  <property name="src_dir" value="src/"/>
-  <property name="dist_dir" value="../proxy/install/apps/"/>
-  <property name="lib_dir" value="../proxy/install/libs/"/>
+  <property name="src_dir" value="src"/>
+  <property name="dist_dir" value="../proxy/install/apps"/>
+  <property name="lib_dir" value="../proxy/install/libs"/>
   <property name="app_path" value="org.webpki.w2nb.sample1"/>
   <property name="javaversion" value="1.7" />
 

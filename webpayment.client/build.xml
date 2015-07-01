@@ -3,9 +3,10 @@
   <!-- set global properties for this build -->
 
   <property name="temp_dir" location=".tmp" />
-  <property name="src_dir" value="src/"/>
-  <property name="dist_dir" value="../proxy/install/apps/"/>
-  <property name="lib_dir" value="../proxy/install/libs/"/>
+  <property name="src_dir" value="src"/>
+  <property name="common_dir" value="common"/>
+  <property name="dist_dir" value="../proxy/install/apps"/>
+  <property name="lib_dir" value="../proxy/install/libs"/>
   <property name="app_path" value="org.webpki.w2nb.webpayment.client"/>
   <property name="javaversion" value="1.7" />
 
@@ -21,12 +22,13 @@
   </target>
   
   <target name="build" depends="clean">
+    <echo message="${src_dir}:${common_dir}"/>
     <mkdir dir="${temp_dir}" />
     <mkdir dir="${dist_dir}/${app_path}" />
     <javac debug="${debug}"
            source="${javaversion}"
            target="${javaversion}"
-           srcdir="${src_dir}"
+           srcdir="${src_dir}:${common_dir}"
            destdir="${temp_dir}" 
            classpathref="compile.classpath"
            includeAntRuntime="false">

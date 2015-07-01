@@ -3,8 +3,8 @@
   <!-- set global properties for this build -->
 
   <property name="temp_dir" location=".tmp" />
-  <property name="src_dir" value="src.java/"/>
-  <property name="lib_dir" value="install/libs/"/>
+  <property name="src_dir" value="src.java"/>
+  <property name="lib_dir" value="install/libs"/>
   <property name="library" value="webpki.org-libext-1.00.jar"/>
   <property name="app_name" value="proxy-support.jar"/>
   <property name="javaversion" value="1.7" />
