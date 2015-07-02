@@ -5,6 +5,8 @@
   <property name="temp_dir" location=".tmp" />
   <property name="src_dir" value="src"/>
   <property name="common_dir" value="common"/>
+  <property name="image_dir" value="images"/>
+  <property name="client_package_dir" value="org/webpki/w2nb/webpayment/client"/>
   <property name="dist_dir" value="../proxy/install/apps"/>
   <property name="lib_dir" value="../proxy/install/libs"/>
   <property name="app_path" value="org.webpki.w2nb.webpayment.client"/>
@@ -35,6 +37,7 @@
     </javac>
     <jar jarfile="${dist_dir}/${app_path}/${app_path}.jar">
       <fileset dir="${temp_dir}"/>
+      <zipfileset dir="${image_dir}" prefix="${client_package_dir}"/>
       <manifest>
         <attribute name="Main-Class" value="${app_path}.Wallet"/>
         <attribute name="Class-path" value="../../libs/webpki.org-libext-1.00.jar ../../libs/proxy-support.jar ../../libs/bcprov-jdk16-145.jar"/>

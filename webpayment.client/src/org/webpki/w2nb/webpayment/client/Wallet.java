@@ -21,6 +21,7 @@ package org.webpki.w2nb.webpayment.client;
 
 import java.awt.CardLayout;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -30,6 +31,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowAdapter;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.security.Security;
 import java.util.Date;
 import java.util.logging.FileHandler;
@@ -37,6 +40,7 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.logging.SimpleFormatter;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -49,14 +53,14 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.webpki.json.JSONObjectWriter;
+import org.webpki.util.ArrayUtil;
 import org.webpki.util.ISODateTime;
+import org.webpki.w2nb.webpayment.common.Messages;
 import org.webpki.w2nbproxy.StdinJSONPipe;
 import org.webpki.w2nbproxy.StdoutJSONPipe;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 class ApplicationFrame extends Thread {
-    StdinJSONPipe stdin = new StdinJSONPipe();
-    StdoutJSONPipe stdout = new StdoutJSONPipe();
     JTextArea textArea;
     JTextField sendText;
 
@@ -71,6 +75,14 @@ class ApplicationFrame extends Thread {
         JButton payButton = new JButton("Pay!");
         JPanel cardView = new JPanel();
         cardView.add(payButton);
+        ImageIcon icon;
+        try {
+            icon = new ImageIcon(ArrayUtil.getByteArrayFromInputStream(Wallet.class.getResourceAsStream ("working128.gif")));
+        } catch (IOException e) {
+            throw new RuntimeException (e);
+        }
+        JLabel copyLabel = new JLabel(icon);
+        cardView.add(copyLabel);
         cards.add(cardView,"PAY");
         payButton.addActionListener(new ActionListener() {
             @Override
@@ -101,7 +113,7 @@ class ApplicationFrame extends Thread {
             @Override
             public void actionPerformed(ActionEvent event) {
                 try {
-                    update(stdout.writeJSONObject(new JSONObjectWriter().setString("native",
+                    update(Wallet.stdout.writeJSONObject(new JSONObjectWriter().setString("native",
                                                                                    sendText.getText())));
                 } catch (IOException e) {
                     Wallet.logger.log(Level.SEVERE, "Writing", e);
@@ -127,8 +139,8 @@ class ApplicationFrame extends Thread {
     public void run() {
         while (true) {
             try {
-                stdin.readJSONObject();  // Just syntax checking used in our crude sample
-                update(stdin.getJSONString());
+                Wallet.stdin.readJSONObject();  // Just syntax checking used in our crude sample
+                update(Wallet.stdin.getJSONString());
             } catch (IOException e) {
                 Wallet.logger.log(Level.SEVERE, "Reading", e);
                 System.exit(3);
@@ -138,6 +150,9 @@ class ApplicationFrame extends Thread {
 }
 
 public class Wallet {
+    static StdinJSONPipe stdin = new StdinJSONPipe();
+    static StdoutJSONPipe stdout = new StdoutJSONPipe();
+
     static Logger logger = Logger.getLogger("MyLog");
 
     private static void initLogger(String logFile) {
@@ -159,7 +174,15 @@ public class Wallet {
         }
         Security.insertProviderAt(new BouncyCastleProvider(), 1);
 
-        JDialog frame = new JDialog(new JFrame(), "Wellet [" + args[1] + "]");
+        // Respond to caller to indicate that we are (almost) ready
+        try {
+            stdout.writeJSONObject(Messages.createBaseMessage(Messages.INITIALIZE));
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, "Writing", e);
+            System.exit(3);
+        }
+
+        JDialog frame = new JDialog(new JFrame(), "Wallet [" + args[1] + "]");
         frame.setResizable(false);
         ApplicationFrame md = new ApplicationFrame(frame.getContentPane());
         frame.pack();
