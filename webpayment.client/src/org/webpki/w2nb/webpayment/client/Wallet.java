@@ -25,6 +25,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -35,6 +36,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.Security;
 import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -45,6 +48,7 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -60,98 +64,10 @@ import org.webpki.w2nbproxy.StdinJSONPipe;
 import org.webpki.w2nbproxy.StdoutJSONPipe;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
-class ApplicationFrame extends Thread {
-    JTextArea textArea;
-    JTextField sendText;
-
-    ApplicationFrame(final Container cards) {
-        int fontSize = Toolkit.getDefaultToolkit().getScreenResolution() / 7;
-        JLabel msgLabel = new JLabel("\u00a0Messages:\u00a0");
-        Font font = msgLabel.getFont();
-        if (font.getSize() > fontSize) {
-            fontSize = font.getSize();
-        }
-        cards.setLayout(new CardLayout());
-        JButton payButton = new JButton("Pay!");
-        JPanel cardView = new JPanel();
-        cardView.add(payButton);
-        ImageIcon icon;
-        try {
-            icon = new ImageIcon(ArrayUtil.getByteArrayFromInputStream(Wallet.class.getResourceAsStream ("working128.gif")));
-        } catch (IOException e) {
-            throw new RuntimeException (e);
-        }
-        JLabel copyLabel = new JLabel(icon);
-        cardView.add(copyLabel);
-        cards.add(cardView,"PAY");
-        payButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                ((CardLayout)cards.getLayout()).show(cards, "DO");
-            }
-        });
-        JPanel pane = new JPanel();
-        cards.add(pane,"DO");
-        pane.setLayout(new GridBagLayout());
-        JPanel myPanel = new JPanel();
-        textArea = new JTextArea(20, 50);
-        textArea.setFont(new Font("Courier", Font.PLAIN, fontSize));
-        textArea.setEditable(false);
-        JScrollPane scrollPane = new JScrollPane(textArea);
-        myPanel = new JPanel();
-        msgLabel.setFont(new Font(font.getFontName(), font.getStyle(), fontSize));
-        myPanel.add(msgLabel);
-        myPanel.add(scrollPane);
-        pane.add(myPanel);
-        JPanel myPanel2 = new JPanel();
-        sendText = new JTextField(50);
-        sendText.setFont(new Font("Courier", Font.PLAIN, fontSize));
-        myPanel2.add(sendText);
-        JButton sendBut = new JButton("\u00a0\u00a0\u00a0Send\u00a0\u00a0\u00a0");
-        sendBut.setFont(new Font(font.getFontName(), font.getStyle(), fontSize));
-        sendBut.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent event) {
-                try {
-                    update(Wallet.stdout.writeJSONObject(new JSONObjectWriter().setString("native",
-                                                                                   sendText.getText())));
-                } catch (IOException e) {
-                    Wallet.logger.log(Level.SEVERE, "Writing", e);
-                    System.exit(3);
-                }
-            }
-        });
-        myPanel2.add(sendBut);
-        GridBagConstraints c = new GridBagConstraints();
-        c.gridx = 0;
-        c.gridy = 1;
-        pane.add(myPanel2, c);
-    }
-
-    void update(String text) {
-        String localTime = ISODateTime.formatDateTime(new Date(), false);
-        textArea.setText(localTime.substring(0, 10) + " " + localTime.substring(11, 19) +
-            " " + text + "\n" + textArea.getText());
-        Wallet.logger.info(text);
-    }
-
-    @Override
-    public void run() {
-        while (true) {
-            try {
-                Wallet.stdin.readJSONObject();  // Just syntax checking used in our crude sample
-                update(Wallet.stdin.getJSONString());
-            } catch (IOException e) {
-                Wallet.logger.log(Level.SEVERE, "Reading", e);
-                System.exit(3);
-            }
-        }
-    }
-}
-
 public class Wallet {
     static StdinJSONPipe stdin = new StdinJSONPipe();
     static StdoutJSONPipe stdout = new StdoutJSONPipe();
+    static JDialog frame;
 
     static Logger logger = Logger.getLogger("MyLog");
 
@@ -164,6 +80,166 @@ public class Wallet {
             fh.setFormatter(formatter);
         } catch (Exception e) {
             throw new RuntimeException(e);
+        }
+    }
+    
+    static class ApplicationFrame extends Thread {
+        JTextArea textArea;
+        JTextField sendText;
+        Container cards;
+        boolean running = true;
+        Font standardFont;
+        int fontSize;
+
+        ApplicationFrame() {
+            cards = frame.getContentPane();
+            fontSize = Toolkit.getDefaultToolkit().getScreenResolution() / 7;
+            JLabel msgLabel = new JLabel("\u00a0Messages:\u00a0");
+            Font font = msgLabel.getFont();
+            if (font.getSize() > fontSize) {
+                fontSize = font.getSize();
+            }
+            standardFont = new Font(font.getFontName(), font.getStyle(), fontSize);
+
+            // The initial card showing we are waiting
+            cards.setLayout(new CardLayout());
+            GridBagConstraints initCardConstraint = new GridBagConstraints();
+            initCardConstraint.gridx = 0;
+            initCardConstraint.gridy = 0;
+            JPanel initCard = new JPanel();
+            initCard.setLayout(new GridBagLayout());
+            JLabel waitingIconHolder = getImageLabel("working128.gif", "working80.gif");
+            initCard.add(waitingIconHolder, initCardConstraint);
+            JLabel waitingText = new JLabel("Initializing - Please wait");
+            waitingText.setFont(standardFont);
+            initCardConstraint.gridy = 1;
+            initCardConstraint.insets = new Insets(fontSize, 0, 0, 0);
+            initCard.add(waitingText, initCardConstraint);
+            cards.add(initCard,"PAY");
+    /*
+            payButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    ((CardLayout)cards.getLayout()).show(cards, "DO");
+                }
+            });
+    */
+            JPanel pane = new JPanel();
+            cards.add(pane,"DO");
+            pane.setLayout(new GridBagLayout());
+            JPanel myPanel = new JPanel();
+            textArea = new JTextArea(20, 50);
+            textArea.setFont(new Font("Courier", Font.PLAIN, fontSize));
+            textArea.setEditable(false);
+            JScrollPane scrollPane = new JScrollPane(textArea);
+            myPanel = new JPanel();
+            msgLabel.setFont(standardFont);
+            myPanel.add(msgLabel);
+            myPanel.add(scrollPane);
+            pane.add(myPanel);
+            JPanel myPanel2 = new JPanel();
+            sendText = new JTextField(50);
+            sendText.setFont(new Font("Courier", Font.PLAIN, fontSize));
+            myPanel2.add(sendText);
+            JButton sendBut = new JButton("\u00a0\u00a0\u00a0Send\u00a0\u00a0\u00a0");
+            sendBut.setFont(new Font(font.getFontName(), font.getStyle(), fontSize));
+            sendBut.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent event) {
+                    try {
+                        update(stdout.writeJSONObject(new JSONObjectWriter().setString("native",
+                                                                                       sendText.getText())));
+                    } catch (IOException e) {
+                        logger.log(Level.SEVERE, "Writing", e);
+                        System.exit(3);
+                    }
+                }
+            });
+            myPanel2.add(sendBut);
+            GridBagConstraints c = new GridBagConstraints();
+            c.gridx = 0;
+            c.gridy = 1;
+            pane.add(myPanel2, c);
+        }
+        
+        JLabel getImageLabel(String big, String small) {
+            try {
+                return new JLabel(new ImageIcon(ArrayUtil.getByteArrayFromInputStream(
+                        getClass().getResourceAsStream (fontSize > 20 ? big : small))));
+            } catch (IOException e) {
+                throw new RuntimeException (e);
+            }
+        }
+
+        void update(String text) {
+            String localTime = ISODateTime.formatDateTime(new Date(), false);
+            textArea.setText(localTime.substring(0, 10) + " " + localTime.substring(11, 19) +
+                " " + text + "\n" + textArea.getText());
+            logger.info(text);
+        }
+
+        void showErrorDialog (String errorMessage, final WindowAdapter windowAdapter) {
+            final JDialog dialog = new JDialog(frame, "Error", true);
+            Container pane = dialog.getContentPane();
+            pane.setLayout(new GridBagLayout());
+            GridBagConstraints c = new GridBagConstraints();
+            c.anchor = GridBagConstraints.WEST;
+            c.insets = new Insets(fontSize, fontSize * 2, fontSize, fontSize * 2);
+            pane.add(getImageLabel("excl96.png", "excl64.png"), c);
+            JLabel errorLabel = new JLabel(errorMessage);
+            errorLabel.setFont(standardFont);
+            c.anchor = GridBagConstraints.CENTER;
+            c.insets = new Insets(0, fontSize * 2, 0, fontSize * 2);
+            c.gridy = 1;
+            pane.add(errorLabel, c);
+            JButton okButton = new JButton("\u00a0\u00a0\u00a0OK\u00a0\u00a0\u00a0");
+            okButton.setFont(standardFont);
+            c.insets = new Insets(fontSize, fontSize * 2, fontSize, fontSize * 2);
+            c.gridy = 2;
+            pane.add(okButton, c);
+            dialog.setResizable(false);
+            dialog.pack();
+            dialog.setAlwaysOnTop(true);
+            dialog.setLocationRelativeTo(null);
+            dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+            dialog.addWindowListener(windowAdapter);
+            okButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent event) {
+                    dialog.setVisible(false);
+                    windowAdapter.windowClosing(null);
+                }
+            });
+            dialog.setVisible(true);
+       }
+
+        @Override
+        public void run() {
+            final Timer timer = new Timer();
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    running = false;
+                    logger.log(Level.SEVERE, "Timeout!");
+                    showErrorDialog("Payment request timeout!", new WindowAdapter() {
+                        @Override
+                        public void windowClosing(WindowEvent event) {
+                            System.exit(0);
+                        }
+                    });
+                }
+            }, 10000);
+            try {
+                stdin.readJSONObject();  // Just syntax checking used in our crude sample
+                update(stdin.getJSONString());
+                timer.cancel();
+                if (running) {
+                    ((CardLayout)cards.getLayout()).show(cards, "DO");
+                }
+            } catch (IOException e) {
+                logger.log(Level.SEVERE, "Reading", e);
+                System.exit(3);
+            }
         }
     }
 
@@ -182,9 +258,9 @@ public class Wallet {
             System.exit(3);
         }
 
-        JDialog frame = new JDialog(new JFrame(), "Wallet [" + args[1] + "]");
+        frame = new JDialog(new JFrame(), "Wallet [" + args[1] + "]");
         frame.setResizable(false);
-        ApplicationFrame md = new ApplicationFrame(frame.getContentPane());
+        ApplicationFrame md = new ApplicationFrame();
         frame.pack();
         frame.setAlwaysOnTop(true);
         frame.setLocationRelativeTo(null);
