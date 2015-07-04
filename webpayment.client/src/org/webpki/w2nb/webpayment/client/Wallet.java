@@ -223,14 +223,16 @@ public class Wallet {
             timer.schedule(new TimerTask() {
                 @Override
                 public void run() {
-                    running = false;
-                    logger.log(Level.SEVERE, "Timeout!");
-                    showProblemDialog(true, "Payment request timeout!", new WindowAdapter() {
-                        @Override
-                        public void windowClosing(WindowEvent event) {
-                            System.exit(3);
-                        }
-                    });
+                    if (running) {
+                        running = false;
+                        logger.log(Level.SEVERE, "Timeout!");
+                        showProblemDialog(true, "Payment request timeout!", new WindowAdapter() {
+                            @Override
+                            public void windowClosing(WindowEvent event) {
+                                System.exit(3);
+                            }
+                        });
+                    }
                 }
             }, 10000);
             try {
@@ -257,8 +259,9 @@ public class Wallet {
                     });
                 }
             } catch (IOException e) {
+                running = false;
                 logger.log(Level.SEVERE, "Undecodable message:\n" + stdin.getJSONString(), e);
-                showProblemDialog(true, "Undecodable message, see log file", new WindowAdapter() {
+                showProblemDialog(true, "Undecodable message, see log file!", new WindowAdapter() {
                     @Override
                     public void windowClosing(WindowEvent event) {
                         System.exit(3);
