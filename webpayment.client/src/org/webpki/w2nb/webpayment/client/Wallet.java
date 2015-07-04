@@ -178,15 +178,18 @@ public class Wallet {
             logger.info(text);
         }
 
-        void showErrorDialog (String errorMessage, final WindowAdapter windowAdapter) {
-            final JDialog dialog = new JDialog(frame, "Error", true);
+        void showProblemDialog (boolean error, String message, final WindowAdapter windowAdapter) {
+            final JDialog dialog = new JDialog(frame, error ? "Error" : "Warning", true);
             Container pane = dialog.getContentPane();
             pane.setLayout(new GridBagLayout());
             GridBagConstraints c = new GridBagConstraints();
             c.anchor = GridBagConstraints.WEST;
             c.insets = new Insets(fontSize, fontSize * 2, fontSize, fontSize * 2);
-            pane.add(getImageLabel("excl96.png", "excl64.png"), c);
-            JLabel errorLabel = new JLabel(errorMessage);
+            pane.add(error ? 
+                 getImageLabel("error96.png", "error64.png")
+                           :
+                 getImageLabel("warning96.png", "warning64.png"), c);
+            JLabel errorLabel = new JLabel(message);
             errorLabel.setFont(standardFont);
             c.anchor = GridBagConstraints.CENTER;
             c.insets = new Insets(0, fontSize * 2, 0, fontSize * 2);
@@ -211,7 +214,7 @@ public class Wallet {
                 }
             });
             dialog.setVisible(true);
-       }
+        }
 
         @Override
         public void run() {
@@ -221,7 +224,7 @@ public class Wallet {
                 public void run() {
                     running = false;
                     logger.log(Level.SEVERE, "Timeout!");
-                    showErrorDialog("Payment request timeout!", new WindowAdapter() {
+                    showProblemDialog(true, "Payment request timeout!", new WindowAdapter() {
                         @Override
                         public void windowClosing(WindowEvent event) {
                             System.exit(0);
