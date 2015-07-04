@@ -8,7 +8,8 @@
   <property name="library" value="webpki.org-libext-1.00.jar"/>
   <property name="app_name" value="proxy-support.jar"/>
   <property name="javaversion" value="1.7" />
-
+  <property name="debug" value="on"/>
+  
   <path id="compile.classpath">
 	 <fileset dir="${lib_dir}">
 	   <include name="${library}"/>

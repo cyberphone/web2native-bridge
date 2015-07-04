@@ -21,7 +21,6 @@ package org.webpki.w2nb.webpayment.client;
 
 import java.awt.CardLayout;
 import java.awt.Container;
-import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -32,8 +31,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowAdapter;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.security.Security;
 import java.util.Date;
 import java.util.Timer;
@@ -48,14 +45,12 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
+import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.util.ArrayUtil;
 import org.webpki.util.ISODateTime;
@@ -90,6 +85,7 @@ public class Wallet {
         boolean running = true;
         Font standardFont;
         int fontSize;
+        JPanel pane;
 
         ApplicationFrame() {
             cards = frame.getContentPane();
@@ -99,6 +95,7 @@ public class Wallet {
             if (font.getSize() > fontSize) {
                 fontSize = font.getSize();
             }
+            int stdInset = fontSize/3;
             standardFont = new Font(font.getFontName(), font.getStyle(), fontSize);
 
             // The initial card showing we are waiting
@@ -116,31 +113,32 @@ public class Wallet {
             initCardConstraint.insets = new Insets(fontSize, 0, 0, 0);
             initCard.add(waitingText, initCardConstraint);
             cards.add(initCard,"PAY");
-    /*
-            payButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    ((CardLayout)cards.getLayout()).show(cards, "DO");
-                }
-            });
-    */
-            JPanel pane = new JPanel();
+
+            // messages
+            pane = new JPanel();
             cards.add(pane,"DO");
             pane.setLayout(new GridBagLayout());
-            JPanel myPanel = new JPanel();
-            textArea = new JTextArea(20, 50);
+            GridBagConstraints c = new GridBagConstraints();
+            c.weightx = 0.0;
+            c.anchor = GridBagConstraints.WEST;
+            c.fill = GridBagConstraints.NONE;
+            c.gridx = 0;
+            c.gridy = 0;
+            c.gridwidth = 2;
+            c.insets = new Insets(stdInset, stdInset, stdInset, stdInset);
+            pane.add(msgLabel, c);
+
+            textArea = new JTextArea();
+            textArea.setRows(20);
             textArea.setFont(new Font("Courier", Font.PLAIN, fontSize));
             textArea.setEditable(false);
             JScrollPane scrollPane = new JScrollPane(textArea);
-            myPanel = new JPanel();
-            msgLabel.setFont(standardFont);
-            myPanel.add(msgLabel);
-            myPanel.add(scrollPane);
-            pane.add(myPanel);
-            JPanel myPanel2 = new JPanel();
-            sendText = new JTextField(50);
-            sendText.setFont(new Font("Courier", Font.PLAIN, fontSize));
-            myPanel2.add(sendText);
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.gridwidth = 2;
+            c.gridy = 1;
+            c.insets = new Insets(0, stdInset, 0, stdInset);
+            pane.add(scrollPane , c);
+
             JButton sendBut = new JButton("\u00a0\u00a0\u00a0Send\u00a0\u00a0\u00a0");
             sendBut.setFont(new Font(font.getFontName(), font.getStyle(), fontSize));
             sendBut.addActionListener(new ActionListener() {
@@ -155,11 +153,17 @@ public class Wallet {
                     }
                 }
             });
-            myPanel2.add(sendBut);
-            GridBagConstraints c = new GridBagConstraints();
-            c.gridx = 0;
-            c.gridy = 1;
-            pane.add(myPanel2, c);
+            c.fill = GridBagConstraints.NONE;
+            c.gridwidth = 1;
+            c.gridy = 2;
+            c.insets = new Insets(stdInset, stdInset, stdInset, 0);
+            pane.add(sendBut, c);
+
+            sendText = new JTextField(50);
+            sendText.setFont(new Font("Courier", Font.PLAIN, fontSize));
+            c.gridx = 1;
+            c.insets = new Insets(stdInset, stdInset, stdInset, stdInset);
+            pane.add(sendText, c);
         }
         
         JLabel getImageLabel(String big, String small) {
@@ -227,21 +231,33 @@ public class Wallet {
                     showProblemDialog(true, "Payment request timeout!", new WindowAdapter() {
                         @Override
                         public void windowClosing(WindowEvent event) {
-                            System.exit(0);
+                            System.exit(3);
                         }
                     });
                 }
             }, 10000);
             try {
-                stdin.readJSONObject();  // Just syntax checking used in our crude sample
-                update(stdin.getJSONString());
+                JSONObjectReader or = Messages.parseBaseMessage(Messages.AUTHORIZE, stdin.readJSONObject());
+                logger.info("Received:\n" + stdin.getJSONString());
                 timer.cancel();
                 if (running) {
                     ((CardLayout)cards.getLayout()).show(cards, "DO");
+                    // Sorry but Swing is pretty buggy...
+                    new Timer().schedule(new TimerTask() {
+                        @Override
+                        public void run() {
+                            update(stdin.getJSONString());
+                        }
+                    }, 10);
                 }
             } catch (IOException e) {
-                logger.log(Level.SEVERE, "Reading", e);
-                System.exit(3);
+                logger.log(Level.SEVERE, "Undecodable message:\n" + stdin.getJSONString(), e);
+                showProblemDialog(true, "Undecodable message", new WindowAdapter() {
+                    @Override
+                    public void windowClosing(WindowEvent event) {
+                        System.exit(3);
+                    }
+                });
             }
         }
     }
