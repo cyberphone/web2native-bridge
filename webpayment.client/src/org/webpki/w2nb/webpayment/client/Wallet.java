@@ -31,6 +31,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowAdapter;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.security.Security;
 import java.util.Date;
 import java.util.Timer;
@@ -49,11 +50,14 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
+import org.webpki.json.JSONOutputFormats;
 import org.webpki.util.ArrayUtil;
 import org.webpki.util.ISODateTime;
+import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.Messages;
 import org.webpki.w2nbproxy.StdinJSONPipe;
 import org.webpki.w2nbproxy.StdoutJSONPipe;
@@ -145,8 +149,8 @@ public class Wallet {
                 @Override
                 public void actionPerformed(ActionEvent event) {
                     try {
-                        update(stdout.writeJSONObject(new JSONObjectWriter().setString("native",
-                                                                                       sendText.getText())));
+                        stdout.writeJSONObject(new JSONObjectWriter().setString("native",
+                                                                                sendText.getText()));
                     } catch (IOException e) {
                         logger.log(Level.SEVERE, "Writing", e);
                         System.exit(3);
@@ -173,13 +177,6 @@ public class Wallet {
             } catch (IOException e) {
                 throw new RuntimeException (e);
             }
-        }
-
-        void update(String text) {
-            String localTime = ISODateTime.formatDateTime(new Date(), false);
-            textArea.setText(localTime.substring(0, 10) + " " + localTime.substring(11, 19) +
-                " " + text + "\n" + textArea.getText());
-            logger.info(text);
         }
 
         void showProblemDialog (boolean error, String message, final WindowAdapter windowAdapter) {
@@ -237,22 +234,31 @@ public class Wallet {
                 }
             }, 10000);
             try {
-                JSONObjectReader or = Messages.parseBaseMessage(Messages.AUTHORIZE, stdin.readJSONObject());
-                logger.info("Received:\n" + stdin.getJSONString());
+                JSONObjectReader or = stdin.readJSONObject();
+                final String json = new String(or.serializeJSONObject(JSONOutputFormats.PRETTY_PRINT),"UTF-8");
+                logger.info("Received:\n" + json);
+                Messages.parseBaseMessage(Messages.INVOKE, or);
+                or.getObject(BaseProperties.PAYMENT_REQUEST_JSON).getSignature();
                 timer.cancel();
                 if (running) {
-                    ((CardLayout)cards.getLayout()).show(cards, "DO");
-                    // Sorry but Swing is pretty buggy...
-                    new Timer().schedule(new TimerTask() {
+                    // Swing is rather bad for multithreading...
+                    SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
-                            update(stdin.getJSONString());
+                            ((CardLayout)cards.getLayout()).show(cards, "DO");
+                            SwingUtilities.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    textArea.setText(json);
+                                    textArea.setCaretPosition(0);
+                                }
+                            });
                         }
-                    }, 200);
+                    });
                 }
             } catch (IOException e) {
                 logger.log(Level.SEVERE, "Undecodable message:\n" + stdin.getJSONString(), e);
-                showProblemDialog(true, "Undecodable message", new WindowAdapter() {
+                showProblemDialog(true, "Undecodable message, see log file", new WindowAdapter() {
                     @Override
                     public void windowClosing(WindowEvent event) {
                         System.exit(3);
