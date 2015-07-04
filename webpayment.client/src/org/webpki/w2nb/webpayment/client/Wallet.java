@@ -248,7 +248,7 @@ public class Wallet {
                         public void run() {
                             update(stdin.getJSONString());
                         }
-                    }, 10);
+                    }, 200);
                 }
             } catch (IOException e) {
                 logger.log(Level.SEVERE, "Undecodable message:\n" + stdin.getJSONString(), e);
@@ -258,6 +258,12 @@ public class Wallet {
                         System.exit(3);
                     }
                 });
+            }
+            // Catching the disconnect...
+            try {
+                stdin.readJSONObject();
+            } catch (IOException e) {
+                System.exit(3);
             }
         }
     }
