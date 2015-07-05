@@ -15,11 +15,12 @@
  *
  */
 
-// Simple Web2Native Bridge emulator application
+// Web2Native Bridge emulator Wallet application
 
 package org.webpki.w2nb.webpayment.client;
 
 import java.awt.CardLayout;
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -89,39 +90,29 @@ public class Wallet {
         boolean running = true;
         Font standardFont;
         int fontSize;
-        JPanel pane;
+        int standardInset;
 
         ApplicationFrame() {
             cards = frame.getContentPane();
+            cards.setLayout(new CardLayout());
             fontSize = Toolkit.getDefaultToolkit().getScreenResolution() / 7;
-            JLabel msgLabel = new JLabel("\u00a0Messages:\u00a0");
-            Font font = msgLabel.getFont();
+            Font font = new JLabel("Dummy").getFont();
             if (font.getSize() > fontSize) {
                 fontSize = font.getSize();
             }
-            int stdInset = fontSize/3;
+            standardInset = fontSize/3;
             standardFont = new Font(font.getFontName(), font.getStyle(), fontSize);
 
             // The initial card showing we are waiting
-            cards.setLayout(new CardLayout());
-            GridBagConstraints initCardConstraint = new GridBagConstraints();
-            initCardConstraint.gridx = 0;
-            initCardConstraint.gridy = 0;
-            JPanel initCard = new JPanel();
-            initCard.setLayout(new GridBagLayout());
-            JLabel waitingIconHolder = getImageLabel("working128.gif", "working80.gif");
-            initCard.add(waitingIconHolder, initCardConstraint);
-            JLabel waitingText = new JLabel("Initializing - Please wait");
-            waitingText.setFont(standardFont);
-            initCardConstraint.gridy = 1;
-            initCardConstraint.insets = new Insets(fontSize, 0, 0, 0);
-            initCard.add(waitingText, initCardConstraint);
-            cards.add(initCard,"PAY");
-
-            // messages
-            pane = new JPanel();
-            cards.add(pane,"DO");
-            pane.setLayout(new GridBagLayout());
+            cards.add(getWaitingCard(), "WAITING");
+ 
+            // Debug messages
+            cards.add(getDebugCard(), "DEBUG");
+        }
+        
+        private Component getDebugCard() {
+            JPanel debugCard = new JPanel();
+            debugCard.setLayout(new GridBagLayout());
             GridBagConstraints c = new GridBagConstraints();
             c.weightx = 0.0;
             c.anchor = GridBagConstraints.WEST;
@@ -129,8 +120,10 @@ public class Wallet {
             c.gridx = 0;
             c.gridy = 0;
             c.gridwidth = 2;
-            c.insets = new Insets(stdInset, stdInset, stdInset, stdInset);
-            pane.add(msgLabel, c);
+            c.insets = new Insets(standardInset, standardInset, standardInset, standardInset);
+            JLabel msgLabel = new JLabel("Messages:");
+            msgLabel.setFont(standardFont);
+            debugCard.add(msgLabel, c);
 
             textArea = new JTextArea();
             textArea.setRows(20);
@@ -140,11 +133,11 @@ public class Wallet {
             c.fill = GridBagConstraints.HORIZONTAL;
             c.gridwidth = 2;
             c.gridy = 1;
-            c.insets = new Insets(0, stdInset, 0, stdInset);
-            pane.add(scrollPane , c);
+            c.insets = new Insets(0, standardInset, 0, standardInset);
+            debugCard.add(scrollPane , c);
 
             JButton sendBut = new JButton("\u00a0\u00a0\u00a0Send\u00a0\u00a0\u00a0");
-            sendBut.setFont(new Font(font.getFontName(), font.getStyle(), fontSize));
+            sendBut.setFont(standardFont);
             sendBut.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent event) {
@@ -160,16 +153,36 @@ public class Wallet {
             c.fill = GridBagConstraints.NONE;
             c.gridwidth = 1;
             c.gridy = 2;
-            c.insets = new Insets(stdInset, stdInset, stdInset, 0);
-            pane.add(sendBut, c);
+            c.insets = new Insets(standardInset, standardInset, standardInset, 0);
+            debugCard.add(sendBut, c);
 
             sendText = new JTextField(50);
             sendText.setFont(new Font("Courier", Font.PLAIN, fontSize));
             c.gridx = 1;
-            c.insets = new Insets(stdInset, stdInset, stdInset, stdInset);
-            pane.add(sendText, c);
+            c.insets = new Insets(standardInset, standardInset, standardInset, standardInset);
+            debugCard.add(sendText, c);
+
+            return debugCard;
         }
-        
+
+        JPanel getWaitingCard() {
+            GridBagConstraints c = new GridBagConstraints();
+            c.gridx = 0;
+            c.gridy = 0;
+            JPanel waitingCard = new JPanel();
+            waitingCard.setLayout(new GridBagLayout());
+            JLabel waitingIconHolder = getImageLabel("working128.gif", "working80.gif");
+            waitingCard.add(waitingIconHolder, c);
+
+            JLabel waitingText = new JLabel("Initializing - Please wait");
+            waitingText.setFont(standardFont);
+            c.gridy = 1;
+            c.insets = new Insets(fontSize, 0, 0, 0);
+            waitingCard.add(waitingText, c);
+
+            return waitingCard;
+        }
+
         JLabel getImageLabel(String big, String small) {
             try {
                 return new JLabel(new ImageIcon(ArrayUtil.getByteArrayFromInputStream(
@@ -247,7 +260,7 @@ public class Wallet {
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
-                            ((CardLayout)cards.getLayout()).show(cards, "DO");
+                            ((CardLayout)cards.getLayout()).show(cards, "DEBUG");
                             SwingUtilities.invokeLater(new Runnable() {
                                 @Override
                                 public void run() {
