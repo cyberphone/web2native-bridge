@@ -142,8 +142,8 @@ public class Wallet {
                 @Override
                 public void actionPerformed(ActionEvent event) {
                     try {
-                        stdout.writeJSONObject(new JSONObjectWriter().setString("native",
-                                                                                sendText.getText()));
+                        JSONObjectWriter ow = Messages.createBaseMessage(Messages.AUTHORIZE);
+                        stdout.writeJSONObject(ow.setString("native", sendText.getText()));
                     } catch (IOException e) {
                         logger.log(Level.SEVERE, "Writing", e);
                         System.exit(3);
