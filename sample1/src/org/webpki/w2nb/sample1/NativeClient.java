@@ -87,7 +87,9 @@ class ApplicationFrame extends Thread {
         textArea.setFont(new Font("Courier", Font.PLAIN, fontSize));
         textArea.setEditable(false);
         JScrollPane scrollPane = new JScrollPane(textArea);
-        c.fill = GridBagConstraints.HORIZONTAL;
+        c.fill = GridBagConstraints.BOTH;
+        c.weightx = 1.0;
+        c.weighty = 1.0;
         c.gridwidth = 2;
         c.gridy = 1;
         c.insets = new Insets(0, stdInset, 0, stdInset);
@@ -108,6 +110,8 @@ class ApplicationFrame extends Thread {
             }
         });
         c.fill = GridBagConstraints.NONE;
+        c.weightx = 0.0;
+        c.weighty = 0.0;
         c.gridwidth = 1;
         c.gridy = 2;
         c.insets = new Insets(stdInset, stdInset, stdInset, 0);
@@ -115,6 +119,7 @@ class ApplicationFrame extends Thread {
 
         sendText = new JTextField(50);
         sendText.setFont(new Font("Courier", Font.PLAIN, fontSize));
+        c.fill = GridBagConstraints.HORIZONTAL;
         c.gridx = 1;
         c.insets = new Insets(stdInset, stdInset, stdInset, stdInset);
         pane.add(sendText, c);
@@ -163,7 +168,6 @@ public class NativeClient {
         }
 
         JDialog frame = new JDialog(new JFrame(), "W2NB - Sample #1 [" + args[1] + "]");
-        frame.setResizable(false);
         ApplicationFrame md = new ApplicationFrame(frame.getContentPane());
         frame.pack();
         frame.setAlwaysOnTop(true);
