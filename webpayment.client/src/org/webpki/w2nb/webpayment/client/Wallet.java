@@ -51,7 +51,9 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.border.EmptyBorder;
 
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
@@ -89,9 +91,10 @@ public class Wallet {
         Container cards;
         boolean running = true;
         Font standardFont;
+        Font cardNumberFont;
         int fontSize;
         int standardInset;
-
+ 
         ApplicationFrame() {
             cards = frame.getContentPane();
             cards.setLayout(new CardLayout());
@@ -102,15 +105,82 @@ public class Wallet {
             }
             standardInset = fontSize/3;
             standardFont = new Font(font.getFontName(), font.getStyle(), fontSize);
+            cardNumberFont = new Font("Courier", Font.PLAIN, (fontSize * 2) / 3);
 
             // The initial card showing we are waiting
             cards.add(getWaitingCard(), "WAITING");
+ 
+            // The initial card showing we are waiting
+    //        cards.add(getSelectionCard(), "SELECTION");
  
             // Debug messages
             cards.add(getDebugCard(), "DEBUG");
         }
         
-        private Component getDebugCard() {
+        Component getCardSelection(int size) {
+            JPanel cardSelection = new JPanel();
+            cardSelection.setLayout(new GridBagLayout());
+            GridBagConstraints c = new GridBagConstraints();
+            c.insets = new Insets(standardInset, standardInset, standardInset, standardInset);
+            c.fill = GridBagConstraints.BOTH;
+            for (int i = 0; i < size; i++) {
+                c.gridx = i % 2;
+                c.gridy = (i / 2) * 2;
+                ImageIcon image;
+                try {
+                    image = (new ImageIcon(ArrayUtil.getByteArrayFromInputStream(
+                            getClass().getResourceAsStream ("dummycard.png"))));
+                } catch (IOException e) {
+                    throw new RuntimeException (e);
+                }
+                JButton cardImage = new JButton(image);
+                cardImage.setFocusPainted(false);
+                cardImage.setMargin(new Insets(0, 0, 0, 0));
+                cardImage.setContentAreaFilled(false);
+                cardImage.setBorderPainted(false);
+                cardImage.setOpaque(false);
+                final int index = i;
+                cardImage.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        showProblemDialog(false, "Card" + index, null);
+                    }
+                });
+                cardSelection.add(cardImage, c);
+                c.gridy++;
+                JLabel cardNumber = new JLabel("012345678901234" + i, JLabel.CENTER);
+                cardNumber.setFont(cardNumberFont);
+                cardSelection.add(cardNumber, c);
+            }
+            JScrollPane scrollPane = new JScrollPane(cardSelection);
+            scrollPane.setBorder(new EmptyBorder(0, 0, 0, 0));
+            return scrollPane;
+        }
+        
+        Component getSelectionCard(int size) {
+            JPanel selectionCard = new JPanel();
+            selectionCard.setLayout(new GridBagLayout());
+            GridBagConstraints c = new GridBagConstraints();
+            c.gridx = 0;
+            c.gridy = 0;
+            c.fill = GridBagConstraints.BOTH;
+            c.weightx = 1.0;
+            c.weighty = 1.0; 
+            selectionCard.add(getCardSelection(size), c);
+
+            JLabel waitingText = new JLabel("Scrolling pane");
+            waitingText.setFont(standardFont);
+            c.anchor = GridBagConstraints.CENTER;
+            c.gridy = 1;
+            c.weightx = 0.0;
+            c.weighty = 0.0; 
+            c.insets = new Insets(fontSize, 0, 0, 0);
+            selectionCard.add(waitingText, c);
+
+            return selectionCard;
+        }
+
+        Component getDebugCard() {
             JPanel debugCard = new JPanel();
             debugCard.setLayout(new GridBagLayout());
             GridBagConstraints c = new GridBagConstraints();
@@ -127,10 +197,12 @@ public class Wallet {
 
             textArea = new JTextArea();
             textArea.setRows(20);
-            textArea.setFont(new Font("Courier", Font.PLAIN, fontSize));
+            textArea.setFont(cardNumberFont);
             textArea.setEditable(false);
             JScrollPane scrollPane = new JScrollPane(textArea);
-            c.fill = GridBagConstraints.HORIZONTAL;
+            c.weightx = 1.0;
+            c.weighty = 1.0;
+            c.fill = GridBagConstraints.BOTH;
             c.gridwidth = 2;
             c.gridy = 1;
             c.insets = new Insets(0, standardInset, 0, standardInset);
@@ -150,6 +222,8 @@ public class Wallet {
                     }
                 }
             });
+            c.weightx = 0.0;
+            c.weighty = 0.0;
             c.fill = GridBagConstraints.NONE;
             c.gridwidth = 1;
             c.gridy = 2;
@@ -158,6 +232,7 @@ public class Wallet {
 
             sendText = new JTextField(50);
             sendText.setFont(new Font("Courier", Font.PLAIN, fontSize));
+            c.fill = GridBagConstraints.HORIZONTAL;
             c.gridx = 1;
             c.insets = new Insets(standardInset, standardInset, standardInset, standardInset);
             debugCard.add(sendText, c);
@@ -165,12 +240,12 @@ public class Wallet {
             return debugCard;
         }
 
-        JPanel getWaitingCard() {
+        Component getWaitingCard() {
+            JPanel waitingCard = new JPanel();
+            waitingCard.setLayout(new GridBagLayout());
             GridBagConstraints c = new GridBagConstraints();
             c.gridx = 0;
             c.gridy = 0;
-            JPanel waitingCard = new JPanel();
-            waitingCard.setLayout(new GridBagLayout());
             JLabel waitingIconHolder = getImageLabel("working128.gif", "working80.gif");
             waitingCard.add(waitingIconHolder, c);
 
@@ -261,25 +336,30 @@ public class Wallet {
                         @Override
                         public void run() {
                             ((CardLayout)cards.getLayout()).show(cards, "DEBUG");
-                            SwingUtilities.invokeLater(new Runnable() {
-                                @Override
-                                public void run() {
-                                    textArea.setText(json);
-                                    textArea.setCaretPosition(0);
-                                }
-                            });
+                            textArea.setText(json);
+                            textArea.setCaretPosition(0);
                         }
                     });
                 }
             } catch (IOException e) {
                 running = false;
                 logger.log(Level.SEVERE, "Undecodable message:\n" + stdin.getJSONString(), e);
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        // The initial card showing we are waiting
+                        cards.add(getSelectionCard(5), "SELECTION");
+                        ((CardLayout)cards.getLayout()).show(cards, "SELECTION");
+                    }
+                });
+/*
                 showProblemDialog(true, "Undecodable message, see log file!", new WindowAdapter() {
                     @Override
                     public void windowClosing(WindowEvent event) {
                         System.exit(3);
                     }
                 });
+*/
             }
             // Catching the disconnect...
             try {
