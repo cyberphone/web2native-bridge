@@ -88,7 +88,7 @@ public class Wallet {
     }
     
     static class ApplicationFrame extends Thread {
-        JTextArea textArea;
+        JTextArea debugText;
         JTextField sendText;
         Container cards;
         boolean running = true;
@@ -111,7 +111,8 @@ public class Wallet {
             cardNumberFont = new Font("Courier", Font.PLAIN, (fontSize * 4) / 5);
             logger.info("Display Data: Screen resolution=" + screenResolution +
                          ", Screen size=" + Toolkit.getDefaultToolkit().getScreenSize() +
-                         ", Font size=" + font.getSize());
+                         ", Font size=" + font.getSize() +
+                         ", Adjusted font size=" + fontSize);
 
             // The initial card showing we are waiting
             cards.add(getWaitingCard(), "WAITING");
@@ -154,7 +155,8 @@ public class Wallet {
                 cardImage.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        showProblemDialog(false, "Card" + index, null);
+                        ((CardLayout)cards.getLayout()).show(cards, "DEBUG");
+                        debugText.setText("Card=" + index);
                     }
                 });
                 cardSelection.add(cardImage, c);
@@ -175,16 +177,18 @@ public class Wallet {
         Component getSelectionCard(int size) {
             JPanel selectionCard = new JPanel();
             selectionCard.setLayout(new GridBagLayout());
+            selectionCard.setBackground(Color.white);
             GridBagConstraints c = new GridBagConstraints();
 
-            JLabel headerText = new JLabel("Select Card", JLabel.CENTER);
+            JLabel headerText = new JLabel("Select Card:");
             headerText.setFont(standardFont);
-            c.insets = new Insets(fontSize, 0, fontSize, 0);
-            c.gridwidth = 2;
+            c.insets = new Insets(fontSize, fontSize, fontSize, fontSize);
+            c.anchor = GridBagConstraints.WEST;
             selectionCard.add(headerText, c);
 
             c.gridx = 0;
             c.gridy = 1;
+            c.anchor = GridBagConstraints.CENTER;
             c.fill = GridBagConstraints.BOTH;
             c.weightx = 1.0;
             c.weighty = 1.0; 
@@ -198,31 +202,15 @@ public class Wallet {
                     System.exit(3);
                 }
             });
-            c.gridwidth = 1;
             c.gridx = 0;
             c.gridy = 2;
-            c.fill = GridBagConstraints.NONE;
             c.anchor = GridBagConstraints.WEST;
+            c.fill = GridBagConstraints.NONE;
             c.weightx = 0.0;
             c.weighty = 0.0; 
             c.insets = new Insets(fontSize, fontSize, fontSize, fontSize);
             selectionCard.add(cancelButton, c);
-            
-            JButton okButton = new JButton("\u00a0\u00a0\u00a0OK\u00a0\u00a0\u00a0");
-            okButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    ((CardLayout)cards.getLayout()).show(cards, "DEBUG");
-                }
-            });
-            okButton.setFont(standardFont);
-            c.anchor = GridBagConstraints.EAST;
-            c.gridx = 1;
-            c.insets = new Insets(fontSize, fontSize, fontSize, fontSize);
-            selectionCard.add(okButton, c);
-            selectionCard.setBackground(Color.white);
-
-
+ 
             return selectionCard;
         }
 
@@ -241,11 +229,11 @@ public class Wallet {
             msgLabel.setFont(standardFont);
             debugCard.add(msgLabel, c);
 
-            textArea = new JTextArea();
-            textArea.setRows(20);
-            textArea.setFont(cardNumberFont);
-            textArea.setEditable(false);
-            JScrollPane scrollPane = new JScrollPane(textArea);
+            debugText = new JTextArea();
+            debugText.setRows(20);
+            debugText.setFont(cardNumberFont);
+            debugText.setEditable(false);
+            JScrollPane scrollPane = new JScrollPane(debugText);
             c.weightx = 1.0;
             c.weighty = 1.0;
             c.fill = GridBagConstraints.BOTH;
@@ -382,8 +370,8 @@ public class Wallet {
                         @Override
                         public void run() {
                             ((CardLayout)cards.getLayout()).show(cards, "DEBUG");
-                            textArea.setText(json);
-                            textArea.setCaretPosition(0);
+                            debugText.setText(json);
+                            debugText.setCaretPosition(0);
                         }
                     });
                 }
@@ -394,7 +382,7 @@ public class Wallet {
                     @Override
                     public void run() {
                         // The initial card showing we are waiting
-                        cards.add(getSelectionCard(2), "SELECTION");
+                        cards.add(getSelectionCard(5), "SELECTION");
                         ((CardLayout)cards.getLayout()).show(cards, "SELECTION");
                     }
                 });
@@ -431,7 +419,7 @@ public class Wallet {
             System.exit(3);
         }
 
-        frame = new JDialog(new JFrame(), "Wallet [" + args[1] + "]");
+        frame = new JDialog(new JFrame(), "Payment Request [" + args[1] + "]");
         frame.setResizable(false);
         ApplicationFrame md = new ApplicationFrame();
         frame.pack();
