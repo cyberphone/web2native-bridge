@@ -22,6 +22,7 @@ package org.webpki.w2nb.webpayment.client;
 import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -98,7 +99,8 @@ public class Wallet {
         ApplicationFrame() {
             cards = frame.getContentPane();
             cards.setLayout(new CardLayout());
-            fontSize = Toolkit.getDefaultToolkit().getScreenResolution() / 7;
+            int screenResolution = Toolkit.getDefaultToolkit().getScreenResolution();
+            fontSize = screenResolution / 7;
             Font font = new JLabel("Dummy").getFont();
             if (font.getSize() > fontSize) {
                 fontSize = font.getSize();
@@ -106,6 +108,9 @@ public class Wallet {
             standardInset = fontSize/3;
             standardFont = new Font(font.getFontName(), font.getStyle(), fontSize);
             cardNumberFont = new Font("Courier", Font.PLAIN, (fontSize * 2) / 3);
+            logger.info("Display Data: Screen resolution=" + screenResolution +
+                         ", Screen size=" + Toolkit.getDefaultToolkit().getScreenSize() +
+                         ", Font size=" + font.getSize());
 
             // The initial card showing we are waiting
             cards.add(getWaitingCard(), "WAITING");
@@ -132,7 +137,8 @@ public class Wallet {
                 ImageIcon image;
                 try {
                     image = (new ImageIcon(ArrayUtil.getByteArrayFromInputStream(
-                            getClass().getResourceAsStream ("dummycard.png"))));
+                            getClass().getResourceAsStream (fontSize > 20 ?
+                                                          "dummycard.png" : "dummycard2.png"))));
                 } catch (IOException e) {
                     throw new RuntimeException (e);
                 }
@@ -172,6 +178,7 @@ public class Wallet {
             JLabel headerText = new JLabel("Select Card", JLabel.CENTER);
             headerText.setFont(standardFont);
             c.insets = new Insets(fontSize, 0, fontSize, 0);
+            c.gridwidth = 2;
             selectionCard.add(headerText, c);
 
             c.gridx = 0;
@@ -181,6 +188,37 @@ public class Wallet {
             c.weighty = 1.0; 
             c.insets = new Insets(0, 0, 0, 0);
             selectionCard.add(getCardSelection(size), c);
+            JButton cancelButton = new JButton("Cancel");
+            cancelButton.setFont(standardFont);
+            cancelButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    System.exit(3);
+                }
+            });
+            c.gridwidth = 1;
+            c.gridx = 0;
+            c.gridy = 2;
+            c.fill = GridBagConstraints.NONE;
+            c.anchor = GridBagConstraints.WEST;
+            c.weightx = 0.0;
+            c.weighty = 0.0; 
+            c.insets = new Insets(fontSize, fontSize, fontSize, fontSize);
+            selectionCard.add(cancelButton, c);
+            
+            JButton okButton = new JButton("OK");
+            okButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    ((CardLayout)cards.getLayout()).show(cards, "DEBUG");
+                }
+            });
+            okButton.setFont(standardFont);
+            okButton.setMinimumSize(new Dimension(500,78));
+            c.anchor = GridBagConstraints.EAST;
+            c.gridx = 1;
+            c.insets = new Insets(fontSize, fontSize, fontSize, fontSize);
+            selectionCard.add(okButton, c);
 
             return selectionCard;
         }
@@ -353,7 +391,7 @@ public class Wallet {
                     @Override
                     public void run() {
                         // The initial card showing we are waiting
-                        cards.add(getSelectionCard(5), "SELECTION");
+                        cards.add(getSelectionCard(2), "SELECTION");
                         ((CardLayout)cards.getLayout()).show(cards, "SELECTION");
                     }
                 });
