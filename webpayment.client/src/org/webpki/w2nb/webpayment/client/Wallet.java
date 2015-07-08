@@ -20,6 +20,7 @@
 package org.webpki.w2nb.webpayment.client;
 
 import java.awt.CardLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -107,7 +108,7 @@ public class Wallet {
             }
             standardInset = fontSize/3;
             standardFont = new Font(font.getFontName(), font.getStyle(), fontSize);
-            cardNumberFont = new Font("Courier", Font.PLAIN, (fontSize * 2) / 3);
+            cardNumberFont = new Font("Courier", Font.PLAIN, (fontSize * 4) / 5);
             logger.info("Display Data: Screen resolution=" + screenResolution +
                          ", Screen size=" + Toolkit.getDefaultToolkit().getScreenSize() +
                          ", Font size=" + font.getSize());
@@ -124,6 +125,7 @@ public class Wallet {
         
         Component getCardSelection(int size) {
             JPanel cardSelection = new JPanel();
+            cardSelection.setBackground(Color.white);
             cardSelection.setLayout(new GridBagLayout());
             GridBagConstraints c = new GridBagConstraints();
             c.fill = GridBagConstraints.BOTH;
@@ -161,7 +163,7 @@ public class Wallet {
                                       c.gridx == 0 ? 0 : fontSize,
                                       0,
                                       c.gridx == 0 ? fontSize : 0);
-                JLabel cardNumber = new JLabel("012345678901234" + i, JLabel.CENTER);
+                JLabel cardNumber = new JLabel("0123 4567 8901 234" + i, JLabel.CENTER);
                 cardNumber.setFont(cardNumberFont);
                 cardSelection.add(cardNumber, c);
             }
@@ -188,7 +190,7 @@ public class Wallet {
             c.weighty = 1.0; 
             c.insets = new Insets(0, 0, 0, 0);
             selectionCard.add(getCardSelection(size), c);
-            JButton cancelButton = new JButton("Cancel");
+            JButton cancelButton = new JButton("\u00a0Cancel\u00a0");
             cancelButton.setFont(standardFont);
             cancelButton.addActionListener(new ActionListener() {
                 @Override
@@ -206,7 +208,7 @@ public class Wallet {
             c.insets = new Insets(fontSize, fontSize, fontSize, fontSize);
             selectionCard.add(cancelButton, c);
             
-            JButton okButton = new JButton("OK");
+            JButton okButton = new JButton("\u00a0\u00a0\u00a0OK\u00a0\u00a0\u00a0");
             okButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -214,11 +216,12 @@ public class Wallet {
                 }
             });
             okButton.setFont(standardFont);
-            okButton.setMinimumSize(new Dimension(500,78));
             c.anchor = GridBagConstraints.EAST;
             c.gridx = 1;
             c.insets = new Insets(fontSize, fontSize, fontSize, fontSize);
             selectionCard.add(okButton, c);
+            selectionCard.setBackground(Color.white);
+
 
             return selectionCard;
         }
