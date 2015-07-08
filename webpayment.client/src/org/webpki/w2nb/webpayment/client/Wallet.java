@@ -121,11 +121,14 @@ public class Wallet {
             JPanel cardSelection = new JPanel();
             cardSelection.setLayout(new GridBagLayout());
             GridBagConstraints c = new GridBagConstraints();
-            c.insets = new Insets(standardInset, standardInset, standardInset, standardInset);
             c.fill = GridBagConstraints.BOTH;
             for (int i = 0; i < size; i++) {
                 c.gridx = i % 2;
                 c.gridy = (i / 2) * 2;
+                c.insets = new Insets(c.gridy == 0 ? 0 : fontSize,
+                                      c.gridx == 0 ? 0 : fontSize,
+                                      0,
+                                      c.gridx == 0 ? fontSize : 0);
                 ImageIcon image;
                 try {
                     image = (new ImageIcon(ArrayUtil.getByteArrayFromInputStream(
@@ -148,6 +151,10 @@ public class Wallet {
                 });
                 cardSelection.add(cardImage, c);
                 c.gridy++;
+                c.insets = new Insets(0,
+                                      c.gridx == 0 ? 0 : fontSize,
+                                      0,
+                                      c.gridx == 0 ? fontSize : 0);
                 JLabel cardNumber = new JLabel("012345678901234" + i, JLabel.CENTER);
                 cardNumber.setFont(cardNumberFont);
                 cardSelection.add(cardNumber, c);
@@ -161,21 +168,19 @@ public class Wallet {
             JPanel selectionCard = new JPanel();
             selectionCard.setLayout(new GridBagLayout());
             GridBagConstraints c = new GridBagConstraints();
+
+            JLabel headerText = new JLabel("Select Card", JLabel.CENTER);
+            headerText.setFont(standardFont);
+            c.insets = new Insets(fontSize, 0, fontSize, 0);
+            selectionCard.add(headerText, c);
+
             c.gridx = 0;
-            c.gridy = 0;
+            c.gridy = 1;
             c.fill = GridBagConstraints.BOTH;
             c.weightx = 1.0;
             c.weighty = 1.0; 
+            c.insets = new Insets(0, 0, 0, 0);
             selectionCard.add(getCardSelection(size), c);
-
-            JLabel waitingText = new JLabel("Scrolling pane");
-            waitingText.setFont(standardFont);
-            c.anchor = GridBagConstraints.CENTER;
-            c.gridy = 1;
-            c.weightx = 0.0;
-            c.weighty = 0.0; 
-            c.insets = new Insets(fontSize, 0, 0, 0);
-            selectionCard.add(waitingText, c);
 
             return selectionCard;
         }
