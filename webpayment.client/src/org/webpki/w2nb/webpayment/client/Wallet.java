@@ -96,8 +96,9 @@ public class Wallet {
         Font standardFont;
         Font cardNumberFont;
         int fontSize;
-        int standardInset;
         String invokeMessageString;
+        JLabel amount;
+        JLabel requester;
  
         ApplicationFrame() {
             cards = frame.getContentPane();
@@ -108,7 +109,6 @@ public class Wallet {
             if (font.getSize() > fontSize) {
                 fontSize = font.getSize();
             }
-            standardInset = fontSize/3;
             standardFont = new Font(font.getFontName(), font.getStyle(), fontSize);
             cardNumberFont = new Font("Courier", Font.PLAIN, (fontSize * 4) / 5);
             logger.info("Display Data: Screen resolution=" + screenResolution +
@@ -119,18 +119,15 @@ public class Wallet {
             // The initial card showing we are waiting
             cards.add(getWaitingCard(), "WAITING");
  
-            // The initial card showing we are waiting
-    //        cards.add(getSelectionCard(), "SELECTION");
- 
             // Debug messages
             cards.add(getDebugCard(), "DEBUG");
             
+            // And the core thing we care about
             cards.add(getAuthorizationCard(), "AUTH");
         }
         
         Component getCardSelection(int size) {
             JPanel cardSelection = new JPanel();
-            cardSelection.setBackground(Color.white);
             cardSelection.setLayout(new GridBagLayout());
             GridBagConstraints c = new GridBagConstraints();
             c.fill = GridBagConstraints.BOTH;
@@ -181,7 +178,6 @@ public class Wallet {
         Component getSelectionCard(int size) {
             JPanel selectionCard = new JPanel();
             selectionCard.setLayout(new GridBagLayout());
-            selectionCard.setBackground(Color.white);
             GridBagConstraints c = new GridBagConstraints();
 
             JLabel headerText = new JLabel("Select Card:");
@@ -219,19 +215,39 @@ public class Wallet {
         }
 
         Component getAuthorizationCard() {
-            
             JPanel authorizationCard = new JPanel();
             authorizationCard.setLayout(new GridBagLayout());
             GridBagConstraints c = new GridBagConstraints();
             c.gridx = 0;
             c.gridy = 0;
             c.gridwidth = 3;
-            c.insets = new Insets(0, fontSize * 2, 0, 0);
+            c.insets = new Insets(0, fontSize * 3, 0, 0);
             c.anchor = GridBagConstraints.CENTER;
+            c.fill = GridBagConstraints.VERTICAL;
+            c.weighty = 1.0;
             authorizationCard.add(getImageLabel("dummyline.png" , "dummyline2.png"), c);
 
             c.gridx = 0;
             c.gridy = 1;
+            c.gridwidth = 3;
+            c.insets = new Insets(0, 0, 0, 0);
+            c.fill = GridBagConstraints.NONE;
+            c.weighty = 0.0;
+            JLabel requester = new JLabel("Requester: Demo Merchant");
+            requester.setFont(standardFont);
+            authorizationCard.add(requester, c);
+
+            c.gridx = 0;
+            c.gridy = 2;
+            c.gridwidth = 3;
+            c.insets = new Insets(fontSize, 0, fontSize, 0);
+            c.fill = GridBagConstraints.NONE;
+            JLabel amount = new JLabel("Amount: $ 3.25");
+            amount.setFont(standardFont);
+            authorizationCard.add(amount, c);
+
+            c.gridx = 0;
+            c.gridy = 3;
             c.gridwidth = 1;
             c.insets = new Insets(0, 0, 0, fontSize / 2);
             c.anchor = GridBagConstraints.EAST;
@@ -240,7 +256,7 @@ public class Wallet {
             authorizationCard.add(pinLabel, c);
 
             c.gridx = 1;
-            c.gridy = 1;
+            c.gridy = 3;
             c.gridwidth = 1;
             c.insets = new Insets(0, 0, 0, 0);
             c.anchor = GridBagConstraints.CENTER;
@@ -249,19 +265,31 @@ public class Wallet {
             authorizationCard.add(pinText, c);
 
             c.gridx = 2;
-            c.gridy = 1;
+            c.gridy = 3;
             c.gridwidth = 1;
             c.insets = new Insets(0, fontSize / 2, 0, 0);
             c.anchor = GridBagConstraints.WEST;
-            JLabel dummyPin = new JLabel(":NIP");
+            JLabel dummyPin = new JLabel("\u00a0\u00a0\u00a0\u00a0");
             dummyPin.setFont(standardFont);
             authorizationCard.add(dummyPin, c);
 
             c.gridx = 0;
-            c.gridy = 2;
+            c.gridy = 4;
+            c.gridwidth = 3;
+            c.insets = new Insets(0, 0, 0, 0);
+            c.fill = GridBagConstraints.BOTH;
+            c.weighty = 0.6;
+            JLabel dummy = new JLabel("");
+            dummy.setFont(standardFont);
+            authorizationCard.add(dummy, c);
+
+            c.gridx = 0;
+            c.gridy = 5;
             c.gridwidth = 1;
             c.insets = new Insets(fontSize, fontSize, fontSize, 0);
             c.anchor = GridBagConstraints.CENTER;
+            c.fill = GridBagConstraints.NONE;
+            c.weighty = 0.0;
             JButton cancelButton = new JButton("\u00a0Cancel\u00a0");
             cancelButton.setFont(standardFont);
             authorizationCard.add(cancelButton, c);
@@ -273,7 +301,7 @@ public class Wallet {
             });
 
             c.gridx = 2;
-            c.gridy = 2;
+            c.gridy = 5;
             c.gridwidth = 2;
             c.insets = new Insets(fontSize, 0, fontSize, 0);
             c.anchor = GridBagConstraints.WEST;
@@ -285,12 +313,13 @@ public class Wallet {
                 public void actionPerformed(ActionEvent e) {
                     ((CardLayout)cards.getLayout()).show(cards, "DEBUG");
                     debugText.setText(invokeMessageString);
+                    debugText.setCaretPosition(0);
                 }
             });
 
             c.gridx = 3;
             c.gridy = 0;
-            c.gridheight = 2;
+            c.gridheight = 5;
             c.gridwidth = 1;
             c.insets = new Insets(fontSize * 3, fontSize * 2, fontSize, fontSize * 2);
             c.anchor = GridBagConstraints.CENTER;
@@ -315,6 +344,8 @@ public class Wallet {
             JPanel debugCard = new JPanel();
             debugCard.setLayout(new GridBagLayout());
             GridBagConstraints c = new GridBagConstraints();
+            int standardInset = fontSize/3;
+
             c.weightx = 0.0;
             c.anchor = GridBagConstraints.WEST;
             c.fill = GridBagConstraints.NONE;
@@ -465,31 +496,25 @@ public class Wallet {
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
-                            ((CardLayout)cards.getLayout()).show(cards, "DEBUG");
-                            debugText.setText(invokeMessageString);
-                            debugText.setCaretPosition(0);
+                            running = false;
+                            cards.add(getSelectionCard(5), "SELECTION");
+                            ((CardLayout)cards.getLayout()).show(cards, "SELECTION");
                         }
                     });
                 }
             } catch (IOException e) {
-                running = false;
-                logger.log(Level.SEVERE, "Undecodable message:\n" + stdin.getJSONString(), e);
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        // The initial card showing we are waiting
-                        cards.add(getSelectionCard(5), "SELECTION");
-                        ((CardLayout)cards.getLayout()).show(cards, "SELECTION");
-                    }
-                });
-/*
-                showProblemDialog(true, "Undecodable message, see log file!", new WindowAdapter() {
-                    @Override
-                    public void windowClosing(WindowEvent event) {
-                        System.exit(3);
-                    }
-                });
-*/
+                if (running) {
+                    running = false;
+                    logger.log(Level.SEVERE, "Undecodable message:\n" + stdin.getJSONString(), e);
+                    showProblemDialog(true, "Undecodable message, see log file!", new WindowAdapter() {
+                        @Override
+                        public void windowClosing(WindowEvent event) {
+                            System.exit(3);
+                        }
+                    });
+                } else {
+                    System.exit(3);
+                }
             }
             // Catching the disconnect...
             try {
