@@ -44,7 +44,6 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
@@ -66,7 +65,8 @@ class ApplicationFrame extends Thread {
         int fontSize = Toolkit.getDefaultToolkit().getScreenResolution() / 7;
         JLabel msgLabel = new JLabel("Messages:");
         Font font = msgLabel.getFont();
-        if (font.getSize() > fontSize) {
+        boolean macOS = System.getProperty("os.name").toLowerCase().contains("mac");
+        if (font.getSize() > fontSize || macOS) {
             fontSize = font.getSize();
         }
         int stdInset = fontSize/3;

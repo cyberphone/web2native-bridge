@@ -100,8 +100,9 @@ public class Wallet {
         Font cardNumberFont;
         int fontSize;
         String invokeMessageString;
-        JLabel amount;
-        JLabel payee;
+        JTextField amount;
+        JTextField payee;
+        boolean macOS;
  
         ApplicationFrame() {
             cards = frame.getContentPane();
@@ -109,7 +110,8 @@ public class Wallet {
             int screenResolution = Toolkit.getDefaultToolkit().getScreenResolution();
             fontSize = screenResolution / 7;
             Font font = new JLabel("Dummy").getFont();
-            if (font.getSize() > fontSize) {
+            macOS = System.getProperty("os.name").toLowerCase().contains("mac");
+            if (font.getSize() > fontSize || macOS) {
                 fontSize = font.getSize();
             }
             standardFont = new Font(font.getFontName(), font.getStyle(), fontSize);
@@ -160,6 +162,9 @@ public class Wallet {
                 cardImage.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
+                        amount.setText("\u200a$\u200a3.25");
+                        payee.setText("\u200aDemo Merchant long version");
+                        payee.setCaretPosition(0);
                         ((CardLayout)cards.getLayout()).show(cards, "AUTH");
                         logger.info("Card=" + index);
                     }
@@ -222,11 +227,6 @@ public class Wallet {
             JPanel authorizationCard = new JPanel();
             authorizationCard.setLayout(new GridBagLayout());
             GridBagConstraints c = new GridBagConstraints();
-            Border customerInfoBorder = new CompoundBorder(new LineBorder(Color.GRAY, 1), 
-                                                           new EmptyBorder(fontSize / 10,
-                                                                           fontSize / 4,
-                                                                           fontSize / 10,
-                                                                           fontSize / 4));
             c.gridx = 0;
             c.gridy = 0;
             c.gridwidth = 3;
@@ -253,9 +253,10 @@ public class Wallet {
             c.insets = new Insets(0, 0, 0, fontSize * 2);
             c.fill = GridBagConstraints.HORIZONTAL;
             c.anchor = GridBagConstraints.WEST;
-            payee = new JLabel("Demo Merchant");
+            payee = new JTextField();
             payee.setFont(standardFont);
-            payee.setBorder(customerInfoBorder);
+            payee.setFocusable(false);
+            payee.setBackground(payeeLabel.getBackground());
             authorizationCard.add(payee, c);
 
             c.gridx = 0;
@@ -274,9 +275,10 @@ public class Wallet {
             c.insets = new Insets(fontSize, 0, (fontSize * 3) / 2, 0);
             c.fill = GridBagConstraints.HORIZONTAL;
             c.anchor = GridBagConstraints.WEST;
-            amount = new JLabel("$\u200a3.25");
+            amount = new JTextField();
             amount.setFont(standardFont);
-            amount.setBorder(customerInfoBorder);
+            amount.setFocusable(false);
+            amount.setBackground(amountLabel.getBackground());
             authorizationCard.add(amount, c);
 
             c.gridx = 0;
@@ -293,10 +295,13 @@ public class Wallet {
             c.gridy = 3;
             c.gridwidth = 1;
             c.insets = new Insets(0, 0, 0, 0);
+            c.fill = GridBagConstraints.HORIZONTAL;
             c.anchor = GridBagConstraints.CENTER;
+            c.weightx = 1.0;
             JPasswordField pinText = new JPasswordField(8);
             pinText.setFont(standardFont);
             authorizationCard.add(pinText, c);
+            c.weightx = 0.0;
 
             c.gridx = 0;
             c.gridy = 4;
@@ -311,7 +316,7 @@ public class Wallet {
             c.gridx = 0;
             c.gridy = 5;
             c.gridwidth = 1;
-            c.insets = new Insets(fontSize, fontSize, fontSize, 0);
+            c.insets = new Insets(0, fontSize, fontSize, 0);
             c.anchor = GridBagConstraints.CENTER;
             c.fill = GridBagConstraints.NONE;
             c.weighty = 0.0;
@@ -328,7 +333,7 @@ public class Wallet {
             c.gridx = 2;
             c.gridy = 5;
             c.gridwidth = 1;
-            c.insets = new Insets(fontSize, 0, fontSize, 0);
+            c.insets = new Insets(0, 0, fontSize, 0);
             c.anchor = GridBagConstraints.WEST;
             JButton okButton = new JButton("\u00a0\u00a0\u00a0OK\u00a0\u00a0\u00a0");
             okButton.setFont(standardFont);
@@ -346,7 +351,7 @@ public class Wallet {
             c.gridy = 0;
             c.gridheight = 6;
             c.gridwidth = 1;
-            c.insets = new Insets(fontSize * 3, fontSize * 2, fontSize * 3, fontSize * 2);
+            c.insets = new Insets(fontSize * 4, fontSize * 2, fontSize * 4, fontSize * 2);
             c.anchor = GridBagConstraints.CENTER;
             c.fill = GridBagConstraints.BOTH;
             c.weightx = 1.0;
