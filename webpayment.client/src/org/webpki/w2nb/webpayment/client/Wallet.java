@@ -56,7 +56,10 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
@@ -98,7 +101,7 @@ public class Wallet {
         int fontSize;
         String invokeMessageString;
         JLabel amount;
-        JLabel requester;
+        JLabel payee;
  
         ApplicationFrame() {
             cards = frame.getContentPane();
@@ -152,6 +155,7 @@ public class Wallet {
                 cardImage.setContentAreaFilled(false);
                 cardImage.setBorderPainted(false);
                 cardImage.setOpaque(false);
+                cardImage.setToolTipText("Click on the card to select it!");
                 final int index = i;
                 cardImage.addActionListener(new ActionListener() {
                     @Override
@@ -218,6 +222,11 @@ public class Wallet {
             JPanel authorizationCard = new JPanel();
             authorizationCard.setLayout(new GridBagLayout());
             GridBagConstraints c = new GridBagConstraints();
+            Border customerInfoBorder = new CompoundBorder(new LineBorder(Color.GRAY, 1), 
+                                                           new EmptyBorder(fontSize / 10,
+                                                                           fontSize / 4,
+                                                                           fontSize / 10,
+                                                                           fontSize / 4));
             c.gridx = 0;
             c.gridy = 0;
             c.gridwidth = 3;
@@ -229,29 +238,54 @@ public class Wallet {
 
             c.gridx = 0;
             c.gridy = 1;
-            c.gridwidth = 3;
-            c.insets = new Insets(0, 0, 0, 0);
+            c.gridwidth = 1;
+            c.insets = new Insets(0, 0, 0, fontSize / 2);
             c.fill = GridBagConstraints.NONE;
+            c.anchor = GridBagConstraints.EAST;
             c.weighty = 0.0;
-            JLabel requester = new JLabel("Requester: Demo Merchant");
-            requester.setFont(standardFont);
-            authorizationCard.add(requester, c);
+            JLabel payeeLabel = new JLabel("Payee");
+            payeeLabel.setFont(standardFont);
+            authorizationCard.add(payeeLabel, c);
+
+            c.gridx = 1;
+            c.gridy = 1;
+            c.gridwidth = 2;
+            c.insets = new Insets(0, 0, 0, fontSize * 2);
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.anchor = GridBagConstraints.WEST;
+            payee = new JLabel("Demo Merchant");
+            payee.setFont(standardFont);
+            payee.setBorder(customerInfoBorder);
+            authorizationCard.add(payee, c);
 
             c.gridx = 0;
             c.gridy = 2;
-            c.gridwidth = 3;
-            c.insets = new Insets(fontSize, 0, fontSize, 0);
+            c.gridwidth = 1;
+            c.insets = new Insets(fontSize, 0, (fontSize * 3) / 2, fontSize / 2);
+            c.anchor = GridBagConstraints.EAST;
             c.fill = GridBagConstraints.NONE;
-            JLabel amount = new JLabel("Amount: $ 3.25");
+            JLabel amountLabel = new JLabel("Amount");
+            amountLabel.setFont(standardFont);
+            authorizationCard.add(amountLabel, c);
+
+            c.gridx = 1;
+            c.gridy = 2;
+            c.gridwidth = 1;
+            c.insets = new Insets(fontSize, 0, (fontSize * 3) / 2, 0);
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.anchor = GridBagConstraints.WEST;
+            amount = new JLabel("$\u200a3.25");
             amount.setFont(standardFont);
+            amount.setBorder(customerInfoBorder);
             authorizationCard.add(amount, c);
 
             c.gridx = 0;
             c.gridy = 3;
             c.gridwidth = 1;
             c.insets = new Insets(0, 0, 0, fontSize / 2);
+            c.fill = GridBagConstraints.NONE;
             c.anchor = GridBagConstraints.EAST;
-            JLabel pinLabel = new JLabel("PIN:");
+            JLabel pinLabel = new JLabel("PIN");
             pinLabel.setFont(standardFont);
             authorizationCard.add(pinLabel, c);
 
@@ -263,15 +297,6 @@ public class Wallet {
             JPasswordField pinText = new JPasswordField(8);
             pinText.setFont(standardFont);
             authorizationCard.add(pinText, c);
-
-            c.gridx = 2;
-            c.gridy = 3;
-            c.gridwidth = 1;
-            c.insets = new Insets(0, fontSize / 2, 0, 0);
-            c.anchor = GridBagConstraints.WEST;
-            JLabel dummyPin = new JLabel("\u00a0\u00a0\u00a0\u00a0");
-            dummyPin.setFont(standardFont);
-            authorizationCard.add(dummyPin, c);
 
             c.gridx = 0;
             c.gridy = 4;
@@ -302,7 +327,7 @@ public class Wallet {
 
             c.gridx = 2;
             c.gridy = 5;
-            c.gridwidth = 2;
+            c.gridwidth = 1;
             c.insets = new Insets(fontSize, 0, fontSize, 0);
             c.anchor = GridBagConstraints.WEST;
             JButton okButton = new JButton("\u00a0\u00a0\u00a0OK\u00a0\u00a0\u00a0");
@@ -319,9 +344,9 @@ public class Wallet {
 
             c.gridx = 3;
             c.gridy = 0;
-            c.gridheight = 5;
+            c.gridheight = 6;
             c.gridwidth = 1;
-            c.insets = new Insets(fontSize * 3, fontSize * 2, fontSize, fontSize * 2);
+            c.insets = new Insets(fontSize * 3, fontSize * 2, fontSize * 3, fontSize * 2);
             c.anchor = GridBagConstraints.CENTER;
             c.fill = GridBagConstraints.BOTH;
             c.weightx = 1.0;
@@ -329,7 +354,9 @@ public class Wallet {
             JPanel cardAndNumber = new JPanel();
             cardAndNumber.setLayout(new GridBagLayout());
             GridBagConstraints c2 = new GridBagConstraints();
-            cardAndNumber.add(getImageLabel("dummycard.png" , "dummycard2.png"), c2);
+            JLabel cardImage = getImageLabel("dummycard.png" , "dummycard2.png");
+            cardImage.setToolTipText("This card will be used in the transaction");
+            cardAndNumber.add(cardImage, c2);
             JLabel cardNumber = new JLabel("1234 1234 1234 1234");
             cardNumber.setFont(cardNumberFont);
             c2.insets = new Insets(fontSize / 3, 0, 0, 0);
