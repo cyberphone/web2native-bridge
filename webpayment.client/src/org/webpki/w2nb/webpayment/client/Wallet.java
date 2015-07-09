@@ -50,6 +50,7 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
@@ -96,6 +97,7 @@ public class Wallet {
         Font cardNumberFont;
         int fontSize;
         int standardInset;
+        String invokeMessageString;
  
         ApplicationFrame() {
             cards = frame.getContentPane();
@@ -122,6 +124,8 @@ public class Wallet {
  
             // Debug messages
             cards.add(getDebugCard(), "DEBUG");
+            
+            cards.add(getAuthorizationCard(), "AUTH");
         }
         
         Component getCardSelection(int size) {
@@ -155,8 +159,8 @@ public class Wallet {
                 cardImage.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        ((CardLayout)cards.getLayout()).show(cards, "DEBUG");
-                        debugText.setText("Card=" + index);
+                        ((CardLayout)cards.getLayout()).show(cards, "AUTH");
+                        logger.info("Card=" + index);
                     }
                 });
                 cardSelection.add(cardImage, c);
@@ -214,6 +218,91 @@ public class Wallet {
             return selectionCard;
         }
 
+        Component getAuthorizationCard() {
+            
+            JPanel authorizationCard = new JPanel();
+            authorizationCard.setLayout(new GridBagLayout());
+            GridBagConstraints c = new GridBagConstraints();
+            c.gridx = 0;
+            c.gridy = 0;
+            c.gridwidth = 3;
+            c.insets = new Insets(0, fontSize * 2, 0, 0);
+            c.anchor = GridBagConstraints.CENTER;
+            authorizationCard.add(getImageLabel("dummyline.png" , "dummyline2.png"), c);
+
+            c.gridx = 0;
+            c.gridy = 1;
+            c.gridwidth = 1;
+            c.insets = new Insets(0, 0, 0, fontSize / 2);
+            c.anchor = GridBagConstraints.EAST;
+            JLabel pinLabel = new JLabel("PIN:");
+            pinLabel.setFont(standardFont);
+            authorizationCard.add(pinLabel, c);
+
+            c.gridx = 1;
+            c.gridy = 1;
+            c.gridwidth = 1;
+            c.insets = new Insets(0, 0, 0, 0);
+            c.anchor = GridBagConstraints.CENTER;
+            JPasswordField pinText = new JPasswordField(8);
+            pinText.setFont(standardFont);
+            authorizationCard.add(pinText, c);
+
+            c.gridx = 2;
+            c.gridy = 1;
+            c.gridwidth = 1;
+            c.insets = new Insets(0, fontSize / 2, 0, 0);
+            c.anchor = GridBagConstraints.WEST;
+            JLabel dummyPin = new JLabel(":NIP");
+            dummyPin.setFont(standardFont);
+            authorizationCard.add(dummyPin, c);
+
+            c.gridx = 0;
+            c.gridy = 2;
+            c.gridwidth = 1;
+            c.insets = new Insets(fontSize, fontSize, fontSize, 0);
+            c.anchor = GridBagConstraints.CENTER;
+            JButton cancelButton = new JButton("\u00a0Cancel\u00a0");
+            cancelButton.setFont(standardFont);
+            authorizationCard.add(cancelButton, c);
+            cancelButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    System.exit(3);
+                }
+            });
+
+            c.gridx = 2;
+            c.gridy = 2;
+            c.gridwidth = 2;
+            c.insets = new Insets(fontSize, 0, fontSize, 0);
+            c.anchor = GridBagConstraints.WEST;
+            JButton okButton = new JButton("\u00a0\u00a0\u00a0OK\u00a0\u00a0\u00a0");
+            okButton.setFont(standardFont);
+            authorizationCard.add(okButton, c);
+            okButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    ((CardLayout)cards.getLayout()).show(cards, "DEBUG");
+                    debugText.setText(invokeMessageString);
+                }
+            });
+
+            c.gridx = 3;
+            c.gridy = 0;
+            c.gridheight = 2;
+            c.gridwidth = 1;
+            c.insets = new Insets(fontSize, fontSize * 2, 0, fontSize * 2);
+            c.anchor = GridBagConstraints.CENTER;
+            c.fill = GridBagConstraints.BOTH;
+            c.weightx = 1.0;
+            c.weighty = 1.0;
+            JLabel cardImage = getImageLabel("dummycard.png" , "dummycard2.png");
+            authorizationCard.add(cardImage, c);
+
+            return authorizationCard;
+        }
+
         Component getDebugCard() {
             JPanel debugCard = new JPanel();
             debugCard.setLayout(new GridBagLayout());
@@ -230,7 +319,6 @@ public class Wallet {
             debugCard.add(msgLabel, c);
 
             debugText = new JTextArea();
-            debugText.setRows(20);
             debugText.setFont(cardNumberFont);
             debugText.setEditable(false);
             JScrollPane scrollPane = new JScrollPane(debugText);
@@ -264,7 +352,7 @@ public class Wallet {
             c.insets = new Insets(standardInset, standardInset, standardInset, 0);
             debugCard.add(sendBut, c);
 
-            sendText = new JTextField(50);
+            sendText = new JTextField(40);
             sendText.setFont(new Font("Courier", Font.PLAIN, fontSize));
             c.fill = GridBagConstraints.HORIZONTAL;
             c.gridx = 1;
@@ -359,8 +447,8 @@ public class Wallet {
             }, 10000);
             try {
                 JSONObjectReader or = stdin.readJSONObject();
-                final String json = new String(or.serializeJSONObject(JSONOutputFormats.PRETTY_PRINT),"UTF-8");
-                logger.info("Received:\n" + json);
+                invokeMessageString = new String(or.serializeJSONObject(JSONOutputFormats.PRETTY_PRINT),"UTF-8");
+                logger.info("Received:\n" + invokeMessageString);
                 Messages.parseBaseMessage(Messages.INVOKE, or);
                 or.getObject(BaseProperties.PAYMENT_REQUEST_JSON).getSignature();
                 timer.cancel();
@@ -370,7 +458,7 @@ public class Wallet {
                         @Override
                         public void run() {
                             ((CardLayout)cards.getLayout()).show(cards, "DEBUG");
-                            debugText.setText(json);
+                            debugText.setText(invokeMessageString);
                             debugText.setCaretPosition(0);
                         }
                     });
