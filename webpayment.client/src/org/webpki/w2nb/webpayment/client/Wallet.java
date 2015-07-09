@@ -165,7 +165,7 @@ public class Wallet {
                 });
                 cardSelection.add(cardImage, c);
                 c.gridy++;
-                c.insets = new Insets(0,
+                c.insets = new Insets(fontSize / 3,
                                       c.gridx == 0 ? 0 : fontSize,
                                       0,
                                       c.gridx == 0 ? fontSize : 0);
@@ -292,13 +292,21 @@ public class Wallet {
             c.gridy = 0;
             c.gridheight = 2;
             c.gridwidth = 1;
-            c.insets = new Insets(fontSize, fontSize * 2, 0, fontSize * 2);
+            c.insets = new Insets(fontSize * 3, fontSize * 2, fontSize, fontSize * 2);
             c.anchor = GridBagConstraints.CENTER;
             c.fill = GridBagConstraints.BOTH;
             c.weightx = 1.0;
             c.weighty = 1.0;
-            JLabel cardImage = getImageLabel("dummycard.png" , "dummycard2.png");
-            authorizationCard.add(cardImage, c);
+            JPanel cardAndNumber = new JPanel();
+            cardAndNumber.setLayout(new GridBagLayout());
+            GridBagConstraints c2 = new GridBagConstraints();
+            cardAndNumber.add(getImageLabel("dummycard.png" , "dummycard2.png"), c2);
+            JLabel cardNumber = new JLabel("1234 1234 1234 1234");
+            cardNumber.setFont(cardNumberFont);
+            c2.insets = new Insets(fontSize / 3, 0, 0, 0);
+            c2.gridy = 1;
+            cardAndNumber.add(cardNumber, c2);
+            authorizationCard.add(cardAndNumber, c);
 
             return authorizationCard;
         }
