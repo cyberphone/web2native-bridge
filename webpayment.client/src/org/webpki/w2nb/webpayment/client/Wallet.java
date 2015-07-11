@@ -102,6 +102,7 @@ public class Wallet {
         String invokeMessageString;
         JTextField amount;
         JTextField payee;
+        JPasswordField pinText;
         boolean macOS;
  
         ApplicationFrame() {
@@ -133,6 +134,7 @@ public class Wallet {
         
         Component getCardSelection(int size) {
             JPanel cardSelection = new JPanel();
+            cardSelection.setBackground(Color.WHITE);
             cardSelection.setLayout(new GridBagLayout());
             GridBagConstraints c = new GridBagConstraints();
             c.fill = GridBagConstraints.BOTH;
@@ -162,10 +164,11 @@ public class Wallet {
                 cardImage.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
+                        ((CardLayout)cards.getLayout()).show(cards, "AUTH");
                         amount.setText("\u200a$\u200a3.25");
                         payee.setText("\u200aDemo Merchant long version");
                         payee.setCaretPosition(0);
-                        ((CardLayout)cards.getLayout()).show(cards, "AUTH");
+                        pinText.requestFocusInWindow();
                         logger.info("Card=" + index);
                     }
                 });
@@ -186,6 +189,7 @@ public class Wallet {
         
         Component getSelectionCard(int size) {
             JPanel selectionCard = new JPanel();
+            selectionCard.setBackground(Color.WHITE);
             selectionCard.setLayout(new GridBagLayout());
             GridBagConstraints c = new GridBagConstraints();
 
@@ -225,8 +229,12 @@ public class Wallet {
 
         Component getAuthorizationCard() {
             JPanel authorizationCard = new JPanel();
+            authorizationCard.setBackground(Color.WHITE);
             authorizationCard.setLayout(new GridBagLayout());
             GridBagConstraints c = new GridBagConstraints();
+            Color fixedDataBackground = new Color(244, 253, 247);
+            int spaceAfterLabel = macOS ? fontSize / 4 : fontSize / 2;
+            int maginBeforeLabel = fontSize * 2;
             c.gridx = 0;
             c.gridy = 0;
             c.gridwidth = 3;
@@ -239,7 +247,7 @@ public class Wallet {
             c.gridx = 0;
             c.gridy = 1;
             c.gridwidth = 1;
-            c.insets = new Insets(0, 0, 0, fontSize / 2);
+            c.insets = new Insets(0, maginBeforeLabel, 0, spaceAfterLabel);
             c.fill = GridBagConstraints.NONE;
             c.anchor = GridBagConstraints.EAST;
             c.weighty = 0.0;
@@ -256,13 +264,13 @@ public class Wallet {
             payee = new JTextField();
             payee.setFont(standardFont);
             payee.setFocusable(false);
-            payee.setBackground(payeeLabel.getBackground());
+            payee.setBackground(fixedDataBackground);
             authorizationCard.add(payee, c);
 
             c.gridx = 0;
             c.gridy = 2;
             c.gridwidth = 1;
-            c.insets = new Insets(fontSize, 0, (fontSize * 3) / 2, fontSize / 2);
+            c.insets = new Insets(fontSize, maginBeforeLabel, (fontSize * 3) / 2, spaceAfterLabel);
             c.anchor = GridBagConstraints.EAST;
             c.fill = GridBagConstraints.NONE;
             JLabel amountLabel = new JLabel("Amount");
@@ -278,13 +286,13 @@ public class Wallet {
             amount = new JTextField();
             amount.setFont(standardFont);
             amount.setFocusable(false);
-            amount.setBackground(amountLabel.getBackground());
+            amount.setBackground(fixedDataBackground);
             authorizationCard.add(amount, c);
 
             c.gridx = 0;
             c.gridy = 3;
             c.gridwidth = 1;
-            c.insets = new Insets(0, 0, 0, fontSize / 2);
+            c.insets = new Insets(0, maginBeforeLabel, 0, spaceAfterLabel);
             c.fill = GridBagConstraints.NONE;
             c.anchor = GridBagConstraints.EAST;
             JLabel pinLabel = new JLabel("PIN");
@@ -298,7 +306,7 @@ public class Wallet {
             c.fill = GridBagConstraints.HORIZONTAL;
             c.anchor = GridBagConstraints.CENTER;
             c.weightx = 1.0;
-            JPasswordField pinText = new JPasswordField(8);
+            pinText = new JPasswordField(8);
             pinText.setFont(standardFont);
             authorizationCard.add(pinText, c);
             c.weightx = 0.0;
@@ -357,6 +365,7 @@ public class Wallet {
             c.weightx = 1.0;
             c.weighty = 1.0;
             JPanel cardAndNumber = new JPanel();
+            cardAndNumber.setBackground(Color.WHITE);
             cardAndNumber.setLayout(new GridBagLayout());
             GridBagConstraints c2 = new GridBagConstraints();
             JLabel cardImage = getImageLabel("dummycard.png" , "dummycard2.png");
