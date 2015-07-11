@@ -25,8 +25,13 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -35,6 +40,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowAdapter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Field;
 import java.security.Security;
 import java.util.Date;
 import java.util.Timer;
@@ -78,6 +84,15 @@ public class PaymentAgent {
     static JDialog frame;
 
     static Logger logger = Logger.getLogger("MyLog");
+    
+    static final String TOOLTIP_CANCEL         = "Click if you want to abort this payment operation";
+    static final String TOOLTIP_PAY_OK         = "Click if you agree to pay";
+    static final String TOOLTIP_PAYEE          = "The party who requests payment";
+    static final String TOOLTIP_AMOUNT         = "How much you need to pay";
+    static final String TOOLTIP_PIN            = "PIN, if you are running the demo try 1234 :-)";
+    static final String TOOLTIP_CARD_SELECTION = "Click on a card to select it!";
+    static final String TOOLTIP_SELECTED_CARD  = "This card will be used in the transaction";
+
 
     private static void initLogger(String logFile) {
         // This block configure the logger with handler and formatter
@@ -90,7 +105,38 @@ public class PaymentAgent {
             throw new RuntimeException(e);
         }
     }
-    
+
+    static class RetinaIcon extends ImageIcon {
+ 
+        private static final long serialVersionUID = 1L;
+
+        public RetinaIcon(byte[] byteIcon) {
+            super(byteIcon);
+        }
+       
+        @Override
+        public synchronized void paintIcon(Component c, Graphics g, int x, int y) {
+            Image image = getImage();
+            int width = image.getWidth(c);
+            int height = image.getHeight(c);
+            final Graphics2D g2d = (Graphics2D)g.create(x, y, width, height);
+            g2d.scale(0.5, 0.5);
+            g2d.drawImage(image, 0, 0, c);
+            g2d.scale(1, 1);
+            g2d.dispose();
+        }
+
+        @Override
+        public int getIconHeight() {
+            return super.getIconHeight() / 2;
+        }
+
+        @Override
+        public int getIconWidth() {
+            return super.getIconWidth() / 2;
+        }
+    }    
+
     static class ApplicationFrame extends Thread {
         JTextArea debugText;
         JTextField sendText;
@@ -104,6 +150,8 @@ public class PaymentAgent {
         JTextField payee;
         JPasswordField pinText;
         boolean macOS;
+        boolean retinaFlag;
+        boolean hiResImages;
  
         ApplicationFrame() {
             cards = frame.getContentPane();
@@ -115,12 +163,15 @@ public class PaymentAgent {
             if (font.getSize() > fontSize || macOS) {
                 fontSize = font.getSize();
             }
+            retinaFlag = isRetina ();
+            hiResImages = retinaFlag || fontSize > 20;
             standardFont = new Font(font.getFontName(), font.getStyle(), fontSize);
             cardNumberFont = new Font("Courier", Font.PLAIN, (fontSize * 4) / 5);
             logger.info("Display Data: Screen resolution=" + screenResolution +
                          ", Screen size=" + Toolkit.getDefaultToolkit().getScreenSize() +
                          ", Font size=" + font.getSize() +
-                         ", Adjusted font size=" + fontSize);
+                         ", Adjusted font size=" + fontSize +
+                         ", Retina=" + retinaFlag);
 
             // The initial card showing we are waiting
             cards.add(getWaitingCard(), "WAITING");
@@ -146,21 +197,15 @@ public class PaymentAgent {
                                       c.gridx == 0 ? fontSize : 0,
                                       0,
                                       c.gridx == 0 ? 0 : fontSize);
-                ImageIcon image;
-                try {
-                    image = (new ImageIcon(ArrayUtil.getByteArrayFromInputStream(
-                            getClass().getResourceAsStream (fontSize > 20 ?
-                                                          "dummycard.png" : "dummycard2.png"))));
-                } catch (IOException e) {
-                    throw new RuntimeException (e);
-                }
-                JButton cardImage = new JButton(image);
+                ImageIcon icon = getImageIcon("dummycard.png", "dummycard2.png");
+                JButton cardImage = new JButton(icon);
+                cardImage.setPressedIcon(icon);
                 cardImage.setFocusPainted(false);
                 cardImage.setMargin(new Insets(0, 0, 0, 0));
                 cardImage.setContentAreaFilled(false);
                 cardImage.setBorderPainted(false);
                 cardImage.setOpaque(false);
-                cardImage.setToolTipText("Click on the card to select it!");
+                cardImage.setToolTipText(TOOLTIP_CARD_SELECTION);
                 final int index = i;
                 cardImage.addActionListener(new ActionListener() {
                     @Override
@@ -211,6 +256,7 @@ public class PaymentAgent {
             selectionCard.add(getCardSelection(size), c);
             JButton cancelButton = new JButton("\u00a0Cancel\u00a0");
             cancelButton.setFont(standardFont);
+            cancelButton.setToolTipText(TOOLTIP_CANCEL);
             cancelButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -267,6 +313,7 @@ public class PaymentAgent {
             payee.setFont(standardFont);
             payee.setFocusable(false);
             payee.setBackground(fixedDataBackground);
+            payee.setToolTipText(TOOLTIP_PAYEE);
             authorizationCard.add(payee, c);
 
             c.gridx = 0;
@@ -289,6 +336,7 @@ public class PaymentAgent {
             amount.setFont(standardFont);
             amount.setFocusable(false);
             amount.setBackground(fixedDataBackground);
+            amount.setToolTipText(TOOLTIP_AMOUNT);
             authorizationCard.add(amount, c);
 
             c.gridx = 0;
@@ -310,6 +358,7 @@ public class PaymentAgent {
             c.weightx = 1.0;
             pinText = new JPasswordField(8);
             pinText.setFont(standardFont);
+            pinText.setToolTipText(TOOLTIP_PIN);
             authorizationCard.add(pinText, c);
             c.weightx = 0.0;
 
@@ -332,6 +381,7 @@ public class PaymentAgent {
             c.weighty = 0.0;
             JButton cancelButton = new JButton("\u00a0Cancel\u00a0");
             cancelButton.setFont(standardFont);
+            cancelButton.setToolTipText(TOOLTIP_CANCEL);
             authorizationCard.add(cancelButton, c);
             cancelButton.addActionListener(new ActionListener() {
                 @Override
@@ -347,6 +397,7 @@ public class PaymentAgent {
             c.anchor = GridBagConstraints.WEST;
             JButton okButton = new JButton("\u00a0\u00a0\u00a0OK\u00a0\u00a0\u00a0");
             okButton.setFont(standardFont);
+            okButton.setToolTipText(TOOLTIP_PAY_OK);
             authorizationCard.add(okButton, c);
             okButton.addActionListener(new ActionListener() {
                 @Override
@@ -371,7 +422,7 @@ public class PaymentAgent {
             cardAndNumber.setLayout(new GridBagLayout());
             GridBagConstraints c2 = new GridBagConstraints();
             JLabel cardImage = getImageLabel("dummycard.png" , "dummycard2.png");
-            cardImage.setToolTipText("This card will be used in the transaction");
+            cardImage.setToolTipText(TOOLTIP_SELECTED_CARD);
             cardAndNumber.add(cardImage, c2);
             JLabel cardNumber = new JLabel("1234 1234 1234 1234");
             cardNumber.setFont(cardNumberFont);
@@ -462,13 +513,18 @@ public class PaymentAgent {
             return waitingCard;
         }
 
-        JLabel getImageLabel(String big, String small) {
+        ImageIcon getImageIcon(String big, String small) {
             try {
-                return new JLabel(new ImageIcon(ArrayUtil.getByteArrayFromInputStream(
-                        getClass().getResourceAsStream (fontSize > 20 ? big : small))));
+                byte[] byteIcon = ArrayUtil.getByteArrayFromInputStream(
+                        getClass().getResourceAsStream (hiResImages ? big : small));
+                return retinaFlag ? new RetinaIcon(byteIcon) : new ImageIcon(byteIcon);
             } catch (IOException e) {
                 throw new RuntimeException (e);
             }
+        }
+
+        JLabel getImageLabel(String big, String small) {
+            return new JLabel(getImageIcon(big, small));
         }
 
         void showProblemDialog (boolean error, String message, final WindowAdapter windowAdapter) {
@@ -509,6 +565,27 @@ public class PaymentAgent {
             dialog.setVisible(true);
         }
 
+        boolean isRetina() {
+            if (macOS) {
+                GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
+                final GraphicsDevice device = env.getDefaultScreenDevice();
+           
+                try {
+                    Field field = device.getClass().getDeclaredField("scale");
+           
+                    if (field != null) {
+                        field.setAccessible(true);
+                        Object scale = field.get(device);
+           
+                        if (scale instanceof Integer && ((Integer)scale).intValue() == 2) {
+                            return true;
+                        }
+                    }
+                } catch (Exception ignore) {}
+            }
+            return false;
+        }
+        
         @Override
         public void run() {
             final Timer timer = new Timer();
