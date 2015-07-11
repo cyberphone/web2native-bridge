@@ -138,13 +138,14 @@ public class Wallet {
             cardSelection.setLayout(new GridBagLayout());
             GridBagConstraints c = new GridBagConstraints();
             c.fill = GridBagConstraints.BOTH;
+            c.weightx = 1.0;
             for (int i = 0; i < size; i++) {
                 c.gridx = i % 2;
                 c.gridy = (i / 2) * 2;
                 c.insets = new Insets(c.gridy == 0 ? 0 : fontSize,
-                                      c.gridx == 0 ? 0 : fontSize,
+                                      c.gridx == 0 ? fontSize : 0,
                                       0,
-                                      c.gridx == 0 ? fontSize : 0);
+                                      fontSize);
                 ImageIcon image;
                 try {
                     image = (new ImageIcon(ArrayUtil.getByteArrayFromInputStream(
@@ -175,9 +176,9 @@ public class Wallet {
                 cardSelection.add(cardImage, c);
                 c.gridy++;
                 c.insets = new Insets(fontSize / 3,
-                                      c.gridx == 0 ? 0 : fontSize,
+                                      c.gridx == 0 ? fontSize : 0,
                                       0,
-                                      c.gridx == 0 ? fontSize : 0);
+                                      fontSize);
                 JLabel cardNumber = new JLabel("0123 4567 8901 234" + i, JLabel.CENTER);
                 cardNumber.setFont(cardNumberFont);
                 cardSelection.add(cardNumber, c);
@@ -238,7 +239,7 @@ public class Wallet {
             c.gridx = 0;
             c.gridy = 0;
             c.gridwidth = 3;
-            c.insets = new Insets(0, fontSize * 3, 0, 0);
+            c.insets = new Insets((fontSize * 5) / 2, fontSize * 3, 0, 0);
             c.anchor = GridBagConstraints.CENTER;
             c.fill = GridBagConstraints.VERTICAL;
             c.weighty = 1.0;
@@ -314,10 +315,10 @@ public class Wallet {
             c.gridx = 0;
             c.gridy = 4;
             c.gridwidth = 3;
-            c.insets = new Insets(0, 0, 0, 0);
+            c.insets = new Insets(0, 0, fontSize, 0);
             c.fill = GridBagConstraints.BOTH;
             c.weighty = 0.6;
-            JLabel dummy = new JLabel("");
+            JLabel dummy = new JLabel(" ");
             dummy.setFont(standardFont);
             authorizationCard.add(dummy, c);
 
@@ -359,10 +360,10 @@ public class Wallet {
             c.gridy = 0;
             c.gridheight = 6;
             c.gridwidth = 1;
-            c.insets = new Insets(fontSize * 4, fontSize * 2, fontSize * 4, fontSize * 2);
+            c.insets = new Insets(fontSize * 4, fontSize, fontSize * 4, fontSize * 2);
             c.anchor = GridBagConstraints.CENTER;
             c.fill = GridBagConstraints.BOTH;
-            c.weightx = 1.0;
+            c.weightx = 0.0;
             c.weighty = 1.0;
             JPanel cardAndNumber = new JPanel();
             cardAndNumber.setBackground(Color.WHITE);
@@ -538,7 +539,7 @@ public class Wallet {
                         @Override
                         public void run() {
                             running = false;
-                            cards.add(getSelectionCard(5), "SELECTION");
+                            cards.add(getSelectionCard(4), "SELECTION");
                             ((CardLayout)cards.getLayout()).show(cards, "SELECTION");
                         }
                     });
