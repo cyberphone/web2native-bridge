@@ -195,13 +195,13 @@ public class PaymentAgent {
                          ", Retina=" + retinaFlag);
 
             // The initial card showing we are waiting
-            cards.add(getWaitingCard(), CARD_INITIALIZING);
+            initWaitingCard();
  
             // Debug messages
-            cards.add(getDebugCard(), CARD_DEBUG);
+            initDebugCard();
             
             // The only thing we really care about, right?
-            cards.add(getAuthorizationCard(), CARD_AUTHORIZE);
+            initAuthorizationCard();
         }
         
         Component initCardSelectionViewCore() {
@@ -282,7 +282,7 @@ public class PaymentAgent {
             });
             c.gridx = 0;
             c.gridy = 2;
-            c.anchor = GridBagConstraints.WEST;
+            c.anchor = GridBagConstraints.SOUTHWEST;
             c.fill = GridBagConstraints.NONE;
             c.weightx = 0.0;
             c.weighty = 0.0; 
@@ -292,7 +292,7 @@ public class PaymentAgent {
             ((CardLayout)cards.getLayout()).show(cards, CARD_SELECTION);
         }
 
-        Component getAuthorizationCard() {
+        void initAuthorizationCard() {
             JPanel authorizationCard = new JPanel();
             authorizationCard.setBackground(Color.WHITE);
             authorizationCard.setLayout(new GridBagLayout());
@@ -448,7 +448,7 @@ public class PaymentAgent {
             cardAndNumber.add(selectedCardNumber, c2);
             authorizationCard.add(cardAndNumber, c);
 
-            return authorizationCard;
+            cards.add(authorizationCard, CARD_AUTHORIZE);
         }
 
         void showAuthorizationView(int keyHandle) {
@@ -462,7 +462,7 @@ public class PaymentAgent {
             pinText.requestFocusInWindow();
         }
 
-        Component getDebugCard() {
+        void initDebugCard() {
             JPanel debugCard = new JPanel();
             debugCard.setLayout(new GridBagLayout());
             GridBagConstraints c = new GridBagConstraints();
@@ -520,10 +520,10 @@ public class PaymentAgent {
             c.insets = new Insets(standardInset, standardInset, standardInset, standardInset);
             debugCard.add(sendText, c);
 
-            return debugCard;
+            cards.add(debugCard, CARD_DEBUG);
         }
 
-        Component getWaitingCard() {
+        void initWaitingCard() {
             JPanel waitingCard = new JPanel();
             waitingCard.setLayout(new GridBagLayout());
             GridBagConstraints c = new GridBagConstraints();
@@ -538,7 +538,7 @@ public class PaymentAgent {
             c.insets = new Insets(fontSize, 0, 0, 0);
             waitingCard.add(waitingText, c);
 
-            return waitingCard;
+            cards.add(waitingCard, CARD_INITIALIZING);
         }
 
         ImageIcon getImageIcon(String big, String small) {
