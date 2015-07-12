@@ -43,6 +43,7 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.security.Security;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.FileHandler;
@@ -79,6 +80,7 @@ import org.webpki.w2nbproxy.StdoutJSONPipe;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 public class PaymentAgent {
+
     static StdinJSONPipe stdin = new StdinJSONPipe();
     static StdoutJSONPipe stdout = new StdoutJSONPipe();
     static JDialog frame;
@@ -92,9 +94,26 @@ public class PaymentAgent {
     static final String TOOLTIP_PIN            = "PIN, if you are running the demo try 1234 :-)";
     static final String TOOLTIP_CARD_SELECTION = "Click on a card to select it!";
     static final String TOOLTIP_SELECTED_CARD  = "This card will be used in the transaction";
+    
+    static final String CARD_INITIALIZING      = "INIT";
+    static final String CARD_SELECTION         = "SELECT";
+    static final String CARD_AUTHORIZE         = "AUTH";
+    static final String CARD_DEBUG             = "DEBUG";
+    
+    static class Card {
+        String cardNumber;
+        ImageIcon cardIcon;
+        
+        Card(String cardNumber, ImageIcon cardIcon) {
+            this.cardNumber = cardNumber;
+            this.cardIcon = cardIcon;
+        }
+    }
+    
+    static LinkedHashMap<Integer,Card> cardSelection = new LinkedHashMap<Integer,Card>();
 
 
-    private static void initLogger(String logFile) {
+    static void initLogger(String logFile) {
         // This block configure the logger with handler and formatter
         try {
             FileHandler fh = new FileHandler(logFile);
@@ -146,9 +165,11 @@ public class PaymentAgent {
         Font cardNumberFont;
         int fontSize;
         String invokeMessageString;
-        JTextField amount;
-        JTextField payee;
+        JTextField amountField;
+        JTextField payeeField;
         JPasswordField pinText;
+        JLabel selectedCardImage;
+        JLabel selectedCardNumber;
         boolean macOS;
         boolean retinaFlag;
         boolean hiResImages;
@@ -174,77 +195,73 @@ public class PaymentAgent {
                          ", Retina=" + retinaFlag);
 
             // The initial card showing we are waiting
-            cards.add(getWaitingCard(), "WAITING");
+            cards.add(getWaitingCard(), CARD_INITIALIZING);
  
             // Debug messages
-            cards.add(getDebugCard(), "DEBUG");
+            cards.add(getDebugCard(), CARD_DEBUG);
             
-            // And the core thing we care about
-            cards.add(getAuthorizationCard(), "AUTH");
+            // The only thing we really care about, right?
+            cards.add(getAuthorizationCard(), CARD_AUTHORIZE);
         }
         
-        Component getCardSelection(int size) {
-            JPanel cardSelection = new JPanel();
-            cardSelection.setBackground(Color.WHITE);
-            cardSelection.setLayout(new GridBagLayout());
+        Component initCardSelectionViewCore() {
+            JPanel cardSelectionViewCore = new JPanel();
+            cardSelectionViewCore.setBackground(Color.WHITE);
+            cardSelectionViewCore.setLayout(new GridBagLayout());
             GridBagConstraints c = new GridBagConstraints();
             c.fill = GridBagConstraints.BOTH;
             c.weightx = 1.0;
-            for (int i = 0; i < size; i++) {
-                c.gridx = i % 2;
-                c.gridy = (i / 2) * 2;
+            int itemNumber = 0;
+            for (final Integer keyHandle : cardSelection.keySet()) {
+                Card card = cardSelection.get(keyHandle);
+                c.gridx = itemNumber % 2;
+                c.gridy = (itemNumber / 2) * 2;
                 c.insets = new Insets(c.gridy == 0 ? 0 : fontSize,
                                       c.gridx == 0 ? fontSize : 0,
                                       0,
                                       c.gridx == 0 ? 0 : fontSize);
-                ImageIcon icon = getImageIcon("dummycard.png", "dummycard2.png");
-                JButton cardImage = new JButton(icon);
-                cardImage.setPressedIcon(icon);
+                JButton cardImage = new JButton(card.cardIcon);
+                cardImage.setPressedIcon(card.cardIcon);
                 cardImage.setFocusPainted(false);
                 cardImage.setMargin(new Insets(0, 0, 0, 0));
                 cardImage.setContentAreaFilled(false);
                 cardImage.setBorderPainted(false);
                 cardImage.setOpaque(false);
                 cardImage.setToolTipText(TOOLTIP_CARD_SELECTION);
-                final int index = i;
                 cardImage.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        ((CardLayout)cards.getLayout()).show(cards, "AUTH");
-                        amount.setText("\u200a$\u200a3.25");
-                        payee.setText("\u200aDemo Merchant long version");
-                        payee.setCaretPosition(0);
-                        pinText.requestFocusInWindow();
-                        logger.info("Card=" + index);
+                        showAuthorizationView(keyHandle);
                     }
                 });
-                cardSelection.add(cardImage, c);
+                cardSelectionViewCore.add(cardImage, c);
 
                 c.gridy++;
                 c.insets = new Insets(fontSize / 3,
                                       c.gridx == 0 ? fontSize : 0,
                                       0,
                                       c.gridx == 0 ? 0 : fontSize);
-                JLabel cardNumber = new JLabel("0123 4567 8901 234" + i, JLabel.CENTER);
+                JLabel cardNumber = new JLabel(card.cardNumber, JLabel.CENTER);
                 cardNumber.setFont(cardNumberFont);
-                cardSelection.add(cardNumber, c);
+                cardSelectionViewCore.add(cardNumber, c);
+                itemNumber++;
             }
-            JScrollPane scrollPane = new JScrollPane(cardSelection);
+            JScrollPane scrollPane = new JScrollPane(cardSelectionViewCore);
             scrollPane.setBorder(new EmptyBorder(0, 0, 0, 0));
             return scrollPane;
         }
         
-        Component getSelectionCard(int size) {
-            JPanel selectionCard = new JPanel();
-            selectionCard.setBackground(Color.WHITE);
-            selectionCard.setLayout(new GridBagLayout());
+        void showSelectionCardView() {
+            JPanel selectionCardView = new JPanel();
+            selectionCardView.setBackground(Color.WHITE);
+            selectionCardView.setLayout(new GridBagLayout());
             GridBagConstraints c = new GridBagConstraints();
 
             JLabel headerText = new JLabel("Select Card:");
             headerText.setFont(standardFont);
             c.insets = new Insets(fontSize, fontSize, fontSize, fontSize);
             c.anchor = GridBagConstraints.WEST;
-            selectionCard.add(headerText, c);
+            selectionCardView.add(headerText, c);
 
             c.gridx = 0;
             c.gridy = 1;
@@ -253,7 +270,7 @@ public class PaymentAgent {
             c.weightx = 1.0;
             c.weighty = 1.0; 
             c.insets = new Insets(0, 0, 0, 0);
-            selectionCard.add(getCardSelection(size), c);
+            selectionCardView.add(initCardSelectionViewCore(), c);
             JButton cancelButton = new JButton("\u00a0Cancel\u00a0");
             cancelButton.setFont(standardFont);
             cancelButton.setToolTipText(TOOLTIP_CANCEL);
@@ -270,9 +287,9 @@ public class PaymentAgent {
             c.weightx = 0.0;
             c.weighty = 0.0; 
             c.insets = new Insets(fontSize, fontSize, fontSize, fontSize);
-            selectionCard.add(cancelButton, c);
- 
-            return selectionCard;
+            selectionCardView.add(cancelButton, c);
+            cards.add(selectionCardView, CARD_SELECTION);
+            ((CardLayout)cards.getLayout()).show(cards, CARD_SELECTION);
         }
 
         Component getAuthorizationCard() {
@@ -309,12 +326,12 @@ public class PaymentAgent {
             c.insets = new Insets(0, 0, 0, fontSize * 2);
             c.fill = GridBagConstraints.HORIZONTAL;
             c.anchor = GridBagConstraints.WEST;
-            payee = new JTextField();
-            payee.setFont(standardFont);
-            payee.setFocusable(false);
-            payee.setBackground(fixedDataBackground);
-            payee.setToolTipText(TOOLTIP_PAYEE);
-            authorizationCard.add(payee, c);
+            payeeField = new JTextField();
+            payeeField.setFont(standardFont);
+            payeeField.setFocusable(false);
+            payeeField.setBackground(fixedDataBackground);
+            payeeField.setToolTipText(TOOLTIP_PAYEE);
+            authorizationCard.add(payeeField, c);
 
             c.gridx = 0;
             c.gridy = 2;
@@ -332,12 +349,12 @@ public class PaymentAgent {
             c.insets = new Insets(fontSize, 0, (fontSize * 3) / 2, 0);
             c.fill = GridBagConstraints.HORIZONTAL;
             c.anchor = GridBagConstraints.WEST;
-            amount = new JTextField();
-            amount.setFont(standardFont);
-            amount.setFocusable(false);
-            amount.setBackground(fixedDataBackground);
-            amount.setToolTipText(TOOLTIP_AMOUNT);
-            authorizationCard.add(amount, c);
+            amountField = new JTextField();
+            amountField.setFont(standardFont);
+            amountField.setFocusable(false);
+            amountField.setBackground(fixedDataBackground);
+            amountField.setToolTipText(TOOLTIP_AMOUNT);
+            authorizationCard.add(amountField, c);
 
             c.gridx = 0;
             c.gridy = 3;
@@ -402,7 +419,7 @@ public class PaymentAgent {
             okButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    ((CardLayout)cards.getLayout()).show(cards, "DEBUG");
+                    ((CardLayout)cards.getLayout()).show(cards, CARD_DEBUG);
                     debugText.setText(invokeMessageString);
                     debugText.setCaretPosition(0);
                 }
@@ -421,17 +438,28 @@ public class PaymentAgent {
             cardAndNumber.setBackground(Color.WHITE);
             cardAndNumber.setLayout(new GridBagLayout());
             GridBagConstraints c2 = new GridBagConstraints();
-            JLabel cardImage = getImageLabel("dummycard.png" , "dummycard2.png");
-            cardImage.setToolTipText(TOOLTIP_SELECTED_CARD);
-            cardAndNumber.add(cardImage, c2);
-            JLabel cardNumber = new JLabel("1234 1234 1234 1234");
-            cardNumber.setFont(cardNumberFont);
+            selectedCardImage = getImageLabel("dummycard.png" , "dummycard2.png");
+            selectedCardImage.setToolTipText(TOOLTIP_SELECTED_CARD);
+            cardAndNumber.add(selectedCardImage, c2);
+            selectedCardNumber = new JLabel("1234 1234 1234 1234");
+            selectedCardNumber.setFont(cardNumberFont);
             c2.insets = new Insets(fontSize / 3, 0, 0, 0);
             c2.gridy = 1;
-            cardAndNumber.add(cardNumber, c2);
+            cardAndNumber.add(selectedCardNumber, c2);
             authorizationCard.add(cardAndNumber, c);
 
             return authorizationCard;
+        }
+
+        void showAuthorizationView(int keyHandle) {
+            logger.info("Selected Card=" + keyHandle);
+            amountField.setText("\u200a$\u200a3.25");
+            payeeField.setText("\u200aDemo Merchant long version");
+            selectedCardImage.setIcon(cardSelection.get(keyHandle).cardIcon);
+            selectedCardNumber.setText(cardSelection.get(keyHandle).cardNumber);
+            ((CardLayout)cards.getLayout()).show(cards, CARD_AUTHORIZE);
+            payeeField.setCaretPosition(0);
+            pinText.requestFocusInWindow();
         }
 
         Component getDebugCard() {
@@ -612,13 +640,29 @@ public class PaymentAgent {
                 or.getObject(BaseProperties.PAYMENT_REQUEST_JSON).getSignature();
                 timer.cancel();
                 if (running) {
-                    // Swing is rather bad for multithreading...
+                    // Swing is rather bad for multi-threading...
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
                             running = false;
-                            cards.add(getSelectionCard(2), "SELECTION");
-                            ((CardLayout)cards.getLayout()).show(cards, "SELECTION");
+                            for (int keyHandle = 0; keyHandle < 2; keyHandle++) {
+                                cardSelection.put(keyHandle, new Card("1234 1234 1234 123" + keyHandle,
+                                                             getImageIcon(keyHandle > 0 ? "coolcard.png" : "supercard.png",
+                                                                          keyHandle > 0 ? "coolcard2.png" : "supercard2.png")));
+                            }
+                            if (cardSelection.isEmpty()) {
+                                logger.log(Level.SEVERE, "No matching card");
+                                showProblemDialog(true, "No matching card!", new WindowAdapter() {
+                                    @Override
+                                    public void windowClosing(WindowEvent event) {
+                                        System.exit(3);
+                                    }
+                                });
+                            } else if (cardSelection.size() == 1) {
+                                showAuthorizationView(cardSelection.keySet().iterator().next());
+                            } else {
+                                showSelectionCardView();
+                            }
                         }
                     });
                 }
