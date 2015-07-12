@@ -393,7 +393,7 @@ public class PaymentAgent {
             c.gridy = 5;
             c.gridwidth = 1;
             c.insets = new Insets(0, fontSize, fontSize, 0);
-            c.anchor = GridBagConstraints.CENTER;
+            c.anchor = GridBagConstraints.SOUTHWEST;
             c.fill = GridBagConstraints.NONE;
             c.weighty = 0.0;
             JButton cancelButton = new JButton("\u00a0Cancel\u00a0");
@@ -411,7 +411,7 @@ public class PaymentAgent {
             c.gridy = 5;
             c.gridwidth = 1;
             c.insets = new Insets(0, 0, fontSize, 0);
-            c.anchor = GridBagConstraints.WEST;
+            c.anchor = GridBagConstraints.SOUTH;
             JButton okButton = new JButton("\u00a0\u00a0\u00a0OK\u00a0\u00a0\u00a0");
             okButton.setFont(standardFont);
             okButton.setToolTipText(TOOLTIP_PAY_OK);
