@@ -156,7 +156,7 @@ public class PaymentAgent {
         }
     }    
 
-    static class ApplicationFrame extends Thread {
+    static class ApplicationWindow extends Thread {
         JTextArea debugText;
         JTextField sendText;
         Container cards;
@@ -174,7 +174,7 @@ public class PaymentAgent {
         boolean retinaFlag;
         boolean hiResImages;
  
-        ApplicationFrame() {
+        ApplicationWindow() {
             cards = frame.getContentPane();
             cards.setLayout(new CardLayout());
             int screenResolution = Toolkit.getDefaultToolkit().getScreenResolution();
@@ -195,13 +195,13 @@ public class PaymentAgent {
                          ", Retina=" + retinaFlag);
 
             // The initial card showing we are waiting
-            initWaitingCard();
+            initWaitingView();
  
             // Debug messages
-            initDebugCard();
+            initDebugView();
             
             // The only thing we really care about, right?
-            initAuthorizationCard();
+            initAuthorizationView();
         }
         
         Component initCardSelectionViewCore() {
@@ -251,17 +251,17 @@ public class PaymentAgent {
             return scrollPane;
         }
         
-        void showSelectionCardView() {
-            JPanel selectionCardView = new JPanel();
-            selectionCardView.setBackground(Color.WHITE);
-            selectionCardView.setLayout(new GridBagLayout());
+        void showCardSelectionView() {
+            JPanel cardSelectionView = new JPanel();
+            cardSelectionView.setBackground(Color.WHITE);
+            cardSelectionView.setLayout(new GridBagLayout());
             GridBagConstraints c = new GridBagConstraints();
 
             JLabel headerText = new JLabel("Select Card:");
             headerText.setFont(standardFont);
             c.insets = new Insets(fontSize, fontSize, fontSize, fontSize);
             c.anchor = GridBagConstraints.WEST;
-            selectionCardView.add(headerText, c);
+            cardSelectionView.add(headerText, c);
 
             c.gridx = 0;
             c.gridy = 1;
@@ -270,7 +270,7 @@ public class PaymentAgent {
             c.weightx = 1.0;
             c.weighty = 1.0; 
             c.insets = new Insets(0, 0, 0, 0);
-            selectionCardView.add(initCardSelectionViewCore(), c);
+            cardSelectionView.add(initCardSelectionViewCore(), c);
             JButton cancelButton = new JButton("\u00a0Cancel\u00a0");
             cancelButton.setFont(standardFont);
             cancelButton.setToolTipText(TOOLTIP_CANCEL);
@@ -287,15 +287,16 @@ public class PaymentAgent {
             c.weightx = 0.0;
             c.weighty = 0.0; 
             c.insets = new Insets(fontSize, fontSize, fontSize, fontSize);
-            selectionCardView.add(cancelButton, c);
-            cards.add(selectionCardView, CARD_SELECTION);
+            cardSelectionView.add(cancelButton, c);
+
+            cards.add(cardSelectionView, CARD_SELECTION);
             ((CardLayout)cards.getLayout()).show(cards, CARD_SELECTION);
         }
 
-        void initAuthorizationCard() {
-            JPanel authorizationCard = new JPanel();
-            authorizationCard.setBackground(Color.WHITE);
-            authorizationCard.setLayout(new GridBagLayout());
+        void initAuthorizationView() {
+            JPanel authorizationView = new JPanel();
+            authorizationView.setBackground(Color.WHITE);
+            authorizationView.setLayout(new GridBagLayout());
             GridBagConstraints c = new GridBagConstraints();
             Color fixedDataBackground = new Color(244, 253, 247);
             int spaceAfterLabel = macOS ? fontSize / 4 : fontSize / 2;
@@ -307,7 +308,7 @@ public class PaymentAgent {
             c.anchor = GridBagConstraints.CENTER;
             c.fill = GridBagConstraints.VERTICAL;
             c.weighty = 1.0;
-            authorizationCard.add(getImageLabel("dummyline.png" , "dummyline2.png"), c);
+            authorizationView.add(getImageLabel("dummyline.png" , "dummyline2.png"), c);
 
             c.gridx = 0;
             c.gridy = 1;
@@ -318,7 +319,7 @@ public class PaymentAgent {
             c.weighty = 0.0;
             JLabel payeeLabel = new JLabel("Payee");
             payeeLabel.setFont(standardFont);
-            authorizationCard.add(payeeLabel, c);
+            authorizationView.add(payeeLabel, c);
 
             c.gridx = 1;
             c.gridy = 1;
@@ -331,7 +332,7 @@ public class PaymentAgent {
             payeeField.setFocusable(false);
             payeeField.setBackground(fixedDataBackground);
             payeeField.setToolTipText(TOOLTIP_PAYEE);
-            authorizationCard.add(payeeField, c);
+            authorizationView.add(payeeField, c);
 
             c.gridx = 0;
             c.gridy = 2;
@@ -341,7 +342,7 @@ public class PaymentAgent {
             c.fill = GridBagConstraints.NONE;
             JLabel amountLabel = new JLabel("Amount");
             amountLabel.setFont(standardFont);
-            authorizationCard.add(amountLabel, c);
+            authorizationView.add(amountLabel, c);
 
             c.gridx = 1;
             c.gridy = 2;
@@ -354,7 +355,7 @@ public class PaymentAgent {
             amountField.setFocusable(false);
             amountField.setBackground(fixedDataBackground);
             amountField.setToolTipText(TOOLTIP_AMOUNT);
-            authorizationCard.add(amountField, c);
+            authorizationView.add(amountField, c);
 
             c.gridx = 0;
             c.gridy = 3;
@@ -364,7 +365,7 @@ public class PaymentAgent {
             c.anchor = GridBagConstraints.EAST;
             JLabel pinLabel = new JLabel("PIN");
             pinLabel.setFont(standardFont);
-            authorizationCard.add(pinLabel, c);
+            authorizationView.add(pinLabel, c);
 
             c.gridx = 1;
             c.gridy = 3;
@@ -376,7 +377,7 @@ public class PaymentAgent {
             pinText = new JPasswordField(8);
             pinText.setFont(standardFont);
             pinText.setToolTipText(TOOLTIP_PIN);
-            authorizationCard.add(pinText, c);
+            authorizationView.add(pinText, c);
             c.weightx = 0.0;
 
             c.gridx = 0;
@@ -387,7 +388,7 @@ public class PaymentAgent {
             c.weighty = 0.6;
             JLabel dummy = new JLabel(" ");
             dummy.setFont(standardFont);
-            authorizationCard.add(dummy, c);
+            authorizationView.add(dummy, c);
 
             c.gridx = 0;
             c.gridy = 5;
@@ -399,7 +400,7 @@ public class PaymentAgent {
             JButton cancelButton = new JButton("\u00a0Cancel\u00a0");
             cancelButton.setFont(standardFont);
             cancelButton.setToolTipText(TOOLTIP_CANCEL);
-            authorizationCard.add(cancelButton, c);
+            authorizationView.add(cancelButton, c);
             cancelButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -415,7 +416,7 @@ public class PaymentAgent {
             JButton okButton = new JButton("\u00a0\u00a0\u00a0OK\u00a0\u00a0\u00a0");
             okButton.setFont(standardFont);
             okButton.setToolTipText(TOOLTIP_PAY_OK);
-            authorizationCard.add(okButton, c);
+            authorizationView.add(okButton, c);
             okButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -446,9 +447,9 @@ public class PaymentAgent {
             c2.insets = new Insets(fontSize / 3, 0, 0, 0);
             c2.gridy = 1;
             cardAndNumber.add(selectedCardNumber, c2);
-            authorizationCard.add(cardAndNumber, c);
+            authorizationView.add(cardAndNumber, c);
 
-            cards.add(authorizationCard, CARD_AUTHORIZE);
+            cards.add(authorizationView, CARD_AUTHORIZE);
         }
 
         void showAuthorizationView(int keyHandle) {
@@ -462,7 +463,7 @@ public class PaymentAgent {
             pinText.requestFocusInWindow();
         }
 
-        void initDebugCard() {
+        void initDebugView() {
             JPanel debugCard = new JPanel();
             debugCard.setLayout(new GridBagLayout());
             GridBagConstraints c = new GridBagConstraints();
@@ -523,7 +524,7 @@ public class PaymentAgent {
             cards.add(debugCard, CARD_DEBUG);
         }
 
-        void initWaitingCard() {
+        void initWaitingView() {
             JPanel waitingCard = new JPanel();
             waitingCard.setLayout(new GridBagLayout());
             GridBagConstraints c = new GridBagConstraints();
@@ -661,7 +662,7 @@ public class PaymentAgent {
                             } else if (cardSelection.size() == 1) {
                                 showAuthorizationView(cardSelection.keySet().iterator().next());
                             } else {
-                                showSelectionCardView();
+                                showCardSelectionView();
                             }
                         }
                     });
@@ -706,7 +707,7 @@ public class PaymentAgent {
 
         frame = new JDialog(new JFrame(), "Payment Request [" + args[1] + "]");
         frame.setResizable(false);
-        ApplicationFrame md = new ApplicationFrame();
+        ApplicationWindow md = new ApplicationWindow();
         frame.pack();
         frame.setAlwaysOnTop(true);
         frame.setLocationRelativeTo(null);
