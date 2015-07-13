@@ -90,15 +90,15 @@ public class PaymentAgent {
     static final String TOOLTIP_CANCEL         = "Click if you want to abort this payment operation";
     static final String TOOLTIP_PAY_OK         = "Click if you agree to pay";
     static final String TOOLTIP_PAYEE          = "The party who requests payment";
-    static final String TOOLTIP_AMOUNT         = "How much you need to pay";
+    static final String TOOLTIP_AMOUNT         = "How much you are requested to pay";
     static final String TOOLTIP_PIN            = "PIN, if you are running the demo try 1234 :-)";
     static final String TOOLTIP_CARD_SELECTION = "Click on a card to select it!";
     static final String TOOLTIP_SELECTED_CARD  = "This card will be used in the transaction";
     
-    static final String CARD_INITIALIZING      = "INIT";
-    static final String CARD_SELECTION         = "SELECT";
-    static final String CARD_AUTHORIZE         = "AUTH";
-    static final String CARD_DEBUG             = "DEBUG";
+    static final String VIEW_INITIALIZING      = "INIT";
+    static final String VIEW_SELECTION         = "SELECT";
+    static final String VIEW_AUTHORIZE         = "AUTH";
+    static final String VIEW_DEBUG             = "DEBUG";
     
     static class Card {
         String cardNumber;
@@ -112,7 +112,6 @@ public class PaymentAgent {
     
     static LinkedHashMap<Integer,Card> cardSelection = new LinkedHashMap<Integer,Card>();
 
-
     static void initLogger(String logFile) {
         // This block configure the logger with handler and formatter
         try {
@@ -121,7 +120,7 @@ public class PaymentAgent {
             SimpleFormatter formatter = new SimpleFormatter();
             fh.setFormatter(formatter);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            terminate();
         }
     }
 
@@ -154,12 +153,16 @@ public class PaymentAgent {
         public int getIconWidth() {
             return super.getIconWidth() / 2;
         }
-    }    
+    }
+
+    static void terminate() {
+        System.exit(3);
+    }
 
     static class ApplicationWindow extends Thread {
         JTextArea debugText;
         JTextField sendText;
-        Container cards;
+        Container views;
         boolean running = true;
         Font standardFont;
         Font cardNumberFont;
@@ -167,6 +170,8 @@ public class PaymentAgent {
         String invokeMessageString;
         JTextField amountField;
         JTextField payeeField;
+        String amount;
+        String payee;
         JPasswordField pinText;
         JLabel selectedCardImage;
         JLabel selectedCardNumber;
@@ -175,8 +180,8 @@ public class PaymentAgent {
         boolean hiResImages;
  
         ApplicationWindow() {
-            cards = frame.getContentPane();
-            cards.setLayout(new CardLayout());
+            views = frame.getContentPane();
+            views.setLayout(new CardLayout());
             int screenResolution = Toolkit.getDefaultToolkit().getScreenResolution();
             fontSize = screenResolution / 7;
             Font font = new JLabel("Dummy").getFont();
@@ -271,13 +276,14 @@ public class PaymentAgent {
             c.weighty = 1.0; 
             c.insets = new Insets(0, 0, 0, 0);
             cardSelectionView.add(initCardSelectionViewCore(), c);
+
             JButton cancelButton = new JButton("\u00a0Cancel\u00a0");
             cancelButton.setFont(standardFont);
             cancelButton.setToolTipText(TOOLTIP_CANCEL);
             cancelButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    System.exit(3);
+                    terminate();
                 }
             });
             c.gridx = 0;
@@ -289,8 +295,8 @@ public class PaymentAgent {
             c.insets = new Insets(fontSize, fontSize, fontSize, fontSize);
             cardSelectionView.add(cancelButton, c);
 
-            cards.add(cardSelectionView, CARD_SELECTION);
-            ((CardLayout)cards.getLayout()).show(cards, CARD_SELECTION);
+            views.add(cardSelectionView, VIEW_SELECTION);
+            ((CardLayout)views.getLayout()).show(views, VIEW_SELECTION);
         }
 
         void initAuthorizationView() {
@@ -404,7 +410,7 @@ public class PaymentAgent {
             cancelButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    System.exit(3);
+                    terminate();
                 }
             });
 
@@ -420,7 +426,7 @@ public class PaymentAgent {
             okButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    ((CardLayout)cards.getLayout()).show(cards, CARD_DEBUG);
+                    ((CardLayout)views.getLayout()).show(views, VIEW_DEBUG);
                     debugText.setText(invokeMessageString);
                     debugText.setCaretPosition(0);
                 }
@@ -449,23 +455,23 @@ public class PaymentAgent {
             cardAndNumber.add(selectedCardNumber, c2);
             authorizationView.add(cardAndNumber, c);
 
-            cards.add(authorizationView, CARD_AUTHORIZE);
+            views.add(authorizationView, VIEW_AUTHORIZE);
         }
 
         void showAuthorizationView(int keyHandle) {
             logger.info("Selected Card=" + keyHandle);
-            amountField.setText("\u200a$\u200a3.25");
-            payeeField.setText("\u200aDemo Merchant long version");
+            amountField.setText("\u200a" + amount);
+            payeeField.setText("\u200a" + payee);
             selectedCardImage.setIcon(cardSelection.get(keyHandle).cardIcon);
             selectedCardNumber.setText(cardSelection.get(keyHandle).cardNumber);
-            ((CardLayout)cards.getLayout()).show(cards, CARD_AUTHORIZE);
+            ((CardLayout)views.getLayout()).show(views, VIEW_AUTHORIZE);
             payeeField.setCaretPosition(0);
             pinText.requestFocusInWindow();
         }
 
         void initDebugView() {
-            JPanel debugCard = new JPanel();
-            debugCard.setLayout(new GridBagLayout());
+            JPanel debugView = new JPanel();
+            debugView.setLayout(new GridBagLayout());
             GridBagConstraints c = new GridBagConstraints();
             int standardInset = fontSize/3;
 
@@ -478,7 +484,7 @@ public class PaymentAgent {
             c.insets = new Insets(standardInset, standardInset, standardInset, standardInset);
             JLabel msgLabel = new JLabel("Messages:");
             msgLabel.setFont(standardFont);
-            debugCard.add(msgLabel, c);
+            debugView.add(msgLabel, c);
 
             debugText = new JTextArea();
             debugText.setFont(cardNumberFont);
@@ -490,7 +496,7 @@ public class PaymentAgent {
             c.gridwidth = 2;
             c.gridy = 1;
             c.insets = new Insets(0, standardInset, 0, standardInset);
-            debugCard.add(scrollPane , c);
+            debugView.add(scrollPane , c);
 
             JButton sendBut = new JButton("\u00a0\u00a0\u00a0Send\u00a0\u00a0\u00a0");
             sendBut.setFont(standardFont);
@@ -502,7 +508,7 @@ public class PaymentAgent {
                         stdout.writeJSONObject(ow.setString("native", sendText.getText()));
                     } catch (IOException e) {
                         logger.log(Level.SEVERE, "Writing", e);
-                        System.exit(3);
+                        terminate();
                     }
                 }
             });
@@ -512,34 +518,34 @@ public class PaymentAgent {
             c.gridwidth = 1;
             c.gridy = 2;
             c.insets = new Insets(standardInset, standardInset, standardInset, 0);
-            debugCard.add(sendBut, c);
+            debugView.add(sendBut, c);
 
             sendText = new JTextField(40);
             sendText.setFont(new Font("Courier", Font.PLAIN, fontSize));
             c.fill = GridBagConstraints.HORIZONTAL;
             c.gridx = 1;
             c.insets = new Insets(standardInset, standardInset, standardInset, standardInset);
-            debugCard.add(sendText, c);
+            debugView.add(sendText, c);
 
-            cards.add(debugCard, CARD_DEBUG);
+            views.add(debugView, VIEW_DEBUG);
         }
 
         void initWaitingView() {
-            JPanel waitingCard = new JPanel();
-            waitingCard.setLayout(new GridBagLayout());
+            JPanel waitingView = new JPanel();
+            waitingView.setLayout(new GridBagLayout());
             GridBagConstraints c = new GridBagConstraints();
             c.gridx = 0;
             c.gridy = 0;
             JLabel waitingIconHolder = getImageLabel("working128.gif", "working80.gif");
-            waitingCard.add(waitingIconHolder, c);
+            waitingView.add(waitingIconHolder, c);
 
             JLabel waitingText = new JLabel("Initializing - Please wait");
             waitingText.setFont(standardFont);
             c.gridy = 1;
             c.insets = new Insets(fontSize, 0, 0, 0);
-            waitingCard.add(waitingText, c);
+            waitingView.add(waitingText, c);
 
-            cards.add(waitingCard, CARD_INITIALIZING);
+            views.add(waitingView, VIEW_INITIALIZING);
         }
 
         ImageIcon getImageIcon(String big, String small) {
@@ -548,7 +554,9 @@ public class PaymentAgent {
                         getClass().getResourceAsStream (hiResImages ? big : small));
                 return retinaFlag ? new RetinaIcon(byteIcon) : new ImageIcon(byteIcon);
             } catch (IOException e) {
-                throw new RuntimeException (e);
+                logger.severe("Failed reading image");
+                terminate();
+                return null;
             }
         }
 
@@ -627,7 +635,7 @@ public class PaymentAgent {
                         showProblemDialog(true, "Payment request timeout!", new WindowAdapter() {
                             @Override
                             public void windowClosing(WindowEvent event) {
-                                System.exit(3);
+                                terminate();
                             }
                         });
                     }
@@ -646,6 +654,8 @@ public class PaymentAgent {
                         @Override
                         public void run() {
                             running = false;
+                            amount = "$\u200a3.25";
+                            payee = "Demo Merchant long version";
                             for (int keyHandle = 0; keyHandle < 2; keyHandle++) {
                                 cardSelection.put(keyHandle, new Card("1234 1234 1234 123" + keyHandle,
                                                              getImageIcon(keyHandle > 0 ? "coolcard.png" : "supercard.png",
@@ -656,7 +666,7 @@ public class PaymentAgent {
                                 showProblemDialog(true, "No matching card!", new WindowAdapter() {
                                     @Override
                                     public void windowClosing(WindowEvent event) {
-                                        System.exit(3);
+                                        terminate();
                                     }
                                 });
                             } else if (cardSelection.size() == 1) {
@@ -674,18 +684,18 @@ public class PaymentAgent {
                     showProblemDialog(true, "Undecodable message, see log file!", new WindowAdapter() {
                         @Override
                         public void windowClosing(WindowEvent event) {
-                            System.exit(3);
+                            terminate();
                         }
                     });
                 } else {
-                    System.exit(3);
+                    terminate();
                 }
             }
-            // Catching the disconnect...
+            // Catching the disconnect...returns success to proxy
             try {
                 stdin.readJSONObject();
             } catch (IOException e) {
-                System.exit(3);
+                System.exit(0);
             }
         }
     }
@@ -702,7 +712,7 @@ public class PaymentAgent {
             stdout.writeJSONObject(Messages.createBaseMessage(Messages.INITIALIZE));
         } catch (IOException e) {
             logger.log(Level.SEVERE, "Writing", e);
-            System.exit(3);
+            terminate();
         }
 
         frame = new JDialog(new JFrame(), "Payment Request [" + args[1] + "]");
@@ -715,7 +725,7 @@ public class PaymentAgent {
         frame.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent event) {
-                System.exit(0);
+                terminate();
             }
         });
         frame.setVisible(true);
