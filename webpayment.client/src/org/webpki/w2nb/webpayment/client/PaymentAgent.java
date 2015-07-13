@@ -99,7 +99,11 @@ public class PaymentAgent {
     static final String VIEW_SELECTION         = "SELECT";
     static final String VIEW_AUTHORIZE         = "AUTH";
     static final String VIEW_DEBUG             = "DEBUG";
-    
+
+    static final String BUTTON_OK              = "OK";
+    static final String BUTTON_CANCEL          = "Cancel";
+    static final String BUTTON_SEND            = "Send";
+
     static class Card {
         String cardNumber;
         ImageIcon cardIcon;
@@ -159,6 +163,58 @@ public class PaymentAgent {
         System.exit(3);
     }
 
+    static class JButton2 extends JButton {
+        
+        private static final long serialVersionUID = 1L;
+
+        JButton buddy;
+        
+        public JButton2(String text, JButton buddy) {
+            super(text);
+            this.buddy = buddy;
+        }
+        
+        @Override
+        public Dimension getPreferredSize() {
+            Dimension dimension = super.getPreferredSize();
+            if (buddy != null) {
+                return adjustSize(dimension, buddy.getPreferredSize());
+            } else {
+                return dimension;
+            }
+        }
+
+        @Override
+        public Dimension getMinimumSize() {
+            Dimension dimension = super.getMinimumSize();
+            if (buddy != null) {
+                return adjustSize(dimension, buddy.getMinimumSize());
+            } else {
+                return dimension;
+            }
+        }
+
+        @Override
+        public Dimension getSize() {
+            Dimension dimension = super.getSize();
+            if (buddy != null) {
+                return adjustSize(dimension, buddy.getSize());
+            } else {
+                return dimension;
+            }
+        }
+
+        Dimension adjustSize(Dimension dimension, Dimension buddyDimension) {
+            if (buddyDimension == null ||
+                dimension == null ||
+                dimension.width > buddyDimension.width) {
+                return dimension;
+            } else {
+                return buddyDimension;
+            }
+        }
+    }
+
     static class ApplicationWindow extends Thread {
         JTextArea debugText;
         JTextField sendText;
@@ -175,6 +231,7 @@ public class PaymentAgent {
         JPasswordField pinText;
         JLabel selectedCardImage;
         JLabel selectedCardNumber;
+        JButton cancelAuthorizationButton;
         boolean macOS;
         boolean retinaFlag;
         boolean hiResImages;
@@ -202,11 +259,11 @@ public class PaymentAgent {
             // The initial card showing we are waiting
             initWaitingView();
  
-            // Debug messages
-            initDebugView();
-            
             // The only thing we really care about, right?
             initAuthorizationView();
+
+            // Debug messages
+            initDebugView();
         }
         
         Component initCardSelectionViewCore() {
@@ -277,10 +334,10 @@ public class PaymentAgent {
             c.insets = new Insets(0, 0, 0, 0);
             cardSelectionView.add(initCardSelectionViewCore(), c);
 
-            JButton cancelButton = new JButton("\u00a0Cancel\u00a0");
-            cancelButton.setFont(standardFont);
-            cancelButton.setToolTipText(TOOLTIP_CANCEL);
-            cancelButton.addActionListener(new ActionListener() {
+            JButton2 cancelSelectionButton = new JButton2(BUTTON_CANCEL, cancelAuthorizationButton);
+            cancelSelectionButton.setFont(standardFont);
+            cancelSelectionButton.setToolTipText(TOOLTIP_CANCEL);
+            cancelSelectionButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     terminate();
@@ -293,7 +350,7 @@ public class PaymentAgent {
             c.weightx = 0.0;
             c.weighty = 0.0; 
             c.insets = new Insets(fontSize, fontSize, fontSize, fontSize);
-            cardSelectionView.add(cancelButton, c);
+            cardSelectionView.add(cancelSelectionButton, c);
 
             views.add(cardSelectionView, VIEW_SELECTION);
             ((CardLayout)views.getLayout()).show(views, VIEW_SELECTION);
@@ -403,11 +460,11 @@ public class PaymentAgent {
             c.anchor = GridBagConstraints.SOUTHWEST;
             c.fill = GridBagConstraints.NONE;
             c.weighty = 0.0;
-            JButton cancelButton = new JButton("\u00a0Cancel\u00a0");
-            cancelButton.setFont(standardFont);
-            cancelButton.setToolTipText(TOOLTIP_CANCEL);
-            authorizationView.add(cancelButton, c);
-            cancelButton.addActionListener(new ActionListener() {
+            cancelAuthorizationButton = new JButton("Cancel");
+            cancelAuthorizationButton.setFont(standardFont);
+            cancelAuthorizationButton.setToolTipText(TOOLTIP_CANCEL);
+            authorizationView.add(cancelAuthorizationButton, c);
+            cancelAuthorizationButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     terminate();
@@ -419,7 +476,7 @@ public class PaymentAgent {
             c.gridwidth = 1;
             c.insets = new Insets(0, 0, fontSize, 0);
             c.anchor = GridBagConstraints.SOUTH;
-            JButton okButton = new JButton("\u00a0\u00a0\u00a0OK\u00a0\u00a0\u00a0");
+            JButton2 okButton = new JButton2(BUTTON_OK, cancelAuthorizationButton);
             okButton.setFont(standardFont);
             okButton.setToolTipText(TOOLTIP_PAY_OK);
             authorizationView.add(okButton, c);
@@ -498,7 +555,7 @@ public class PaymentAgent {
             c.insets = new Insets(0, standardInset, 0, standardInset);
             debugView.add(scrollPane , c);
 
-            JButton sendBut = new JButton("\u00a0\u00a0\u00a0Send\u00a0\u00a0\u00a0");
+            JButton2 sendBut = new JButton2(BUTTON_SEND, cancelAuthorizationButton);
             sendBut.setFont(standardFont);
             sendBut.addActionListener(new ActionListener() {
                 @Override
@@ -581,7 +638,7 @@ public class PaymentAgent {
             c.insets = new Insets(0, fontSize * 2, 0, fontSize * 2);
             c.gridy = 1;
             pane.add(errorLabel, c);
-            JButton okButton = new JButton("\u00a0\u00a0\u00a0OK\u00a0\u00a0\u00a0");
+            JButton2 okButton = new JButton2(BUTTON_OK, cancelAuthorizationButton);
             okButton.setFont(standardFont);
             c.insets = new Insets(fontSize, fontSize * 2, fontSize, fontSize * 2);
             c.gridy = 2;
