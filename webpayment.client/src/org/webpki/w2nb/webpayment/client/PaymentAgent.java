@@ -163,22 +163,22 @@ public class PaymentAgent {
         System.exit(3);
     }
 
-    static class JButton2 extends JButton {
+    static class JButtonSlave extends JButton {
         
         private static final long serialVersionUID = 1L;
 
-        JButton buddy;
+        JButton master;
         
-        public JButton2(String text, JButton buddy) {
+        public JButtonSlave(String text, JButton buddy) {
             super(text);
-            this.buddy = buddy;
+            this.master = buddy;
         }
         
         @Override
         public Dimension getPreferredSize() {
             Dimension dimension = super.getPreferredSize();
-            if (buddy != null) {
-                return adjustSize(dimension, buddy.getPreferredSize());
+            if (master != null) {
+                return adjustSize(dimension, master.getPreferredSize());
             } else {
                 return dimension;
             }
@@ -187,8 +187,8 @@ public class PaymentAgent {
         @Override
         public Dimension getMinimumSize() {
             Dimension dimension = super.getMinimumSize();
-            if (buddy != null) {
-                return adjustSize(dimension, buddy.getMinimumSize());
+            if (master != null) {
+                return adjustSize(dimension, master.getMinimumSize());
             } else {
                 return dimension;
             }
@@ -197,20 +197,20 @@ public class PaymentAgent {
         @Override
         public Dimension getSize() {
             Dimension dimension = super.getSize();
-            if (buddy != null) {
-                return adjustSize(dimension, buddy.getSize());
+            if (master != null) {
+                return adjustSize(dimension, master.getSize());
             } else {
                 return dimension;
             }
         }
 
-        Dimension adjustSize(Dimension dimension, Dimension buddyDimension) {
-            if (buddyDimension == null ||
+        Dimension adjustSize(Dimension dimension, Dimension masterDimension) {
+            if (masterDimension == null ||
                 dimension == null ||
-                dimension.width > buddyDimension.width) {
+                dimension.width > masterDimension.width) {
                 return dimension;
             } else {
-                return buddyDimension;
+                return masterDimension;
             }
         }
     }
@@ -334,7 +334,7 @@ public class PaymentAgent {
             c.insets = new Insets(0, 0, 0, 0);
             cardSelectionView.add(initCardSelectionViewCore(), c);
 
-            JButton2 cancelSelectionButton = new JButton2(BUTTON_CANCEL, cancelAuthorizationButton);
+            JButtonSlave cancelSelectionButton = new JButtonSlave(BUTTON_CANCEL, cancelAuthorizationButton);
             cancelSelectionButton.setFont(standardFont);
             cancelSelectionButton.setToolTipText(TOOLTIP_CANCEL);
             cancelSelectionButton.addActionListener(new ActionListener() {
@@ -476,7 +476,7 @@ public class PaymentAgent {
             c.gridwidth = 1;
             c.insets = new Insets(0, 0, fontSize, 0);
             c.anchor = GridBagConstraints.SOUTH;
-            JButton2 okButton = new JButton2(BUTTON_OK, cancelAuthorizationButton);
+            JButtonSlave okButton = new JButtonSlave(BUTTON_OK, cancelAuthorizationButton);
             okButton.setFont(standardFont);
             okButton.setToolTipText(TOOLTIP_PAY_OK);
             authorizationView.add(okButton, c);
@@ -555,7 +555,7 @@ public class PaymentAgent {
             c.insets = new Insets(0, standardInset, 0, standardInset);
             debugView.add(scrollPane , c);
 
-            JButton2 sendBut = new JButton2(BUTTON_SEND, cancelAuthorizationButton);
+            JButtonSlave sendBut = new JButtonSlave(BUTTON_SEND, cancelAuthorizationButton);
             sendBut.setFont(standardFont);
             sendBut.addActionListener(new ActionListener() {
                 @Override
@@ -625,6 +625,7 @@ public class PaymentAgent {
             final JDialog dialog = new JDialog(frame, error ? "Error" : "Warning", true);
             Container pane = dialog.getContentPane();
             pane.setLayout(new GridBagLayout());
+            pane.setBackground(Color.WHITE);
             GridBagConstraints c = new GridBagConstraints();
             c.anchor = GridBagConstraints.WEST;
             c.insets = new Insets(fontSize, fontSize * 2, fontSize, fontSize * 2);
@@ -638,7 +639,7 @@ public class PaymentAgent {
             c.insets = new Insets(0, fontSize * 2, 0, fontSize * 2);
             c.gridy = 1;
             pane.add(errorLabel, c);
-            JButton2 okButton = new JButton2(BUTTON_OK, cancelAuthorizationButton);
+            JButtonSlave okButton = new JButtonSlave(BUTTON_OK, cancelAuthorizationButton);
             okButton.setFont(standardFont);
             c.insets = new Insets(fontSize, fontSize * 2, fontSize, fontSize * 2);
             c.gridy = 2;
