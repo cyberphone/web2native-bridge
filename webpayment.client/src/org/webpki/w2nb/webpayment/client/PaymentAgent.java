@@ -128,11 +128,11 @@ public class PaymentAgent {
         }
     }
 
-    static class RetinaIcon extends ImageIcon {
+    static class ScalingIcon extends ImageIcon {
  
         private static final long serialVersionUID = 1L;
 
-        public RetinaIcon(byte[] byteIcon) {
+        public ScalingIcon(byte[] byteIcon) {
             super(byteIcon);
         }
        
@@ -371,7 +371,7 @@ public class PaymentAgent {
             c.anchor = GridBagConstraints.CENTER;
             c.fill = GridBagConstraints.VERTICAL;
             c.weighty = 1.0;
-            authorizationView.add(getImageLabel("dummyline.png" , "dummyline2.png"), c);
+            authorizationView.add(getImageLabel("dummyline.png"), c);
 
             c.gridx = 0;
             c.gridy = 1;
@@ -502,7 +502,7 @@ public class PaymentAgent {
             cardAndNumber.setBackground(Color.WHITE);
             cardAndNumber.setLayout(new GridBagLayout());
             GridBagConstraints c2 = new GridBagConstraints();
-            selectedCardImage = getImageLabel("dummycard.png" , "dummycard2.png");
+            selectedCardImage = getImageLabel("dummycard.png");
             selectedCardImage.setToolTipText(TOOLTIP_SELECTED_CARD);
             cardAndNumber.add(selectedCardImage, c2);
             selectedCardNumber = new JLabel("1234 1234 1234 1234");
@@ -593,7 +593,7 @@ public class PaymentAgent {
             GridBagConstraints c = new GridBagConstraints();
             c.gridx = 0;
             c.gridy = 0;
-            JLabel waitingIconHolder = getImageLabel("working128.gif", "working80.gif");
+            JLabel waitingIconHolder = getImageLabel("working.gif");
             waitingView.add(waitingIconHolder, c);
 
             JLabel waitingText = new JLabel("Initializing - Please wait");
@@ -605,20 +605,32 @@ public class PaymentAgent {
             views.add(waitingView, VIEW_INITIALIZING);
         }
 
-        ImageIcon getImageIcon(String big, String small) {
+        ImageIcon getImageIcon(String name, boolean animated) {
             try {
                 byte[] byteIcon = ArrayUtil.getByteArrayFromInputStream(
-                        getClass().getResourceAsStream (hiResImages ? big : small));
-                return retinaFlag ? new RetinaIcon(byteIcon) : new ImageIcon(byteIcon);
-            } catch (IOException e) {
-                logger.severe("Failed reading image");
+                        getClass().getResourceAsStream (name));
+                if (retinaFlag || (!hiResImages && animated)) {
+                    return new ScalingIcon(byteIcon);
+                }
+                ImageIcon imageIcon = new ImageIcon(byteIcon);
+                if (hiResImages) {
+                    return imageIcon;
+                }
+                int width = imageIcon.getIconWidth() / 2;
+                int height = imageIcon.getIconHeight() / 2;
+                return new ImageIcon(imageIcon.getImage().getScaledInstance(
+                               width == 0 ? 1 : width,
+                               height == 0 ? 1 : height,
+                               Image.SCALE_SMOOTH));
+            } catch (Exception e) {
+                logger.log(Level.SEVERE, "Failed reading image", e);
                 terminate();
                 return null;
             }
         }
 
-        JLabel getImageLabel(String big, String small) {
-            return new JLabel(getImageIcon(big, small));
+        JLabel getImageLabel(String name) {
+            return new JLabel(getImageIcon(name, name.endsWith(".gif")));
         }
 
         void showProblemDialog (boolean error, String message, final WindowAdapter windowAdapter) {
@@ -629,10 +641,7 @@ public class PaymentAgent {
             GridBagConstraints c = new GridBagConstraints();
             c.anchor = GridBagConstraints.WEST;
             c.insets = new Insets(fontSize, fontSize * 2, fontSize, fontSize * 2);
-            pane.add(error ? 
-                 getImageLabel("error96.png", "error64.png")
-                           :
-                 getImageLabel("warning96.png", "warning64.png"), c);
+            pane.add(getImageLabel(error ? "error.png" : "warning.png"), c);
             JLabel errorLabel = new JLabel(message);
             errorLabel.setFont(standardFont);
             c.anchor = GridBagConstraints.CENTER;
@@ -716,8 +725,7 @@ public class PaymentAgent {
                             payee = "Demo Merchant long version";
                             for (int keyHandle = 0; keyHandle < 2; keyHandle++) {
                                 cardSelection.put(keyHandle, new Card("1234 1234 1234 123" + keyHandle,
-                                                             getImageIcon(keyHandle > 0 ? "coolcard.png" : "supercard.png",
-                                                                          keyHandle > 0 ? "coolcard2.png" : "supercard2.png")));
+                                                             getImageIcon(keyHandle > 0 ? "coolcard.png" : "supercard.png", false)));
                             }
                             if (cardSelection.isEmpty()) {
                                 logger.log(Level.SEVERE, "No matching card");
