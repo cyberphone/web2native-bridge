@@ -104,6 +104,8 @@ public class PaymentAgent {
     static final String BUTTON_CANCEL          = "Cancel";
     static final String BUTTON_SEND            = "Send";
 
+    static final int TIMEOUT_FOR_REQUEST       = 10000;
+
     static class Card {
         String cardNumber;
         ImageIcon cardIcon;
@@ -169,9 +171,9 @@ public class PaymentAgent {
 
         JButton master;
         
-        public JButtonSlave(String text, JButton buddy) {
+        public JButtonSlave(String text, JButton master) {
             super(text);
-            this.master = buddy;
+            this.master = master;
         }
         
         @Override
@@ -226,12 +228,12 @@ public class PaymentAgent {
         String invokeMessageString;
         JTextField amountField;
         JTextField payeeField;
-        String amount;
-        String payee;
+        String amountString;
+        String payeeString;
         JPasswordField pinText;
         JLabel selectedCardImage;
         JLabel selectedCardNumber;
-        JButton cancelAuthorizationButton;
+        JButton cancelAuthorizationButton;  // Used as a master for creating unified button widths
         boolean macOS;
         boolean retinaFlag;
         boolean hiResImages;
@@ -249,7 +251,9 @@ public class PaymentAgent {
             retinaFlag = isRetina ();
             hiResImages = retinaFlag || fontSize > 20;
             standardFont = new Font(font.getFontName(), font.getStyle(), fontSize);
-            cardNumberFont = new Font("Courier", Font.PLAIN, (fontSize * 4) / 5);
+            cardNumberFont = new Font("Courier", 
+                                      hiResImages ? Font.PLAIN : Font.BOLD,
+                                      (fontSize * 4) / 5);
             logger.info("Display Data: Screen resolution=" + screenResolution +
                          ", Screen size=" + Toolkit.getDefaultToolkit().getScreenSize() +
                          ", Font size=" + font.getSize() +
@@ -334,10 +338,10 @@ public class PaymentAgent {
             c.insets = new Insets(0, 0, 0, 0);
             cardSelectionView.add(initCardSelectionViewCore(), c);
 
-            JButtonSlave cancelSelectionButton = new JButtonSlave(BUTTON_CANCEL, cancelAuthorizationButton);
-            cancelSelectionButton.setFont(standardFont);
-            cancelSelectionButton.setToolTipText(TOOLTIP_CANCEL);
-            cancelSelectionButton.addActionListener(new ActionListener() {
+            JButtonSlave cancelButton = new JButtonSlave(BUTTON_CANCEL, cancelAuthorizationButton);
+            cancelButton.setFont(standardFont);
+            cancelButton.setToolTipText(TOOLTIP_CANCEL);
+            cancelButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     terminate();
@@ -350,7 +354,7 @@ public class PaymentAgent {
             c.weightx = 0.0;
             c.weighty = 0.0; 
             c.insets = new Insets(fontSize, fontSize, fontSize, fontSize);
-            cardSelectionView.add(cancelSelectionButton, c);
+            cardSelectionView.add(cancelButton, c);
 
             views.add(cardSelectionView, VIEW_SELECTION);
             ((CardLayout)views.getLayout()).show(views, VIEW_SELECTION);
@@ -517,8 +521,8 @@ public class PaymentAgent {
 
         void showAuthorizationView(int keyHandle) {
             logger.info("Selected Card=" + keyHandle);
-            amountField.setText("\u200a" + amount);
-            payeeField.setText("\u200a" + payee);
+            amountField.setText("\u200a" + amountString);
+            payeeField.setText("\u200a" + payeeString);
             selectedCardImage.setIcon(cardSelection.get(keyHandle).cardIcon);
             selectedCardNumber.setText(cardSelection.get(keyHandle).cardNumber);
             ((CardLayout)views.getLayout()).show(views, VIEW_AUTHORIZE);
@@ -707,7 +711,7 @@ public class PaymentAgent {
                         });
                     }
                 }
-            }, 10000);
+            }, TIMEOUT_FOR_REQUEST);
             try {
                 JSONObjectReader or = stdin.readJSONObject();
                 invokeMessageString = new String(or.serializeJSONObject(JSONOutputFormats.PRETTY_PRINT),"UTF-8");
@@ -721,11 +725,15 @@ public class PaymentAgent {
                         @Override
                         public void run() {
                             running = false;
-                            amount = "$\u200a3.25";
-                            payee = "Demo Merchant long version";
-                            for (int keyHandle = 0; keyHandle < 2; keyHandle++) {
+                            amountString = "$\u200a3.25";
+                            payeeString = "Demo Merchant long version";
+                            for (int keyHandle = 0; keyHandle < 3; keyHandle++) {
                                 cardSelection.put(keyHandle, new Card("1234 1234 1234 123" + keyHandle,
-                                                             getImageIcon(keyHandle > 0 ? "coolcard.png" : "supercard.png", false)));
+                                                             getImageIcon(keyHandle > 0 ?
+                                                                              keyHandle > 1  ?
+                                                                           "unusualcard.png" : "coolcard.png" 
+                                                                                        : "supercard.png",
+                                                                           false)));
                             }
                             if (cardSelection.isEmpty()) {
                                 logger.log(Level.SEVERE, "No matching card");
