@@ -251,7 +251,7 @@ public class PaymentAgent {
                 fontSize = font.getSize();
             }
             retinaFlag = isRetina ();
-            hiResImages = retinaFlag || fontSize > 20;
+            hiResImages = retinaFlag || fontSize >= 20;
             standardFont = new Font(font.getFontName(), font.getStyle(), fontSize);
             cardNumberFont = new Font("Courier", 
                                       hiResImages ? Font.PLAIN : Font.BOLD,
