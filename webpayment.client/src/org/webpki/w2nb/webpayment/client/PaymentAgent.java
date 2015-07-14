@@ -97,6 +97,7 @@ public class PaymentAgent {
     
     static final String VIEW_INITIALIZING      = "INIT";
     static final String VIEW_SELECTION         = "SELECT";
+    static final String VIEW_DUMMY_SELECTION   = "DUMMY";
     static final String VIEW_AUTHORIZE         = "AUTH";
     static final String VIEW_DEBUG             = "DEBUG";
 
@@ -234,6 +235,7 @@ public class PaymentAgent {
         JLabel selectedCardImage;
         JLabel selectedCardNumber;
         JButton cancelAuthorizationButton;  // Used as a master for creating unified button widths
+        ImageIcon dummyCardIcon;
         boolean macOS;
         boolean retinaFlag;
         boolean hiResImages;
@@ -259,6 +261,7 @@ public class PaymentAgent {
                          ", Font size=" + font.getSize() +
                          ", Adjusted font size=" + fontSize +
                          ", Retina=" + retinaFlag);
+            dummyCardIcon = getImageIcon("dummycard.png", false);
 
             // The initial card showing we are waiting
             initWaitingView();
@@ -266,11 +269,14 @@ public class PaymentAgent {
             // The only thing we really care about, right?
             initAuthorizationView();
 
+            // For measuring purposes only
+            initCardSelectionView(false);
+
             // Debug messages
             initDebugView();
         }
         
-        Component initCardSelectionViewCore() {
+        JPanel initCardSelectionViewCore(LinkedHashMap<Integer,Card> cards) {
             JPanel cardSelectionViewCore = new JPanel();
             cardSelectionViewCore.setBackground(Color.WHITE);
             cardSelectionViewCore.setLayout(new GridBagLayout());
@@ -278,8 +284,8 @@ public class PaymentAgent {
             c.fill = GridBagConstraints.BOTH;
             c.weightx = 1.0;
             int itemNumber = 0;
-            for (final Integer keyHandle : cardSelection.keySet()) {
-                Card card = cardSelection.get(keyHandle);
+            for (final Integer keyHandle : cards.keySet()) {
+                Card card = cards.get(keyHandle);
                 c.gridx = itemNumber % 2;
                 c.gridy = (itemNumber / 2) * 2;
                 c.insets = new Insets(c.gridy == 0 ? 0 : fontSize,
@@ -312,12 +318,10 @@ public class PaymentAgent {
                 cardSelectionViewCore.add(cardNumber, c);
                 itemNumber++;
             }
-            JScrollPane scrollPane = new JScrollPane(cardSelectionViewCore);
-            scrollPane.setBorder(new EmptyBorder(0, 0, 0, 0));
-            return scrollPane;
+            return cardSelectionViewCore;
         }
-        
-        void showCardSelectionView() {
+
+        void initCardSelectionView(boolean actualCards) {
             JPanel cardSelectionView = new JPanel();
             cardSelectionView.setBackground(Color.WHITE);
             cardSelectionView.setLayout(new GridBagLayout());
@@ -336,7 +340,17 @@ public class PaymentAgent {
             c.weightx = 1.0;
             c.weighty = 1.0; 
             c.insets = new Insets(0, 0, 0, 0);
-            cardSelectionView.add(initCardSelectionViewCore(), c);
+            if (actualCards) {
+                JScrollPane scrollPane = new JScrollPane(initCardSelectionViewCore(cardSelection));
+                scrollPane.setBorder(new EmptyBorder(0, 0, 0, 0));
+                cardSelectionView.add(scrollPane, c);
+            } else {
+                LinkedHashMap<Integer,Card> cards = new LinkedHashMap<Integer,Card>();
+                for (int i = 0; i < 2; i++) {
+                    cards.put(i, new Card("1234 1234 1234 1234", dummyCardIcon));
+                }
+                cardSelectionView.add(initCardSelectionViewCore(cards), c);
+            }
 
             JButtonSlave cancelButton = new JButtonSlave(BUTTON_CANCEL, cancelAuthorizationButton);
             cancelButton.setFont(standardFont);
@@ -355,8 +369,12 @@ public class PaymentAgent {
             c.weighty = 0.0; 
             c.insets = new Insets(fontSize, fontSize, fontSize, fontSize);
             cardSelectionView.add(cancelButton, c);
+           
+            views.add(cardSelectionView, actualCards ? VIEW_SELECTION : VIEW_DUMMY_SELECTION);
+        }
 
-            views.add(cardSelectionView, VIEW_SELECTION);
+        void showCardSelectionView() {
+            initCardSelectionView(true);
             ((CardLayout)views.getLayout()).show(views, VIEW_SELECTION);
         }
 
@@ -367,15 +385,17 @@ public class PaymentAgent {
             GridBagConstraints c = new GridBagConstraints();
             Color fixedDataBackground = new Color(244, 253, 247);
             int spaceAfterLabel = macOS ? fontSize / 4 : fontSize / 2;
-            int maginBeforeLabel = fontSize * 2;
+            int maginBeforeLabel = fontSize;
             c.gridx = 0;
             c.gridy = 0;
             c.gridwidth = 3;
-            c.insets = new Insets((fontSize * 5) / 2, fontSize * 3, 0, 0);
+            c.insets = new Insets((fontSize * 3) / 2, 0, 0, 0);
             c.anchor = GridBagConstraints.CENTER;
             c.fill = GridBagConstraints.VERTICAL;
             c.weighty = 1.0;
-            authorizationView.add(getImageLabel("dummyline.png"), c);
+            JLabel dummy1 = new JLabel(" ");
+            dummy1.setFont(standardFont);
+            authorizationView.add(dummy1, c);
 
             c.gridx = 0;
             c.gridy = 1;
@@ -453,9 +473,9 @@ public class PaymentAgent {
             c.insets = new Insets(0, 0, fontSize, 0);
             c.fill = GridBagConstraints.BOTH;
             c.weighty = 0.6;
-            JLabel dummy = new JLabel(" ");
-            dummy.setFont(standardFont);
-            authorizationView.add(dummy, c);
+            JLabel dummy2 = new JLabel(" ");
+            dummy2.setFont(standardFont);
+            authorizationView.add(dummy2, c);
 
             c.gridx = 0;
             c.gridy = 5;
@@ -497,7 +517,7 @@ public class PaymentAgent {
             c.gridy = 0;
             c.gridheight = 6;
             c.gridwidth = 1;
-            c.insets = new Insets(fontSize * 4, fontSize, fontSize * 4, fontSize * 2);
+            c.insets = new Insets(0, fontSize, 0, fontSize * 2);
             c.anchor = GridBagConstraints.CENTER;
             c.fill = GridBagConstraints.BOTH;
             c.weightx = 0.0;
@@ -506,7 +526,7 @@ public class PaymentAgent {
             cardAndNumber.setBackground(Color.WHITE);
             cardAndNumber.setLayout(new GridBagLayout());
             GridBagConstraints c2 = new GridBagConstraints();
-            selectedCardImage = getImageLabel("dummycard.png");
+            selectedCardImage = new JLabel(dummyCardIcon);
             selectedCardImage.setToolTipText(TOOLTIP_SELECTED_CARD);
             cardAndNumber.add(selectedCardImage, c2);
             selectedCardNumber = new JLabel("1234 1234 1234 1234");
@@ -785,7 +805,7 @@ public class PaymentAgent {
         try {
             stdout.writeJSONObject(Messages.createBaseMessage(Messages.INITIALIZE));
         } catch (IOException e) {
-            logger.log(Level.SEVERE, "Writing", e);
+            logger.log(Level.SEVERE, "Error writing to browser", e);
             terminate();
         }
 
