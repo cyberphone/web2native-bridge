@@ -39,10 +39,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowAdapter;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.security.Security;
-import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -61,18 +59,13 @@ import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.border.Border;
-import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
 
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONOutputFormats;
 import org.webpki.util.ArrayUtil;
-import org.webpki.util.ISODateTime;
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.Messages;
 import org.webpki.w2nbproxy.StdinJSONPipe;
@@ -106,6 +99,8 @@ public class PaymentAgent {
     static final String BUTTON_SEND            = "Send";
 
     static final int TIMEOUT_FOR_REQUEST       = 10000;
+    
+    static final String DUMMY_CARD_NUMBER      = "1234 1234 1234 1234 1234";
 
     static class Card {
         String cardNumber;
@@ -225,6 +220,7 @@ public class PaymentAgent {
         boolean running = true;
         Font standardFont;
         Font cardNumberFont;
+        int cardNumberSpacing;
         int fontSize;
         String invokeMessageString;
         JTextField amountField;
@@ -256,6 +252,7 @@ public class PaymentAgent {
             cardNumberFont = new Font("Courier", 
                                       hiResImages ? Font.PLAIN : Font.BOLD,
                                       (fontSize * 4) / 5);
+            cardNumberSpacing = fontSize / 6;
             logger.info("Display Data: Screen resolution=" + screenResolution +
                          ", Screen size=" + Toolkit.getDefaultToolkit().getScreenSize() +
                          ", Font size=" + font.getSize() +
@@ -309,7 +306,7 @@ public class PaymentAgent {
                 cardSelectionViewCore.add(cardImage, c);
 
                 c.gridy++;
-                c.insets = new Insets(fontSize / 3,
+                c.insets = new Insets(cardNumberSpacing,
                                       c.gridx == 0 ? fontSize : 0,
                                       0,
                                       c.gridx == 0 ? 0 : fontSize);
@@ -347,7 +344,7 @@ public class PaymentAgent {
             } else {
                 LinkedHashMap<Integer,Card> cards = new LinkedHashMap<Integer,Card>();
                 for (int i = 0; i < 2; i++) {
-                    cards.put(i, new Card("1234 1234 1234 1234", dummyCardIcon));
+                    cards.put(i, new Card(DUMMY_CARD_NUMBER, dummyCardIcon));
                 }
                 cardSelectionView.add(initCardSelectionViewCore(cards), c);
             }
@@ -507,9 +504,11 @@ public class PaymentAgent {
             okButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    ((CardLayout)views.getLayout()).show(views, VIEW_DEBUG);
-                    debugText.setText(invokeMessageString);
-                    debugText.setCaretPosition(0);
+                    if (authorizationSucceeded()) {
+                        ((CardLayout)views.getLayout()).show(views, VIEW_DEBUG);
+                        debugText.setText(invokeMessageString);
+                        debugText.setCaretPosition(0);
+                    }
                 }
             });
 
@@ -529,14 +528,24 @@ public class PaymentAgent {
             selectedCardImage = new JLabel(dummyCardIcon);
             selectedCardImage.setToolTipText(TOOLTIP_SELECTED_CARD);
             cardAndNumber.add(selectedCardImage, c2);
-            selectedCardNumber = new JLabel("1234 1234 1234 1234");
+            selectedCardNumber = new JLabel(DUMMY_CARD_NUMBER);
             selectedCardNumber.setFont(cardNumberFont);
-            c2.insets = new Insets(fontSize / 3, 0, 0, 0);
+            c2.insets = new Insets(cardNumberSpacing, 0, 0, 0);
             c2.gridy = 1;
             cardAndNumber.add(selectedCardNumber, c2);
             authorizationView.add(cardAndNumber, c);
 
             views.add(authorizationView, VIEW_AUTHORIZE);
+        }
+
+         boolean authorizationSucceeded() {
+            if (new String(pinText.getPassword()).equals("1234")) {
+                return true;
+            }
+            showProblemDialog(false,
+                              "<html>Incorrect PIN.<br>There are 2 tries left.</html>",
+                              new WindowAdapter() {});
+            return false;
         }
 
         void showAuthorizationView(int keyHandle) {
@@ -629,10 +638,8 @@ public class PaymentAgent {
             views.add(waitingView, VIEW_INITIALIZING);
         }
 
-        ImageIcon getImageIcon(String name, boolean animated) {
+        ImageIcon getImageIcon(byte[] byteIcon, boolean animated) {
             try {
-                byte[] byteIcon = ArrayUtil.getByteArrayFromInputStream(
-                        getClass().getResourceAsStream (name));
                 if (retinaFlag || (!hiResImages && animated)) {
                     return new ScalingIcon(byteIcon);
                 }
@@ -646,6 +653,17 @@ public class PaymentAgent {
                                width == 0 ? 1 : width,
                                height == 0 ? 1 : height,
                                Image.SCALE_SMOOTH));
+            } catch (Exception e) {
+                logger.log(Level.SEVERE, "Failed converting image", e);
+                terminate();
+                return null;
+            }
+        }
+
+        ImageIcon getImageIcon(String name, boolean animated) {
+            try {
+                return getImageIcon(ArrayUtil.getByteArrayFromInputStream(
+                        getClass().getResourceAsStream (name)), animated);
             } catch (Exception e) {
                 logger.log(Level.SEVERE, "Failed reading image", e);
                 terminate();
