@@ -38,11 +38,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowAdapter;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.lang.reflect.Field;
 import java.security.Security;
+import java.security.interfaces.RSAPublicKey;
 import java.util.LinkedHashMap;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -64,6 +64,8 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 
+import org.webpki.crypto.AsymSignatureAlgorithms;
+import org.webpki.crypto.HashAlgorithms;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONOutputFormats;
@@ -71,6 +73,7 @@ import org.webpki.json.JSONParser;
 import org.webpki.keygen2.KeyGen2URIs;
 import org.webpki.sks.EnumeratedKey;
 import org.webpki.sks.Extension;
+import org.webpki.sks.KeyProtectionInfo;
 import org.webpki.sks.SKSException;
 import org.webpki.sks.SecureKeyStore;
 import org.webpki.sks.test.SKSReferenceImplementation;
@@ -246,6 +249,7 @@ public class PaymentAgent {
         boolean retinaFlag;
         boolean hiResImages;
         SecureKeyStore sks;
+        int keyHandle;
  
         ApplicationWindow() {
             views = frame.getContentPane();
@@ -548,19 +552,73 @@ public class PaymentAgent {
 
             views.add(authorizationView, VIEW_AUTHORIZE);
         }
-
-         boolean authorizationSucceeded() {
-            if (new String(pinText.getPassword()).equals("1234")) {
+        boolean pinBlocked() throws SKSException {
+            if (sks.getKeyProtectionInfo(keyHandle).isPinBlocked()) {
+                showProblemDialog(true, "Card blocked due to previous PIN errors!", new WindowAdapter() {
+                    @Override
+                    public void windowClosing(WindowEvent event) {
+                        terminate();
+                    }
+                });
                 return true;
             }
-            showProblemDialog(false,
-                              "<html>Incorrect PIN.<br>There are 2 tries left.</html>",
-                              new WindowAdapter() {});
             return false;
+        }
+
+        boolean authorizationSucceeded() {
+            try {
+                if (pinBlocked()) {
+                    return false;
+                }
+/*
+ *    byte[] signHashedData (int keyHandle,
+                           String algorithm,
+                           byte[] parameters,    // Must be null if not applicable
+                           byte[] authorization, // Must be null if not applicable
+                           byte[] data) throws SKSException;
+ 
+ */
+                try {
+                    byte[] signedData = sks.signHashedData(keyHandle,
+                                                           sks.getKeyAttributes(keyHandle)
+                                                                .getCertificatePath()[0]
+                                                                   .getPublicKey() instanceof RSAPublicKey ?
+                                            AsymSignatureAlgorithms.RSA_SHA256.getURI()
+                                               :
+                                            AsymSignatureAlgorithms.ECDSA_SHA256.getURI(),
+                                       null,
+                                       new String(pinText.getPassword()).getBytes("UTF-8"),
+                                       HashAlgorithms.SHA256.digest(new byte[]{4,5}));
+                    return true;
+                } catch (SKSException e) {
+                    if (e.getError() != SKSException.ERROR_AUTHORIZATION) {
+                        throw new Exception(e);
+                    }
+                }
+                if (!pinBlocked()) {
+                    KeyProtectionInfo pi = sks.getKeyProtectionInfo(keyHandle);
+                    showProblemDialog(false,
+                            "<html>Incorrect PIN.<br>There are " +
+                             (pi.getPinRetryLimit() - pi.getPinErrorCount()) +
+                             " tries left.</html>",
+                            new WindowAdapter() {});
+                }
+                return false;
+            } catch (Exception e) {
+                logger.log(Level.SEVERE, "SKS operation failed", e);
+                showProblemDialog(true, "Internal error, see log file!", new WindowAdapter() {
+                    @Override
+                    public void windowClosing(WindowEvent event) {
+                        terminate();
+                    }
+                });
+                return false;  
+            }
         }
 
         void showAuthorizationView(int keyHandle) {
             logger.info("Selected Card=" + keyHandle);
+            this.keyHandle = keyHandle;
             amountField.setText("\u200a" + amountString);
             payeeField.setText("\u200a" + payeeString);
             selectedCardImage.setIcon(cardSelection.get(keyHandle).cardIcon);
@@ -748,7 +806,7 @@ public class PaymentAgent {
             try {
                 sks = (SKSReferenceImplementation) new ObjectInputStream(getClass().getResourceAsStream("sks.serialized")).readObject();
             } catch (Exception e) {
-                logger.log(Level.SEVERE, "Reading SKS failed");
+                logger.log(Level.SEVERE, "Reading SKS failed", e);
                 showProblemDialog(true, "Could not initiate payment credentials!", new WindowAdapter() {
                     @Override
                     public void windowClosing(WindowEvent event) {
@@ -788,19 +846,22 @@ public class PaymentAgent {
                             amountString = "$\u200a3.25";
                             payeeString = "Demo Merchant long version";
                             EnumeratedKey ek = new EnumeratedKey();
+                            // Enumerate keys but only go fo those who are intended for
+                            // Web Payments (according to our schema...)
                             try {
                                 while ((ek = sks.enumerateKeys(ek.getKeyHandle())) != null) {
+                                    Extension ext = null;
                                     try {
-                                        Extension ext = sks.getExtension(ek.getKeyHandle(), BaseProperties.W2NB_PAY_DEMO_CONTEXT_URI);
-                                        JSONObjectReader or = JSONParser.parse(ext.getExtensionData());
-                                        cardSelection.put(ek.getKeyHandle(),
-                                                new Card(or.getString(CredentialProperties.CARD_NUMBER_JSON),
-                                                getImageIcon(sks.getExtension(ek.getKeyHandle(), 
-                                                                              KeyGen2URIs.LOGOTYPES.CARD).getExtensionData(),
-                                                             false)));
+                                        ext = sks.getExtension(ek.getKeyHandle(), BaseProperties.W2NB_PAY_DEMO_CONTEXT_URI);
                                     } catch (SKSException e) {
                                         continue;
                                     }
+                                    JSONObjectReader or = JSONParser.parse(ext.getExtensionData());
+                                    cardSelection.put(ek.getKeyHandle(),
+                                            new Card(or.getString(CredentialProperties.CARD_NUMBER_JSON),
+                                            getImageIcon(sks.getExtension(ek.getKeyHandle(), 
+                                                                          KeyGen2URIs.LOGOTYPES.CARD).getExtensionData(),
+                                                         false)));
                                 }
                             } catch (Exception e) {
                                 logger.log(Level.SEVERE, "SKS problem", e);
