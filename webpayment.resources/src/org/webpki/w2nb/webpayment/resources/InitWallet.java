@@ -68,7 +68,7 @@ public class InitWallet {
         if (args.length < 7) {
             System.out.println("\nUsage: " +
                                InitWallet.class.getCanonicalName() +
-                               "sksFile certFile certFilePassword cardPin cardType cardNumber image");
+                               "sksFile certFile certFilePassword cardPin cardType/@ cardNumber image/image@");
             System.exit(-3);
         }
         CustomCryptoProvider.forcedLoad(true);
@@ -145,17 +145,22 @@ public class InitWallet {
 
         key.setCertificatePath(cert_path.toArray(new X509Certificate[0]));
         key.setPrivateKey(private_key);
-        JSONObjectWriter ow = new JSONObjectWriter();
-        ow.setString(CredentialProperties.CARD_TYPE_JSON, args[4]);
-        ow.setString(CredentialProperties.CARD_NUMBER_JSON, args[5]);
-        key.addExtension(BaseProperties.W2NB_PAY_DEMO_CONTEXT_URI,
-                SecureKeyStore.SUB_TYPE_EXTENSION,
-                "",
-                ow.serializeJSONObject(JSONOutputFormats.NORMALIZED));
-        key.addExtension(KeyGen2URIs.LOGOTYPES.CARD,
-                         SecureKeyStore.SUB_TYPE_LOGOTYPE,
-                         "image/png",
-                         ArrayUtil.readFile(args[6]));
+        JSONObjectWriter ow = null;
+        if (!args[4].equals("@")) {
+            ow = new JSONObjectWriter();
+            ow.setString(CredentialProperties.CARD_TYPE_JSON, args[4]);
+            ow.setString(CredentialProperties.CARD_NUMBER_JSON, args[5]);
+            key.addExtension(BaseProperties.W2NB_PAY_DEMO_CONTEXT_URI,
+                    SecureKeyStore.SUB_TYPE_EXTENSION,
+                    "",
+                    ow.serializeJSONObject(JSONOutputFormats.NORMALIZED));
+        }
+        if (!args[6].endsWith("@")) {
+            key.addExtension(KeyGen2URIs.LOGOTYPES.CARD,
+                             SecureKeyStore.SUB_TYPE_LOGOTYPE,
+                             "image/png",
+                             ArrayUtil.readFile(args[6]));
+        }
         sess.closeSession();
         
         // Serialize the updated SKS
@@ -164,8 +169,10 @@ public class InitWallet {
         oos.close ();
 
         // Report
-        System.out.println("Imported Subject: "
-                + cert_path.firstElement().getSubjectX500Principal().getName()
-                + "\nID=#" + key.key_handle + ", " + (rsa_flag ? "RSA" : "EC"));
+        System.out.println("Imported Subject: " +
+                cert_path.firstElement().getSubjectX500Principal().getName() +
+                "\nID=#" + key.key_handle + ", " + (rsa_flag ? "RSA" : "EC") +
+                (ow == null ? ", Not a card" : ", Card=" + 
+                new String(ow.serializeJSONObject(JSONOutputFormats.NORMALIZED), "UTF-8")));
     }
 }

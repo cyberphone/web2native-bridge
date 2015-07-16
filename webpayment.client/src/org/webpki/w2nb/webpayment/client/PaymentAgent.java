@@ -552,7 +552,8 @@ public class PaymentAgent {
 
             views.add(authorizationView, VIEW_AUTHORIZE);
         }
-        boolean pinBlocked() throws SKSException {
+
+        boolean pinBlockCheck() throws SKSException {
             if (sks.getKeyProtectionInfo(keyHandle).isPinBlocked()) {
                 showProblemDialog(true, "Card blocked due to previous PIN errors!", new WindowAdapter() {
                     @Override
@@ -567,7 +568,7 @@ public class PaymentAgent {
 
         boolean authorizationSucceeded() {
             try {
-                if (pinBlocked()) {
+                if (pinBlockCheck()) {
                     return false;
                 }
 /*
@@ -595,7 +596,7 @@ public class PaymentAgent {
                         throw new Exception(e);
                     }
                 }
-                if (!pinBlocked()) {
+                if (!pinBlockCheck()) {
                     KeyProtectionInfo pi = sks.getKeyProtectionInfo(keyHandle);
                     showProblemDialog(false,
                             "<html>Incorrect PIN.<br>There are " +
@@ -605,13 +606,7 @@ public class PaymentAgent {
                 }
                 return false;
             } catch (Exception e) {
-                logger.log(Level.SEVERE, "SKS operation failed", e);
-                showProblemDialog(true, "Internal error, see log file!", new WindowAdapter() {
-                    @Override
-                    public void windowClosing(WindowEvent event) {
-                        terminate();
-                    }
-                });
+                sksProblem(e);
                 return false;  
             }
         }
@@ -626,6 +621,11 @@ public class PaymentAgent {
             ((CardLayout)views.getLayout()).show(views, VIEW_AUTHORIZE);
             payeeField.setCaretPosition(0);
             pinText.requestFocusInWindow();
+            try {
+                pinBlockCheck();
+            } catch (Exception e) {
+                sksProblem(e);
+            }
         }
 
         void initDebugView() {
@@ -806,13 +806,7 @@ public class PaymentAgent {
             try {
                 sks = (SKSReferenceImplementation) new ObjectInputStream(getClass().getResourceAsStream("sks.serialized")).readObject();
             } catch (Exception e) {
-                logger.log(Level.SEVERE, "Reading SKS failed", e);
-                showProblemDialog(true, "Could not initiate payment credentials!", new WindowAdapter() {
-                    @Override
-                    public void windowClosing(WindowEvent event) {
-                        terminate();
-                    }
-                });
+                sksProblem(e);
             }
             final Timer timer = new Timer();
             timer.schedule(new TimerTask() {
@@ -854,7 +848,10 @@ public class PaymentAgent {
                                     try {
                                         ext = sks.getExtension(ek.getKeyHandle(), BaseProperties.W2NB_PAY_DEMO_CONTEXT_URI);
                                     } catch (SKSException e) {
-                                        continue;
+                                        if (e.getError() == SKSException.ERROR_OPTION) {
+                                            continue;
+                                        }
+                                        throw new Exception(e);
                                     }
                                     JSONObjectReader or = JSONParser.parse(ext.getExtensionData());
                                     cardSelection.put(ek.getKeyHandle(),
@@ -864,13 +861,7 @@ public class PaymentAgent {
                                                          false)));
                                 }
                             } catch (Exception e) {
-                                logger.log(Level.SEVERE, "SKS problem", e);
-                                showProblemDialog(true, "Internal credentials error!", new WindowAdapter() {
-                                    @Override
-                                    public void windowClosing(WindowEvent event) {
-                                        terminate();
-                                    }
-                                });
+                                sksProblem(e);
                             }
                             if (cardSelection.isEmpty()) {
                                 logger.log(Level.SEVERE, "No matching card");
@@ -908,6 +899,18 @@ public class PaymentAgent {
             } catch (IOException e) {
                 System.exit(0);
             }
+        }
+
+        void sksProblem(Exception e) {
+            logger.log(Level.SEVERE, "SKS problem", e);
+            showProblemDialog(true, 
+                              "<html>Internal error!<br>Check log file for details.</html>",
+                              new WindowAdapter() {
+                @Override
+                public void windowClosing(WindowEvent event) {
+                    terminate();
+                }
+            });
         }
     }
 
