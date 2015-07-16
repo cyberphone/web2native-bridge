@@ -38,7 +38,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowAdapter;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.lang.reflect.Field;
 import java.security.Security;
 import java.util.LinkedHashMap;
@@ -65,8 +67,16 @@ import javax.swing.border.EmptyBorder;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONOutputFormats;
+import org.webpki.json.JSONParser;
+import org.webpki.keygen2.KeyGen2URIs;
+import org.webpki.sks.EnumeratedKey;
+import org.webpki.sks.Extension;
+import org.webpki.sks.SKSException;
+import org.webpki.sks.SecureKeyStore;
+import org.webpki.sks.test.SKSReferenceImplementation;
 import org.webpki.util.ArrayUtil;
 import org.webpki.w2nb.webpayment.common.BaseProperties;
+import org.webpki.w2nb.webpayment.common.CredentialProperties;
 import org.webpki.w2nb.webpayment.common.Messages;
 import org.webpki.w2nbproxy.StdinJSONPipe;
 import org.webpki.w2nbproxy.StdoutJSONPipe;
@@ -78,7 +88,7 @@ public class PaymentAgent {
     static StdoutJSONPipe stdout = new StdoutJSONPipe();
     static JDialog frame;
 
-    static Logger logger = Logger.getLogger("MyLog");
+    static Logger logger = Logger.getLogger("log");
     
     static final String TOOLTIP_CANCEL         = "Click if you want to abort this payment operation";
     static final String TOOLTIP_PAY_OK         = "Click if you agree to pay";
@@ -235,6 +245,7 @@ public class PaymentAgent {
         boolean macOS;
         boolean retinaFlag;
         boolean hiResImages;
+        SecureKeyStore sks;
  
         ApplicationWindow() {
             views = frame.getContentPane();
@@ -734,6 +745,17 @@ public class PaymentAgent {
         
         @Override
         public void run() {
+            try {
+                sks = (SKSReferenceImplementation) new ObjectInputStream(getClass().getResourceAsStream("sks.serialized")).readObject();
+            } catch (Exception e) {
+                logger.log(Level.SEVERE, "Reading SKS failed");
+                showProblemDialog(true, "Could not initiate payment credentials!", new WindowAdapter() {
+                    @Override
+                    public void windowClosing(WindowEvent event) {
+                        terminate();
+                    }
+                });
+            }
             final Timer timer = new Timer();
             timer.schedule(new TimerTask() {
                 @Override
@@ -765,13 +787,29 @@ public class PaymentAgent {
                             running = false;
                             amountString = "$\u200a3.25";
                             payeeString = "Demo Merchant long version";
-                            for (int keyHandle = 0; keyHandle < 3; keyHandle++) {
-                                cardSelection.put(keyHandle, new Card("1234 1234 1234 123" + keyHandle,
-                                                             getImageIcon(keyHandle > 0 ?
-                                                                              keyHandle > 1  ?
-                                                                           "unusualcard.png" : "coolcard.png" 
-                                                                                        : "supercard.png",
-                                                                           false)));
+                            EnumeratedKey ek = new EnumeratedKey();
+                            try {
+                                while ((ek = sks.enumerateKeys(ek.getKeyHandle())) != null) {
+                                    try {
+                                        Extension ext = sks.getExtension(ek.getKeyHandle(), BaseProperties.W2NB_PAY_DEMO_CONTEXT_URI);
+                                        JSONObjectReader or = JSONParser.parse(ext.getExtensionData());
+                                        cardSelection.put(ek.getKeyHandle(),
+                                                new Card(or.getString(CredentialProperties.CARD_NUMBER_JSON),
+                                                getImageIcon(sks.getExtension(ek.getKeyHandle(), 
+                                                                              KeyGen2URIs.LOGOTYPES.CARD).getExtensionData(),
+                                                             false)));
+                                    } catch (SKSException e) {
+                                        continue;
+                                    }
+                                }
+                            } catch (Exception e) {
+                                logger.log(Level.SEVERE, "SKS problem", e);
+                                showProblemDialog(true, "Internal credentials error!", new WindowAdapter() {
+                                    @Override
+                                    public void windowClosing(WindowEvent event) {
+                                        terminate();
+                                    }
+                                });
                             }
                             if (cardSelection.isEmpty()) {
                                 logger.log(Level.SEVERE, "No matching card");

@@ -16,8 +16,7 @@
  */
 package org.webpki.w2nb.webpayment.common;
 
-public interface BaseProperties
-  {
+public interface BaseProperties {
     String PAYMENT_REQUEST_JSON       = "paymentRequest";
     String AMOUNT_JSON                = "amount";
     String ERROR_JSON                 = "error";
@@ -50,7 +49,7 @@ public interface BaseProperties
     String IV_JSON                    = "iv";
     String CIPHER_TEXT_JSON           = "cipherText";
     
-    String WCPP_DEMO_CONTEXT_URI      = "http://xmlns.webpki.org/wcpp-payment-demo";
+    String W2NB_PAY_DEMO_CONTEXT_URI  = "http://xmlns.webpki.org/wcpp-payment-demo";
     String ECDH_ALGORITHM_URI         = "http://www.w3.org/2009/xmlenc11#ECDH-ES";
     String CONCAT_ALGORITHM_URI       = "http://www.w3.org/2009/xmlenc11#ConcatKDF";
-  }
+}

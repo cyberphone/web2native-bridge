@@ -1,9 +1,14 @@
-<project name="Web2Native Bridge - Web Payment Support" default="help">
+<project name="Web2Native Bridge - Web Payment Support" default="help" basedir=".">
 
   <!-- set properties for this build -->
   <property name="src_dir" value="src"/>
-  <property name="packimage_dir" value="packaged-images"/>
+  <property name="common_dir" value="../webpayment.client/common"/>
+  
+  <property name="cardimage_dir" location="card-images"/>
   <property name="class_war_path" value="WEB-INF/classes/org/webpki/webapps/wcpppaymentdemo"/>
+
+  <property name="temp_dir" location=".tmp"/>
+  <property name="credentials" location="credentials/sks.serialized"/>
   
   <property name="keypassword" value="foo123"/>
   <property name="keyfilext" value=".p12"/>
@@ -22,17 +27,84 @@
   <property name="clientkey_ec" value="mybank-client-key-ec"/>
   <property name="clientkey_ec2" value="mybank-client-key-ec2"/>
   
-  <property name="debug" value="on"/>
-  <property environment="env"/>
-  <property name="webpki_jars" location="../proxy/install/libs"/>
-  <property name="catalina.home" value="${env.CATALINA_HOME}"/>
-
+  <property name="lib_dir" value="../proxy/install/libs"/>
+  
   <condition property="storetype" value="PKCS12" else="JKS">
     <matches pattern=".*\.p12$" string="${keyfilext}"/>
   </condition>
+  
+  <property name="javaversion" value="1.7" />
+  <property name="debug" value="on"/>
+  
+  <property environment="env"/>
+  <property name="catalina.home" value="${env.CATALINA_HOME}"/>
 
+  <path id="compile.classpath">
+     <fileset dir="${lib_dir}">
+       <include name="*.jar"/>
+    </fileset>
+  </path>
+  
   <target name="help">
-      <echo message="build nowebcrypto webcrypto -Dlocalhost=0 -Decclient=0 -Decbank=0 mobilepki-ejbca localhost-ejbca zip-distribution createcerts"/>
+      <echo message="createcerts initwallet"/>
+  </target>
+ 
+  <target name="_import">
+    <java fork="yes"
+          classname="org.webpki.w2nb.webpayment.resources.InitWallet"
+          dir="${key_dir}"
+          failonerror="true">
+        <classpath>
+             <fileset dir="${lib_dir}">
+                <include name="*.jar"/>
+             </fileset>
+             <pathelement location="${temp_dir}"/>
+        </classpath>
+        <arg value="${credentials}"/>
+        <arg value="${sks.certificate}${keyfilext}"/>
+        <arg value="${keypassword}"/>
+        <arg value="${sks.pin}"/>
+        <arg value="${card.type}"/>
+        <arg value="${card.number}"/>
+        <arg value="${cardimage_dir}/${sks.image}"/>
+      </java>
+  </target>
+<!-- sksFile certFile certFilePassword cardPin cardType cardNumber [image]   -->  
+  <target name="initwallet">
+    <delete file="${credentials}"/>
+    <delete dir="${temp_dir}"/>
+    <mkdir dir="${temp_dir}"/>
+    <javac debug="${debug}"
+           source="${javaversion}"
+           target="${javaversion}"
+           srcdir="${src_dir}:${common_dir}"
+           destdir="${temp_dir}" 
+           classpathref="compile.classpath"
+           includeAntRuntime="false">
+    </javac>
+
+    <antcall target="_import">
+       <param name="sks.certificate" value="${clientkey_ec}"/>
+       <param name="sks.pin" value="1234"/>
+       <param name="card.type" value="SuperCard"/>
+       <param name="card.number" value="6875 0567 4555 2109"/>
+       <param name="sks.image" value="supercard.png"/>
+    </antcall>
+    <antcall target="_import">
+       <param name="sks.certificate" value="${clientkey_rsa}"/>
+       <param name="sks.pin" value="1234"/>
+       <param name="card.type" value="CoolCard"/>
+       <param name="card.number" value="8645 7800 2394 0312"/>
+       <param name="sks.image" value="coolcard.png"/>
+     </antcall>
+     <antcall target="_import">
+       <param name="sks.certificate" value="${clientkey_ec2}"/>
+       <param name="sks.pin" value="1234"/>
+       <param name="card.type" value="UnsualCard"/>
+       <param name="card.number" value="1111 2222 3333 4444"/>
+       <param name="sks.image" value="unusualcard.png"/>
+     </antcall>
+    
   </target>
 
   <target name="_createcert">
@@ -41,7 +113,7 @@
   		  dir="${key_dir}"
 		  failonerror="true">
   		<classpath>
-  			 <fileset dir="${webpki_jars}">
+  			 <fileset dir="${lib_dir}">
   		        <include name="*.jar"/>
   			 </fileset>
   		</classpath>
