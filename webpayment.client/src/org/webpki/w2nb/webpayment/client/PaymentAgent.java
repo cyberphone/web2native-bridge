@@ -65,7 +65,6 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 
-import org.webpki.crypto.AsymKeySignerInterface;
 import org.webpki.crypto.AsymSignatureAlgorithms;
 import org.webpki.crypto.HashAlgorithms;
 import org.webpki.crypto.SignerInterface;
@@ -109,11 +108,9 @@ public class PaymentAgent {
     static final String VIEW_SELECTION         = "SELECT";
     static final String VIEW_DUMMY_SELECTION   = "DUMMY";
     static final String VIEW_AUTHORIZE         = "AUTH";
-    static final String VIEW_DEBUG             = "DEBUG";
 
     static final String BUTTON_OK              = "OK";
     static final String BUTTON_CANCEL          = "Cancel";
-    static final String BUTTON_SEND            = "Send";
 
     static final int TIMEOUT_FOR_REQUEST       = 10000;
     
@@ -246,7 +243,6 @@ public class PaymentAgent {
         Font cardNumberFont;
         int cardNumberSpacing;
         int fontSize;
-        String invokeMessageString;
         JTextField amountField;
         JTextField payeeField;
         String amountString;
@@ -264,7 +260,6 @@ public class PaymentAgent {
         int keyHandle;
  
         JSONObjectReader invokeMessage;
-        JSONObjectWriter resultMessage;
         
         ApplicationWindow() {
             views = frame.getContentPane();
@@ -298,9 +293,6 @@ public class PaymentAgent {
 
             // For measuring purposes only
             initCardSelectionView(false);
-
-            // Debug messages
-            initDebugView();
         }
         
         JPanel initCardSelectionViewCore(LinkedHashMap<Integer,Card> cards) {
@@ -548,9 +540,6 @@ public class PaymentAgent {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     if (authorizationSucceeded()) {
-                        ((CardLayout)views.getLayout()).show(views, VIEW_DEBUG);
-                        debugText.setText(invokeMessageString);
-                        debugText.setCaretPosition(0);
                     }
                 }
             });
@@ -583,12 +572,7 @@ public class PaymentAgent {
 
         boolean pinBlockCheck() throws SKSException {
             if (sks.getKeyProtectionInfo(keyHandle).isPinBlocked()) {
-                showProblemDialog(true, "Card blocked due to previous PIN errors!", new WindowAdapter() {
-                    @Override
-                    public void windowClosing(WindowEvent event) {
-                        terminate();
-                    }
-                });
+                terminatingError("Card blocked due to previous PIN errors!");
                 return true;
             }
             return false;
@@ -600,7 +584,7 @@ public class PaymentAgent {
                     return false;
                 }
                 try {
-                    resultMessage = Messages.createBaseMessage(Messages.AUTHORIZE);
+                    JSONObjectWriter resultMessage = Messages.createBaseMessage(Messages.AUTHORIZE);
                     resultMessage.setObject(BaseProperties.PAYMENT_REQUEST_JSON, invokeMessage.getObject(BaseProperties.PAYMENT_REQUEST_JSON));
                     resultMessage.setJOSEAlgorithmPreference(true);
                     resultMessage.setSignature (new JSONX509Signer (new SignerInterface () {
@@ -617,6 +601,8 @@ public class PaymentAgent {
                                                       algorithm.getDigestAlgorithm().digest(data));                        }
                     }).setSignatureAlgorithm(cardSelection.get(keyHandle).signatureAlgorithm)
                       .setSignatureCertificateAttributes(true));
+                    stdout.writeJSONObject(resultMessage);
+                    logger.info("Sent:\n" + new String(resultMessage.serializeJSONObject(JSONOutputFormats.PRETTY_PRINT),"UTF-8"));
                     return true;
                 } catch (SKSException e) {
                     if (e.getError() != SKSException.ERROR_AUTHORIZATION) {
@@ -656,66 +642,6 @@ public class PaymentAgent {
             } catch (Exception e) {
                 sksProblem(e);
             }
-        }
-
-        void initDebugView() {
-            JPanel debugView = new JPanel();
-            debugView.setLayout(new GridBagLayout());
-            GridBagConstraints c = new GridBagConstraints();
-            int standardInset = fontSize/3;
-
-            c.weightx = 0.0;
-            c.anchor = GridBagConstraints.WEST;
-            c.fill = GridBagConstraints.NONE;
-            c.gridx = 0;
-            c.gridy = 0;
-            c.gridwidth = 2;
-            c.insets = new Insets(standardInset, standardInset, standardInset, standardInset);
-            JLabel msgLabel = new JLabel("Messages:");
-            msgLabel.setFont(standardFont);
-            debugView.add(msgLabel, c);
-
-            debugText = new JTextArea();
-            debugText.setFont(cardNumberFont);
-            debugText.setEditable(false);
-            JScrollPane scrollPane = new JScrollPane(debugText);
-            c.weightx = 1.0;
-            c.weighty = 1.0;
-            c.fill = GridBagConstraints.BOTH;
-            c.gridwidth = 2;
-            c.gridy = 1;
-            c.insets = new Insets(0, standardInset, 0, standardInset);
-            debugView.add(scrollPane , c);
-
-            JButtonSlave sendBut = new JButtonSlave(BUTTON_SEND, cancelAuthorizationButton);
-            sendBut.setFont(standardFont);
-            sendBut.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent event) {
-                    try {
-                        stdout.writeJSONObject(resultMessage);
-                    } catch (IOException e) {
-                        logger.log(Level.SEVERE, "Writing", e);
-                        terminate();
-                    }
-                }
-            });
-            c.weightx = 0.0;
-            c.weighty = 0.0;
-            c.fill = GridBagConstraints.NONE;
-            c.gridwidth = 1;
-            c.gridy = 2;
-            c.insets = new Insets(standardInset, standardInset, standardInset, 0);
-            debugView.add(sendBut, c);
-
-            sendText = new JTextField(40);
-            sendText.setFont(new Font("Courier", Font.PLAIN, fontSize));
-            c.fill = GridBagConstraints.HORIZONTAL;
-            c.gridx = 1;
-            c.insets = new Insets(standardInset, standardInset, standardInset, standardInset);
-            debugView.add(sendText, c);
-
-            views.add(debugView, VIEW_DEBUG);
         }
 
         void initWaitingView() {
@@ -856,8 +782,7 @@ public class PaymentAgent {
             }, TIMEOUT_FOR_REQUEST);
             try {
                 invokeMessage = stdin.readJSONObject();
-                invokeMessageString = new String(invokeMessage.serializeJSONObject(JSONOutputFormats.PRETTY_PRINT),"UTF-8");
-                logger.info("Received:\n" + invokeMessageString);
+                logger.info("Received:\n" + new String(invokeMessage.serializeJSONObject(JSONOutputFormats.PRETTY_PRINT),"UTF-8"));
                 Messages.parseBaseMessage(Messages.INVOKE, invokeMessage);
                 invokeMessage.getObject(BaseProperties.PAYMENT_REQUEST_JSON).getSignature();
                 timer.cancel();
@@ -870,7 +795,7 @@ public class PaymentAgent {
                             amountString = "$\u200a3.25";
                             payeeString = "Demo Merchant long version";
                             EnumeratedKey ek = new EnumeratedKey();
-                            // Enumerate keys but only go fo those who are intended for
+                            // Enumerate keys but only go for those who are intended for
                             // Web Payments (according to our schema...)
                             try {
                                 while ((ek = sks.enumerateKeys(ek.getKeyHandle())) != null) {

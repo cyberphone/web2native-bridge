@@ -24,11 +24,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.security.cert.Certificate;
+
 import java.security.KeyStore;
 import java.security.PrivateKey;
+
 import java.security.cert.X509Certificate;
+import java.security.cert.Certificate;
+
 import java.security.interfaces.RSAPublicKey;
+
 import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.Vector;
@@ -38,9 +42,12 @@ import org.webpki.crypto.AsymSignatureAlgorithms;
 import org.webpki.crypto.CustomCryptoProvider;
 import org.webpki.crypto.KeyAlgorithms;
 import org.webpki.crypto.KeyStoreReader;
+
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONOutputFormats;
+
 import org.webpki.keygen2.KeyGen2URIs;
+
 import org.webpki.sks.AppUsage;
 import org.webpki.sks.BiometricProtection;
 import org.webpki.sks.DeleteProtection;
@@ -52,13 +59,16 @@ import org.webpki.sks.InputMethod;
 import org.webpki.sks.PassphraseFormat;
 import org.webpki.sks.PatternRestriction;
 import org.webpki.sks.SecureKeyStore;
+
 import org.webpki.sks.test.Device;
 import org.webpki.sks.test.GenKey;
 import org.webpki.sks.test.KeySpecifier;
 import org.webpki.sks.test.PINPol;
 import org.webpki.sks.test.ProvSess;
 import org.webpki.sks.test.SKSReferenceImplementation;
+
 import org.webpki.util.ArrayUtil;
+
 import org.webpki.w2nb.webpayment.common.CredentialProperties;
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 
@@ -161,7 +171,7 @@ public class InitWallet {
                     "",
                     ow.serializeJSONObject(JSONOutputFormats.NORMALIZED));
         }
-        if (!args[6].endsWith("@")) {
+        if (!args[7].endsWith("@")) {
             key.addExtension(KeyGen2URIs.LOGOTYPES.CARD,
                              SecureKeyStore.SUB_TYPE_LOGOTYPE,
                              "image/png",
