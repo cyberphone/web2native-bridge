@@ -65,10 +65,10 @@ import org.webpki.w2nb.webpayment.common.BaseProperties;
 public class InitWallet {
 
     public static void main(String[] args) throws Exception {
-        if (args.length < 7) {
+        if (args.length < 8) {
             System.out.println("\nUsage: " +
                                InitWallet.class.getCanonicalName() +
-                               "sksFile certFile certFilePassword cardPin cardType/@ cardNumber image/image@");
+                               "sksFile certFile certFilePassword cardPin cardType/@ cardNumber authUrl image/image@");
             System.exit(-3);
         }
         CustomCryptoProvider.forcedLoad(true);
@@ -147,9 +147,15 @@ public class InitWallet {
         key.setPrivateKey(private_key);
         JSONObjectWriter ow = null;
         if (!args[4].equals("@")) {
-            ow = new JSONObjectWriter();
-            ow.setString(CredentialProperties.CARD_TYPE_JSON, args[4]);
-            ow.setString(CredentialProperties.CARD_NUMBER_JSON, args[5]);
+            ow = new JSONObjectWriter()
+                 .setString(CredentialProperties.CARD_TYPE_JSON, args[4])
+                 .setString(CredentialProperties.CARD_NUMBER_JSON, args[5])
+                 .setString(CredentialProperties.AUTH_URL_JSON, args[6])
+                 .setString(CredentialProperties.SIGNATURE_ALGORITHM_JSON,
+                         rsa_flag ?
+                    AsymSignatureAlgorithms.RSA_SHA256.getURI()
+                                  :
+                    AsymSignatureAlgorithms.ECDSA_SHA256.getURI());
             key.addExtension(BaseProperties.W2NB_PAY_DEMO_CONTEXT_URI,
                     SecureKeyStore.SUB_TYPE_EXTENSION,
                     "",
@@ -159,7 +165,7 @@ public class InitWallet {
             key.addExtension(KeyGen2URIs.LOGOTYPES.CARD,
                              SecureKeyStore.SUB_TYPE_LOGOTYPE,
                              "image/png",
-                             ArrayUtil.readFile(args[6]));
+                             ArrayUtil.readFile(args[7]));
         }
         sess.closeSession();
         

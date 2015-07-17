@@ -21,9 +21,10 @@ package org.webpki.w2nb.webpayment.common;
 // holding a Base64URL encoded JSON object as described below:
 
 public interface CredentialProperties {
-    String AUTH_URL_JSON              = "authUrl";              // URL to payment provider
     String CARD_NUMBER_JSON           = "cardNumber";           // Card number (PAN)
     String CARD_TYPE_JSON             = "cardType";             // Card type.  See CardTypes.java
+    String AUTH_URL_JSON              = "authUrl";              // URL to payment provider
+    String SIGNATURE_ALGORITHM_JSON   = "signatureAlgorithm";   // MUST match key material
 
     // Optional: For the merchant "push" mode
     String ENCRYPTION_KEY_JSON        = "encryptionKey";        // PublicKey in JCS format
@@ -36,4 +37,4 @@ public interface CredentialProperties {
 
 // Note: Card images MUST be using the KeyGen2
 // "http://xmlns.webpki.org/keygen2/logotype#card"
-// URI in a separate SKS imsge extension attribute
+// URI in a separate SKS image extension attribute

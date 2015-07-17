@@ -27,6 +27,10 @@
   <property name="clientkey_ec" value="mybank-client-key-ec"/>
   <property name="clientkey_ec2" value="mybank-client-key-ec2"/>
   <property name="clientkey_ec_other" value="mybank-client-key-ec-other"/>
+
+  <condition property="bank.host" value="https://localhost:8442" else="https://mobilepki.org">
+    <isset property="localhost"/>
+  </condition>
   
   <property name="lib_dir" value="../proxy/install/libs"/>
   
@@ -47,7 +51,7 @@
   </path>
   
   <target name="help">
-      <echo message="createcerts initwallet"/>
+      <echo message="createcerts initwallet [-Dlocalhost=0]"/>
   </target>
  
   <target name="_import">
@@ -67,6 +71,7 @@
         <arg value="${sks.pin}"/>
         <arg value="${card.type}"/>
         <arg value="${card.number}"/>
+        <arg value="${bank.host}/w2nb-bank/transreq"/>
         <arg value="${cardimage_dir}/${sks.image}"/>
       </java>
   </target>
