@@ -432,7 +432,7 @@ public class PaymentAgent {
             c.gridx = 0;
             c.gridy = 0;
             c.gridwidth = 3;
-            c.insets = new Insets((fontSize * 3) / 2, 0, 0, 0);
+            c.insets = new Insets(fontSize, 0, 0, 0);
             c.anchor = GridBagConstraints.CENTER;
             c.fill = GridBagConstraints.VERTICAL;
             c.weighty = 1.0;
@@ -513,7 +513,7 @@ public class PaymentAgent {
             c.gridx = 0;
             c.gridy = 4;
             c.gridwidth = 3;
-            c.insets = new Insets(0, 0, fontSize, 0);
+            c.insets = new Insets(0, 0, fontSize / 2, 0);
             c.fill = GridBagConstraints.BOTH;
             c.weighty = 0.6;
             JLabel dummy2 = new JLabel(" ");
