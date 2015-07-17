@@ -93,28 +93,28 @@
        <param name="sks.certificate" value="${clientkey_ec}"/>
        <param name="sks.pin" value="1234"/>
        <param name="card.type" value="SuperCard"/>
-       <param name="card.number" value="6875 0567 4555 2109"/>
+       <param name="card.number" value="6875056745552109"/>
        <param name="sks.image" value="supercard.png"/>
     </antcall>
     <antcall target="_import">
        <param name="sks.certificate" value="${clientkey_rsa}"/>
        <param name="sks.pin" value="1234"/>
        <param name="card.type" value="CoolCard"/>
-       <param name="card.number" value="8645 7800 2394 0312"/>
+       <param name="card.number" value="8645780023940312"/>
        <param name="sks.image" value="coolcard.png"/>
      </antcall>
      <antcall target="_import">
        <param name="sks.certificate" value="${clientkey_ec_other}"/>
        <param name="sks.pin" value="1234"/>
        <param name="card.type" value="@"/>
-       <param name="card.number" value="8888 0000 3333 4444"/>
+       <param name="card.number" value="8888000033334444"/>
        <param name="sks.image" value="unusualcard.png"/>
      </antcall>
      <antcall target="_import">
        <param name="sks.certificate" value="${clientkey_ec2}"/>
        <param name="sks.pin" value="1234"/>
        <param name="card.type" value="UnsualCard"/>
-       <param name="card.number" value="1111 2222 3333 4444"/>
+       <param name="card.number" value="1111222233334444"/>
        <param name="sks.image" value="unusualcard.png"/>
      </antcall>
      

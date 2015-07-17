@@ -117,17 +117,22 @@ public class PaymentAgent {
 
     static final int TIMEOUT_FOR_REQUEST       = 10000;
     
-    static final String DUMMY_CARD_NUMBER      = "1234 1234 1234 1234 1234";
+    static final String DUMMY_CARD_NUMBER      = "12341234123412341234";
 
     static class Card {
         String cardNumber;
         ImageIcon cardIcon;
         AsymSignatureAlgorithms signatureAlgorithm;
+        String authUrl;
         
-        Card(String cardNumber, ImageIcon cardIcon, AsymSignatureAlgorithms signatureAlgorithm) {
+        Card(String cardNumber, 
+             ImageIcon cardIcon,
+             AsymSignatureAlgorithms signatureAlgorithm,
+             String authUrl) {
             this.cardNumber = cardNumber;
             this.cardIcon = cardIcon;
             this.signatureAlgorithm = signatureAlgorithm;
+            this.authUrl = authUrl;
         }
     }
     
@@ -335,12 +340,25 @@ public class PaymentAgent {
                                       c.gridx == 0 ? fontSize : 0,
                                       0,
                                       c.gridx == 0 ? 0 : fontSize);
-                JLabel cardNumber = new JLabel(card.cardNumber, JLabel.CENTER);
+                JLabel cardNumber = new JLabel(formatCardNumber(card.cardNumber), JLabel.CENTER);
                 cardNumber.setFont(cardNumberFont);
                 cardSelectionViewCore.add(cardNumber, c);
                 itemNumber++;
             }
             return cardSelectionViewCore;
+        }
+
+        String formatCardNumber(String cardNumber) {
+            StringBuffer s = new StringBuffer();
+            int q = 0;
+            for (char c : cardNumber.toCharArray()) {
+                if (q != 0 && q % 4 == 0) {
+                    s.append(' ');
+                }
+                s.append(c);
+                q++;
+            }
+            return s.toString();
         }
 
         void initCardSelectionView(boolean actualCards) {
@@ -369,7 +387,7 @@ public class PaymentAgent {
             } else {
                 LinkedHashMap<Integer,Card> cards = new LinkedHashMap<Integer,Card>();
                 for (int i = 0; i < 2; i++) {
-                    cards.put(i, new Card(DUMMY_CARD_NUMBER, dummyCardIcon, null));
+                    cards.put(i, new Card(DUMMY_CARD_NUMBER, dummyCardIcon, null, null));
                 }
                 cardSelectionView.add(initCardSelectionViewCore(cards), c);
             }
@@ -606,7 +624,7 @@ public class PaymentAgent {
                     }
                 }
                 if (!pinBlockCheck()) {
-                    logger.info("Incorrect PIN");
+                    logger.warning("Incorrect PIN");
                     KeyProtectionInfo pi = sks.getKeyProtectionInfo(keyHandle);
                     showProblemDialog(false,
                             "<html>Incorrect PIN.<br>There are " +
@@ -622,7 +640,9 @@ public class PaymentAgent {
         }
 
         void showAuthorizationView(int keyHandle) {
-            logger.info("Selected Card=" + keyHandle);
+            logger.info("Selected Card: Key=" + keyHandle +
+                        ", Number=" + cardSelection.get(keyHandle).cardNumber +
+                        ", URL=" + cardSelection.get(keyHandle).authUrl);
             this.keyHandle = keyHandle;
             amountField.setText("\u200a" + amountString);
             payeeField.setText("\u200a" + payeeString);
@@ -869,7 +889,8 @@ public class PaymentAgent {
                                                  getImageIcon(sks.getExtension(ek.getKeyHandle(), 
                                                                     KeyGen2URIs.LOGOTYPES.CARD).getExtensionData(),
                                                               false),
-                                                              AsymSignatureAlgorithms.getAlgorithmFromID(or.getString(CredentialProperties.SIGNATURE_ALGORITHM_JSON))));
+                                                              AsymSignatureAlgorithms.getAlgorithmFromID(or.getString(CredentialProperties.SIGNATURE_ALGORITHM_JSON)),
+                                                              or.getString(CredentialProperties.AUTH_URL_JSON)));
                                 }
                             } catch (Exception e) {
                                 sksProblem(e);
