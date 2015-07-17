@@ -41,9 +41,9 @@ import java.awt.event.WindowAdapter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.lang.reflect.Field;
+import java.security.PublicKey;
 import java.security.Security;
 import java.security.cert.X509Certificate;
-import java.security.interfaces.RSAPublicKey;
 import java.util.LinkedHashMap;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -64,7 +64,9 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
+import javax.swing.plaf.metal.MetalButtonUI;
 
+import org.webpki.crypto.AsymEncryptionAlgorithms;
 import org.webpki.crypto.AsymSignatureAlgorithms;
 import org.webpki.crypto.HashAlgorithms;
 import org.webpki.crypto.SignerInterface;
@@ -122,17 +124,21 @@ public class PaymentAgent {
         AsymSignatureAlgorithms signatureAlgorithm;
         String authUrl;
         
+        // Optional (as a pair)
+        AsymEncryptionAlgorithms encryptionAlgorithm;
+        PublicKey publicKey;
+        
         Card(String cardNumber, 
-             ImageIcon cardIcon,
-             AsymSignatureAlgorithms signatureAlgorithm,
-             String authUrl) {
+            ImageIcon cardIcon,
+            AsymSignatureAlgorithms signatureAlgorithm,
+            String authUrl) {
             this.cardNumber = cardNumber;
             this.cardIcon = cardIcon;
             this.signatureAlgorithm = signatureAlgorithm;
             this.authUrl = authUrl;
         }
     }
-    
+
     static LinkedHashMap<Integer,Card> cardSelection = new LinkedHashMap<Integer,Card>();
 
     static void initLogger(String logFile) {
@@ -248,7 +254,7 @@ public class PaymentAgent {
         String amountString;
         String payeeString;
         JPasswordField pinText;
-        JLabel selectedCardImage;
+        JButton selectedCardImage;
         JLabel selectedCardNumber;
         JButton cancelAuthorizationButton;  // Used as a master for creating unified button widths
         ImageIcon dummyCardIcon;
@@ -277,7 +283,6 @@ public class PaymentAgent {
             cardNumberFont = new Font("Courier", 
                                       hiResImages ? Font.PLAIN : Font.BOLD,
                                       (fontSize * 4) / 5);
-            cardNumberSpacing = fontSize / 6;
             logger.info("Display Data: Screen resolution=" + screenResolution +
                          ", Screen size=" + Toolkit.getDefaultToolkit().getScreenSize() +
                          ", Font size=" + font.getSize() +
@@ -294,7 +299,20 @@ public class PaymentAgent {
             // For measuring purposes only
             initCardSelectionView(false);
         }
-        
+
+        JButton createCardButton (ImageIcon cardIcon, String toolTip) {
+            JButton cardButton = new JButton(cardIcon);
+            cardButton.setUI(new MetalButtonUI());
+            cardButton.setPressedIcon(cardIcon);
+            cardButton.setFocusPainted(false);
+            cardButton.setMargin(new Insets(0, 0, 0, 0));
+            cardButton.setContentAreaFilled(false);
+            cardButton.setBorderPainted(false);
+            cardButton.setOpaque(false);
+            cardButton.setToolTipText(toolTip);
+            return cardButton;
+        }
+
         JPanel initCardSelectionViewCore(LinkedHashMap<Integer,Card> cards) {
             JPanel cardSelectionViewCore = new JPanel();
             cardSelectionViewCore.setBackground(Color.WHITE);
@@ -311,14 +329,7 @@ public class PaymentAgent {
                                       c.gridx == 0 ? fontSize : 0,
                                       0,
                                       c.gridx == 0 ? 0 : fontSize);
-                JButton cardImage = new JButton(card.cardIcon);
-                cardImage.setPressedIcon(card.cardIcon);
-                cardImage.setFocusPainted(false);
-                cardImage.setMargin(new Insets(0, 0, 0, 0));
-                cardImage.setContentAreaFilled(false);
-                cardImage.setBorderPainted(false);
-                cardImage.setOpaque(false);
-                cardImage.setToolTipText(TOOLTIP_CARD_SELECTION);
+                JButton cardImage = createCardButton(card.cardIcon, TOOLTIP_CARD_SELECTION);
                 cardImage.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
@@ -328,7 +339,7 @@ public class PaymentAgent {
                 cardSelectionViewCore.add(cardImage, c);
 
                 c.gridy++;
-                c.insets = new Insets(retinaFlag ? 0 : cardNumberSpacing,
+                c.insets = new Insets(cardNumberSpacing,
                                       c.gridx == 0 ? fontSize : 0,
                                       0,
                                       c.gridx == 0 ? 0 : fontSize);
@@ -516,7 +527,7 @@ public class PaymentAgent {
             c.anchor = GridBagConstraints.SOUTHWEST;
             c.fill = GridBagConstraints.NONE;
             c.weighty = 0.0;
-            cancelAuthorizationButton = new JButton("Cancel");
+            cancelAuthorizationButton = new JButton(BUTTON_CANCEL);
             cancelAuthorizationButton.setFont(standardFont);
             cancelAuthorizationButton.setToolTipText(TOOLTIP_CANCEL);
             authorizationView.add(cancelAuthorizationButton, c);
@@ -557,8 +568,7 @@ public class PaymentAgent {
             cardAndNumber.setBackground(Color.WHITE);
             cardAndNumber.setLayout(new GridBagLayout());
             GridBagConstraints c2 = new GridBagConstraints();
-            selectedCardImage = new JLabel(dummyCardIcon);
-            selectedCardImage.setToolTipText(TOOLTIP_SELECTED_CARD);
+            selectedCardImage = createCardButton(dummyCardIcon, TOOLTIP_SELECTED_CARD);
             cardAndNumber.add(selectedCardImage, c2);
             selectedCardNumber = new JLabel(DUMMY_CARD_NUMBER);
             selectedCardNumber.setFont(cardNumberFont);
@@ -633,7 +643,8 @@ public class PaymentAgent {
             amountField.setText("\u200a" + amountString);
             payeeField.setText("\u200a" + payeeString);
             selectedCardImage.setIcon(cardSelection.get(keyHandle).cardIcon);
-            selectedCardNumber.setText(cardSelection.get(keyHandle).cardNumber);
+            selectedCardImage.setPressedIcon(cardSelection.get(keyHandle).cardIcon);
+            selectedCardNumber.setText(formatCardNumber(cardSelection.get(keyHandle).cardNumber));
             ((CardLayout)views.getLayout()).show(views, VIEW_AUTHORIZE);
             payeeField.setCaretPosition(0);
             pinText.requestFocusInWindow();
