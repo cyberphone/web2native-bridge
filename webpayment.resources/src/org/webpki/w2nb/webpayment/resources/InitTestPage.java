@@ -21,12 +21,15 @@ package org.webpki.w2nb.webpayment.resources;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+
 import java.math.BigDecimal;
 
 import org.webpki.crypto.CustomCryptoProvider;
+
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONX509Signer;
+
 import org.webpki.w2nb.webpayment.common.CardTypes;
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.Currencies;
@@ -78,6 +81,8 @@ public class InitTestPage implements BaseProperties {
         
         // Read key/certificate to be imported and create signer
         JSONX509Signer signer = new ServerSigner(new FileInputStream(args[1]), args[2]).getJSONX509Signer();
+
+        // Create signed payment request
         JSONObjectWriter standardRequest = PaymentRequest.encode("Demo Merchant",
                                                                  new BigDecimal("306.25"),
                                                                  Currencies.USD,
@@ -100,6 +105,8 @@ public class InitTestPage implements BaseProperties {
     
               "var nativePort = null;\n\n" +
               "var normalRequest =\n");
+
+        // The payment request is wrapped in an unsigned wallet invocation message
         write(Messages.createBaseMessage(Messages.INVOKE_WALLET)
             .setStringArray(ACCEPTED_CARD_TYPES_JSON,
                             new String[]{"NoSuchCard",
@@ -107,6 +114,7 @@ public class InitTestPage implements BaseProperties {
                                           CardTypes.CoolCard.toString()})
             .setObject(PAYMENT_REQUEST_JSON, standardRequest));
 
+        // The normal request is cloned and modified for testing error handling
         write(";\n\n" +
               "// All our cards should match during the discovery phase...\n" +
               "var scrollMatchingRequest = JSON.parse(JSON.stringify(normalRequest)); // Deep clone\n" +
@@ -222,7 +230,7 @@ public class InitTestPage implements BaseProperties {
             write(test.descrition);
             write("<br>\n");
         }
-       write("</form>\n" +
+        write("</form>\n" +
               "<div style=\"margin-top:10pt;margin-bottom:10pt\">Result:</div>\n" +
               "<div id=\"response\" style=\"font-family:courier;font-size:10pt;word-wrap:break-word;width:800pt\"></div>\n" +
               "</body></html>\n");
