@@ -80,7 +80,7 @@ function activateExtension() {
                 if (test == "Normal") {
                     sendMessageConditional(normalMessage);
                 } else if (test == "Slow") {
-                     setTimeout(function() {
+                    setTimeout(function() {
                         sendMessageConditional(normalMessage);
                     }, 2000);
                 } else if (test == "Timeout") {
@@ -93,8 +93,10 @@ function activateExtension() {
                     sendMessageConditional(badSignature);
                 }
             } else {
-                setString(JSON.stringify(message));
-                closeExtension();
+                setTimeout(function() {
+                    setString(JSON.stringify(message));
+                    closeExtension();
+                }, 1000);
             }
         });
         port.addDisconnectListener(function() {

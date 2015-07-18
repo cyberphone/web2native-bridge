@@ -106,7 +106,7 @@ public class PaymentAgent {
     static final String TOOLTIP_CARD_SELECTION = "Click on a card to select it!";
     static final String TOOLTIP_SELECTED_CARD  = "This card will be used in the transaction";
     
-    static final String VIEW_INITIALIZING      = "INIT";
+    static final String VIEW_WAITING           = "WAIT";
     static final String VIEW_SELECTION         = "SELECT";
     static final String VIEW_DUMMY_SELECTION   = "DUMMY";
     static final String VIEW_AUTHORIZE         = "AUTH";
@@ -125,8 +125,8 @@ public class PaymentAgent {
         String authUrl;
         
         // Optional (as a pair)
-        AsymEncryptionAlgorithms encryptionAlgorithm;
-        PublicKey publicKey;
+        String encryptionAlgorithm;
+        PublicKey encryptionKey;
         
         Card(String cardNumber, 
             ImageIcon cardIcon,
@@ -241,9 +241,8 @@ public class PaymentAgent {
     }
 
     static class ApplicationWindow extends Thread {
-        JTextArea debugText;
-        JTextField sendText;
         Container views;
+        JLabel waitingText;
         boolean running = true;
         Font standardFont;
         Font cardNumberFont;
@@ -266,6 +265,8 @@ public class PaymentAgent {
         int keyHandle;
  
         JSONObjectReader invokeMessage;
+        
+        JSONObjectWriter resultMessage;
         
         ApplicationWindow() {
             views = frame.getContentPane();
@@ -550,7 +551,10 @@ public class PaymentAgent {
             okButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    if (authorizationSucceeded()) {
+                    if (userAuthorizationSucceeded()) {
+                        waitingText.setText("Payment processing - Please wait");
+                        ((CardLayout)views.getLayout()).show(views, VIEW_WAITING);
+                        performPayment();
                     }
                 }
             });
@@ -580,65 +584,12 @@ public class PaymentAgent {
             views.add(authorizationView, VIEW_AUTHORIZE);
         }
 
-        boolean pinBlockCheck() throws SKSException {
-            if (sks.getKeyProtectionInfo(keyHandle).isPinBlocked()) {
-                terminatingError("Card blocked due to previous PIN errors!");
-                return true;
-            }
-            return false;
-        }
-
-        boolean authorizationSucceeded() {
-            try {
-                if (pinBlockCheck()) {
-                    return false;
-                }
-                try {
-                    JSONObjectWriter resultMessage = Messages.createBaseMessage(Messages.AUTHORIZE);
-                    resultMessage.setObject(BaseProperties.PAYMENT_REQUEST_JSON, invokeMessage.getObject(BaseProperties.PAYMENT_REQUEST_JSON));
-                    resultMessage.setJOSEAlgorithmPreference(true);
-                    resultMessage.setSignature (new JSONX509Signer (new SignerInterface () {
-                        @Override
-                        public X509Certificate[] getCertificatePath() throws IOException {
-                            return sks.getKeyAttributes(keyHandle).getCertificatePath();
-                        }
-                        @Override
-                        public byte[] signData(byte[] data, AsymSignatureAlgorithms algorithm) throws IOException {
-                            return sks.signHashedData(keyHandle,
-                                                      algorithm.getURI(),
-                                                      null,
-                                                      new String(pinText.getPassword()).getBytes("UTF-8"),
-                                                      algorithm.getDigestAlgorithm().digest(data));                        }
-                    }).setSignatureAlgorithm(cardSelection.get(keyHandle).signatureAlgorithm)
-                      .setSignatureCertificateAttributes(true));
-                    stdout.writeJSONObject(resultMessage);
-                    logger.info("Sent:\n" + new String(resultMessage.serializeJSONObject(JSONOutputFormats.PRETTY_PRINT),"UTF-8"));
-                    return true;
-                } catch (SKSException e) {
-                    if (e.getError() != SKSException.ERROR_AUTHORIZATION) {
-                        throw new Exception(e);
-                    }
-                }
-                if (!pinBlockCheck()) {
-                    logger.warning("Incorrect PIN");
-                    KeyProtectionInfo pi = sks.getKeyProtectionInfo(keyHandle);
-                    showProblemDialog(false,
-                            "<html>Incorrect PIN.<br>There are " +
-                             (pi.getPinRetryLimit() - pi.getPinErrorCount()) +
-                             " tries left.</html>",
-                            new WindowAdapter() {});
-                }
-                return false;
-            } catch (Exception e) {
-                sksProblem(e);
-                return false;  
-            }
-        }
-
         void showAuthorizationView(int keyHandle) {
             logger.info("Selected Card: Key=" + keyHandle +
                         ", Number=" + cardSelection.get(keyHandle).cardNumber +
-                        ", URL=" + cardSelection.get(keyHandle).authUrl);
+                        ", URL=" + cardSelection.get(keyHandle).authUrl +
+                        ", EncryptionKey=" + (cardSelection.get(keyHandle).encryptionAlgorithm == null ?
+                           "N/A" : cardSelection.get(keyHandle).encryptionKey));
             this.keyHandle = keyHandle;
             amountField.setText("\u200a" + amountString);
             payeeField.setText("\u200a" + payeeString);
@@ -664,50 +615,13 @@ public class PaymentAgent {
             JLabel waitingIconHolder = getImageLabel("working.gif");
             waitingView.add(waitingIconHolder, c);
 
-            JLabel waitingText = new JLabel("Initializing - Please wait");
+            waitingText = new JLabel("Initializing - Please wait");
             waitingText.setFont(standardFont);
             c.gridy = 1;
             c.insets = new Insets(fontSize, 0, 0, 0);
             waitingView.add(waitingText, c);
 
-            views.add(waitingView, VIEW_INITIALIZING);
-        }
-
-        ImageIcon getImageIcon(byte[] byteIcon, boolean animated) {
-            try {
-                if (retinaFlag || (!hiResImages && animated)) {
-                    return new ScalingIcon(byteIcon);
-                }
-                ImageIcon imageIcon = new ImageIcon(byteIcon);
-                if (hiResImages) {
-                    return imageIcon;
-                }
-                int width = imageIcon.getIconWidth() / 2;
-                int height = imageIcon.getIconHeight() / 2;
-                return new ImageIcon(imageIcon.getImage().getScaledInstance(
-                               width == 0 ? 1 : width,
-                               height == 0 ? 1 : height,
-                               Image.SCALE_SMOOTH));
-            } catch (Exception e) {
-                logger.log(Level.SEVERE, "Failed converting image", e);
-                terminate();
-                return null;
-            }
-        }
-
-        ImageIcon getImageIcon(String name, boolean animated) {
-            try {
-                return getImageIcon(ArrayUtil.getByteArrayFromInputStream(
-                        getClass().getResourceAsStream (name)), animated);
-            } catch (Exception e) {
-                logger.log(Level.SEVERE, "Failed reading image", e);
-                terminate();
-                return null;
-            }
-        }
-
-        JLabel getImageLabel(String name) {
-            return new JLabel(getImageIcon(name, name.endsWith(".gif")));
+            views.add(waitingView, VIEW_WAITING);
         }
 
         void showProblemDialog (boolean error, String message, final WindowAdapter windowAdapter) {
@@ -772,6 +686,48 @@ public class PaymentAgent {
             }
             return false;
         }
+
+        ImageIcon getImageIcon(byte[] byteIcon, boolean animated) {
+            try {
+                if (retinaFlag || (!hiResImages && animated)) {
+                    return new ScalingIcon(byteIcon);
+                }
+                ImageIcon imageIcon = new ImageIcon(byteIcon);
+                if (hiResImages) {
+                    return imageIcon;
+                }
+                int width = imageIcon.getIconWidth() / 2;
+                int height = imageIcon.getIconHeight() / 2;
+                return new ImageIcon(imageIcon.getImage().getScaledInstance(
+                               width == 0 ? 1 : width,
+                               height == 0 ? 1 : height,
+                               Image.SCALE_SMOOTH));
+            } catch (Exception e) {
+                logger.log(Level.SEVERE, "Failed converting image", e);
+                terminate();
+                return null;
+            }
+        }
+
+        ImageIcon getImageIcon(String name, boolean animated) {
+            try {
+                return getImageIcon(ArrayUtil.getByteArrayFromInputStream(
+                        getClass().getResourceAsStream (name)), animated);
+            } catch (Exception e) {
+                logger.log(Level.SEVERE, "Failed reading image", e);
+                terminate();
+                return null;
+            }
+        }
+
+        JLabel getImageLabel(String name) {
+            return new JLabel(getImageIcon(name, name.endsWith(".gif")));
+        }
+
+        void sksProblem(Exception e) {
+            logger.log(Level.SEVERE, "SKS problem", e);
+            terminatingError("<html>*** Internal Error ***<br>Check log file for details.</html>");
+        }
         
         @Override
         public void run() {
@@ -820,14 +776,18 @@ public class PaymentAgent {
                                         throw new Exception(e);
                                     }
                                     JSONObjectReader or = JSONParser.parse(ext.getExtensionData());
-                                    cardSelection.put(ek.getKeyHandle(),
-                                        new Card(or.getString(CredentialProperties.CARD_NUMBER_JSON),
-                                                 getImageIcon(sks.getExtension(ek.getKeyHandle(), 
-                                                                    KeyGen2URIs.LOGOTYPES.CARD).getExtensionData(),
-                                                              false),
-                                                              AsymSignatureAlgorithms.getAlgorithmFromID(or.getString(CredentialProperties.SIGNATURE_ALGORITHM_JSON)),
-                                                              or.getString(CredentialProperties.AUTH_URL_JSON)));
-                                }
+                                    Card card = new Card(or.getString(CredentialProperties.CARD_NUMBER_JSON),
+                                                         getImageIcon(sks.getExtension(ek.getKeyHandle(), 
+                                                               KeyGen2URIs.LOGOTYPES.CARD).getExtensionData(),
+                                                               false),
+                                                         AsymSignatureAlgorithms.getAlgorithmFromID(or.getString(CredentialProperties.SIGNATURE_ALGORITHM_JSON)),
+                                                         or.getString(CredentialProperties.AUTH_URL_JSON));
+                                    if (or.hasProperty(CredentialProperties.ENCRYPTION_KEY_JSON)) {
+                                        card.encryptionAlgorithm = or.getString(CredentialProperties.ENCRYPTION_ALGORITHM_JSON);
+                                        card.encryptionKey = or.getObject(CredentialProperties.ENCRYPTION_KEY_JSON).getPublicKey();
+                                    }
+                                    cardSelection.put(ek.getKeyHandle(), card);
+                               }
                             } catch (Exception e) {
                                 sksProblem(e);
                             }
@@ -859,9 +819,67 @@ public class PaymentAgent {
             }
         }
 
-        void sksProblem(Exception e) {
-            logger.log(Level.SEVERE, "SKS problem", e);
-            terminatingError("<html>*** Internal Error ***<br>Check log file for details.</html>");
+        boolean pinBlockCheck() throws SKSException {
+            if (sks.getKeyProtectionInfo(keyHandle).isPinBlocked()) {
+                terminatingError("Card blocked due to previous PIN errors!");
+                return true;
+            }
+            return false;
+        }
+
+        boolean userAuthorizationSucceeded() {
+            try {
+                if (pinBlockCheck()) {
+                    return false;
+                }
+                try {
+                    resultMessage = Messages.createBaseMessage(Messages.AUTHORIZE);
+                    resultMessage.setObject(BaseProperties.PAYMENT_REQUEST_JSON, invokeMessage.getObject(BaseProperties.PAYMENT_REQUEST_JSON));
+                    resultMessage.setJOSEAlgorithmPreference(true);
+                    resultMessage.setSignature (new JSONX509Signer (new SignerInterface () {
+                        @Override
+                        public X509Certificate[] getCertificatePath() throws IOException {
+                            return sks.getKeyAttributes(keyHandle).getCertificatePath();
+                        }
+                        @Override
+                        public byte[] signData(byte[] data, AsymSignatureAlgorithms algorithm) throws IOException {
+                            return sks.signHashedData(keyHandle,
+                                                      algorithm.getURI(),
+                                                      null,
+                                                      new String(pinText.getPassword()).getBytes("UTF-8"),
+                                                      algorithm.getDigestAlgorithm().digest(data));                        }
+                    }).setSignatureAlgorithm(cardSelection.get(keyHandle).signatureAlgorithm)
+                      .setSignatureCertificateAttributes(true));
+                    return true;
+                } catch (SKSException e) {
+                    if (e.getError() != SKSException.ERROR_AUTHORIZATION) {
+                        throw new Exception(e);
+                    }
+                }
+                if (!pinBlockCheck()) {
+                    logger.warning("Incorrect PIN");
+                    KeyProtectionInfo pi = sks.getKeyProtectionInfo(keyHandle);
+                    showProblemDialog(false,
+                            "<html>Incorrect PIN.<br>There are " +
+                             (pi.getPinRetryLimit() - pi.getPinErrorCount()) +
+                             " tries left.</html>",
+                            new WindowAdapter() {});
+                }
+                return false;
+            } catch (Exception e) {
+                sksProblem(e);
+                return false;  
+            }
+        }
+
+        void performPayment() {
+            try {
+                logger.info("About to send:\n" + new String(resultMessage.serializeJSONObject(JSONOutputFormats.PRETTY_PRINT),"UTF-8"));
+                stdout.writeJSONObject(resultMessage);
+            } catch (Exception e) {
+                logger.log(Level.SEVERE, "Communication error", e);
+                terminatingError("<html>*** Communication Error ***<br>Check log file for details.</html>");
+            }
         }
     }
 
