@@ -41,9 +41,11 @@ import java.awt.event.WindowAdapter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.lang.reflect.Field;
+import java.net.URL;
 import java.security.PublicKey;
 import java.security.Security;
 import java.security.cert.X509Certificate;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -97,6 +99,10 @@ public class PaymentAgent {
     static StdoutJSONPipe stdout = new StdoutJSONPipe();
     static JDialog frame;
 
+    static boolean testMode;
+
+    static String domainName;
+
     static Logger logger = Logger.getLogger("log");
     
     static final String TOOLTIP_CANCEL         = "Click if you want to abort this payment operation";
@@ -122,6 +128,7 @@ public class PaymentAgent {
     static class Card {
         String cardNumber;
         ImageIcon cardIcon;
+        String cardType;
         AsymSignatureAlgorithms signatureAlgorithm;
         String authUrl;
         
@@ -131,10 +138,12 @@ public class PaymentAgent {
         
         Card(String cardNumber, 
             ImageIcon cardIcon,
+            String cardType,
             AsymSignatureAlgorithms signatureAlgorithm,
             String authUrl) {
             this.cardNumber = cardNumber;
             this.cardIcon = cardIcon;
+            this.cardType = cardType;
             this.signatureAlgorithm = signatureAlgorithm;
             this.authUrl = authUrl;
         }
@@ -392,7 +401,7 @@ public class PaymentAgent {
             } else {
                 LinkedHashMap<Integer,Card> cards = new LinkedHashMap<Integer,Card>();
                 for (int i = 0; i < 2; i++) {
-                    cards.put(i, new Card(DUMMY_CARD_NUMBER, dummyCardIcon, null, null));
+                    cards.put(i, new Card(DUMMY_CARD_NUMBER, dummyCardIcon, null, null, null));
                 }
                 cardSelectionView.add(initCardSelectionViewCore(cards), c);
             }
@@ -784,6 +793,7 @@ public class PaymentAgent {
                                                     getImageIcon(sks.getExtension(ek.getKeyHandle(), 
                                                           KeyGen2URIs.LOGOTYPES.CARD).getExtensionData(),
                                                           false),
+                                                    cardType,
                                                     AsymSignatureAlgorithms.getAlgorithmFromID(or.getString(CredentialProperties.SIGNATURE_ALGORITHM_JSON)),
                                                     or.getString(CredentialProperties.AUTH_URL_JSON));
                                             if (or.hasProperty(CredentialProperties.ENCRYPTION_KEY_JSON)) {
@@ -840,23 +850,27 @@ public class PaymentAgent {
                     return false;
                 }
                 try {
-                    resultMessage = Messages.createBaseMessage(Messages.PAYER_GENERIC_AUTH_REQ);
-                    resultMessage.setObject(BaseProperties.PAYMENT_REQUEST_JSON, invokeMessage.getObject(BaseProperties.PAYMENT_REQUEST_JSON));
-                    resultMessage.setJOSEAlgorithmPreference(true);
-                    resultMessage.setSignature (new JSONX509Signer (new SignerInterface () {
-                        @Override
-                        public X509Certificate[] getCertificatePath() throws IOException {
-                            return sks.getKeyAttributes(keyHandle).getCertificatePath();
-                        }
-                        @Override
-                        public byte[] signData(byte[] data, AsymSignatureAlgorithms algorithm) throws IOException {
-                            return sks.signHashedData(keyHandle,
-                                                      algorithm.getURI(),
-                                                      null,
-                                                      new String(pinText.getPassword()).getBytes("UTF-8"),
-                                                      algorithm.getDigestAlgorithm().digest(data));                        }
-                    }).setSignatureAlgorithm(cardSelection.get(keyHandle).signatureAlgorithm)
-                      .setSignatureCertificateAttributes(true));
+                    resultMessage = Messages.createBaseMessage(Messages.PAYER_GENERIC_AUTH_REQ)
+                       .setObject(BaseProperties.PAYMENT_REQUEST_JSON, invokeMessage.getObject(BaseProperties.PAYMENT_REQUEST_JSON))
+                       .setString(BaseProperties.DOMAIN_NAME_JSON, domainName)
+                       .setString(BaseProperties.CARD_TYPE_JSON, cardSelection.get(keyHandle).cardType)
+                       .setString(BaseProperties.CARD_NUMBER_JSON, cardSelection.get(keyHandle).cardNumber)
+                       .setDateTime(BaseProperties.DATE_TIME_JSON, new Date(), false)
+                       .setJOSEAlgorithmPreference(true)
+                       .setSignature (new JSONX509Signer (new SignerInterface () {
+                            @Override
+                            public X509Certificate[] getCertificatePath() throws IOException {
+                                return sks.getKeyAttributes(keyHandle).getCertificatePath();
+                            }
+                            @Override
+                            public byte[] signData(byte[] data, AsymSignatureAlgorithms algorithm) throws IOException {
+                                return sks.signHashedData(keyHandle,
+                                                          algorithm.getURI(),
+                                                          null,
+                                                          new String(pinText.getPassword()).getBytes("UTF-8"),
+                                                          algorithm.getDigestAlgorithm().digest(data));                        }
+                        }).setSignatureAlgorithm(cardSelection.get(keyHandle).signatureAlgorithm)
+                          .setSignatureCertificateAttributes(true));
                     logger.info("About to send:\n" + new String(resultMessage.serializeJSONObject(JSONOutputFormats.PRETTY_PRINT),"UTF-8"));
                     return true;
                 } catch (SKSException e) {
@@ -902,6 +916,12 @@ public class PaymentAgent {
 
         // Respond to caller to indicate that we are (almost) ready
         try {
+            if (args[1].startsWith("http")) {
+                domainName = new URL(args[1]).getHost();
+            } else {
+                testMode = true;
+                domainName = args[1];
+            }
             stdout.writeJSONObject(Messages.createBaseMessage(Messages.WALLET_IS_READY));
         } catch (IOException e) {
             logger.log(Level.SEVERE, "Error writing to browser", e);
