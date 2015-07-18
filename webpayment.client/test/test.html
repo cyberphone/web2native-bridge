@@ -1,47 +1,62 @@
-<!DOCTYPE html>
-<html><head><meta charset="UTF-8"><title>Payment Agent (Wallet) Tester</title><style type="text/css">
-input[type="button"] {margin-top:8pt;margin-bottom:8pt;width:50pt}</style></head><body><script>
+<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Payment Agent (Wallet) Tester</title></head><body><script>
+
 "use strict";
 
 function setString(rawString) {
     var text = "";
     for (var n = 0; n < rawString.length; n++) {
-         var c = rawString.charAt(n);
-         text += c == "<" ? "&lt;" : c == ">" ? "&gt;" : c;
+        var c = rawString.charAt(n);
+        text += c == "<" ? "&lt;" : c == ">" ? "&gt;" : c;
     }
     document.getElementById("response").innerHTML = text;
 }
 
 var nativePort = null;
 
-var normalMessage = {"@context":"http://xmlns.webpki.org/wcpp-payment-demo",
-"@qualifier":"Invoke",
-"cardTypes":["NeverHeardOfCard","SuperCard","CoolCard"],
-"paymentRequest":{"commonName":"Demo Merchant","amount":325,
-"currency":"USD","referenceId":"#1000021","dateTime":"2015-07-04T19:29:51Z",
-"signature":{"algorithm":"RS256","signerCertificate":
-{"issuer":"CN=Merchant Network Sub CA5,C=DE","serialNumber":"1413983542582","subject":"CN=Demo Merchant,2.5.4.5=#1306383936333235,C=DE"},
-"certificatePath":
-["MIIDQzCCAiugAwIBAgIGAUk3_J02MA0GCSqGSIb3DQEBCwUAMDAxCzAJBgNVBAYTAkRFMSEwHwYDVQQD\
-ExhNZXJjaGFudCBOZXR3b3JrIFN1YiBDQTUwHhcNMTQwMTAxMDAwMDAwWhcNMjAwNzEwMDk1OTU5WjA2MQswCQYDVQQGEwJERTEPMA0GA1UEBRMGODk2MzI1MRYwFAYDVQQDEw1EZW1vIE1lcmNoYW50MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0W4Gz1CMWkS634xBeZfraJvEKGUDUe_Hhi_F6yXdq0TlJEX3XpLwlje5Tl8YCINRtPxvOTC-GKOf_XAp0mmEiZZN5LjdQlbRFwQZYa4ltkhb6xa0_uyk7o2AraagkRJvUBCBMy7NSFLKoQcZCGUainUugYue0Jxg3PVnQ5tdHs78cD2MDjRAn8HW45CpbbB8sXIwI2t3fbjKI4by8OQpaR3j-EhdxZT2Ig0gFS4sL4XlgD88wNLArjtJUZZttxZGEM7aGRyOI8VismAmbo3jwr5uU2G1nHAqQ-iI9kS056WSHSq2e_k3HIjH2B9K8T9Smwu0bYo-2L4LAyYYLbNBwQIDAQABo10wWzAJBgNVHRMEAjAAMA4GA1UdDwEB_wQEAwID-DAdBgNVHQ4EFgQUIHSgwq-l-ZyC32odON_t9fc2nUcwHwYDVR0jBBgwFoAUwdvh1RjfhNG59t4a-AWqbaTwbcAwDQYJKoZIhvcNAQELBQADggEBAAtcvMm-wifzGaawzFs1ikF7B48mnAeN_cySxyvjD7gaQ6zmuGx_FM40WEvabTkN24tBo0FiXILCnAidybAirXvnz9I2VcAcJIBPbpqOQnBEUbXfwp9g39DyEdYaYas8tNx8OzHulAKgJ8df4nzGRaCEj2xqzCJscdE6LvnSlb-56NWr8Ix9xdr5yjYSvPsgYBwhfpooRitHrALbwPsDhdXhtafBX63oxaXV-ezYbiuE0VLV4IyS3l7c2RABt_TPDguubl16upGM9eV42YcQuqjsCV6bfxLHRZx9fY6j97YnDY2cHMMGP3eMGlY734U3NasQfAhTUhxrdDbphEvsWTc",
-"MIIEPzCCAiegAwIBAgIBBTANBgkqhkiG9w0BAQ0FADAxMQswCQYDVQQGEwJVUzEiMCAGA1UEAxMZTWVyY2hhbnQgTmV0d29yayBSb290IENBMTAeFw0xMjA3MTAxMDAwMDBaFw0yNTA3MTAwOTU5NTlaMDAxCzAJBgNVBAYTAkRFMSEwHwYDVQQDExhNZXJjaGFudCBOZXR3b3JrIFN1YiBDQTUwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCpNgu70pokHcysVBUrmRx_in7pqCxcpbop2dMU8VFlrmiS1WyqaDfZi_vHZNLaQ6cUbBvSrIhaH6R4V-wIqgAEWkT8ZKztXzq2dEn59ljiS7i0F8STGiR5WPO-MvUODAHml3FSJxa60cpA9QtEdoaoiK39SxnPbZydgrwFHAhavM-GOGJugkC2DbD4jp-7AHQFTq12pau4Sop0ZElWjW7O-XIDa00mhCNTRETurgpZPIo9MzTVESdZXfEfw7Zw01Aq33sx2rTIYVcogpM1Xxxzx35rwBuskwNMmdSnb-tcqs5NnACIBKyocOhOpIHxZwTdnk_L46UG7ebEJg3S8EqtAgMBAAGjYzBhMA8GA1UdEwEB_wQFMAMBAf8wDgYDVR0PAQH_BAQDAgEGMB0GA1UdDgQWBBTB2-HVGN-E0bn23hr4BaptpPBtwDAfBgNVHSMEGDAWgBT3vAmyC88zfK18WCj8EByigwFEZTANBgkqhkiG9w0BAQ0FAAOCAgEAYa2n7JCxnnD0FK-zdd6dPl8B4g8EqgBPf9b4snpp6rXSu3X3fdN1Un7QChKwVxYbfAUkviktZVQgaVzNkcDXu9QnNrK97m4_j8HhioRvMmXpuWcWkL94gxNMwFqpytAZnzd6m5Du9dMiRWuPVwuLGEZ3-TlnOFi6Gnlmg1PuZEo9pySo_wC_iOYc-F7vM5SkbB5bCPxQbQZhW_eXPmLSpiwMBWFajcVT_8xEVNpnDdtFiKMR-53-r8yYfNIU8gkehdg0BCRIgaQlu178A2Z8rLp_zsFFSQVaA1vGUjU5ZQp559r4CYY-fEj25kRR3huL0MsmBDxrDYRh9DGV0NPPimWkfazEP00lNde3pj7OlZj7Yx5Mtyk3wuQ_N78TTfOoNmhOIo6pbbaWDewTodQ5G2KWG7Gb8Ocrf_oGjJ333KptE7SACqb9OdK_d2OYM6X5skWqbqyxtpVTJ6BepjkOqiypSE660S2ecePiaG_sO3YgFmToBQDQ3_zH4fkWfXtdCiSY5k7MjawYrfcyO81gxSWtJ0qfKdu5ZOR2H72jjcgaEjJ4TN6n6XUFYGRDkB2X1PrEmOe5gBwgw2Us3GB5_gxBOT__fThPkbleTC1-2_uXTz0PZOBh0OLJrG0rzREg4u8NhVaIN3GU1IyRGA7IbdHOeDB2RUpsXloU2QKfLrk"]
-,"value":
-"Sviedoe-eQe0BAzcLWdsYPByFd3bwi4qIvbSCe7SHeCWCgs-pYUPC8795IyupnFBqR2k5gtvBmn6P3cPZeu8XBAc1HiR61KuvfFFj_onUgL7-Ypsa4-9q53J_Nxs_mDOMHyqYDoK10MaIGwiziKBSSIMGtxTHkIl4NhsyKnJ1AdM_NWs5akP-sH7yrZ9JuKY6qe5GgnUEsZibjbwGVatgdZ0q43dIogGDDMUKy61Ran5t2qc-gnBwVL1V4TJHBLaMHKXLkAjyMqOA9meyjPglWhL_tNEj052HrmT9Nky6CVLFcA2Ffl89zH97zhw61ApkYxsO0WwqQVOIkyDzdJ-Dg"}}};
+var normalRequest =
+{
+  "@context": "http://xmlns.webpki.org/w2nb-payment-demo",
+  "@qualifier": "InvokeWallet",
+  "acceptedCardTypes": ["NoSuchCard","SuperCard","CoolCard"],
+  "paymentRequest": 
+    {
+      "payee": "Demo Merchant",
+      "amount": "306.25",
+      "currency": "USD",
+      "referenceId": "#6100004",
+      "dateTime": "2015-07-18T18:22:41Z",
+      "signature": 
+        {
+          "algorithm": "RS256",
+          "signerCertificate": 
+            {
+              "issuer": "CN=Merchant Network Sub CA5,C=DE",
+              "serialNumber": "1437034463499",
+              "subject": "CN=Demo Merchant,2.5.4.5=#1306383936333235,C=DE"
+            },
+          "certificatePath": 
+            [
+              "MIIDQzCCAiugAwIBAgIGAU6V7cELMA0GCSqGSIb3DQEBCwUAMDAxCzAJBgNVBAYTAkRFMSEwHwYDVQQDExhNZXJjaGFudCBOZXR3b3JrIFN1YiBDQTUwHhcNMTQwMTAxMDAwMDAwWhcNMjAwNzEwMDk1OTU5WjA2MQswCQYDVQQGEwJERTEPMA0GA1UEBRMGODk2MzI1MRYwFAYDVQQDEw1EZW1vIE1lcmNoYW50MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAgwjGibfiCx8SOPyM-xWnxPg7T2Aqyww3SpD0n8nPEs0DPWHZEVNsATd3dYLCTk7iEyGlKnR_ZCeC018fC6cg9Yqc-vcvg7SG21JNm05q1XG0h6mVnyNNlRBVEq36CPoRiiyHdFIa9UfA141ZJAvONgejEVWSe4ZSNxxo81hvebQQc2lHs7n9LvSB4tc7qfgNRvjffgXTpwtcumeXgN_42kIJSANVwwKj6HhXZVnaHHQ4M-cL9_BWjWQIr8VmQvi4Ijq9fIa6GMjYoOlznBbnUjsmALA0CRXYc-3mxQbeKUDal1Z8fsstXsSBOSm1T0Im4oGbuPFKAuF5LqlxSmcnHQIDAQABo10wWzAJBgNVHRMEAjAAMA4GA1UdDwEB_wQEAwID-DAdBgNVHQ4EFgQUehiUWQGM9QOs31qpSTKCIasVC8gwHwYDVR0jBBgwFoAU8hS_eJVH7LntNHSRqkO_Y3rJxCIwDQYJKoZIhvcNAQELBQADggEBAAYB5NqFPxHwIyQWkQY3Ip4nIFfCHzOEJ4CyBZG0nrZPi4696Nf66iR1W0xJxPo0PTFHD1Q1sRlhbonEh1rrQpNctzZtS8jEo6VeskH7MiGq3wUV9pfnQys0_2j0-GTnVlXwCkMKnBRIWue4MdbZJplahOS3QbD4w1HcXGlaluWoCGCS_8eIVPHmTTSCmGOU3JX-PIZoV7V_q-wevUwAJfoeWF21EKgic3yQWvIgoDQEeSRjg7f3LDTrr2J9uVqXMTTkTvsTKCYNZoUTeM66Rxa1nTSryu866Nuj9XmKorNmDAmrxN4tX64tzNIMnaoTXv6qifQal0hEVRlE7ONUNfY",
+              "MIIEPzCCAiegAwIBAgIBBTANBgkqhkiG9w0BAQ0FADAxMQswCQYDVQQGEwJVUzEiMCAGA1UEAxMZTWVyY2hhbnQgTmV0d29yayBSb290IENBMTAeFw0xMjA3MTAxMDAwMDBaFw0yNTA3MTAwOTU5NTlaMDAxCzAJBgNVBAYTAkRFMSEwHwYDVQQDExhNZXJjaGFudCBOZXR3b3JrIFN1YiBDQTUwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCbOtyy4QZ5re1twR79TDAQ0we0cGLlfUW920F3lVnov7aEec7zRtUBVKsSs-MVfiuDFmhTSfULT52o_mv5Re76n0AdbKsV61sQDInXFDPLPUWxayuWJaHu3TzisjQOKupor25V8zHzqAVU5fuGsvYD0uPUwjncRVQU9GmUU49iKu0D5Twf4GSkDRiUoouwJ2CQnGLVie4ImMHAK-vlHc5cvg1zd_G3HEECgg-EYYXbwUppb-7KiH6Z3ftWJZsiE22nGtrYbXNH4ESp_NNYbMyLP1Nu1XFvUc9Y2jCzXcGoe4FDcrTC6QhdRARVY3oNMDRTLpQcc0nUWfvTnZNk8IONAgMBAAGjYzBhMA8GA1UdEwEB_wQFMAMBAf8wDgYDVR0PAQH_BAQDAgEGMB0GA1UdDgQWBBTyFL94lUfsue00dJGqQ79jesnEIjAfBgNVHSMEGDAWgBQbQarjDLZwVQi-a9eysaPNhSKG7jANBgkqhkiG9w0BAQ0FAAOCAgEAeyGWd5HUJEtJfwOgHF7OTby7sx6OuYw4EApUCfsDBLHZwFY5vPZvhOZYTYxBFmHyVxZBRvikWuCeDn6TP8uDDWbwnLESVAAgGAxK1y4mMzP32SHESnnrehcrJrhwxA3xbpKsTeolNceOVB8XzKz9Ti3TmmDt9VA20aruGw-Zv8XIF036oNpOY4SBz0Hvfu_CrLEZXrhKqKvmS9N9m44Us8L6FZbRNaPfkVIfKRBGgtMziDUyyXrb0PisuRkdFenmkoqfO2d6QVho6SuNUlXd_pGNklKaQfEP-A6vN4XK7JpYhwgmhvrxKUUC9nfx601olcIcUm3TpewUz5t-s2Kpv4EVCAet6vKqHDH4A4oI2hOPEWSzhjqumtJmPguNGVdeBbdgZrVEl3XbwsROqgYGGHLXURSRnySaIaUY-4Se8HgA-AHbn3MiK_pBz1Igj-mokjZILt51t6I77Qf_fTi9OJYBrAPkZozxUGN2RaQ6zPqPlIgrKQQwS_jTQg-z_QkctYP8V7w9__Z6Na8dCR9rBhoruBdKO1OPipT_qeqRVq3xzu-80MFDRNouegE4UoS8_KTMwfisCKssrKydA7IIACMKa6V3BtGKD6ML3LhnhgfGQSoCxVU4v5QZ6866TImLRSl-E8M8SdeIZ4MKRV-oKPouq6B0d-0mrHkCstTilfI"
+            ],
+          "value": "QiVB5YY6vtt1OZSRXL0_JuGJvmR4Bku1FDzMex1qT5ihIwWIVh8xcBaoy6l7vhdGZ-tUIMI2Bb_tvCXlmGa9XPlhNVbTDh57mxRM2sB4iYa6NJKp2_7sL_n8o_35QfTzs9439XJzEetpU5s0KU59VFvtzyxWZ42obzy0hxbJHXoxgyBstSCQphyO-c7iuTAfS2fVmzTxlgoOqvTG2HUPrtAy2R2xPdX61eZ4IpF8r6QeCPeL01mvrIPz-FYieSM-m0FbJk6He5z--uMKZ7YwmT1c10lJr9frekEidcS8IFyKcwmpa-hhdiYJKA7I6owBLiesJNxkpahGkBh1oS-aoQ"
+        }
+    }
+};
 
-var badSignature = {"@context":"http://xmlns.webpki.org/wcpp-payment-demo",
-"@qualifier":"Invoke",
-"cardTypes":["NeverHeardOfCard","SuperCard","CoolCard"],
-"paymentRequest":{"commonName":"Demo Merchant","amount":325,
-"currency":"USD","referenceId":"#1000021","dateTime":"2015-07-04T19:29:51Z",
-"signature":{"algorithm":"RS256","signerCertificate":
-{"issuer":"CN=Merchant Network Sub CA5,C=DE","serialNumber":"1413983542582","subject":"CN=Demo Merchant,2.5.4.5=#1306383936333235,C=DE"},
-"certificatePath":
-["MIIDQzCCAiugAwIBAgIGAUk3_J02MA0GCSqGSIb3DQEBCwUAMDAxCzAJBgNVBAYTAkRFMSEwHwYDVQQDExhNZXJjaGFudCBOZXR3b3JrIFN1YiBDQTUwHhcNMTQwMTAxMDAwMDAwWhcNMjAwNzEwMDk1OTU5WjA2MQswCQYDVQQGEwJERTEPMA0GA1UEBRMGODk2MzI1MRYwFAYDVQQDEw1EZW1vIE1lcmNoYW50MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0W4Gz1CMWkS634xBeZfraJvEKGUDUe_Hhi_F6yXdq0TlJEX3XpLwlje5Tl8YCINRtPxvOTC-GKOf_XAp0mmEiZZN5LjdQlbRFwQZYa4ltkhb6xa0_uyk7o2AraagkRJvUBCBMy7NSFLKoQcZCGUainUugYue0Jxg3PVnQ5tdHs78cD2MDjRAn8HW45CpbbB8sXIwI2t3fbjKI4by8OQpaR3j-EhdxZT2Ig0gFS4sL4XlgD88wNLArjtJUZZttxZGEM7aGRyOI8VismAmbo3jwr5uU2G1nHAqQ-iI9kS056WSHSq2e_k3HIjH2B9K8T9Smwu0bYo-2L4LAyYYLbNBwQIDAQABo10wWzAJBgNVHRMEAjAAMA4GA1UdDwEB_wQEAwID-DAdBgNVHQ4EFgQUIHSgwq-l-ZyC32odON_t9fc2nUcwHwYDVR0jBBgwFoAUwdvh1RjfhNG59t4a-AWqbaTwbcAwDQYJKoZIhvcNAQELBQADggEBAAtcvMm-wifzGaawzFs1ikF7B48mnAeN_cySxyvjD7gaQ6zmuGx_FM40WEvabTkN24tBo0FiXILCnAidybAirXvnz9I2VcAcJIBPbpqOQnBEUbXfwp9g39DyEdYaYas8tNx8OzHulAKgJ8df4nzGRaCEj2xqzCJscdE6LvnSlb-56NWr8Ix9xdr5yjYSvPsgYBwhfpooRitHrALbwPsDhdXhtafBX63oxaXV-ezYbiuE0VLV4IyS3l7c2RABt_TPDguubl16upGM9eV42YcQuqjsCV6bfxLHRZx9fY6j97YnDY2cHMMGP3eMGlY734U3NasQfAhTUhxrdDbphEvsWTc",
-"MIIEPzCCAiegAwIBAgIBBTANBgkqhkiG9w0BAQ0FADAxMQswCQYDVQQGEwJVUzEiMCAGA1UEAxMZTWVyY2hhbnQgTmV0d29yayBSb290IENBMTAeFw0xMjA3MTAxMDAwMDBaFw0yNTA3MTAwOTU5NTlaMDAxCzAJBgNVBAYTAkRFMSEwHwYDVQQDExhNZXJjaGFudCBOZXR3b3JrIFN1YiBDQTUwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCpNgu70pokHcysVBUrmRx_in7pqCxcpbop2dMU8VFlrmiS1WyqaDfZi_vHZNLaQ6cUbBvSrIhaH6R4V-wIqgAEWkT8ZKztXzq2dEn59ljiS7i0F8STGiR5WPO-MvUODAHml3FSJxa60cpA9QtEdoaoiK39SxnPbZydgrwFHAhavM-GOGJugkC2DbD4jp-7AHQFTq12pau4Sop0ZElWjW7O-XIDa00mhCNTRETurgpZPIo9MzTVESdZXfEfw7Zw01Aq33sx2rTIYVcogpM1Xxxzx35rwBuskwNMmdSnb-tcqs5NnACIBKyocOhOpIHxZwTdnk_L46UG7ebEJg3S8EqtAgMBAAGjYzBhMA8GA1UdEwEB_wQFMAMBAf8wDgYDVR0PAQH_BAQDAgEGMB0GA1UdDgQWBBTB2-HVGN-E0bn23hr4BaptpPBtwDAfBgNVHSMEGDAWgBT3vAmyC88zfK18WCj8EByigwFEZTANBgkqhkiG9w0BAQ0FAAOCAgEAYa2n7JCxnnD0FK-zdd6dPl8B4g8EqgBPf9b4snpp6rXSu3X3fdN1Un7QChKwVxYbfAUkviktZVQgaVzNkcDXu9QnNrK97m4_j8HhioRvMmXpuWcWkL94gxNMwFqpytAZnzd6m5Du9dMiRWuPVwuLGEZ3-TlnOFi6Gnlmg1PuZEo9pySo_wC_iOYc-F7vM5SkbB5bCPxQbQZhW_eXPmLSpiwMBWFajcVT_8xEVNpnDdtFiKMR-53-r8yYfNIU8gkehdg0BCRIgaQlu178A2Z8rLp_zsFFSQVaA1vGUjU5ZQp559r4CYY-fEj25kRR3huL0MsmBDxrDYRh9DGV0NPPimWkfazEP00lNde3pj7OlZj7Yx5Mtyk3wuQ_N78TTfOoNmhOIo6pbbaWDewTodQ5G2KWG7Gb8Ocrf_oGjJ333KptE7SACqb9OdK_d2OYM6X5skWqbqyxtpVTJ6BepjkOqiypSE660S2ecePiaG_sO3YgFmToBQDQ3_zH4fkWfXtdCiSY5k7MjawYrfcyO81gxSWtJ0qfKdu5ZOR2H72jjcgaEjJ4TN6n6XUFYGRDkB2X1PrEmOe5gBwgw2Us3GB5_gxBOT__fThPkbleTC1-2_uXTz0PZOBh0OLJrG0rzREg4u8NhVaIN3GU1IyRGA7IbdHOeDB2RUpsXloU2QKfLrk"]
-,"value":
-"sviedoe-eQe0BAzcLWdsYPByFd3bwi4qIvbSCe7SHeCWCgs-pYUPC8795IyupnFBqR2k5gtvBmn6P3cPZeu8XBAc1HiR61KuvfFFj_onUgL7-Ypsa4-9q53J_Nxs_mDOMHyqYDoK10MaIGwiziKBSSIMGtxTHkIl4NhsyKnJ1AdM_NWs5akP-sH7yrZ9JuKY6qe5GgnUEsZibjbwGVatgdZ0q43dIogGDDMUKy61Ran5t2qc-gnBwVL1V4TJHBLaMHKXLkAjyMqOA9meyjPglWhL_tNEj052HrmT9Nky6CVLFcA2Ffl89zH97zhw61ApkYxsO0WwqQVOIkyDzdJ-Dg"}}};
-                     
-var badMessage = {"@context":"elsewhere"}; 
+// All our cards should match during the discovery phase...
+var scrollMatchingRequest = JSON.parse(JSON.stringify(normalRequest)); // Deep clone
+scrollMatchingRequest.acceptedCardTypes = ["NoSuchCard", "SuperCard", "CoolCard", "UnusualCard"];
+
+// No cards should match during the discovery phase...
+var nonMatchingRequest = JSON.parse(JSON.stringify(normalRequest)); // Deep clone
+nonMatchingRequest.acceptedCardTypes = ["NoSuchCard"];
+
+// Note the modified "payee" property...
+var badSignatureRequest = JSON.parse(JSON.stringify(normalRequest)); // Deep clone
+badSignatureRequest.paymentRequest.payee= "DEmo Merchant";
+
+var badMessageRequest = {"hi":"there!"};
 
 function closeExtension() {
     if (nativePort) {
@@ -60,37 +75,45 @@ function activateExtension() {
     if (nativePort) {
         closeExtension();
     }
-    setString('');
-    var status = "Initialize";
+    setString("");
+    var initMode = true;
     var test = document.forms.shoot.test.value;
     navigator.nativeConnect("org.webpki.w2nb.webpayment.client").then(function(port) {
         nativePort = port;
         console.debug('conn=' + JSON.stringify(port));
         port.addMessageListener(function(message) {
-            if (message["@context"] != "http://xmlns.webpki.org/wcpp-payment-demo") {
+            if (message["@context"] != "http://xmlns.webpki.org/w2nb-payment-demo") {
                 setString("Missing or wrong \"@context\"");
                 return;
             }
-            if (message["@qualifier"] != status) {
+            var qualifier = message["@qualifier"];
+            if ((initMode && qualifier != "WalletIsReady" ) ||
+                (!initMode && qualifier != "PayerGenericAuthReq" && qualifier != "PayerPullAuthReq")) {
                 setString("Wrong or missing \"@qualifier\"");
                 return;
             }
-            if (status == "Initialize") {
-                status = "Authorize"
+            if (initMode) {
+                initMode = false;
                 if (test == "Normal") {
-                    sendMessageConditional(normalMessage);
+                    sendMessageConditional(normalRequest);
                 } else if (test == "Slow") {
                     setTimeout(function() {
-                        sendMessageConditional(normalMessage);
+                        sendMessageConditional(normalRequest);
                     }, 2000);
+                } else if (test == "Scroll") {
+                    sendMessageConditional(scrollMatchingRequest);
+                } else if (test == "NonMatching") {
+                    sendMessageConditional(nonMatchingRequest);
                 } else if (test == "Timeout") {
                     setTimeout(function() {
-                        sendMessageConditional(normalMessage);
+                        sendMessageConditional(normalRequest);
                     }, 20000);
                 } else if (test == "Syntax") {
-                    sendMessageConditional(badMessage);
+                    sendMessageConditional(badMessageRequest);
+                } else if (test == "Signature") {
+                    sendMessageConditional(badSignatureRequest);
                 } else {
-                    sendMessageConditional(badSignature);
+                    alert("Not implemented: " + test);
                 }
             } else {
                 setTimeout(function() {
@@ -116,14 +139,16 @@ window.addEventListener("beforeunload", function(event) {
 
 </script>
 <h2>Web2Native Bridge &quot;Emulator&quot; - Payment Agent (Wallet) Tester</h2>
-<input type="button" value="Run!" onclick="activateExtension()"><br>
+<input type="button" style="margin-bottom:10pt;width:50pt" value="Run!" onclick="activateExtension()">
 <form name="shoot">
 <input type="radio" name="test" value="Normal" checked>Normal<br>
 <input type="radio" name="test" value="Slow">Slow (but legal) response<br>
+<input type="radio" name="test" value="Scroll">Many matching cards (=scroll view)<br>
+<input type="radio" name="test" value="NonMatching">No card should match<br>
 <input type="radio" name="test" value="Timeout">Timeouted response<br>
 <input type="radio" name="test" value="Syntax">Bad message syntax<br>
 <input type="radio" name="test" value="Signature">Bad signature<br>
 </form>
-<h3>Result:</h3>
+<div style="margin-top:10pt;margin-bottom:10pt">Result:</div>
 <div id="response" style="font-family:courier;font-size:10pt;word-wrap:break-word;width:800pt"></div>
 </body></html>

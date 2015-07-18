@@ -86,6 +86,7 @@ import org.webpki.util.ArrayUtil;
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.CredentialProperties;
 import org.webpki.w2nb.webpayment.common.Messages;
+import org.webpki.w2nb.webpayment.common.PaymentRequest;
 import org.webpki.w2nbproxy.StdinJSONPipe;
 import org.webpki.w2nbproxy.StdoutJSONPipe;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -554,7 +555,7 @@ public class PaymentAgent {
                     if (userAuthorizationSucceeded()) {
                         waitingText.setText("Payment processing - Please wait");
                         ((CardLayout)views.getLayout()).show(views, VIEW_WAITING);
-                        performPayment();
+                        new PerformPayment().start();
                     }
                 }
             });
@@ -750,8 +751,9 @@ public class PaymentAgent {
             try {
                 invokeMessage = stdin.readJSONObject();
                 logger.info("Received:\n" + new String(invokeMessage.serializeJSONObject(JSONOutputFormats.PRETTY_PRINT),"UTF-8"));
-                Messages.parseBaseMessage(Messages.INVOKE, invokeMessage);
-                invokeMessage.getObject(BaseProperties.PAYMENT_REQUEST_JSON).getSignature();
+                Messages.parseBaseMessage(Messages.INVOKE_WALLET, invokeMessage);
+                final String[] cardTypes = invokeMessage.getStringArray(BaseProperties.ACCEPTED_CARD_TYPES_JSON);
+                final PaymentRequest paymentRequest = new PaymentRequest(invokeMessage.getObject(BaseProperties.PAYMENT_REQUEST_JSON)); 
                 timer.cancel();
                 if (running) {
                     // Swing is rather bad for multi-threading...
@@ -759,12 +761,12 @@ public class PaymentAgent {
                         @Override
                         public void run() {
                             running = false;
-                            amountString = "$\u200a3.25";
-                            payeeString = "Demo Merchant long version";
-                            EnumeratedKey ek = new EnumeratedKey();
-                            // Enumerate keys but only go for those who are intended for
-                            // Web Payments (according to our schema...)
                             try {
+                                amountString = paymentRequest.getCurrency().convertAmountToString(paymentRequest.getAmount());
+                                payeeString = paymentRequest.getPayee();
+                                // Enumerate keys but only go for those who are intended for
+                                // Web Payments (according to our schema...)
+                                EnumeratedKey ek = new EnumeratedKey();
                                 while ((ek = sks.enumerateKeys(ek.getKeyHandle())) != null) {
                                     Extension ext = null;
                                     try {
@@ -776,17 +778,22 @@ public class PaymentAgent {
                                         throw new Exception(e);
                                     }
                                     JSONObjectReader or = JSONParser.parse(ext.getExtensionData());
-                                    Card card = new Card(or.getString(CredentialProperties.CARD_NUMBER_JSON),
-                                                         getImageIcon(sks.getExtension(ek.getKeyHandle(), 
-                                                               KeyGen2URIs.LOGOTYPES.CARD).getExtensionData(),
-                                                               false),
-                                                         AsymSignatureAlgorithms.getAlgorithmFromID(or.getString(CredentialProperties.SIGNATURE_ALGORITHM_JSON)),
-                                                         or.getString(CredentialProperties.AUTH_URL_JSON));
-                                    if (or.hasProperty(CredentialProperties.ENCRYPTION_KEY_JSON)) {
-                                        card.encryptionAlgorithm = or.getString(CredentialProperties.ENCRYPTION_ALGORITHM_JSON);
-                                        card.encryptionKey = or.getObject(CredentialProperties.ENCRYPTION_KEY_JSON).getPublicKey();
+                                    for (String cardType : cardTypes) {
+                                        if (or.getString(CredentialProperties.CARD_TYPE_JSON).equals(cardType)) {
+                                            Card card = new Card(or.getString(CredentialProperties.CARD_NUMBER_JSON),
+                                                    getImageIcon(sks.getExtension(ek.getKeyHandle(), 
+                                                          KeyGen2URIs.LOGOTYPES.CARD).getExtensionData(),
+                                                          false),
+                                                    AsymSignatureAlgorithms.getAlgorithmFromID(or.getString(CredentialProperties.SIGNATURE_ALGORITHM_JSON)),
+                                                    or.getString(CredentialProperties.AUTH_URL_JSON));
+                                            if (or.hasProperty(CredentialProperties.ENCRYPTION_KEY_JSON)) {
+                                                card.encryptionAlgorithm = or.getString(CredentialProperties.ENCRYPTION_ALGORITHM_JSON);
+                                                card.encryptionKey = or.getObject(CredentialProperties.ENCRYPTION_KEY_JSON).getPublicKey();
+                                            }
+                                            cardSelection.put(ek.getKeyHandle(), card);
+                                            break;
+                                        }
                                     }
-                                    cardSelection.put(ek.getKeyHandle(), card);
                                }
                             } catch (Exception e) {
                                 sksProblem(e);
@@ -833,7 +840,7 @@ public class PaymentAgent {
                     return false;
                 }
                 try {
-                    resultMessage = Messages.createBaseMessage(Messages.AUTHORIZE);
+                    resultMessage = Messages.createBaseMessage(Messages.PAYER_GENERIC_AUTH_REQ);
                     resultMessage.setObject(BaseProperties.PAYMENT_REQUEST_JSON, invokeMessage.getObject(BaseProperties.PAYMENT_REQUEST_JSON));
                     resultMessage.setJOSEAlgorithmPreference(true);
                     resultMessage.setSignature (new JSONX509Signer (new SignerInterface () {
@@ -850,6 +857,7 @@ public class PaymentAgent {
                                                       algorithm.getDigestAlgorithm().digest(data));                        }
                     }).setSignatureAlgorithm(cardSelection.get(keyHandle).signatureAlgorithm)
                       .setSignatureCertificateAttributes(true));
+                    logger.info("About to send:\n" + new String(resultMessage.serializeJSONObject(JSONOutputFormats.PRETTY_PRINT),"UTF-8"));
                     return true;
                 } catch (SKSException e) {
                     if (e.getError() != SKSException.ERROR_AUTHORIZATION) {
@@ -871,14 +879,16 @@ public class PaymentAgent {
                 return false;  
             }
         }
-
-        void performPayment() {
-            try {
-                logger.info("About to send:\n" + new String(resultMessage.serializeJSONObject(JSONOutputFormats.PRETTY_PRINT),"UTF-8"));
-                stdout.writeJSONObject(resultMessage);
-            } catch (Exception e) {
-                logger.log(Level.SEVERE, "Communication error", e);
-                terminatingError("<html>*** Communication Error ***<br>Check log file for details.</html>");
+        
+        class PerformPayment extends Thread {
+            @Override
+            public void run() {
+                try {
+                    stdout.writeJSONObject(resultMessage);
+                } catch (Exception e) {
+                    logger.log(Level.SEVERE, "Communication error", e);
+                    terminatingError("<html>*** Communication Error ***<br>Check log file for details.</html>");
+                }
             }
         }
     }
@@ -892,7 +902,7 @@ public class PaymentAgent {
 
         // Respond to caller to indicate that we are (almost) ready
         try {
-            stdout.writeJSONObject(Messages.createBaseMessage(Messages.INITIALIZE));
+            stdout.writeJSONObject(Messages.createBaseMessage(Messages.WALLET_IS_READY));
         } catch (IOException e) {
             logger.log(Level.SEVERE, "Error writing to browser", e);
             terminate();

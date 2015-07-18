@@ -16,16 +16,29 @@
  */
 package org.webpki.w2nb.webpayment.common;
 
+import java.io.IOException;
+
+import java.math.BigDecimal;
+
 public enum Currencies {
-    USD ("$\\u200a",       true), 
-    EUR ("\\u200a\\u20ac", false),
-    GBP ("\\u00a3\\u200a", true);
+    USD ("$\u200a",       true, 2), 
+    EUR ("\u200a\u20ac", false, 2),
+    GBP ("\u00a3\u200a", true, 2);
     
     String symbol;
-    boolean first_position;
+    boolean firstPosition;
+    int decimals;
     
-    Currencies (String symbol, boolean first_position) {
+    Currencies (String symbol, boolean firstPosition, int decimals) {
         this.symbol = symbol;
-        this.first_position = first_position;
+        this.firstPosition = firstPosition;
+        this.decimals = decimals;
+    }
+
+    public String convertAmountToString(BigDecimal amount) throws IOException {
+        if (amount.scale() != decimals) {
+            throw new IOException("Incorrect decimals");
+        }
+        return firstPosition ? symbol + amount.toPlainString() : amount.toPlainString() + symbol;
     }
 }

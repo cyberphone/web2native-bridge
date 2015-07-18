@@ -70,7 +70,7 @@ public class InitWallet {
         if (args.length != 9) {
             System.out.println("\nUsage: " +
                                InitWallet.class.getCanonicalName() +
-                               "sksFile certFile certFilePassword cardPin cardType/@ cardNumber" +
+                               "sksFile clientCertFile certFilePassword cardPin cardType/@ cardNumber" +
                                " authUrl image/image@ encryptionKey/encryptionKey@");
             System.exit(-3);
         }

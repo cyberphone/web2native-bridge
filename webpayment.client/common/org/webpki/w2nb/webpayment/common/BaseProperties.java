@@ -25,11 +25,11 @@ public interface BaseProperties {
     String TRANSACTION_ID_JSON        = "transactionId";
     String CLIENT_IP_ADDRESS_JSON     = "clientIpAddress";
     String REFERENCE_ID_JSON          = "referenceId";
-    String COMMON_NAME_JSON           = "commonName";
-    String CARD_TYPES_JSON            = "cardTypes";
+    String PAYEE_JSON                 = "payee";             // Common name of payee to be used in UIs
+    String ACCEPTED_CARD_TYPES_JSON   = "acceptedCardTypes";
     String AUTH_DATA_JSON             = "authData";          // Encrypted authorization data
     String AUTH_URL_JSON              = "authUrl";           // URL to payment provider
-    String PAN_JSON                   = "pan";               // Card number
+    String CARD_NUMBER_JSON           = "cardNumber";        // Card number (a.k.a. PAN)
     String CARD_TYPE_JSON             = "cardType";          // Card type
     String REFERENCE_PAN_JSON         = "referencePan";      // Truncated card number given to merchant
     String PAYMENT_TOKEN_JSON         = "paymentToken";      // EMV tokenization result
@@ -49,7 +49,7 @@ public interface BaseProperties {
     String IV_JSON                    = "iv";
     String CIPHER_TEXT_JSON           = "cipherText";
     
-    String W2NB_PAY_DEMO_CONTEXT_URI  = "http://xmlns.webpki.org/wcpp-payment-demo";
+    String W2NB_PAY_DEMO_CONTEXT_URI  = "http://xmlns.webpki.org/w2nb-payment-demo";
     String ECDH_ALGORITHM_URI         = "http://www.w3.org/2009/xmlenc11#ECDH-ES";
     String CONCAT_ALGORITHM_URI       = "http://www.w3.org/2009/xmlenc11#ConcatKDF";
 }

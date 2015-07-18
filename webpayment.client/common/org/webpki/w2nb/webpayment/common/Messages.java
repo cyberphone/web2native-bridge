@@ -23,13 +23,13 @@ import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 
 public enum Messages {
-    INITIALIZE           ("Initialize"), 
-    INVOKE               ("Invoke"), 
-    ABORT                ("Abort"), 
-    AUTHORIZE            ("Authorize"),
-    AUTH_DATA            ("AuthData"), 
-    TRANSACTION_REQUEST  ("TransactionRequest"), 
-    TRANSACTION_RESPONSE ("TransactionResponse");
+    WALLET_IS_READY        ("WalletIsReady"), 
+    INVOKE_WALLET          ("InvokeWallet"), 
+    PAYER_GENERIC_AUTH_REQ ("PayerGenericAuthReq"),
+    PROVIDER_PUSH_AUTH_RES ("ProviderPushAuthRes"),
+    PAYER_PULL_AUTH_REQ    ("PayerPullAuthReq"), 
+    PAYEE_PULL_AUTH_REQ    ("PayeePullAuthReq"), 
+    PROVIDER_PULL_AUTH_RES ("ProviderPullAuthRes");
 
     String json_name;
 

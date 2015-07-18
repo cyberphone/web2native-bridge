@@ -9,6 +9,7 @@
 
   <property name="temp_dir" location=".tmp"/>
   <property name="credentials" location="credentials/sks.serialized"/>
+  <property name="testpage" location="../webpayment.client/test/test.html"/>
   
   <property name="keypassword" value="foo123"/>
   <property name="keyfilext" value=".p12"/>
@@ -51,9 +52,37 @@
   </path>
   
   <target name="help">
-      <echo message="createcerts initwallet [-Dlocalhost=0]"/>
+      <echo message="createcerts initwallet [-Dlocalhost=0] inittestpage"/>
   </target>
  
+  <target name="inittestpage">
+    <delete file="${testpage}"/>
+    <delete dir="${temp_dir}"/>
+    <mkdir dir="${temp_dir}"/>
+    <javac debug="${debug}"
+           source="${javaversion}"
+           target="${javaversion}"
+           srcdir="${src_dir}:${common_dir}"
+           destdir="${temp_dir}" 
+           classpathref="compile.classpath"
+           includeAntRuntime="false">
+    </javac>
+    <java fork="yes"
+          classname="org.webpki.w2nb.webpayment.resources.InitTestPage"
+          dir="${key_dir}"
+          failonerror="true">
+        <classpath>
+             <fileset dir="${lib_dir}">
+                <include name="*.jar"/>
+             </fileset>
+             <pathelement location="${temp_dir}"/>
+        </classpath>
+        <arg value="${testpage}"/>
+        <arg value="${merchantkey}${keyfilext}"/>
+        <arg value="${keypassword}"/>
+    </java>
+  </target>
+
   <target name="_import">
     <java fork="yes"
           classname="org.webpki.w2nb.webpayment.resources.InitWallet"
@@ -74,9 +103,9 @@
         <arg value="${bank.host}/w2nb-bank/transreq"/>
         <arg value="${cardimage_dir}/${sks.image}"/>
         <arg value="${sks.encryption}.cer"/>
-        </java>
+    </java>
   </target>
-<!-- sksFile certFile certFilePassword cardPin cardType cardNumber [image]   -->  
+
   <target name="initwallet">
     <delete file="${credentials}"/>
     <delete dir="${temp_dir}"/>
@@ -89,7 +118,6 @@
            classpathref="compile.classpath"
            includeAntRuntime="false">
     </javac>
-
     <antcall target="_import">
        <param name="sks.certificate" value="${clientkey_ec}"/>
        <param name="sks.pin" value="1234"/>
@@ -117,14 +145,13 @@
      <antcall target="_import">
        <param name="sks.certificate" value="${clientkey_ec2}"/>
        <param name="sks.pin" value="1234"/>
-       <param name="card.type" value="UnsualCard"/>
+       <param name="card.type" value="UnusualCard"/>
        <param name="card.number" value="1111222233334444"/>
        <param name="sks.image" value="unusualcard.png"/>
        <param name="sks.encryption" value="@"/>
      </antcall>
-     
   </target>
-
+  
   <target name="_createcert">
   	<java fork="yes"
   		  classname="org.webpki.ca.CommandLineCA"
