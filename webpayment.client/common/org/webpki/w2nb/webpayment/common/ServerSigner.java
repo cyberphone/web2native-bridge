@@ -18,13 +18,16 @@ package org.webpki.w2nb.webpayment.common;
 
 import java.io.IOException;
 import java.io.InputStream;
+
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
-import java.security.KeyStoreException;
 import java.security.PrivateKey;
+
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+
 import java.security.interfaces.RSAPublicKey;
+
 import java.util.Enumeration;
 import java.util.Vector;
 
@@ -32,6 +35,8 @@ import org.webpki.crypto.AsymSignatureAlgorithms;
 import org.webpki.crypto.KeyStoreReader;
 import org.webpki.crypto.SignatureWrapper;
 import org.webpki.crypto.SignerInterface;
+
+import org.webpki.json.JSONAlgorithmPreferences;
 import org.webpki.json.JSONX509Signer;
 
 public class ServerSigner {
@@ -42,20 +47,20 @@ public class ServerSigner {
 
     public ServerSigner(InputStream is, String password) throws IOException {
         try {
-        KeyStore ks = KeyStoreReader.loadKeyStore(is, password);
-        Enumeration<String> aliases = ks.aliases();
-        while (aliases.hasMoreElements()) {
-            String alias = aliases.nextElement();
-            if (ks.isKeyEntry(alias)) {
-                privateKey = (PrivateKey) ks.getKey(alias, password.toCharArray());
-                for (Certificate cert : ks.getCertificateChain(alias)) {
-                    certificatePath.add((X509Certificate) cert);
+            KeyStore ks = KeyStoreReader.loadKeyStore(is, password);
+            Enumeration<String> aliases = ks.aliases();
+            while (aliases.hasMoreElements()) {
+                String alias = aliases.nextElement();
+                if (ks.isKeyEntry(alias)) {
+                    privateKey = (PrivateKey) ks.getKey(alias, password.toCharArray());
+                    for (Certificate cert : ks.getCertificateChain(alias)) {
+                        certificatePath.add((X509Certificate) cert);
+                    }
+                    break;
                 }
-                break;
             }
-        }
-        signatureAlgorithm = certificatePath.firstElement().getPublicKey() instanceof RSAPublicKey ?
-                AsymSignatureAlgorithms.RSA_SHA256 : AsymSignatureAlgorithms.ECDSA_SHA256;
+            signatureAlgorithm = certificatePath.firstElement().getPublicKey() instanceof RSAPublicKey ?
+                    AsymSignatureAlgorithms.RSA_SHA256 : AsymSignatureAlgorithms.ECDSA_SHA256;
         } catch (Exception e) {
             throw new IOException(e);
         }
@@ -81,6 +86,7 @@ public class ServerSigner {
                 }
             }
         }).setSignatureCertificateAttributes(true)
-          .setSignatureAlgorithm(signatureAlgorithm);
+          .setSignatureAlgorithm(signatureAlgorithm)
+          .setAlgorithmPreferences(JSONAlgorithmPreferences.JOSE);
     }
 }

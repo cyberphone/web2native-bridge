@@ -34,21 +34,29 @@ import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Toolkit;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowAdapter;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
+
 import java.lang.reflect.Field;
+
 import java.net.URL;
+
 import java.security.PublicKey;
 import java.security.Security;
+
 import java.security.cert.X509Certificate;
+
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Timer;
 import java.util.TimerTask;
+
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -62,35 +70,44 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
+
 import javax.swing.plaf.metal.MetalButtonUI;
 
 import org.webpki.crypto.AsymEncryptionAlgorithms;
 import org.webpki.crypto.AsymSignatureAlgorithms;
 import org.webpki.crypto.HashAlgorithms;
 import org.webpki.crypto.SignerInterface;
+
+import org.webpki.json.JSONAlgorithmPreferences;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONParser;
 import org.webpki.json.JSONX509Signer;
+
 import org.webpki.keygen2.KeyGen2URIs;
+
 import org.webpki.sks.EnumeratedKey;
 import org.webpki.sks.Extension;
 import org.webpki.sks.KeyProtectionInfo;
 import org.webpki.sks.SKSException;
 import org.webpki.sks.SecureKeyStore;
+
 import org.webpki.sks.test.SKSReferenceImplementation;
+
 import org.webpki.util.ArrayUtil;
+
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.CredentialProperties;
 import org.webpki.w2nb.webpayment.common.Messages;
 import org.webpki.w2nb.webpayment.common.PaymentRequest;
+
 import org.webpki.w2nbproxy.StdinJSONPipe;
 import org.webpki.w2nbproxy.StdoutJSONPipe;
+
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 public class PaymentAgent {
@@ -856,7 +873,6 @@ public class PaymentAgent {
                        .setString(BaseProperties.CARD_TYPE_JSON, cardSelection.get(keyHandle).cardType)
                        .setString(BaseProperties.CARD_NUMBER_JSON, cardSelection.get(keyHandle).cardNumber)
                        .setDateTime(BaseProperties.DATE_TIME_JSON, new Date(), false)
-                       .setJOSEAlgorithmPreference(true)
                        .setSignature (new JSONX509Signer (new SignerInterface () {
                             @Override
                             public X509Certificate[] getCertificatePath() throws IOException {
@@ -870,7 +886,8 @@ public class PaymentAgent {
                                                           new String(pinText.getPassword()).getBytes("UTF-8"),
                                                           algorithm.getDigestAlgorithm().digest(data));                        }
                         }).setSignatureAlgorithm(cardSelection.get(keyHandle).signatureAlgorithm)
-                          .setSignatureCertificateAttributes(true));
+                          .setSignatureCertificateAttributes(true)
+                          .setAlgorithmPreferences(JSONAlgorithmPreferences.JOSE));
                     logger.info("About to send:\n" + new String(resultMessage.serializeJSONObject(JSONOutputFormats.PRETTY_PRINT),"UTF-8"));
                     return true;
                 } catch (SKSException e) {

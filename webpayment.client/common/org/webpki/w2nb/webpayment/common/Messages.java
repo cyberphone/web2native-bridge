@@ -23,23 +23,23 @@ import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 
 public enum Messages {
-    WALLET_IS_READY        ("WalletIsReady"), 
-    INVOKE_WALLET          ("InvokeWallet"), 
-    PAYER_GENERIC_AUTH_REQ ("PayerGenericAuthReq"),
-    PROVIDER_PUSH_AUTH_RES ("ProviderPushAuthRes"),
-    PAYER_PULL_AUTH_REQ    ("PayerPullAuthReq"), 
-    PAYEE_PULL_AUTH_REQ    ("PayeePullAuthReq"), 
-    PROVIDER_PULL_AUTH_RES ("ProviderPullAuthRes");
 
-    String json_name;
+    WALLET_IS_READY           ("WalletIsReady"),              // Wallet to payee web page message
+    INVOKE_WALLET             ("InvokeWallet"),               // Payee payment request + other data
+    PAYER_GENERIC_AUTH_REQ    ("PayerGenericAuthReq"),        // Used as is for "push" and wrapped in
+    PAYER_PULL_AUTH_REQ       ("PayerPullAuthReq"),           // this one for "pull"
+    PAYEE_PULL_AUTH_REQ       ("PayeePullAuthReq"),           // Payee "pull"
+    PROVIDER_GENERIC_AUTH_RES ("ProviderGenericAuthRes");     // Provider response for "push" and "pull"
 
-    Messages(String json_name) {
-        this.json_name = json_name;
+    String qualifier;
+
+    Messages(String qualifier) {
+        this.qualifier = qualifier;
     }
 
     @Override
     public String toString() {
-        return json_name;
+        return qualifier;
     }
 
     public static JSONObjectWriter createBaseMessage(Messages message) throws IOException {

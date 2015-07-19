@@ -19,6 +19,7 @@ package org.webpki.w2nb.webpayment.common;
 import java.awt.Color;
 
 public enum CardTypes {
+
     SuperCard   ("supercard.png",   Color.BLUE), 
     CoolCard    ("coolcard.png",    Color.BLACK),
     UnusualCard ("unusualcard.png", Color.GRAY);

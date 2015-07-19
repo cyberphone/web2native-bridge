@@ -21,17 +21,18 @@ import java.io.IOException;
 import java.math.BigDecimal;
 
 public enum Currencies {
-    USD ("$\u200a",       true, 2), 
-    EUR ("\u200a\u20ac", false, 2),
-    GBP ("\u00a3\u200a", true, 2);
+
+    USD ("$\u200a",       true,  2), 
+    EUR ("\u200a\u20ac",  false, 2),
+    GBP ("\u00a3\u200a",  true,  2);
     
     String symbol;
-    boolean firstPosition;
+    boolean symbolFirst;
     int decimals;
     
-    Currencies (String symbol, boolean firstPosition, int decimals) {
+    Currencies (String symbol, boolean symbolFirst, int decimals) {
         this.symbol = symbol;
-        this.firstPosition = firstPosition;
+        this.symbolFirst = symbolFirst;
         this.decimals = decimals;
     }
 
@@ -39,6 +40,6 @@ public enum Currencies {
         if (amount.scale() != decimals) {
             throw new IOException("Incorrect decimals");
         }
-        return firstPosition ? symbol + amount.toPlainString() : amount.toPlainString() + symbol;
+        return symbolFirst ? symbol + amount.toPlainString() : amount.toPlainString() + symbol;
     }
 }

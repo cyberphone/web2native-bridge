@@ -25,6 +25,7 @@ import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
+import org.webpki.json.JSONAlgorithmPreferences;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONX509Signer;
@@ -36,7 +37,7 @@ public class PaymentRequest implements BaseProperties {
                                           Currencies currency,
                                           String referenceId,
                                           JSONX509Signer x509Signer) throws IOException {
-        return new JSONObjectWriter().setJOSEAlgorithmPreference(true)
+        return new JSONObjectWriter()
             .setString(PAYEE_JSON, payee)
             .setBigDecimal(AMOUNT_JSON, amount)
             .setString(CURRENCY_JSON, currency.toString())
@@ -67,7 +68,7 @@ public class PaymentRequest implements BaseProperties {
         }
         referenceId = reader.getString(REFERENCE_ID_JSON);
         dateTime = reader.getDateTime(DATE_TIME_JSON);
-        certificatePath = reader.getSignature().getCertificatePath();
+        certificatePath = reader.getSignature(JSONAlgorithmPreferences.JOSE).getCertificatePath();
         reader.checkForUnread();
     }
 

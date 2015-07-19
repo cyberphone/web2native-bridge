@@ -26,7 +26,7 @@ public interface BaseProperties {
     String CLIENT_IP_ADDRESS_JSON     = "clientIpAddress";
     String REFERENCE_ID_JSON          = "referenceId";
     String PAYEE_JSON                 = "payee";             // Common name of payee to be used in UIs
-    String ACCEPTED_CARD_TYPES_JSON   = "acceptedCardTypes";
+    String ACCEPTED_CARD_TYPES_JSON   = "acceptedCardTypes"; // List of CARD_TYPE_JSON
     String AUTH_DATA_JSON             = "authData";          // Encrypted authorization data
     String AUTH_URL_JSON              = "authUrl";           // URL to payment provider
     String CARD_NUMBER_JSON           = "cardNumber";        // Card number (a.k.a. PAN)
