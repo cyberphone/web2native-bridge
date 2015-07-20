@@ -24,12 +24,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+
 import java.security.cert.X509Certificate;
 import java.security.cert.Certificate;
 import java.security.interfaces.RSAPublicKey;
+
 import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.Vector;
@@ -40,27 +43,33 @@ import org.webpki.crypto.CertificateUtil;
 import org.webpki.crypto.CustomCryptoProvider;
 import org.webpki.crypto.KeyAlgorithms;
 import org.webpki.crypto.KeyStoreReader;
+
+import org.webpki.json.JSONAlgorithmPreferences;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONOutputFormats;
+
 import org.webpki.keygen2.KeyGen2URIs;
+
 import org.webpki.sks.AppUsage;
 import org.webpki.sks.BiometricProtection;
 import org.webpki.sks.DeleteProtection;
 import org.webpki.sks.EnumeratedKey;
-import org.webpki.sks.EnumeratedProvisioningSession;
 import org.webpki.sks.ExportProtection;
 import org.webpki.sks.Grouping;
 import org.webpki.sks.InputMethod;
 import org.webpki.sks.PassphraseFormat;
 import org.webpki.sks.PatternRestriction;
 import org.webpki.sks.SecureKeyStore;
+
 import org.webpki.sks.test.Device;
 import org.webpki.sks.test.GenKey;
 import org.webpki.sks.test.KeySpecifier;
 import org.webpki.sks.test.PINPol;
 import org.webpki.sks.test.ProvSess;
 import org.webpki.sks.test.SKSReferenceImplementation;
+
 import org.webpki.util.ArrayUtil;
+
 import org.webpki.w2nb.webpayment.common.CredentialProperties;
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 
@@ -161,13 +170,14 @@ public class InitWallet {
                     AsymSignatureAlgorithms.ECDSA_SHA256.getURI());
             if (!args[8].contains("@")) {
                 PublicKey publicKey = CertificateUtil.getCertificateFromBlob(ArrayUtil.readFile(args[8])).getPublicKey();
-                ow.setString(CredentialProperties.ENCRYPTION_ALGORITHM_JSON,
+                ow.setString(CredentialProperties.CONTENT_ENCRYPTION_ALGORITHM_JSON, BaseProperties.JOSE_A256CBC_HS512_ALG_ID)
+                  .setString(CredentialProperties.KEY_ENCRYPTION_ALGORITHM_JSON,
                              publicKey instanceof RSAPublicKey ?
-                                     AsymEncryptionAlgorithms.RSA_OAEP_SHA256_MGF1P.getJOSEName() 
+                                     BaseProperties.JOSE_RSA_OAEP_256_ALG_ID 
                                                                : 
-                                     CredentialProperties.ECDH_ALGORITHM_URI)
-                .setObject(CredentialProperties.ENCRYPTION_KEY_JSON)
-                .setPublicKey(publicKey);
+                                     BaseProperties.JOSE_ECDH_ES_ALG_ID)
+                  .setObject(CredentialProperties.ENCRYPTION_KEY_JSON)
+                  .setPublicKey(publicKey, JSONAlgorithmPreferences.JOSE);
             }
             key.addExtension(BaseProperties.W2NB_PAY_DEMO_CONTEXT_URI,
                     SecureKeyStore.SUB_TYPE_EXTENSION,

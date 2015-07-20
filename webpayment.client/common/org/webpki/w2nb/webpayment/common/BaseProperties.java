@@ -18,6 +18,7 @@ package org.webpki.w2nb.webpayment.common;
 
 public interface BaseProperties {
     String PAYMENT_REQUEST_JSON       = "paymentRequest";
+    String PULL_PAYMENT_JSON          = "pullPayment";       // false or absent => "push" payment        
     String AMOUNT_JSON                = "amount";
     String ERROR_JSON                 = "error";
     String CURRENCY_JSON              = "currency";
@@ -27,12 +28,12 @@ public interface BaseProperties {
     String REFERENCE_ID_JSON          = "referenceId";
     String PAYEE_JSON                 = "payee";             // Common name of payee to be used in UIs
     String ACCEPTED_CARD_TYPES_JSON   = "acceptedCardTypes"; // List of CARD_TYPE_JSON
-    String AUTH_DATA_JSON             = "authData";          // Encrypted authorization data
+    String AUTH_DATA_JSON             = "authData";          // Payer authorization request in "pull" mode
     String AUTH_URL_JSON              = "authUrl";           // URL to payment provider
     String CARD_NUMBER_JSON           = "cardNumber";        // Card number (a.k.a. PAN)
     String CARD_TYPE_JSON             = "cardType";          // Card type
     String REFERENCE_PAN_JSON         = "referencePan";      // Truncated card number given to merchant
-    String PAYMENT_TOKEN_JSON         = "paymentToken";      // EMV tokenization result
+    String PAYMENT_TOKEN_JSON         = "paymentToken";      // Tokenization result
     String REQUEST_HASH_JSON          = "requestHash";
     String VALUE_JSON                 = "value";
     String DOMAIN_NAME_JSON           = "domainName";
@@ -42,14 +43,14 @@ public interface BaseProperties {
     String EPHEMERAL_CLIENT_KEY_JSON  = "ephemeralClientKey";
     String ALGORITHM_JSON             = "algorithm";
     String HASH_ALGORITHM_JSON        = "hashAlgorithm";
-    String ALGORITHM_ID_JSON          = "algorithmId";
-    String PARTY_U_INFO_JSON          = "partyUIinfo";
-    String PARTY_V_INFO_JSON          = "partyVInfo";
-    String KEY_DERIVATION_METHOD_JSON = "keyDerivationMethod";
-    String IV_JSON                    = "iv";
+    String IV_JSON                    = "iv";                // For symmetric encryption
+    String TAG_JSON                   = "tag";               // Authenticated data for symmetric encryption
     String CIPHER_TEXT_JSON           = "cipherText";
     
     String W2NB_PAY_DEMO_CONTEXT_URI  = "http://xmlns.webpki.org/w2nb-payment-demo";
-    String ECDH_ALGORITHM_URI         = "http://www.w3.org/2009/xmlenc11#ECDH-ES";
-    String CONCAT_ALGORITHM_URI       = "http://www.w3.org/2009/xmlenc11#ConcatKDF";
+
+    String JOSE_RSA_OAEP_256_ALG_ID   = "RSA-OAEP-256";
+    String JOSE_ECDH_ES_ALG_ID        = "ECDH-ES";
+    String JOSE_A256CBC_HS512_ALG_ID  = "A256CBC-HS512";
+    String JOSE_SHA_256_ALG_ID        = "S256";              // Well, not really JOSE but "similar" :-)
 }

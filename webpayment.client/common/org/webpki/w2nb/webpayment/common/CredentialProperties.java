@@ -24,15 +24,12 @@ public interface CredentialProperties {
     String CARD_NUMBER_JSON           = "cardNumber";           // Card number (PAN)
     String CARD_TYPE_JSON             = "cardType";             // Card type.  See CardTypes.java
     String AUTH_URL_JSON              = "authUrl";              // URL to payment provider
-    String SIGNATURE_ALGORITHM_JSON   = "signatureAlgorithm";   // MUST match key material
+    String SIGNATURE_ALGORITHM_JSON   = "signatureAlgorithm";   // MUST match the key material
 
-    // Optional: For the merchant "push" mode
-    String ENCRYPTION_KEY_JSON        = "encryptionKey";        // PublicKey in JCS format
-    String ENCRYPTION_ALGORITHM_JSON  = "encryptionAlgorithm";  // URI
-
-    // For ECDH encrypted authorizations in the merchant "push" mode
-    String ECDH_ALGORITHM_URI         = "http://www.w3.org/2009/xmlenc11#ECDH-ES";
-    String CONCAT_ALGORITHM_URI       = "http://www.w3.org/2009/xmlenc11#ConcatKDF";
+    // Optional: For the "pull" mode
+    String CONTENT_ENCRYPTION_ALGORITHM_JSON = "contentEncryptionAlgorithm";  // JOSE algorithm ID (A256CBC-HS512)
+    String KEY_ENCRYPTION_ALGORITHM_JSON     = "keyEncryptionAlgorithm";      // JOSE algorithm ID (ECDH-ES or RSA-OAEP-256)
+    String ENCRYPTION_KEY_JSON               = "encryptionKey";               // PublicKey in JCS format using JOSE algorithm IDs
 }
 
 // Note: Card images MUST be using the KeyGen2

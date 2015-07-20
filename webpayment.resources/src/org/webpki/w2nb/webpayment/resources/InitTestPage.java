@@ -112,6 +112,7 @@ public class InitTestPage implements BaseProperties {
                             new String[]{"NoSuchCard",
                                           CardTypes.SuperCard.toString(),
                                           CardTypes.CoolCard.toString()})
+            .setBoolean(PULL_PAYMENT_JSON, false)
             .setObject(PAYMENT_REQUEST_JSON, standardRequest));
 
         // The normal request is cloned and modified for testing error handling
@@ -145,6 +146,9 @@ public class InitTestPage implements BaseProperties {
 
               "function sendMessageConditional(message) {\n" +
               "    if (nativePort) {\n" +
+              "        if (document.getElementById(\"pull\").checked) {\n" +
+              "            message." + PULL_PAYMENT_JSON + " = true;\n" +
+              "        }\n" +
               "        nativePort.postMessage(message);\n" +
               "    }\n" +
               "}\n\n" +
@@ -231,6 +235,7 @@ public class InitTestPage implements BaseProperties {
             write("<br>\n");
         }
         write("</form>\n" +
+              "<input type=\"checkbox\" id=\"pull\" style=\"margin-top:10pt\">&quot;Pull&quot; payment flow (default is &quot;push&quot;)\n" +
               "<div style=\"margin-top:10pt;margin-bottom:10pt\">Result:</div>\n" +
               "<div id=\"response\" style=\"font-family:courier;font-size:10pt;word-wrap:break-word;width:800pt\"></div>\n" +
               "</body></html>\n");
