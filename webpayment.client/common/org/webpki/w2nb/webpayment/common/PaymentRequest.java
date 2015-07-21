@@ -56,20 +56,23 @@ public class PaymentRequest implements BaseProperties {
     
     GregorianCalendar dateTime;
 
-    X509Certificate[] certificatePath;   
+    X509Certificate[] certificatePath;
     
-    public PaymentRequest(JSONObjectReader reader) throws IOException {
-        payee = reader.getString(PAYEE_JSON);
-        amount = reader.getBigDecimal(AMOUNT_JSON);
+    JSONObjectReader root;
+    
+    public PaymentRequest(JSONObjectReader rd) throws IOException {
+        root = rd;
+        payee = rd.getString(PAYEE_JSON);
+        amount = rd.getBigDecimal(AMOUNT_JSON);
         try {
-            currency = Currencies.valueOf(reader.getString(CURRENCY_JSON));
+            currency = Currencies.valueOf(rd.getString(CURRENCY_JSON));
         } catch (Exception e) {
             throw new IOException(e);
         }
-        referenceId = reader.getString(REFERENCE_ID_JSON);
-        dateTime = reader.getDateTime(DATE_TIME_JSON);
-        certificatePath = reader.getSignature(JSONAlgorithmPreferences.JOSE).getCertificatePath();
-        reader.checkForUnread();
+        referenceId = rd.getString(REFERENCE_ID_JSON);
+        dateTime = rd.getDateTime(DATE_TIME_JSON);
+        certificatePath = rd.getSignature(JSONAlgorithmPreferences.JOSE).getCertificatePath();
+        rd.checkForUnread();
     }
 
     public String getPayee() {

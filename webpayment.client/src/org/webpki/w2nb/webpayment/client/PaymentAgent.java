@@ -88,9 +88,10 @@ import org.webpki.sks.test.SKSReferenceImplementation;
 import org.webpki.util.ArrayUtil;
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.CredentialProperties;
+import org.webpki.w2nb.webpayment.common.GenericAuthorizationRequest;
 import org.webpki.w2nb.webpayment.common.Messages;
 import org.webpki.w2nb.webpayment.common.PaymentRequest;
-import org.webpki.w2nb.webpayment.common.PullCryptoSupport;
+import org.webpki.w2nb.webpayment.common.CryptoSupport;
 import org.webpki.w2nbproxy.StdinJSONPipe;
 import org.webpki.w2nbproxy.StdoutJSONPipe;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -277,7 +278,7 @@ public class PaymentAgent {
         int keyHandle;
         Card selectedCard;
  
-        JSONObjectReader invokeMessage;
+        PaymentRequest paymentRequest;
         
         JSONObjectWriter resultMessage;
         
@@ -764,12 +765,12 @@ public class PaymentAgent {
                 }
             }, TIMEOUT_FOR_REQUEST);
             try {
-                invokeMessage = stdin.readJSONObject();
+                JSONObjectReader invokeMessage = stdin.readJSONObject();
                 logger.info("Received:\n" + new String(invokeMessage.serializeJSONObject(JSONOutputFormats.PRETTY_PRINT),"UTF-8"));
                 Messages.parseBaseMessage(Messages.INVOKE_WALLET, invokeMessage);
                 final String[] cardTypes = invokeMessage.getStringArray(BaseProperties.ACCEPTED_CARD_TYPES_JSON);
                 pullPayment = invokeMessage.getBooleanConditional(BaseProperties.PULL_PAYMENT_JSON);
-                final PaymentRequest paymentRequest = new PaymentRequest(invokeMessage.getObject(BaseProperties.PAYMENT_REQUEST_JSON)); 
+                paymentRequest = new PaymentRequest(invokeMessage.getObject(BaseProperties.PAYMENT_REQUEST_JSON)); 
                 timer.cancel();
                 if (running) {
                     // Swing is rather bad for multi-threading...
@@ -875,13 +876,13 @@ public class PaymentAgent {
                     return false;
                 }
                 try {
-                    resultMessage = Messages.createBaseMessage(Messages.PAYER_GENERIC_AUTH_REQ)
-                       .setObject(BaseProperties.PAYMENT_REQUEST_JSON, invokeMessage.getObject(BaseProperties.PAYMENT_REQUEST_JSON))
-                       .setString(BaseProperties.DOMAIN_NAME_JSON, domainName)
-                       .setString(BaseProperties.CARD_TYPE_JSON, selectedCard.cardType)
-                       .setString(BaseProperties.CARD_NUMBER_JSON, selectedCard.cardNumber)
-                       .setDateTime(BaseProperties.DATE_TIME_JSON, new Date(), false)
-                       .setSignature (new JSONX509Signer (new SignerInterface () {
+                    resultMessage = GenericAuthorizationRequest.encode(
+                        paymentRequest,
+                        domainName,
+                        selectedCard.cardType,
+                        selectedCard.cardNumber,
+                        selectedCard.signatureAlgorithm,
+                        new JSONX509Signer (new SignerInterface () {
                             @Override
                             public X509Certificate[] getCertificatePath() throws IOException {
                                 return sks.getKeyAttributes(keyHandle).getCertificatePath();
@@ -894,9 +895,7 @@ public class PaymentAgent {
                                                           new String(pinText.getPassword()).getBytes("UTF-8"),
                                                           algorithm.getDigestAlgorithm().digest(data));
                             }
-                        }).setSignatureAlgorithm(selectedCard.signatureAlgorithm)
-                          .setSignatureCertificateAttributes(true)
-                          .setAlgorithmPreferences(JSONAlgorithmPreferences.JOSE));
+                        }));
                     if (pullPayment) {
                         logger.info("Authorization before \"pull\" encryption:\n" +
                                     new String(resultMessage.serializeJSONObject(JSONOutputFormats.PRETTY_PRINT),"UTF-8"));
@@ -919,17 +918,17 @@ public class PaymentAgent {
                             aesKey = new byte[32];
                             new SecureRandom().nextBytes (aesKey);
                             keyEncryption.setBinary(BaseProperties.CIPHER_TEXT_JSON,
-                                                    PullCryptoSupport.rsaEncryptKey(aesKey, selectedCard.encryptionKey));
+                                                    CryptoSupport.rsaEncryptKey(aesKey, selectedCard.encryptionKey));
                         } else {
                             ECPublicKey[] epk = new ECPublicKey[1];
-                            aesKey = PullCryptoSupport.clientKeyAgreement(epk, selectedCard.encryptionKey);
+                            aesKey = CryptoSupport.clientKeyAgreement(epk, selectedCard.encryptionKey);
                             keyEncryption.setObject(BaseProperties.PAYMENT_PROVIDER_KEY_JSON)
                                 .setPublicKey(selectedCard.encryptionKey, JSONAlgorithmPreferences.JOSE);
                             keyEncryption.setObject(BaseProperties.EPHEMERAL_CLIENT_KEY_JSON)
                                 .setPublicKey(epk[0], JSONAlgorithmPreferences.JOSE);
                         }
                         contentEncryption.setBinary(BaseProperties.CIPHER_TEXT_JSON,
-                                                    PullCryptoSupport.contentEncryption(true, aesKey, content, iv, tag));
+                                                    CryptoSupport.contentEncryption(true, aesKey, content, iv, tag));
                     }
                     logger.info("About to send:\n" + new String(resultMessage.serializeJSONObject(JSONOutputFormats.PRETTY_PRINT),"UTF-8"));
                     return true;

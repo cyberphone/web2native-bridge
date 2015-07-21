@@ -18,12 +18,12 @@ package org.webpki.w2nb.webpayment.common;
 
 import java.io.IOException;
 
-import java.math.BigDecimal;
-
 import java.security.cert.X509Certificate;
 
 import java.util.Date;
 import java.util.GregorianCalendar;
+
+import org.webpki.crypto.AsymSignatureAlgorithms;
 
 import org.webpki.json.JSONAlgorithmPreferences;
 import org.webpki.json.JSONObjectReader;
@@ -32,60 +32,60 @@ import org.webpki.json.JSONX509Signer;
 
 public class GenericAuthorizationRequest implements BaseProperties {
     
-    public static JSONObjectWriter encode(String payee,
-                                          BigDecimal amount,
-                                          Currencies currency,
-                                          String referenceId,
+    public static JSONObjectWriter encode(PaymentRequest paymentRequest,
+                                          String domainName,
+                                          String cardType,
+                                          String cardNumber,
+                                          AsymSignatureAlgorithms signatureAlgorithm,
                                           JSONX509Signer x509Signer) throws IOException {
-        return new JSONObjectWriter()
-            .setString(PAYEE_JSON, payee)
-            .setBigDecimal(AMOUNT_JSON, amount)
-            .setString(CURRENCY_JSON, currency.toString())
-            .setString(REFERENCE_ID_JSON, referenceId)
-            .setDateTime(DATE_TIME_JSON, new Date(), true)
-            .setSignature(x509Signer);
+        return Messages.createBaseMessage(Messages.PAYER_GENERIC_AUTH_REQ)
+            .setObject(PAYMENT_REQUEST_JSON, paymentRequest.root)
+            .setString(DOMAIN_NAME_JSON, domainName)
+            .setString(CARD_TYPE_JSON, cardType)
+            .setString(CARD_NUMBER_JSON, cardNumber)
+            .setDateTime(DATE_TIME_JSON, new Date(), false)
+            .setSignature (x509Signer.setSignatureAlgorithm(signatureAlgorithm)
+                                     .setSignatureCertificateAttributes(true)
+                                     .setAlgorithmPreferences(JSONAlgorithmPreferences.JOSE));
     }
 
-    String payee;
-
-    BigDecimal amount;
-
-    Currencies currency;
-
-    String referenceId;
+    PaymentRequest paymentRequest;
+    
+    String domainName;
+    
+    String cardType;
+    
+    String cardNumber;
     
     GregorianCalendar dateTime;
-
-    X509Certificate[] certificatePath;   
     
-    public GenericAuthorizationRequest(JSONObjectReader reader) throws IOException {
-        payee = reader.getString(PAYEE_JSON);
-        amount = reader.getBigDecimal(AMOUNT_JSON);
-        try {
-            currency = Currencies.valueOf(reader.getString(CURRENCY_JSON));
-        } catch (Exception e) {
-            throw new IOException(e);
-        }
-        referenceId = reader.getString(REFERENCE_ID_JSON);
-        dateTime = reader.getDateTime(DATE_TIME_JSON);
-        certificatePath = reader.getSignature(JSONAlgorithmPreferences.JOSE).getCertificatePath();
-        reader.checkForUnread();
+    X509Certificate[] certificatePath;
+    
+    public GenericAuthorizationRequest(JSONObjectReader rd) throws IOException {
+        rd = Messages.parseBaseMessage(Messages.PAYER_GENERIC_AUTH_REQ, rd);
+        paymentRequest = new PaymentRequest(rd.getObject(PAYMENT_REQUEST_JSON));
+        domainName = rd.getString(DOMAIN_NAME_JSON);
+        cardType = rd.getString(CARD_TYPE_JSON);
+        cardNumber = rd.getString(CARD_NUMBER_JSON);
+        dateTime = rd.getDateTime(DATE_TIME_JSON);
+        certificatePath = rd.getSignature(JSONAlgorithmPreferences.JOSE).getCertificatePath();
+        rd.checkForUnread();
     }
 
-    public String getPayee() {
-        return payee;
+    public PaymentRequest getPaymentRequest() {
+        return paymentRequest;
     }
 
-    public BigDecimal getAmount() {
-        return amount;
+    public String getDomainName() {
+        return domainName;
     }
 
-    public Currencies getCurrency() {
-        return currency;
+    public String getCardType() {
+        return cardType;
     }
 
-    public String getReferenceId() {
-        return referenceId;
+    public GregorianCalendar getDateTime() {
+        return dateTime;
     }
 
     public X509Certificate[] getCertificatePath() {
