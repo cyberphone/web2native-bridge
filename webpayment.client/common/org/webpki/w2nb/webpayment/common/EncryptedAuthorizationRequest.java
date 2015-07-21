@@ -30,7 +30,7 @@ import org.webpki.json.JSONAlgorithmPreferences;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONParser;
 
-public class ParseEncryptedAuthorization implements BaseProperties {
+public class EncryptedAuthorizationRequest implements BaseProperties {
 
     PublicKey publicKey;
 
@@ -48,7 +48,7 @@ public class ParseEncryptedAuthorization implements BaseProperties {
 
     byte[] encryptedData;
 
-    public ParseEncryptedAuthorization(JSONObjectReader rd) throws IOException {
+    public EncryptedAuthorizationRequest(JSONObjectReader rd) throws IOException {
         rd = rd.getObject(ENCRYPTED_DATA_JSON);
         contentEncryptionAlgorithm = rd.getString(ALGORITHM_JSON);
         iv = rd.getBinary(IV_JSON);
@@ -65,20 +65,20 @@ public class ParseEncryptedAuthorization implements BaseProperties {
         rd.checkForUnread();
     }
 
-    public JSONObjectReader getAuthorizationData(Vector<DecryptionKeyHolder> decryptionKeys) throws IOException, GeneralSecurityException {
+    public GenericAuthorizationRequest getDecryptedAuthorizationRequest(Vector<DecryptionKeyHolder> decryptionKeys) throws IOException, GeneralSecurityException {
         boolean notFound = true;
         for (DecryptionKeyHolder dkh : decryptionKeys) {
             if (dkh.publicKey.equals(publicKey)) {
                 if (dkh.keyEncryptionAlgorithm.equals(keyEncryptionAlgorithm)) {
-                    return JSONParser.parse(
-                        PullCryptoSupport.contentEncryption(false,
+                    return new GenericAuthorizationRequest(JSONParser.parse(
+                        CryptoSupport.contentEncryption(false,
                                                             keyEncryptionAlgorithm.contains("RSA") ?
-                            PullCryptoSupport.rsaDecryptKey(encryptedKeyData, dkh.privateKey)
+                            CryptoSupport.rsaDecryptKey(encryptedKeyData, dkh.privateKey)
                                 :
-                            PullCryptoSupport.serverKeyAgreement(ephemeralPublicKey, dkh.privateKey),
+                            CryptoSupport.serverKeyAgreement(ephemeralPublicKey, dkh.privateKey),
                         encryptedData,
                         iv,
-                        tag));
+                        tag)));
                 }
                 notFound = false;
             }
