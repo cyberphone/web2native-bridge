@@ -275,6 +275,7 @@ public class PaymentAgent {
 
         SecureKeyStore sks;
         int keyHandle;
+        Card selectedCard;
  
         JSONObjectReader invokeMessage;
         
@@ -599,17 +600,18 @@ public class PaymentAgent {
         }
 
         void showAuthorizationView(int keyHandle) {
+            selectedCard = cardSelection.get(keyHandle);
             logger.info("Selected Card: Key=" + keyHandle +
-                        ", Number=" + cardSelection.get(keyHandle).cardNumber +
-                        ", URL=" + cardSelection.get(keyHandle).authUrl +
-                        ", EncryptionKey=" + (cardSelection.get(keyHandle).keyEncryptionAlgorithm == null ?
-                           "N/A" : cardSelection.get(keyHandle).encryptionKey));
+                        ", Number=" + selectedCard.cardNumber +
+                        ", URL=" + selectedCard.authUrl +
+                        ", EncryptionKey=" + (selectedCard.keyEncryptionAlgorithm == null ?
+                           "N/A" : selectedCard.encryptionKey));
             this.keyHandle = keyHandle;
             amountField.setText("\u200a" + amountString);
             payeeField.setText("\u200a" + payeeString);
-            selectedCardImage.setIcon(cardSelection.get(keyHandle).cardIcon);
-            selectedCardImage.setPressedIcon(cardSelection.get(keyHandle).cardIcon);
-            selectedCardNumber.setText(formatCardNumber(cardSelection.get(keyHandle).cardNumber));
+            selectedCardImage.setIcon(selectedCard.cardIcon);
+            selectedCardImage.setPressedIcon(selectedCard.cardIcon);
+            selectedCardNumber.setText(formatCardNumber(selectedCard.cardNumber));
             ((CardLayout)views.getLayout()).show(views, VIEW_AUTHORIZE);
             payeeField.setCaretPosition(0);
             pinText.requestFocusInWindow();
@@ -873,12 +875,11 @@ public class PaymentAgent {
                     return false;
                 }
                 try {
-                    Card card = cardSelection.get(keyHandle);
                     resultMessage = Messages.createBaseMessage(Messages.PAYER_GENERIC_AUTH_REQ)
                        .setObject(BaseProperties.PAYMENT_REQUEST_JSON, invokeMessage.getObject(BaseProperties.PAYMENT_REQUEST_JSON))
                        .setString(BaseProperties.DOMAIN_NAME_JSON, domainName)
-                       .setString(BaseProperties.CARD_TYPE_JSON, card.cardType)
-                       .setString(BaseProperties.CARD_NUMBER_JSON, card.cardNumber)
+                       .setString(BaseProperties.CARD_TYPE_JSON, selectedCard.cardType)
+                       .setString(BaseProperties.CARD_NUMBER_JSON, selectedCard.cardNumber)
                        .setDateTime(BaseProperties.DATE_TIME_JSON, new Date(), false)
                        .setSignature (new JSONX509Signer (new SignerInterface () {
                             @Override
@@ -893,7 +894,7 @@ public class PaymentAgent {
                                                           new String(pinText.getPassword()).getBytes("UTF-8"),
                                                           algorithm.getDigestAlgorithm().digest(data));
                             }
-                        }).setSignatureAlgorithm(card.signatureAlgorithm)
+                        }).setSignatureAlgorithm(selectedCard.signatureAlgorithm)
                           .setSignatureCertificateAttributes(true)
                           .setAlgorithmPreferences(JSONAlgorithmPreferences.JOSE));
                     if (pullPayment) {
@@ -905,25 +906,25 @@ public class PaymentAgent {
                         byte[] tag = new byte[16];
                         new SecureRandom().nextBytes (tag);
                         resultMessage = Messages.createBaseMessage(Messages.PAYER_PULL_AUTH_REQ)
-                           .setString(BaseProperties.AUTH_URL_JSON, card.authUrl);
+                           .setString(BaseProperties.AUTH_URL_JSON, selectedCard.authUrl);
                         JSONObjectWriter contentEncryption = resultMessage.setObject(BaseProperties.AUTH_DATA_JSON)
                            .setObject(BaseProperties.ENCRYPTED_DATA_JSON)
                            .setString(BaseProperties.ALGORITHM_JSON, BaseProperties.JOSE_A256CBC_HS512_ALG_ID)
                            .setBinary(BaseProperties.IV_JSON, iv)
                            .setBinary(BaseProperties.TAG_JSON, tag);
                         JSONObjectWriter keyEncryption = contentEncryption.setObject(BaseProperties.ENCRYPTED_KEY_JSON)
-                            .setString(BaseProperties.ALGORITHM_JSON, card.keyEncryptionAlgorithm);
+                            .setString(BaseProperties.ALGORITHM_JSON, selectedCard.keyEncryptionAlgorithm);
                         byte[] aesKey = null;
-                        if (card.encryptionKey instanceof RSAPublicKey) {
+                        if (selectedCard.encryptionKey instanceof RSAPublicKey) {
                             aesKey = new byte[32];
                             new SecureRandom().nextBytes (aesKey);
                             keyEncryption.setBinary(BaseProperties.CIPHER_TEXT_JSON,
-                                                    PullCryptoSupport.rsaEncryptKey(aesKey, card.encryptionKey));
+                                                    PullCryptoSupport.rsaEncryptKey(aesKey, selectedCard.encryptionKey));
                         } else {
                             ECPublicKey[] epk = new ECPublicKey[1];
-                            aesKey = PullCryptoSupport.clientKeyAgreement(epk, card.encryptionKey);
+                            aesKey = PullCryptoSupport.clientKeyAgreement(epk, selectedCard.encryptionKey);
                             keyEncryption.setObject(BaseProperties.PAYMENT_PROVIDER_KEY_JSON)
-                                .setPublicKey(card.encryptionKey, JSONAlgorithmPreferences.JOSE);
+                                .setPublicKey(selectedCard.encryptionKey, JSONAlgorithmPreferences.JOSE);
                             keyEncryption.setObject(BaseProperties.EPHEMERAL_CLIENT_KEY_JSON)
                                 .setPublicKey(epk[0], JSONAlgorithmPreferences.JOSE);
                         }

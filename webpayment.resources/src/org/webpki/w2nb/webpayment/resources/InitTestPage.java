@@ -33,6 +33,7 @@ import org.webpki.json.JSONX509Signer;
 import org.webpki.w2nb.webpayment.common.CardTypes;
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.Currencies;
+import org.webpki.w2nb.webpayment.common.KeyStoreEnumerator;
 import org.webpki.w2nb.webpayment.common.Messages;
 import org.webpki.w2nb.webpayment.common.PaymentRequest;
 import org.webpki.w2nb.webpayment.common.ServerSigner;
@@ -80,7 +81,7 @@ public class InitTestPage implements BaseProperties {
         fos = new FileOutputStream(args[0]);
         
         // Read key/certificate to be imported and create signer
-        JSONX509Signer signer = new ServerSigner(new FileInputStream(args[1]), args[2]).getJSONX509Signer();
+        JSONX509Signer signer = new ServerSigner(new KeyStoreEnumerator (new FileInputStream(args[1]), args[2]));
 
         // Create signed payment request
         JSONObjectWriter standardRequest = PaymentRequest.encode("Demo Merchant",

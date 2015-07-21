@@ -41,33 +41,39 @@ import org.webpki.crypto.KeyAlgorithms;
 public abstract class PullCryptoSupport {
     
     public static byte[] contentEncryption(boolean encrypt, byte[] aesKey, byte[] data, byte[] iv, byte[] tag) throws GeneralSecurityException {
-        Cipher cipher = Cipher.getInstance ("AES/CBC/PKCS5Padding");
-        cipher.init (encrypt ? Cipher.ENCRYPT_MODE : Cipher.DECRYPT_MODE,
-                    new SecretKeySpec (aesKey, "AES"),
-                    new IvParameterSpec (iv));
-        return cipher.doFinal (data);
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding", "BC");
+        cipher.init(encrypt ? Cipher.ENCRYPT_MODE : Cipher.DECRYPT_MODE,
+                    new SecretKeySpec(aesKey, "AES"),
+                    new IvParameterSpec(iv));
+        return cipher.doFinal(data);
     }
 
     public static byte[] rsaEncryptKey(byte[] rawKey, PublicKey publicKey) throws GeneralSecurityException {
-        Cipher cipher = Cipher.getInstance ("RSA/ECB/OAEPWithSHA256AndMGF1Padding");
-        cipher.init (Cipher.ENCRYPT_MODE, publicKey);
+        Cipher cipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA256AndMGF1Padding", "BC");
+        cipher.init(Cipher.ENCRYPT_MODE, publicKey);
         return cipher.doFinal(rawKey);
     }
 
+    public static byte[] rsaDecryptKey(byte[] encryptedKey, PrivateKey privateKey) throws GeneralSecurityException {
+        Cipher cipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA256AndMGF1Padding", "BC");
+        cipher.init(Cipher.DECRYPT_MODE, privateKey);
+        return cipher.doFinal(encryptedKey);
+    }
+
     public static byte[] serverKeyAgreement(ECPublicKey receivedPublicKey, PrivateKey privateKey) throws GeneralSecurityException, IOException {
-        KeyAgreement keyAgreement = KeyAgreement.getInstance ("ECDH");
-        keyAgreement.init (privateKey);
-        keyAgreement.doPhase (receivedPublicKey, true);
-        byte[] Z = keyAgreement.generateSecret ();
+        KeyAgreement keyAgreement = KeyAgreement.getInstance("ECDH", "BC");
+        keyAgreement.init(privateKey);
+        keyAgreement.doPhase(receivedPublicKey, true);
+        byte[] Z = keyAgreement.generateSecret();
         return HashAlgorithms.SHA256.digest(Z);
     }
 
     public static byte[] clientKeyAgreement(ECPublicKey[] generatedEphemeralKey, PublicKey staticKey) throws IOException, GeneralSecurityException {
-        KeyPairGenerator generator = KeyPairGenerator.getInstance ("EC");
-        ECGenParameterSpec eccgen = new ECGenParameterSpec (KeyAlgorithms.getKeyAlgorithm(staticKey).getJCEName());
-        generator.initialize (eccgen, new SecureRandom ());
-        KeyPair keyPair = generator.generateKeyPair ();
-        generatedEphemeralKey[0] = (ECPublicKey) keyPair.getPublic ();
+        KeyPairGenerator generator = KeyPairGenerator.getInstance("EC", "BC");
+        ECGenParameterSpec eccgen = new ECGenParameterSpec(KeyAlgorithms.getKeyAlgorithm(staticKey).getJCEName());
+        generator.initialize (eccgen, new SecureRandom());
+        KeyPair keyPair = generator.generateKeyPair();
+        generatedEphemeralKey[0] = (ECPublicKey) keyPair.getPublic();
         return serverKeyAgreement((ECPublicKey)staticKey, keyPair.getPrivate());
     }
 }
