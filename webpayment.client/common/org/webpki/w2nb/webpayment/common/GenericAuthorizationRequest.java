@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 
 import org.webpki.crypto.AsymSignatureAlgorithms;
+import org.webpki.crypto.SignerInterface;
 
 import org.webpki.json.JSONAlgorithmPreferences;
 import org.webpki.json.JSONObjectReader;
@@ -32,21 +33,26 @@ import org.webpki.json.JSONX509Signer;
 
 public class GenericAuthorizationRequest implements BaseProperties {
     
+    public static final String SOFTWARE_ID      = "WebPKI.org Wallet";
+    public static final String SOFTWARE_VERSION = "1.00";
+    
     public static JSONObjectWriter encode(PaymentRequest paymentRequest,
                                           String domainName,
                                           String cardType,
                                           String cardNumber,
                                           AsymSignatureAlgorithms signatureAlgorithm,
-                                          JSONX509Signer x509Signer) throws IOException {
+                                          SignerInterface signer) throws IOException {
         return Messages.createBaseMessage(Messages.PAYER_GENERIC_AUTH_REQ)
             .setObject(PAYMENT_REQUEST_JSON, paymentRequest.root)
             .setString(DOMAIN_NAME_JSON, domainName)
             .setString(CARD_TYPE_JSON, cardType)
             .setString(CARD_NUMBER_JSON, cardNumber)
             .setDateTime(DATE_TIME_JSON, new Date(), false)
-            .setSignature (x509Signer.setSignatureAlgorithm(signatureAlgorithm)
-                                     .setSignatureCertificateAttributes(true)
-                                     .setAlgorithmPreferences(JSONAlgorithmPreferences.JOSE));
+            .setString(SOFTWARE_ID_JSON, SOFTWARE_ID)
+            .setString(SOFTWARE_VERSION_JSON, SOFTWARE_VERSION)
+            .setSignature (new JSONX509Signer(signer).setSignatureAlgorithm(signatureAlgorithm)
+                                                     .setSignatureCertificateAttributes(true)
+                                                     .setAlgorithmPreferences(JSONAlgorithmPreferences.JOSE));
     }
 
     PaymentRequest paymentRequest;
@@ -59,6 +65,10 @@ public class GenericAuthorizationRequest implements BaseProperties {
     
     GregorianCalendar dateTime;
     
+    String softwareId;
+    
+    String softwareVersion;
+    
     X509Certificate[] certificatePath;
     
     JSONObjectReader root;
@@ -70,6 +80,8 @@ public class GenericAuthorizationRequest implements BaseProperties {
         cardType = rd.getString(CARD_TYPE_JSON);
         cardNumber = rd.getString(CARD_NUMBER_JSON);
         dateTime = rd.getDateTime(DATE_TIME_JSON);
+        softwareId = rd.getString(SOFTWARE_ID_JSON);
+        softwareVersion = rd.getString(SOFTWARE_VERSION_JSON);
         certificatePath = rd.getSignature(JSONAlgorithmPreferences.JOSE).getCertificatePath();
         rd.checkForUnread();
     }
@@ -88,6 +100,14 @@ public class GenericAuthorizationRequest implements BaseProperties {
 
     public GregorianCalendar getDateTime() {
         return dateTime;
+    }
+
+    public String getSoftwareId() {
+        return softwareId;
+    }
+
+    public String getSoftwareVersion() {
+        return softwareVersion;
     }
 
     public X509Certificate[] getCertificatePath() {

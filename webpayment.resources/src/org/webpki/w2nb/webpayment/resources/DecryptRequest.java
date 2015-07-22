@@ -52,7 +52,7 @@ public class DecryptRequest {
         for (int q = 0; q < args.length - 2; q += 2) {
             KeyStoreEnumerator key = new KeyStoreEnumerator(new FileInputStream(args[q]), args[args.length - 2]);
             decryptionKeys.add(new DecryptionKeyHolder(key.getPublicKey(), key.getPrivateKey(), args[q + 1]));
-            System.out.println("Iserted key:\n" + 
+            System.out.println("Inserted key:\n" + 
                 new String(new JSONObjectWriter().setPublicKey(key.getPublicKey(),
                                                                JSONAlgorithmPreferences.JOSE).serializeJSONObject(JSONOutputFormats.PRETTY_PRINT), "UTF-8"));
         }
@@ -69,7 +69,7 @@ public class DecryptRequest {
 
         GenericAuthorizationRequest gar = ear.getDecryptedAuthorizationRequest(decryptionKeys);
 
-        System.out.println("Authorization request:\n" +
+        System.out.println("Decrypted authorization request:\n" +
                 new String(gar.getRoot().serializeJSONObject(JSONOutputFormats.PRETTY_PRINT)));
     }
 }

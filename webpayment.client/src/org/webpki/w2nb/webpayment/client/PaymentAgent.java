@@ -71,7 +71,9 @@ import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+
 import javax.swing.border.EmptyBorder;
+
 import javax.swing.plaf.metal.MetalButtonUI;
 
 import org.webpki.crypto.AsymSignatureAlgorithms;
@@ -82,15 +84,17 @@ import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONParser;
-import org.webpki.json.JSONX509Signer;
 
 import org.webpki.keygen2.KeyGen2URIs;
+
+import org.webpki.net.HTTPSWrapper;
 
 import org.webpki.sks.EnumeratedKey;
 import org.webpki.sks.Extension;
 import org.webpki.sks.KeyProtectionInfo;
 import org.webpki.sks.SKSException;
 import org.webpki.sks.SecureKeyStore;
+
 import org.webpki.sks.test.SKSReferenceImplementation;
 
 import org.webpki.util.ArrayUtil;
@@ -894,7 +898,7 @@ public class PaymentAgent {
                         selectedCard.cardType,
                         selectedCard.cardNumber,
                         selectedCard.signatureAlgorithm,
-                        new JSONX509Signer (new SignerInterface () {
+                        new SignerInterface () {
                             @Override
                             public X509Certificate[] getCertificatePath() throws IOException {
                                 return sks.getKeyAttributes(keyHandle).getCertificatePath();
@@ -907,7 +911,7 @@ public class PaymentAgent {
                                                           new String(pinText.getPassword()).getBytes("UTF-8"),
                                                           algorithm.getDigestAlgorithm().digest(data));
                             }
-                        }));
+                        });
                     if (pullPayment) {
                         logger.info("Authorization before \"pull\" encryption:\n" +
                                     new String(resultMessage.serializeJSONObject(JSONOutputFormats.PRETTY_PRINT),"UTF-8"));
@@ -944,7 +948,16 @@ public class PaymentAgent {
             @Override
             public void run() {
                 try {
-                    stdout.writeJSONObject(resultMessage);
+                    if (testMode || pullPayment) {
+                        stdout.writeJSONObject(resultMessage);
+                    } else {
+                        HTTPSWrapper wrap = new HTTPSWrapper();
+                        wrap.setTimeout(TIMEOUT_FOR_REQUEST);
+                        wrap.setHeader("Content-Type", "application/json");
+                        wrap.setRequireSuccess(true);
+                        wrap.makePostRequest(selectedCard.authUrl, resultMessage.serializeJSONObject(JSONOutputFormats.NORMALIZED));
+                        stdout.writeJSONObject(new JSONObjectWriter(JSONParser.parse(wrap.getData())));
+                    }
                 } catch (Exception e) {
                     logger.log(Level.SEVERE, "Communication error", e);
                     terminatingError("<html>*** Communication Error ***<br>Check log file for details.</html>");

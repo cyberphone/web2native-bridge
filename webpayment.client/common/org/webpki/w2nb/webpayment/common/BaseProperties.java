@@ -46,6 +46,8 @@ public interface BaseProperties {
     String IV_JSON                    = "iv";                // For symmetric encryption
     String TAG_JSON                   = "tag";               // Authenticated data for symmetric encryption
     String CIPHER_TEXT_JSON           = "cipherText";
+    String SOFTWARE_ID_JSON           = "softwareId";
+    String SOFTWARE_VERSION_JSON      = "softwareVersion";
     
     String W2NB_PAY_DEMO_CONTEXT_URI  = "http://xmlns.webpki.org/w2nb-payment-demo";
 
