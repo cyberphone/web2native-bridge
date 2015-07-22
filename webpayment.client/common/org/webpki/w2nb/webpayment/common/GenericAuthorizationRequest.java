@@ -61,8 +61,10 @@ public class GenericAuthorizationRequest implements BaseProperties {
     
     X509Certificate[] certificatePath;
     
+    JSONObjectReader root;
+    
     public GenericAuthorizationRequest(JSONObjectReader rd) throws IOException {
-        rd = Messages.parseBaseMessage(Messages.PAYER_GENERIC_AUTH_REQ, rd);
+        root = Messages.parseBaseMessage(Messages.PAYER_GENERIC_AUTH_REQ, rd);
         paymentRequest = new PaymentRequest(rd.getObject(PAYMENT_REQUEST_JSON));
         domainName = rd.getString(DOMAIN_NAME_JSON);
         cardType = rd.getString(CARD_TYPE_JSON);
@@ -90,5 +92,9 @@ public class GenericAuthorizationRequest implements BaseProperties {
 
     public X509Certificate[] getCertificatePath() {
         return certificatePath;
+    }
+
+    public JSONObjectReader getRoot() {
+        return root;
     }
 }

@@ -54,7 +54,7 @@ public class KeyStoreEnumerator {
             throw new IOException(e);
         }
         if (privateKey == null) {
-            throw new IOException("No private key!");
+            throw new IOException("No private key found!");
         }
     }
 

@@ -34,24 +34,28 @@ import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Toolkit;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowAdapter;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
+
 import java.lang.reflect.Field;
+
 import java.net.URL;
+
 import java.security.PublicKey;
-import java.security.SecureRandom;
 import java.security.Security;
+
 import java.security.cert.X509Certificate;
-import java.security.interfaces.ECPublicKey;
-import java.security.interfaces.RSAPublicKey;
-import java.util.Date;
+
 import java.util.LinkedHashMap;
 import java.util.Timer;
 import java.util.TimerTask;
+
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -72,28 +76,36 @@ import javax.swing.plaf.metal.MetalButtonUI;
 
 import org.webpki.crypto.AsymSignatureAlgorithms;
 import org.webpki.crypto.SignerInterface;
+
 import org.webpki.json.JSONAlgorithmPreferences;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONParser;
 import org.webpki.json.JSONX509Signer;
+
 import org.webpki.keygen2.KeyGen2URIs;
+
 import org.webpki.sks.EnumeratedKey;
 import org.webpki.sks.Extension;
 import org.webpki.sks.KeyProtectionInfo;
 import org.webpki.sks.SKSException;
 import org.webpki.sks.SecureKeyStore;
 import org.webpki.sks.test.SKSReferenceImplementation;
+
 import org.webpki.util.ArrayUtil;
+
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.CredentialProperties;
+import org.webpki.w2nb.webpayment.common.EncryptedAuthorizationRequest;
 import org.webpki.w2nb.webpayment.common.GenericAuthorizationRequest;
 import org.webpki.w2nb.webpayment.common.Messages;
 import org.webpki.w2nb.webpayment.common.PaymentRequest;
 import org.webpki.w2nb.webpayment.common.CryptoSupport;
+
 import org.webpki.w2nbproxy.StdinJSONPipe;
 import org.webpki.w2nbproxy.StdoutJSONPipe;
+
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 public class PaymentAgent {
@@ -135,7 +147,8 @@ public class PaymentAgent {
         AsymSignatureAlgorithms signatureAlgorithm;
         String authUrl;
         
-        // Optional (as a pair)
+        // Optional (as a triple)
+        String contentEncryptionAlgorithm;
         String keyEncryptionAlgorithm;
         PublicKey encryptionKey;
         
@@ -806,8 +819,7 @@ public class PaymentAgent {
                                                     or.getString(CredentialProperties.AUTH_URL_JSON));
                                             if (or.hasProperty(CredentialProperties.ENCRYPTION_KEY_JSON)) {
                                                 card.keyEncryptionAlgorithm = or.getString(CredentialProperties.KEY_ENCRYPTION_ALGORITHM_JSON);
-                                                if (!card.keyEncryptionAlgorithm.equals(BaseProperties.JOSE_ECDH_ES_ALG_ID) &&
-                                                    !card.keyEncryptionAlgorithm.equals(BaseProperties.JOSE_RSA_OAEP_256_ALG_ID)) {
+                                                if (!CryptoSupport.permittedKeyEncryptionAlgorithm(card.keyEncryptionAlgorithm)) {
                                                     logger.warning("Card " + card.cardNumber + " contained an unknown \"" +
                                                                    CredentialProperties.KEY_ENCRYPTION_ALGORITHM_JSON + "\": " +
                                                                    card.keyEncryptionAlgorithm);
@@ -815,11 +827,11 @@ public class PaymentAgent {
                                                 }
                                                 card.encryptionKey = or.getObject(CredentialProperties.ENCRYPTION_KEY_JSON)
                                                                           .getPublicKey(JSONAlgorithmPreferences.JOSE);
-                                                String contentEncryptionAlgorithm = or.getString(CredentialProperties.CONTENT_ENCRYPTION_ALGORITHM_JSON);
-                                                if (!contentEncryptionAlgorithm.equals(BaseProperties.JOSE_A256CBC_HS512_ALG_ID)) {
+                                                card.contentEncryptionAlgorithm = or.getString(CredentialProperties.CONTENT_ENCRYPTION_ALGORITHM_JSON);
+                                                if (!CryptoSupport.permittedContentEncryptionAlgorithm(card.contentEncryptionAlgorithm)) {
                                                     logger.warning("Card " + card.cardNumber + " contained an unknown \"" +
                                                                    CredentialProperties.CONTENT_ENCRYPTION_ALGORITHM_JSON + "\": " +
-                                                                   contentEncryptionAlgorithm);
+                                                                   card.contentEncryptionAlgorithm);
                                                     break;
                                                 }
                                             } else if (pullPayment) {
@@ -899,36 +911,11 @@ public class PaymentAgent {
                     if (pullPayment) {
                         logger.info("Authorization before \"pull\" encryption:\n" +
                                     new String(resultMessage.serializeJSONObject(JSONOutputFormats.PRETTY_PRINT),"UTF-8"));
-                        byte[] content = resultMessage.serializeJSONObject(JSONOutputFormats.NORMALIZED);
-                        byte[] iv = new byte[16];
-                        new SecureRandom().nextBytes (iv);
-                        byte[] tag = new byte[16];
-                        new SecureRandom().nextBytes (tag);
-                        resultMessage = Messages.createBaseMessage(Messages.PAYER_PULL_AUTH_REQ)
-                           .setString(BaseProperties.AUTH_URL_JSON, selectedCard.authUrl);
-                        JSONObjectWriter contentEncryption = resultMessage.setObject(BaseProperties.AUTH_DATA_JSON)
-                           .setObject(BaseProperties.ENCRYPTED_DATA_JSON)
-                           .setString(BaseProperties.ALGORITHM_JSON, BaseProperties.JOSE_A256CBC_HS512_ALG_ID)
-                           .setBinary(BaseProperties.IV_JSON, iv)
-                           .setBinary(BaseProperties.TAG_JSON, tag);
-                        JSONObjectWriter keyEncryption = contentEncryption.setObject(BaseProperties.ENCRYPTED_KEY_JSON)
-                            .setString(BaseProperties.ALGORITHM_JSON, selectedCard.keyEncryptionAlgorithm);
-                        byte[] aesKey = null;
-                        if (selectedCard.encryptionKey instanceof RSAPublicKey) {
-                            aesKey = new byte[32];
-                            new SecureRandom().nextBytes (aesKey);
-                            keyEncryption.setBinary(BaseProperties.CIPHER_TEXT_JSON,
-                                                    CryptoSupport.rsaEncryptKey(aesKey, selectedCard.encryptionKey));
-                        } else {
-                            ECPublicKey[] epk = new ECPublicKey[1];
-                            aesKey = CryptoSupport.clientKeyAgreement(epk, selectedCard.encryptionKey);
-                            keyEncryption.setObject(BaseProperties.PAYMENT_PROVIDER_KEY_JSON)
-                                .setPublicKey(selectedCard.encryptionKey, JSONAlgorithmPreferences.JOSE);
-                            keyEncryption.setObject(BaseProperties.EPHEMERAL_CLIENT_KEY_JSON)
-                                .setPublicKey(epk[0], JSONAlgorithmPreferences.JOSE);
-                        }
-                        contentEncryption.setBinary(BaseProperties.CIPHER_TEXT_JSON,
-                                                    CryptoSupport.contentEncryption(true, aesKey, content, iv, tag));
+                        resultMessage = EncryptedAuthorizationRequest.encode(resultMessage,
+                                                                             selectedCard.authUrl,
+                                                                             selectedCard.contentEncryptionAlgorithm,
+                                                                             selectedCard.encryptionKey,
+                                                                             selectedCard.keyEncryptionAlgorithm);
                     }
                     logger.info("About to send:\n" + new String(resultMessage.serializeJSONObject(JSONOutputFormats.PRETTY_PRINT),"UTF-8"));
                     return true;

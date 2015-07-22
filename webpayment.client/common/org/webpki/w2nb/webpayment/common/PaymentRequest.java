@@ -94,4 +94,8 @@ public class PaymentRequest implements BaseProperties {
     public X509Certificate[] getCertificatePath() {
         return certificatePath;
     }
+
+    public JSONObjectReader getRoot() {
+        return root;
+    }
 }
