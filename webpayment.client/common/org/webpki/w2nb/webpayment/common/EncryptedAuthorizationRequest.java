@@ -23,7 +23,6 @@ import java.security.PublicKey;
 import java.security.SecureRandom;
 
 import java.security.interfaces.ECPublicKey;
-import java.security.interfaces.RSAPublicKey;
 
 import java.util.Vector;
 
@@ -62,11 +61,12 @@ public class EncryptedAuthorizationRequest implements BaseProperties {
         tag = rd.getBinary(TAG_JSON);
         JSONObjectReader encryptedKey = rd.getObject(ENCRYPTED_KEY_JSON);
         keyEncryptionAlgorithm = encryptedKey.getString(ALGORITHM_JSON);
+        publicKey = encryptedKey.getPublicKey(JSONAlgorithmPreferences.JOSE);
         if (isRsaKey(keyEncryptionAlgorithm)) {
             encryptedKeyData = encryptedKey.getBinary(CIPHER_TEXT_JSON);
         } else {
-            publicKey = encryptedKey.getPublicKey(JSONAlgorithmPreferences.JOSE);
-            ephemeralPublicKey = (ECPublicKey) encryptedKey.getPublicKey(JSONAlgorithmPreferences.JOSE);
+            publicKey = encryptedKey.getObject(PAYMENT_PROVIDER_KEY_JSON).getPublicKey(JSONAlgorithmPreferences.JOSE);
+            ephemeralPublicKey = (ECPublicKey) encryptedKey.getObject(EPHEMERAL_CLIENT_KEY_JSON).getPublicKey(JSONAlgorithmPreferences.JOSE);
         }
         encryptedData = rd.getBinary(CIPHER_TEXT_JSON);
         rd.checkForUnread();
@@ -97,7 +97,7 @@ public class EncryptedAuthorizationRequest implements BaseProperties {
     public static JSONObjectWriter encode(JSONObjectWriter unencryptedRequest,
                                           String authUrl,
                                           String contentEncryptionAlgorithm,
-                                          PublicKey encryptionKey,
+                                          PublicKey keyEncryptionKey,
                                           String keyEncryptionAlgorithm) throws IOException, GeneralSecurityException {
         
         byte[] content = unencryptedRequest.serializeJSONObject(JSONOutputFormats.NORMALIZED);
@@ -108,30 +108,33 @@ public class EncryptedAuthorizationRequest implements BaseProperties {
         JSONObjectWriter encryptedRequest = Messages.createBaseMessage(Messages.PAYER_PULL_AUTH_REQ)
            .setString(BaseProperties.AUTH_URL_JSON, authUrl);
         JSONObjectWriter encryptedContent = encryptedRequest.setObject(BaseProperties.AUTH_DATA_JSON)
-           .setObject(ENCRYPTED_DATA_JSON)
-           .setString(ALGORITHM_JSON, contentEncryptionAlgorithm)
-           .setBinary(IV_JSON, iv)
-           .setBinary(TAG_JSON, tag);
+            .setObject(ENCRYPTED_DATA_JSON)
+                .setString(ALGORITHM_JSON, contentEncryptionAlgorithm)
+                .setBinary(IV_JSON, iv)
+                .setBinary(TAG_JSON, tag);
         JSONObjectWriter keyEncryption = encryptedContent.setObject(BaseProperties.ENCRYPTED_KEY_JSON)
-            .setString(BaseProperties.ALGORITHM_JSON, keyEncryptionAlgorithm);
-        byte[] aesKey = null;
+            .setString(BaseProperties.ALGORITHM_JSON, keyEncryptionAlgorithm)
+            .setPublicKey(keyEncryptionKey);
+        byte[] contentEncryptionKey = null;
         if (isRsaKey(keyEncryptionAlgorithm)) {
-            aesKey = new byte[32];
-            new SecureRandom().nextBytes (aesKey);
+            contentEncryptionKey = new byte[32];
+            new SecureRandom().nextBytes (contentEncryptionKey);
             keyEncryption.setBinary(BaseProperties.CIPHER_TEXT_JSON,
-                                    CryptoSupport.rsaEncryptKey(keyEncryptionAlgorithm, aesKey, encryptionKey));
+                                    CryptoSupport.rsaEncryptKey(keyEncryptionAlgorithm,
+                                                                contentEncryptionKey,
+                                                                keyEncryptionKey));
         } else {
             ECPublicKey[] epk = new ECPublicKey[1];
-            aesKey = CryptoSupport.clientKeyAgreement(keyEncryptionAlgorithm, epk, encryptionKey);
+            contentEncryptionKey = CryptoSupport.clientKeyAgreement(keyEncryptionAlgorithm, epk, keyEncryptionKey);
             keyEncryption.setObject(BaseProperties.PAYMENT_PROVIDER_KEY_JSON)
-                .setPublicKey(encryptionKey, JSONAlgorithmPreferences.JOSE);
+                .setPublicKey(keyEncryptionKey, JSONAlgorithmPreferences.JOSE);
             keyEncryption.setObject(BaseProperties.EPHEMERAL_CLIENT_KEY_JSON)
                 .setPublicKey(epk[0], JSONAlgorithmPreferences.JOSE);
         }
         encryptedContent.setBinary(BaseProperties.CIPHER_TEXT_JSON,
                                    CryptoSupport.contentEncryption(true,
                                                                    contentEncryptionAlgorithm,
-                                                                   aesKey,
+                                                                   contentEncryptionKey,
                                                                    content,
                                                                    iv,
                                                                    tag));

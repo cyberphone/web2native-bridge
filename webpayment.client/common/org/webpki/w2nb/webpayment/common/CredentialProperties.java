@@ -29,7 +29,7 @@ public interface CredentialProperties {
     // Optional: For the "pull" mode
     String CONTENT_ENCRYPTION_ALGORITHM_JSON = "contentEncryptionAlgorithm";  // JOSE algorithm ID (A256CBC-HS512)
     String KEY_ENCRYPTION_ALGORITHM_JSON     = "keyEncryptionAlgorithm";      // JOSE algorithm ID (ECDH-ES or RSA-OAEP-256)
-    String ENCRYPTION_KEY_JSON               = "encryptionKey";               // PublicKey in JCS format using JOSE algorithm IDs
+    String KEY_ENCRYPTION_KEY_JSON           = "keyEncryptionKey";            // PublicKey in JCS format using JOSE algorithm IDs
 }
 
 // Note: Card images MUST be using the KeyGen2

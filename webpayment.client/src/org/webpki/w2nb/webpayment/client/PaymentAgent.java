@@ -150,7 +150,7 @@ public class PaymentAgent {
         // Optional (as a triple)
         String contentEncryptionAlgorithm;
         String keyEncryptionAlgorithm;
-        PublicKey encryptionKey;
+        PublicKey keyEncryptionKey;
         
         Card(String cardNumber, 
             ImageIcon cardIcon,
@@ -618,8 +618,8 @@ public class PaymentAgent {
             logger.info("Selected Card: Key=" + keyHandle +
                         ", Number=" + selectedCard.cardNumber +
                         ", URL=" + selectedCard.authUrl +
-                        ", EncryptionKey=" + (selectedCard.keyEncryptionAlgorithm == null ?
-                           "N/A" : selectedCard.encryptionKey));
+                        ", KeyEncryptionKey=" + (selectedCard.keyEncryptionAlgorithm == null ?
+                           "N/A" : selectedCard.keyEncryptionKey));
             this.keyHandle = keyHandle;
             amountField.setText("\u200a" + amountString);
             payeeField.setText("\u200a" + payeeString);
@@ -817,7 +817,7 @@ public class PaymentAgent {
                                                     cardType,
                                                     AsymSignatureAlgorithms.getAlgorithmFromID(or.getString(CredentialProperties.SIGNATURE_ALGORITHM_JSON)),
                                                     or.getString(CredentialProperties.AUTH_URL_JSON));
-                                            if (or.hasProperty(CredentialProperties.ENCRYPTION_KEY_JSON)) {
+                                            if (or.hasProperty(CredentialProperties.KEY_ENCRYPTION_KEY_JSON)) {
                                                 card.keyEncryptionAlgorithm = or.getString(CredentialProperties.KEY_ENCRYPTION_ALGORITHM_JSON);
                                                 if (!CryptoSupport.permittedKeyEncryptionAlgorithm(card.keyEncryptionAlgorithm)) {
                                                     logger.warning("Card " + card.cardNumber + " contained an unknown \"" +
@@ -825,8 +825,8 @@ public class PaymentAgent {
                                                                    card.keyEncryptionAlgorithm);
                                                     break;
                                                 }
-                                                card.encryptionKey = or.getObject(CredentialProperties.ENCRYPTION_KEY_JSON)
-                                                                          .getPublicKey(JSONAlgorithmPreferences.JOSE);
+                                                card.keyEncryptionKey = or.getObject(CredentialProperties.KEY_ENCRYPTION_KEY_JSON)
+                                                                              .getPublicKey(JSONAlgorithmPreferences.JOSE);
                                                 card.contentEncryptionAlgorithm = or.getString(CredentialProperties.CONTENT_ENCRYPTION_ALGORITHM_JSON);
                                                 if (!CryptoSupport.permittedContentEncryptionAlgorithm(card.contentEncryptionAlgorithm)) {
                                                     logger.warning("Card " + card.cardNumber + " contained an unknown \"" +
@@ -914,7 +914,7 @@ public class PaymentAgent {
                         resultMessage = EncryptedAuthorizationRequest.encode(resultMessage,
                                                                              selectedCard.authUrl,
                                                                              selectedCard.contentEncryptionAlgorithm,
-                                                                             selectedCard.encryptionKey,
+                                                                             selectedCard.keyEncryptionKey,
                                                                              selectedCard.keyEncryptionAlgorithm);
                     }
                     logger.info("About to send:\n" + new String(resultMessage.serializeJSONObject(JSONOutputFormats.PRETTY_PRINT),"UTF-8"));

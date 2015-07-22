@@ -20,17 +20,15 @@
 package org.webpki.w2nb.webpayment.resources;
 
 import java.io.FileInputStream;
-
 import java.util.Vector;
 
 import org.webpki.crypto.CustomCryptoProvider;
-
+import org.webpki.json.JSONAlgorithmPreferences;
 import org.webpki.json.JSONObjectReader;
+import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONParser;
-
 import org.webpki.util.ArrayUtil;
-
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.DecryptionKeyHolder;
 import org.webpki.w2nb.webpayment.common.EncryptedAuthorizationRequest;
@@ -54,6 +52,9 @@ public class DecryptRequest {
         for (int q = 0; q < args.length - 2; q += 2) {
             KeyStoreEnumerator key = new KeyStoreEnumerator(new FileInputStream(args[q]), args[args.length - 2]);
             decryptionKeys.add(new DecryptionKeyHolder(key.getPublicKey(), key.getPrivateKey(), args[q + 1]));
+            System.out.println("Iserted key:\n" + 
+                new String(new JSONObjectWriter().setPublicKey(key.getPublicKey(),
+                                                               JSONAlgorithmPreferences.JOSE).serializeJSONObject(JSONOutputFormats.PRETTY_PRINT), "UTF-8"));
         }
 
         JSONObjectReader input =

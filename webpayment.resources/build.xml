@@ -52,7 +52,7 @@
   </path>
   
   <target name="help">
-      <echo message="createcerts initwallet [-Dlocalhost=0] inittestpage"/>
+      <echo message="createcerts initwallet [-Dlocalhost=0] inittestpage decryptrequest -Dfile=request"/>
   </target>
  
   <target name="inittestpage">
@@ -83,6 +83,47 @@
     </java>
   </target>
 
+  <target name="decryptrequest">
+    <fail message="-&#10;Missing -Dfile=&#10;">
+       <condition>
+         <not>
+            <isset property="file"/>
+         </not>
+       </condition>
+     </fail>
+    <delete dir="${temp_dir}"/>
+    <mkdir dir="${temp_dir}"/>
+    <javac debug="${debug}"
+           source="${javaversion}"
+           target="${javaversion}"
+           srcdir="${src_dir}:${common_dir}"
+           destdir="${temp_dir}" 
+           classpathref="compile.classpath"
+           includeAntRuntime="false">
+    </javac>
+    <java fork="yes"
+          classname="org.webpki.w2nb.webpayment.resources.DecryptRequest"
+          dir="${key_dir}"
+          failonerror="true">
+        <classpath>
+             <fileset dir="${lib_dir}">
+                <include name="*.jar"/>
+             </fileset>
+             <pathelement location="${temp_dir}"/>
+        </classpath>
+        <arg value="${clientkey_rsa}${keyfilext}"/>
+        <arg value="RSA-OAEP-256"/>
+        <arg value="${encryptionkey_rsa}${keyfilext}"/>
+        <arg value="RSA-OAEP-256"/>
+        <arg value="${clientkey_ec}${keyfilext}"/>
+        <arg value="ECDH-ES"/>
+        <arg value="${encryptionkey_ec}${keyfilext}"/>
+        <arg value="ECDH-ES"/>
+        <arg value="${keypassword}"/>
+        <arg value="${file}"/>
+    </java>
+  </target>
+  
   <target name="_import">
     <java fork="yes"
           classname="org.webpki.w2nb.webpayment.resources.InitWallet"

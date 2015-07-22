@@ -38,6 +38,11 @@ import javax.crypto.spec.SecretKeySpec;
 import org.webpki.crypto.HashAlgorithms;
 import org.webpki.crypto.KeyAlgorithms;
 
+// TODO
+// This is a preliminary implementation which IS NOT compliant with the JOSE algorithm
+// specifications, but that doesn't matter (much) at this early stage...IMHO.
+// TODO
+
 public abstract class CryptoSupport {
     
     public static byte[] contentEncryption(boolean encrypt, String algorithm, byte[] aesKey, byte[] data, byte[] iv, byte[] tag) throws GeneralSecurityException, IOException {

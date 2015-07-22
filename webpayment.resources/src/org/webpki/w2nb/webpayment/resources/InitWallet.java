@@ -73,7 +73,7 @@ public class InitWallet {
             System.out.println("\nUsage: " +
                                InitWallet.class.getCanonicalName() +
                                "sksFile clientCertFile certFilePassword cardPin cardType/@ cardNumber" +
-                               " authUrl image/image@ encryptionKey/encryptionKey@");
+                               " authUrl image/image@ keyEncryptionKey/keyEncryptionKey@");
             System.exit(-3);
         }
         CustomCryptoProvider.forcedLoad(true);
@@ -153,7 +153,7 @@ public class InitWallet {
                                      BaseProperties.JOSE_RSA_OAEP_256_ALG_ID 
                                                                : 
                                      BaseProperties.JOSE_ECDH_ES_ALG_ID)
-                  .setObject(CredentialProperties.ENCRYPTION_KEY_JSON)
+                  .setObject(CredentialProperties.KEY_ENCRYPTION_KEY_JSON)
                   .setPublicKey(publicKey, JSONAlgorithmPreferences.JOSE);
             }
             surrogateKey.addExtension(BaseProperties.W2NB_PAY_DEMO_CONTEXT_URI,
