@@ -98,6 +98,10 @@ public class GenericAuthorizationRequest implements BaseProperties {
         return cardType;
     }
 
+    public String getCardNumber() {
+        return cardNumber;
+    }
+
     public GregorianCalendar getDateTime() {
         return dateTime;
     }

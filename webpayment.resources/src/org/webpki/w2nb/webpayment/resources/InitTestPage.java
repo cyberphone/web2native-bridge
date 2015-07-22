@@ -169,8 +169,10 @@ public class InitTestPage implements BaseProperties {
               "            }\n" +
               "            var qualifier = message[\"@qualifier\"];\n" +
               "            if ((initMode && qualifier != \"" + Messages.WALLET_IS_READY.toString() + "\" ) ||\n" +
-              "                (!initMode && qualifier != \"" + Messages.PAYER_GENERIC_AUTH_REQ.toString() + "\" && qualifier != \"" + Messages.PAYER_PULL_AUTH_REQ.toString() + "\")) {\n" +  
+              "                (!initMode && qualifier != \"" + Messages.PROVIDER_GENERIC_AUTH_RES.toString()
+              +                "\" && qualifier != \"" + Messages.PAYER_PULL_AUTH_REQ.toString() + "\")) {\n" +  
               "                setString(\"Wrong or missing \\\"@qualifier\\\"\");\n" +
+              "                closeExtension();\n" +
               "                return;\n" +
               "            }\n" +
               "            if (initMode) {\n" +

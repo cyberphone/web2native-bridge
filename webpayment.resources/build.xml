@@ -141,7 +141,7 @@
         <arg value="${sks.pin}"/>
         <arg value="${card.type}"/>
         <arg value="${card.number}"/>
-        <arg value="${bank.host}/w2nb-bank/transreq"/>
+        <arg value="${bank.host}/w2nb-bank/transact"/>
         <arg value="${cardimage_dir}/${sks.image}"/>
         <arg value="${sks.encryption}.cer"/>
     </java>
