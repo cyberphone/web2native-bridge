@@ -34,28 +34,20 @@ import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Toolkit;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowAdapter;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
-
 import java.lang.reflect.Field;
-
 import java.net.URL;
-
 import java.security.PublicKey;
 import java.security.Security;
-
 import java.security.cert.X509Certificate;
-
 import java.util.LinkedHashMap;
 import java.util.Timer;
 import java.util.TimerTask;
-
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -71,34 +63,25 @@ import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
-
 import javax.swing.border.EmptyBorder;
-
 import javax.swing.plaf.metal.MetalButtonUI;
 
 import org.webpki.crypto.AsymSignatureAlgorithms;
 import org.webpki.crypto.SignerInterface;
-
 import org.webpki.json.JSONAlgorithmPreferences;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONParser;
-
 import org.webpki.keygen2.KeyGen2URIs;
-
 import org.webpki.net.HTTPSWrapper;
-
 import org.webpki.sks.EnumeratedKey;
 import org.webpki.sks.Extension;
 import org.webpki.sks.KeyProtectionInfo;
 import org.webpki.sks.SKSException;
 import org.webpki.sks.SecureKeyStore;
-
 import org.webpki.sks.test.SKSReferenceImplementation;
-
 import org.webpki.util.ArrayUtil;
-
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.CredentialProperties;
 import org.webpki.w2nb.webpayment.common.EncryptedAuthorizationRequest;
@@ -106,10 +89,8 @@ import org.webpki.w2nb.webpayment.common.GenericAuthorizationRequest;
 import org.webpki.w2nb.webpayment.common.Messages;
 import org.webpki.w2nb.webpayment.common.PaymentRequest;
 import org.webpki.w2nb.webpayment.common.CryptoSupport;
-
 import org.webpki.w2nbproxy.StdinJSONPipe;
 import org.webpki.w2nbproxy.StdoutJSONPipe;
-
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 public class PaymentAgent {
@@ -913,15 +894,14 @@ public class PaymentAgent {
                             }
                         });
                     if (pullPayment) {
-                        logger.info("Authorization before \"pull\" encryption:\n" +
-                                    new String(resultMessage.serializeJSONObject(JSONOutputFormats.PRETTY_PRINT),"UTF-8"));
+                        logStep("Authorization before \"pull\" encryption");
                         resultMessage = EncryptedAuthorizationRequest.encode(resultMessage,
                                                                              selectedCard.authUrl,
                                                                              selectedCard.contentEncryptionAlgorithm,
                                                                              selectedCard.keyEncryptionKey,
                                                                              selectedCard.keyEncryptionAlgorithm);
                     }
-                    logger.info("About to send:\n" + new String(resultMessage.serializeJSONObject(JSONOutputFormats.PRETTY_PRINT),"UTF-8"));
+                    logStep("About to send");
                     return true;
                 } catch (SKSException e) {
                     if (e.getError() != SKSException.ERROR_AUTHORIZATION) {
@@ -943,21 +923,26 @@ public class PaymentAgent {
                 return false;  
             }
         }
+
+        void logStep(String message) throws IOException {
+            logger.info(message + ":\n" +
+                        new String(resultMessage.serializeJSONObject(JSONOutputFormats.PRETTY_PRINT), "UTF-8"));
+        }
         
         class PerformPayment extends Thread {
             @Override
             public void run() {
                 try {
-                    if (testMode || pullPayment) {
-                        stdout.writeJSONObject(resultMessage);
-                    } else {
+                    if (!testMode && !pullPayment) {
                         HTTPSWrapper wrap = new HTTPSWrapper();
                         wrap.setTimeout(TIMEOUT_FOR_REQUEST);
                         wrap.setHeader("Content-Type", "application/json");
                         wrap.setRequireSuccess(true);
                         wrap.makePostRequest(selectedCard.authUrl, resultMessage.serializeJSONObject(JSONOutputFormats.NORMALIZED));
-                        stdout.writeJSONObject(new JSONObjectWriter(JSONParser.parse(wrap.getData())));
+                        resultMessage = new JSONObjectWriter(JSONParser.parse(wrap.getData()));
+                        logStep("Returned from payment provider for handover to payee via the browser");
                     }
+                    stdout.writeJSONObject(resultMessage);
                 } catch (Exception e) {
                     logger.log(Level.SEVERE, "Communication error", e);
                     terminatingError("<html>*** Communication Error ***<br>Check log file for details.</html>");

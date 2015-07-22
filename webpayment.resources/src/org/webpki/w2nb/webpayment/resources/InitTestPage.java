@@ -147,9 +147,7 @@ public class InitTestPage implements BaseProperties {
 
               "function sendMessageConditional(message) {\n" +
               "    if (nativePort) {\n" +
-              "        if (document.getElementById(\"pull\").checked) {\n" +
-              "            message." + PULL_PAYMENT_JSON + " = true;\n" +
-              "        }\n" +
+              "        message." + PULL_PAYMENT_JSON + " = document.getElementById(\"pull\").checked;\n" +
               "        nativePort.postMessage(message);\n" +
               "    }\n" +
               "}\n\n" +
