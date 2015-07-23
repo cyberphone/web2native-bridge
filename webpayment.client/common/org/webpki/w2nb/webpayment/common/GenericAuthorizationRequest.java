@@ -18,8 +18,6 @@ package org.webpki.w2nb.webpayment.common;
 
 import java.io.IOException;
 
-import java.security.cert.X509Certificate;
-
 import java.util.Date;
 import java.util.GregorianCalendar;
 
@@ -29,6 +27,7 @@ import org.webpki.crypto.SignerInterface;
 import org.webpki.json.JSONAlgorithmPreferences;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
+import org.webpki.json.JSONSignatureDecoder;
 import org.webpki.json.JSONX509Signer;
 
 public class GenericAuthorizationRequest implements BaseProperties {
@@ -69,7 +68,7 @@ public class GenericAuthorizationRequest implements BaseProperties {
     
     String softwareVersion;
     
-    X509Certificate[] certificatePath;
+    JSONSignatureDecoder signatureDecoder;
     
     JSONObjectReader root;
     
@@ -82,7 +81,7 @@ public class GenericAuthorizationRequest implements BaseProperties {
         dateTime = rd.getDateTime(DATE_TIME_JSON);
         softwareId = rd.getString(SOFTWARE_ID_JSON);
         softwareVersion = rd.getString(SOFTWARE_VERSION_JSON);
-        certificatePath = rd.getSignature(JSONAlgorithmPreferences.JOSE).getCertificatePath();
+        signatureDecoder = rd.getSignature(JSONAlgorithmPreferences.JOSE);
         rd.checkForUnread();
     }
 
@@ -114,8 +113,8 @@ public class GenericAuthorizationRequest implements BaseProperties {
         return softwareVersion;
     }
 
-    public X509Certificate[] getCertificatePath() {
-        return certificatePath;
+    public JSONSignatureDecoder getSignatureDecoder() {
+        return signatureDecoder;
     }
 
     public JSONObjectReader getRoot() {

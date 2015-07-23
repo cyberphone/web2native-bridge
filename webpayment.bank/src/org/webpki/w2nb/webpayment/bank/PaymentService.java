@@ -50,7 +50,6 @@ import org.webpki.webutil.InitPropertyReader;
 public class PaymentService extends InitPropertyReader implements ServletContextListener
   {
     static Logger logger = Logger.getLogger (PaymentService.class.getName ());
-    
 
     @Override
     public void contextDestroyed (ServletContextEvent event)
@@ -64,6 +63,7 @@ public class PaymentService extends InitPropertyReader implements ServletContext
         try 
           {
             CustomCryptoProvider.forcedLoad (false);
+            logger.info("Web2Native Bridge Bank-server initiated");
           }
         catch (Exception e)
           {

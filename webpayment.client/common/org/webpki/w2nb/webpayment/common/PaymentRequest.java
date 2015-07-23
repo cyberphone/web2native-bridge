@@ -20,14 +20,14 @@ import java.io.IOException;
 
 import java.math.BigDecimal;
 
-import java.security.cert.X509Certificate;
-
 import java.util.Date;
 import java.util.GregorianCalendar;
 
 import org.webpki.json.JSONAlgorithmPreferences;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
+import org.webpki.json.JSONSignatureDecoder;
+import org.webpki.json.JSONSignatureTypes;
 import org.webpki.json.JSONX509Signer;
 
 public class PaymentRequest implements BaseProperties {
@@ -56,7 +56,7 @@ public class PaymentRequest implements BaseProperties {
     
     GregorianCalendar dateTime;
 
-    X509Certificate[] certificatePath;
+    JSONSignatureDecoder signatureDecoder;
     
     JSONObjectReader root;
     
@@ -71,7 +71,8 @@ public class PaymentRequest implements BaseProperties {
         }
         referenceId = rd.getString(REFERENCE_ID_JSON);
         dateTime = rd.getDateTime(DATE_TIME_JSON);
-        certificatePath = rd.getSignature(JSONAlgorithmPreferences.JOSE).getCertificatePath();
+        signatureDecoder = rd.getSignature(JSONAlgorithmPreferences.JOSE);
+        signatureDecoder.verify(JSONSignatureTypes.X509_CERTIFICATE);
         rd.checkForUnread();
     }
 
@@ -91,8 +92,8 @@ public class PaymentRequest implements BaseProperties {
         return referenceId;
     }
 
-    public X509Certificate[] getCertificatePath() {
-        return certificatePath;
+    public JSONSignatureDecoder getSignatureDecoder() {
+        return signatureDecoder;
     }
 
     public JSONObjectReader getRoot() {

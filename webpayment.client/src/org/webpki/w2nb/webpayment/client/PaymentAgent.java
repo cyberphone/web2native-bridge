@@ -88,11 +88,13 @@ import org.webpki.json.JSONParser;
 import org.webpki.keygen2.KeyGen2URIs;
 
 import org.webpki.net.HTTPSWrapper;
+
 import org.webpki.sks.EnumeratedKey;
 import org.webpki.sks.Extension;
 import org.webpki.sks.KeyProtectionInfo;
 import org.webpki.sks.SKSException;
 import org.webpki.sks.SecureKeyStore;
+
 import org.webpki.sks.test.SKSReferenceImplementation;
 
 import org.webpki.util.ArrayUtil;
@@ -167,7 +169,7 @@ public class PaymentAgent {
         }
     }
 
-    static LinkedHashMap<Integer,Card> cardSelection = new LinkedHashMap<Integer,Card>();
+    static LinkedHashMap<Integer,Card> cardCollection = new LinkedHashMap<Integer,Card>();
 
     static void initLogger(String logFile) {
         // This block configure the logger with handler and formatter
@@ -416,7 +418,7 @@ public class PaymentAgent {
             c.weighty = 1.0; 
             c.insets = new Insets(0, 0, 0, 0);
             if (actualCards) {
-                JScrollPane scrollPane = new JScrollPane(initCardSelectionViewCore(cardSelection));
+                JScrollPane scrollPane = new JScrollPane(initCardSelectionViewCore(cardCollection));
                 scrollPane.setBorder(new EmptyBorder(0, 0, 0, 0));
                 cardSelectionView.add(scrollPane, c);
             } else {
@@ -616,7 +618,7 @@ public class PaymentAgent {
         }
 
         void showAuthorizationView(int keyHandle) {
-            selectedCard = cardSelection.get(keyHandle);
+            selectedCard = cardCollection.get(keyHandle);
             logger.info("Selected Card: Key=" + keyHandle +
                         ", Number=" + selectedCard.cardNumber +
                         ", URL=" + selectedCard.authUrl +
@@ -764,7 +766,8 @@ public class PaymentAgent {
         @Override
         public void run() {
             try {
-                sks = (SKSReferenceImplementation) new ObjectInputStream(getClass().getResourceAsStream("sks.serialized")).readObject();
+                sks = (SKSReferenceImplementation) new ObjectInputStream(getClass()
+                    .getResourceAsStream("sks.serialized")).readObject();
             } catch (Exception e) {
                 sksProblem(e);
             }
@@ -785,7 +788,7 @@ public class PaymentAgent {
                 Messages.parseBaseMessage(Messages.INVOKE_WALLET, invokeMessage);
                 final String[] cardTypes = invokeMessage.getStringArray(BaseProperties.ACCEPTED_CARD_TYPES_JSON);
                 pullPayment = invokeMessage.getBooleanConditional(BaseProperties.PULL_PAYMENT_JSON);
-                paymentRequest = new PaymentRequest(invokeMessage.getObject(BaseProperties.PAYMENT_REQUEST_JSON)); 
+                paymentRequest = new PaymentRequest(invokeMessage.getObject(BaseProperties.PAYMENT_REQUEST_JSON));
                 timer.cancel();
                 if (running) {
                     // Swing is rather bad for multi-threading...
@@ -794,7 +797,8 @@ public class PaymentAgent {
                         public void run() {
                             running = false;
                             try {
-                                amountString = paymentRequest.getCurrency().convertAmountToString(paymentRequest.getAmount());
+                                amountString = paymentRequest.getCurrency()
+                                    .convertAmountToString(paymentRequest.getAmount());
                                 payeeString = paymentRequest.getPayee();
                                 // Enumerate keys but only go for those who are intended for
                                 // Web Payments (according to our schema...)
@@ -802,57 +806,26 @@ public class PaymentAgent {
                                 while ((ek = sks.enumerateKeys(ek.getKeyHandle())) != null) {
                                     Extension ext = null;
                                     try {
-                                        ext = sks.getExtension(ek.getKeyHandle(), BaseProperties.W2NB_PAY_DEMO_CONTEXT_URI);
+                                        ext = sks.getExtension(ek.getKeyHandle(),
+                                                               BaseProperties.W2NB_PAY_DEMO_CONTEXT_URI);
                                     } catch (SKSException e) {
                                         if (e.getError() == SKSException.ERROR_OPTION) {
                                             continue;
                                         }
                                         throw new Exception(e);
                                     }
-                                    JSONObjectReader or = JSONParser.parse(ext.getExtensionData());
-                                    for (String cardType : cardTypes) {
-                                        if (or.getString(CredentialProperties.CARD_TYPE_JSON).equals(cardType)) {
-                                            Card card = new Card(or.getString(CredentialProperties.CARD_NUMBER_JSON),
-                                                    getImageIcon(sks.getExtension(ek.getKeyHandle(), 
-                                                          KeyGen2URIs.LOGOTYPES.CARD).getExtensionData(),
-                                                          false),
-                                                    cardType,
-                                                    AsymSignatureAlgorithms.getAlgorithmFromID(or.getString(CredentialProperties.SIGNATURE_ALGORITHM_JSON)),
-                                                    or.getString(CredentialProperties.AUTH_URL_JSON));
-                                            if (or.hasProperty(CredentialProperties.KEY_ENCRYPTION_KEY_JSON)) {
-                                                card.keyEncryptionAlgorithm = or.getString(CredentialProperties.KEY_ENCRYPTION_ALGORITHM_JSON);
-                                                if (!CryptoSupport.permittedKeyEncryptionAlgorithm(card.keyEncryptionAlgorithm)) {
-                                                    logger.warning("Card " + card.cardNumber + " contained an unknown \"" +
-                                                                   CredentialProperties.KEY_ENCRYPTION_ALGORITHM_JSON + "\": " +
-                                                                   card.keyEncryptionAlgorithm);
-                                                    break;
-                                                }
-                                                card.keyEncryptionKey = or.getObject(CredentialProperties.KEY_ENCRYPTION_KEY_JSON)
-                                                                              .getPublicKey(JSONAlgorithmPreferences.JOSE);
-                                                card.contentEncryptionAlgorithm = or.getString(CredentialProperties.CONTENT_ENCRYPTION_ALGORITHM_JSON);
-                                                if (!CryptoSupport.permittedContentEncryptionAlgorithm(card.contentEncryptionAlgorithm)) {
-                                                    logger.warning("Card " + card.cardNumber + " contained an unknown \"" +
-                                                                   CredentialProperties.CONTENT_ENCRYPTION_ALGORITHM_JSON + "\": " +
-                                                                   card.contentEncryptionAlgorithm);
-                                                    break;
-                                                }
-                                            } else if (pullPayment) {
-                                                logger.warning("Card " + card.cardNumber + " doesn't support \"pull\" payments");
-                                                break;
-                                            }
-                                            cardSelection.put(ek.getKeyHandle(), card);
-                                            break;
-                                        }
-                                    }
+                                    collectPotentialCard(ek.getKeyHandle(),
+                                                         JSONParser.parse(ext.getExtensionData()),
+                                                         cardTypes);
                                }
                             } catch (Exception e) {
                                 sksProblem(e);
                             }
-                            if (cardSelection.isEmpty()) {
+                            if (cardCollection.isEmpty()) {
                                 logger.log(Level.SEVERE, "No matching card");
                                 terminatingError("No matching card!");
-                            } else if (cardSelection.size() == 1) {
-                                showAuthorizationView(cardSelection.keySet().iterator().next());
+                            } else if (cardCollection.size() == 1) {
+                                showAuthorizationView(cardCollection.keySet().iterator().next());
                             } else {
                                 showCardSelectionView();
                             }
@@ -873,6 +846,48 @@ public class PaymentAgent {
                 stdin.readJSONObject();
             } catch (IOException e) {
                 System.exit(0);
+            }
+        }
+
+        void collectPotentialCard(int keyHandle,
+                                  JSONObjectReader cardProperties,
+                                  String[] cardTypes) throws IOException {
+            for (String cardType : cardTypes) {
+                if (cardProperties.getString(CredentialProperties.CARD_TYPE_JSON).equals(cardType)) {
+                    Card card = new Card(cardProperties.getString(CredentialProperties.CARD_NUMBER_JSON),
+                            getImageIcon(sks.getExtension(keyHandle, 
+                                  KeyGen2URIs.LOGOTYPES.CARD).getExtensionData(),
+                                  false),
+                            cardType,
+                            AsymSignatureAlgorithms.getAlgorithmFromID(cardProperties
+                                    .getString(CredentialProperties.SIGNATURE_ALGORITHM_JSON)),
+                            cardProperties.getString(CredentialProperties.AUTH_URL_JSON));
+                    if (cardProperties.hasProperty(CredentialProperties.KEY_ENCRYPTION_KEY_JSON)) {
+                        card.keyEncryptionAlgorithm =
+                                cardProperties.getString(CredentialProperties.KEY_ENCRYPTION_ALGORITHM_JSON);
+                        if (!CryptoSupport.permittedKeyEncryptionAlgorithm(card.keyEncryptionAlgorithm)) {
+                            logger.warning("Card " + card.cardNumber + " contained an unknown \"" +
+                                           CredentialProperties.KEY_ENCRYPTION_ALGORITHM_JSON + "\": " +
+                                           card.keyEncryptionAlgorithm);
+                            break;
+                        }
+                        card.keyEncryptionKey = cardProperties.getObject(CredentialProperties.KEY_ENCRYPTION_KEY_JSON)
+                                                      .getPublicKey(JSONAlgorithmPreferences.JOSE);
+                        card.contentEncryptionAlgorithm =
+                                cardProperties.getString(CredentialProperties.CONTENT_ENCRYPTION_ALGORITHM_JSON);
+                        if (!CryptoSupport.permittedContentEncryptionAlgorithm(card.contentEncryptionAlgorithm)) {
+                            logger.warning("Card " + card.cardNumber + " contained an unknown \"" +
+                                           CredentialProperties.CONTENT_ENCRYPTION_ALGORITHM_JSON + "\": " +
+                                           card.contentEncryptionAlgorithm);
+                            break;
+                        }
+                    } else if (pullPayment) {
+                        logger.warning("Card " + card.cardNumber + " doesn't support \"pull\" payments");
+                        break;
+                    }
+                    cardCollection.put(keyHandle, card);
+                    break;
+                }
             }
         }
 
@@ -918,7 +933,11 @@ public class PaymentAgent {
                                                                              selectedCard.keyEncryptionKey,
                                                                              selectedCard.keyEncryptionAlgorithm);
                     }
-                    logger.info("About to send:\n" + resultMessage);
+                    logger.info((pullPayment || testMode ?
+                                     "About to send to the browser:\n" 
+                                                         :
+                                     "About to send to \"" + selectedCard.authUrl + "\":\n")
+                                + resultMessage);
                     return true;
                 } catch (SKSException e) {
                     if (e.getError() != SKSException.ERROR_AUTHORIZATION) {
@@ -950,9 +969,11 @@ public class PaymentAgent {
                         wrap.setTimeout(TIMEOUT_FOR_REQUEST);
                         wrap.setHeader("Content-Type", "application/json");
                         wrap.setRequireSuccess(true);
-                        wrap.makePostRequest(selectedCard.authUrl, resultMessage.serializeJSONObject(JSONOutputFormats.NORMALIZED));
+                        wrap.makePostRequest(selectedCard.authUrl,
+                                             resultMessage.serializeJSONObject(JSONOutputFormats.NORMALIZED));
                         resultMessage = new JSONObjectWriter(JSONParser.parse(wrap.getData()));
-                        logger.info("Returned from payment provider for handover to payee via the browser:\n" + resultMessage);
+                        logger.info("Returned from payment provider for handover to payee via the browser:\n"
+                                    + resultMessage);
                     }
                     stdout.writeJSONObject(resultMessage);
                 } catch (Exception e) {

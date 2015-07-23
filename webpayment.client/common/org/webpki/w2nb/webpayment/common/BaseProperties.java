@@ -27,12 +27,12 @@ public interface BaseProperties {
     String CLIENT_IP_ADDRESS_JSON     = "clientIpAddress";
     String REFERENCE_ID_JSON          = "referenceId";
     String PAYEE_JSON                 = "payee";             // Common name of payee to be used in UIs
-    String ACCEPTED_CARD_TYPES_JSON   = "acceptedCardTypes"; // List of CARD_TYPE_JSON
     String AUTH_DATA_JSON             = "authData";          // Payer authorization request in "pull" mode
     String AUTH_URL_JSON              = "authUrl";           // URL to payment provider
-    String CARD_NUMBER_JSON           = "cardNumber";        // Card number (a.k.a. PAN)
+    String ACCEPTED_CARD_TYPES_JSON   = "acceptedCardTypes"; // List of CARD_TYPE_JSON
     String CARD_TYPE_JSON             = "cardType";          // Card type
-    String REFERENCE_PAN_JSON         = "referencePan";      // Truncated card number given to merchant
+    String CARD_NUMBER_JSON           = "cardNumber";        // Card number (a.k.a. PAN)
+    String CARD_REFERENCE_JSON        = "cardReference";     // Card number for payee (like ************5678)
     String PAYMENT_TOKEN_JSON         = "paymentToken";      // Tokenization result
     String REQUEST_HASH_JSON          = "requestHash";
     String VALUE_JSON                 = "value";
