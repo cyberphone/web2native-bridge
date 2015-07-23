@@ -64,7 +64,7 @@ public class PaymentProviderServlet extends HttpServlet implements BasePropertie
     static int transaction_id = 164006;
     
     public void doPost (HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        JSONObjectWriter result = Messages.createBaseMessage (Messages.PROVIDER_GENERIC_AUTH_RES);
+        JSONObjectWriter authorizationResponse = Messages.createBaseMessage (Messages.PROVIDER_GENERIC_AUTH_RES);
         try {
             String contentType = request.getContentType();
             int i = contentType.indexOf(';');
@@ -76,23 +76,24 @@ public class PaymentProviderServlet extends HttpServlet implements BasePropertie
             }
             GenericAuthorizationRequest genericAuthorizationRequest = null;
             JSONObjectReader authorizationRequest = JSONParser.parse (ServletUtil.getData (request));
-            logger.info("Received:\n" +
-                        new String(authorizationRequest.serializeJSONObject(JSONOutputFormats.PRETTY_PRINT), "UTF-8"));
+            logger.info("Received:\n" + authorizationRequest);
+
             if (authorizationRequest.getString(JSONDecoderCache.QUALIFIER_JSON).equals(Messages.PAYEE_PULL_AUTH_REQ.toString())) {
                 throw new IOException("Not yet...");
             } else {
                 genericAuthorizationRequest = new GenericAuthorizationRequest(authorizationRequest);
-                result.setString(CARD_NUMBER_JSON, genericAuthorizationRequest.getCardNumber());
+                authorizationResponse.setString(CARD_NUMBER_JSON, genericAuthorizationRequest.getCardNumber());
             }
             
         } catch (Exception e) {
-            result = Messages.createBaseMessage (Messages.PROVIDER_GENERIC_AUTH_RES);
-            result.setString (ERROR_JSON, e.getMessage ());
+            authorizationResponse = Messages.createBaseMessage (Messages.PROVIDER_GENERIC_AUTH_RES);
+            authorizationResponse.setString (ERROR_JSON, e.getMessage ());
             logger.log (Level.SEVERE, e.getMessage ());
         }
+
         response.setContentType (JSON_CONTENT_TYPE + "; charset=utf-8");
         response.setHeader ("Pragma", "No-Cache");
         response.setDateHeader ("EXPIRES", 0);
-        response.getOutputStream ().write (result.serializeJSONObject (JSONOutputFormats.NORMALIZED));
+        response.getOutputStream ().write (authorizationResponse.serializeJSONObject (JSONOutputFormats.NORMALIZED));
       }
   }

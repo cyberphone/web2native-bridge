@@ -781,7 +781,7 @@ public class PaymentAgent {
             }, TIMEOUT_FOR_REQUEST);
             try {
                 JSONObjectReader invokeMessage = stdin.readJSONObject();
-                logger.info("Received:\n" + new String(invokeMessage.serializeJSONObject(JSONOutputFormats.PRETTY_PRINT),"UTF-8"));
+                logger.info("Received:\n" + invokeMessage);
                 Messages.parseBaseMessage(Messages.INVOKE_WALLET, invokeMessage);
                 final String[] cardTypes = invokeMessage.getStringArray(BaseProperties.ACCEPTED_CARD_TYPES_JSON);
                 pullPayment = invokeMessage.getBooleanConditional(BaseProperties.PULL_PAYMENT_JSON);
@@ -911,14 +911,14 @@ public class PaymentAgent {
                             }
                         });
                     if (pullPayment) {
-                        logStep("Authorization before \"pull\" encryption");
+                        logger.info("Authorization before \"pull\" encryption:\n" + resultMessage);
                         resultMessage = EncryptedAuthorizationRequest.encode(resultMessage,
                                                                              selectedCard.authUrl,
                                                                              selectedCard.contentEncryptionAlgorithm,
                                                                              selectedCard.keyEncryptionKey,
                                                                              selectedCard.keyEncryptionAlgorithm);
                     }
-                    logStep("About to send");
+                    logger.info("About to send:\n" + resultMessage);
                     return true;
                 } catch (SKSException e) {
                     if (e.getError() != SKSException.ERROR_AUTHORIZATION) {
@@ -941,11 +941,6 @@ public class PaymentAgent {
             }
         }
 
-        void logStep(String message) throws IOException {
-            logger.info(message + ":\n" +
-                        new String(resultMessage.serializeJSONObject(JSONOutputFormats.PRETTY_PRINT), "UTF-8"));
-        }
-        
         class PerformPayment extends Thread {
             @Override
             public void run() {
@@ -957,7 +952,7 @@ public class PaymentAgent {
                         wrap.setRequireSuccess(true);
                         wrap.makePostRequest(selectedCard.authUrl, resultMessage.serializeJSONObject(JSONOutputFormats.NORMALIZED));
                         resultMessage = new JSONObjectWriter(JSONParser.parse(wrap.getData()));
-                        logStep("Returned from payment provider for handover to payee via the browser");
+                        logger.info("Returned from payment provider for handover to payee via the browser:\n" + resultMessage);
                     }
                     stdout.writeJSONObject(resultMessage);
                 } catch (Exception e) {
