@@ -5,30 +5,13 @@
   <property name="common_dir" value="../webpayment.client/common"/>
   
   <property name="cardimage_dir" location="card-images"/>
-  <property name="class_war_path" value="WEB-INF/classes/org/webpki/webapps/wcpppaymentdemo"/>
 
   <property name="temp_dir" location=".tmp"/>
   <property name="credentials" location="credentials/sks.serialized"/>
   <property name="testpage" location="../webpayment.client/test/test.html"/>
   
-  <property name="keypassword" value="foo123"/>
-  <property name="keyfilext" value=".p12"/>
-  <property name="key_dir" location="keys"/>
-
-  <property name="bankkey" value="mybank-eecert"/>
-  <property name="paymentroot" value="payment-network-rootca"/>
-
-  <property name="merchantkey" value="demomerchant-eecert"/>
-  <property name="merchantroot" value="merchant-network-rootca"/>
+  <property file="../webpayment.resources/common.properties"/>
   
-  <property name="encryptionkey_rsa" value="mybank-encryption-key-rsa"/>
-  <property name="encryptionkey_ec" value="mybank-encryption-key-ec"/>
-  <property name="clientroot" value="mybank-clientroot"/>
-  <property name="clientkey_rsa" value="mybank-client-key-rsa"/>
-  <property name="clientkey_ec" value="mybank-client-key-ec"/>
-  <property name="clientkey_ec2" value="mybank-client-key-ec2"/>
-  <property name="clientkey_ec_other" value="mybank-client-key-ec-other"/>
-
   <condition property="bank.host" value="https://localhost:8442" else="https://mobilepki.org">
     <isset property="localhost"/>
   </condition>

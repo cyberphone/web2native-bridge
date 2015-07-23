@@ -967,7 +967,7 @@ public class PaymentAgent {
                     if (!testMode && !pullPayment) {
                         HTTPSWrapper wrap = new HTTPSWrapper();
                         wrap.setTimeout(TIMEOUT_FOR_REQUEST);
-                        wrap.setHeader("Content-Type", "application/json");
+                        wrap.setHeader("Content-Type", BaseProperties.JSON_CONTENT_TYPE);
                         wrap.setRequireSuccess(true);
                         wrap.makePostRequest(selectedCard.authUrl,
                                              resultMessage.serializeJSONObject(JSONOutputFormats.NORMALIZED));

@@ -50,21 +50,21 @@ import org.webpki.json.JSONX509Verifier;
 import org.webpki.util.ArrayUtil;
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.GenericAuthorizationRequest;
+import org.webpki.w2nb.webpayment.common.GenericAuthorizationResponse;
 import org.webpki.w2nb.webpayment.common.Messages;
+import org.webpki.w2nb.webpayment.common.PaymentRequest;
 import org.webpki.webutil.ServletUtil;
 
 public class PaymentProviderServlet extends HttpServlet implements BaseProperties
   {
     private static final long serialVersionUID = 1L;
     
-    static final String JSON_CONTENT_TYPE = "application/json";
-
     static Logger logger = Logger.getLogger (PaymentProviderServlet.class.getName ());
     
     static int transaction_id = 164006;
     
     public void doPost (HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        JSONObjectWriter authorizationResponse = Messages.createBaseMessage (Messages.PROVIDER_GENERIC_AUTH_RES);
+        JSONObjectWriter authorizationResponse = null;
         try {
             String contentType = request.getContentType();
             int i = contentType.indexOf(';');
@@ -78,12 +78,29 @@ public class PaymentProviderServlet extends HttpServlet implements BasePropertie
             JSONObjectReader authorizationRequest = JSONParser.parse (ServletUtil.getData (request));
             logger.info("Received:\n" + authorizationRequest);
 
+            // We rationalize here by using a single end-point for both push and pull
+
+            // A minor test is though needed to dispatch the right code...
             if (authorizationRequest.getString(JSONDecoderCache.QUALIFIER_JSON).equals(Messages.PAYEE_PULL_AUTH_REQ.toString())) {
                 throw new IOException("Not yet...");
             } else {
                 genericAuthorizationRequest = new GenericAuthorizationRequest(authorizationRequest);
-                authorizationResponse.setString(CARD_NUMBER_JSON, genericAuthorizationRequest.getCardNumber());
             }
+
+            // Verify that the outer signature (the user's) matches the bank's client root
+            genericAuthorizationRequest.getSignatureDecoder().verify(PaymentService.clientRoot);
+
+            // Get the embedded (counter-signed) payment request
+            PaymentRequest paymentRequest = genericAuthorizationRequest.getPaymentRequest();
+
+            // Verify that the merchant's signature belongs to the merchant trust network
+            paymentRequest.getSignatureDecoder().verify(PaymentService.merchantRoot);
+
+            // Return the authorized request
+            authorizationResponse = GenericAuthorizationResponse.encode(paymentRequest,
+                                                                        genericAuthorizationRequest.getCardType(),
+                                                                        genericAuthorizationRequest.getCardNumber(),
+                                                                        PaymentService.bankKey);
             
         } catch (Exception e) {
             authorizationResponse = Messages.createBaseMessage (Messages.PROVIDER_GENERIC_AUTH_RES);

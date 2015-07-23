@@ -55,4 +55,6 @@ public interface BaseProperties {
     String JOSE_ECDH_ES_ALG_ID        = "ECDH-ES";
     String JOSE_A256CBC_HS512_ALG_ID  = "A256CBC-HS512";
     String JOSE_SHA_256_ALG_ID        = "S256";              // Well, not really JOSE but "similar" :-)
+
+    String JSON_CONTENT_TYPE          = "application/json";
 }

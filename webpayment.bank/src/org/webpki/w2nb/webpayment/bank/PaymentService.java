@@ -17,17 +17,12 @@
 package org.webpki.w2nb.webpayment.bank;
 
 import java.io.IOException;
-
-import java.net.URL;
+import java.io.InputStream;
 
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 
-import java.security.cert.X509Certificate;
-
-import java.security.interfaces.ECPrivateKey;
-import java.security.interfaces.ECPublicKey;
-import java.security.interfaces.RSAPublicKey;
+import java.util.Vector;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -37,37 +32,83 @@ import javax.servlet.ServletContextListener;
 
 import org.webpki.crypto.CertificateUtil;
 import org.webpki.crypto.CustomCryptoProvider;
-import org.webpki.crypto.KeyStoreReader;
 
-import org.webpki.json.JSONSignatureDecoder;
+import org.webpki.crypto.KeyStoreVerifier;
+
+import org.webpki.json.JSONX509Verifier;
 
 import org.webpki.util.ArrayUtil;
-import org.webpki.util.Base64;
-import org.webpki.util.Base64URL;
+
+import org.webpki.w2nb.webpayment.common.DecryptionKeyHolder;
+import org.webpki.w2nb.webpayment.common.KeyStoreEnumerator;
+import org.webpki.w2nb.webpayment.common.ServerSigner;
 
 import org.webpki.webutil.InitPropertyReader;
 
-public class PaymentService extends InitPropertyReader implements ServletContextListener
-  {
-    static Logger logger = Logger.getLogger (PaymentService.class.getName ());
+public class PaymentService extends InitPropertyReader implements ServletContextListener {
+    static Logger logger = Logger.getLogger("w2nb-bank");
+    
+    static final String KEYSTORE_PASSWORD     = "key_password";
+
+    static final String DECRYPTION_KEY1       = "bank_decryptionkey1";
+    static final String DECRYPTION_KEY2       = "bank_decryptionkey2";
+    
+    static final String MERCHANT_ROOT         = "merchant_root";
+    static final String CLIENT_ROOT           = "bank_client_root";
+    
+    static final String BANK_EECERT           = "bank_eecert";
+    
+    static Vector<DecryptionKeyHolder> decryptionKeys = new Vector<DecryptionKeyHolder>();
+    
+    static JSONX509Verifier merchantRoot;
+    
+    static JSONX509Verifier clientRoot;
+    
+    static ServerSigner bankKey;
+
+    InputStream getResource(String name) throws IOException {
+        return this.getClass().getResourceAsStream(getPropertyString(name));
+    }
+    
+    void addDecryptionKey(String name) throws IOException {
+        KeyStoreEnumerator keyStoreEnumerator = new KeyStoreEnumerator(getResource(name),
+                                                                       getPropertyString(KEYSTORE_PASSWORD));
+        decryptionKeys.add(new DecryptionKeyHolder(keyStoreEnumerator.getPublicKey(),
+                                                   keyStoreEnumerator.getPrivateKey(),
+                                                   getPropertyString(KEYSTORE_PASSWORD)));
+    }
+
+    JSONX509Verifier getRoot(String name) throws IOException, GeneralSecurityException {
+        KeyStore keyStore = KeyStore.getInstance ("JKS");
+        keyStore.load (null, null);
+        keyStore.setCertificateEntry ("mykey",
+                                      CertificateUtil.getCertificateFromBlob (
+                                           ArrayUtil.getByteArrayFromInputStream (getResource(name))));        
+        return new JSONX509Verifier(new KeyStoreVerifier(keyStore));
+    }
+    
+    @Override
+    public void contextDestroyed(ServletContextEvent event) {
+    }
 
     @Override
-    public void contextDestroyed (ServletContextEvent event)
-      {
-      }
-
-    @Override
-    public void contextInitialized (ServletContextEvent event)
-      {
+    public void contextInitialized(ServletContextEvent event) {
         initProperties (event);
-        try 
-          {
+         try {
             CustomCryptoProvider.forcedLoad (false);
+
+            bankKey = new ServerSigner(new KeyStoreEnumerator(getResource(BANK_EECERT),
+                                                              getPropertyString(KEYSTORE_PASSWORD)));
+            
+            merchantRoot = getRoot(MERCHANT_ROOT);
+            clientRoot = getRoot(CLIENT_ROOT);
+
+            addDecryptionKey(DECRYPTION_KEY1);
+            addDecryptionKey(DECRYPTION_KEY2);
+
             logger.info("Web2Native Bridge Bank-server initiated");
-          }
-        catch (Exception e)
-          {
+        } catch (Exception e) {
             logger.log(Level.SEVERE, "********\n" + e.getMessage() + "\n********", e);
-          }
-      }
-  }
+        }
+    }
+}

@@ -10,22 +10,8 @@
   <property name="appcorename" value="w2nb-bank"/>
   <property name="application" value="${appcorename}.war"/>
   
-  <property name="keypassword" value="foo123"/>
-  <property name="keyfilext" value=".p12"/>
-  <property name="key_dir" location="../webpayment.resources/keys"/>
-
-  <property name="bankkey" value="mybank-eecert"/>
-  <property name="paymentroot" value="payment-network-rootca"/>
-
-  <property name="merchantkey" value="demomerchant-eecert"/>
-  <property name="merchantroot" value="merchant-network-rootca"/>
-  
-  <property name="encryptionkey_rsa" value="mybank-encryption-key-rsa"/>
-  <property name="encryptionkey_ec" value="mybank-encryption-key-ec"/>
-  <property name="clientroot" value="mybank-clientroot"/>
-  <property name="clientkey_rsa" value="mybank-client-key-rsa"/>
-  <property name="clientkey_ec" value="mybank-client-key-ec"/>
-  
+  <property file="../webpayment.resources/common.properties"/>
+    
   <property name="debug" value="on"/>
   <property environment="env"/>
   <property name="server.lib" location="../webpayment.resources/server.lib"/>
@@ -133,9 +119,9 @@
 	  <replacefilter token="@merchant-eecert@" value="${merchantkey}${keyfilext}"/>
 	  <replacefilter token="@payment-root@" value="${paymentroot}.cer"/>
 	  <replacefilter token="@merchant-root@" value="${merchantroot}.cer"/>
-	  <replacefilter token="@bank-encryptionkey@" value="${encryptionkey}.cer"/>
-	  <replacefilter token="@bank-decryptionkey@" value="${encryptionkey}${keyfilext}"/>
-	  <replacefilter token="@bank-client-root@" value="${clientroot}.cer"/>
+      <replacefilter token="@bank-client-root@" value="${clientroot}.cer"/>
+      <replacefilter token="@bank-decryptionkey1@" value="${encryptionkey_ec}${keyfilext}"/>
+	  <replacefilter token="@bank-decryptionkey2@" value="${encryptionkey_rsa}${keyfilext}"/>
 	  <replacefilter token="@bank-client-eecert@" value="${clientkey}${keyfilext}"/>
 	</replace>
     <war destfile="${dist_dir}/${application}" webxml="${temp_dir}/web.xml">
@@ -149,10 +135,15 @@
          <include name="webpki.org-libext*.jar"/>
          <include name="bcprov-*.jar"/>
       </lib>
-      
+      <zipfileset dir="${key_dir}" prefix="${class_war_path}">
+         <include name="${encryptionkey_rsa}${keyfilext}"/>
+         <include name="${encryptionkey_ec}${keyfilext}"/>
+         <include name="${bankkey}${keyfilext}"/>
+         <include name="${clientroot}.cer"/>
+         <include name="${merchantroot}.cer"/>
+       </zipfileset>
       <!--
       <fileset dir="web"/>
-      <zipfileset dir="${key_dir}" prefix="${class_war_path}"/>
       <zipfileset dir="${packimage_dir}" prefix="${class_war_path}"/>
         -->
     </war>
