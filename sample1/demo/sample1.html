@@ -36,6 +36,10 @@ function activateExtension() {
     if (nativePort) {
         closeExtension();
     }
+    if (!navigator.nativeConnect) {
+        alert('"navigator.nativeConnect" not found, \ncheck Chrome Web2Native Bridge extension settings');
+        return;
+    }
     navigator.nativeConnect("org.webpki.w2nb.sample1").then(function(port) {
         nativePort = port;
         console.debug('conn=' + JSON.stringify(port));

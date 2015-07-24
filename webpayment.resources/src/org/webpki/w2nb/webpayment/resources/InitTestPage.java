@@ -159,6 +159,10 @@ public class InitTestPage implements BaseProperties {
               "    setString(\"\");\n" +
               "    var initMode = true;\n" +
               "    var test = document.forms.shoot.test.value;\n" +
+              "    if (!navigator.nativeConnect) {\n" +
+              "        alert('\"navigator.nativeConnect\" not found, \\ncheck Chrome Web2Native Bridge extension settings');\n" +
+              "        return;\n" +
+              "    }\n" +
               "    navigator.nativeConnect(\"org.webpki.w2nb.webpayment.client\").then(function(port) {\n" +
               "        nativePort = port;\n" +
               "        console.debug('conn=' + JSON.stringify(port));\n" +
