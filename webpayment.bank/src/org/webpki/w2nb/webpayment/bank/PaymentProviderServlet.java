@@ -46,7 +46,7 @@ public class PaymentProviderServlet extends HttpServlet implements BasePropertie
   {
     private static final long serialVersionUID = 1L;
     
-    static Logger logger = Logger.getLogger (PaymentProviderServlet.class.getName ());
+    static Logger logger = Logger.getLogger (PaymentService.LOGGER_NAME);
     
     static int transaction_id = 164006;
     
@@ -95,6 +95,8 @@ public class PaymentProviderServlet extends HttpServlet implements BasePropertie
                                                                         genericAuthorizationRequest.getCardType(),
                                                                         genericAuthorizationRequest.getCardNumber(),
                                                                         PaymentService.bankKey);
+
+            logger.info("Returned to caller:\n" + authorizationResponse);
             
         } catch (Exception e) {
             authorizationResponse = Messages.createBaseMessage (Messages.PROVIDER_GENERIC_AUTH_RES);
