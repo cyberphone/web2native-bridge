@@ -80,6 +80,7 @@ import org.webpki.crypto.AsymSignatureAlgorithms;
 import org.webpki.crypto.SignerInterface;
 
 import org.webpki.json.JSONAlgorithmPreferences;
+import org.webpki.json.JSONSignatureDecoder;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONOutputFormats;
@@ -859,8 +860,10 @@ public class PaymentAgent {
                                   KeyGen2URIs.LOGOTYPES.CARD).getExtensionData(),
                                   false),
                             cardType,
-                            AsymSignatureAlgorithms.getAlgorithmFromID(cardProperties
-                                    .getString(CredentialProperties.SIGNATURE_ALGORITHM_JSON)),
+                            AsymSignatureAlgorithms.getAlgorithmFromID(
+                                JSONSignatureDecoder.algorithmCheck(
+                                    cardProperties.getString(CredentialProperties.SIGNATURE_ALGORITHM_JSON),
+                                    JSONAlgorithmPreferences.JOSE)),
                             cardProperties.getString(CredentialProperties.AUTH_URL_JSON));
                     if (cardProperties.hasProperty(CredentialProperties.KEY_ENCRYPTION_KEY_JSON)) {
                         card.keyEncryptionAlgorithm =

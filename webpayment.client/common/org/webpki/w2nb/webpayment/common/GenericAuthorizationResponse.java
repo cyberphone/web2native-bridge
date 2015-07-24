@@ -29,7 +29,7 @@ import org.webpki.json.JSONX509Signer;
 
 public class GenericAuthorizationResponse implements BaseProperties {
     
-    public static final String SOFTWARE_ID      = "WebPKI.org Banking";
+    public static final String SOFTWARE_ID      = "WebPKI.org - Bank";
     public static final String SOFTWARE_VERSION = "1.00";
     
     public static JSONObjectWriter encode(PaymentRequest paymentRequest,

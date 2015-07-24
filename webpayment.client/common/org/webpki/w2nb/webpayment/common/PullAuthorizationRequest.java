@@ -30,9 +30,9 @@ import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONSignatureDecoder;
 import org.webpki.json.JSONX509Signer;
 
-public class GenericAuthorizationRequest implements BaseProperties {
+public class PullAuthorizationRequest implements BaseProperties {
     
-    public static final String SOFTWARE_ID      = "WebPKI.org - Wallet";
+    public static final String SOFTWARE_ID      = "WebPKI.org Wallet";
     public static final String SOFTWARE_VERSION = "1.00";
     
     public static JSONObjectWriter encode(PaymentRequest paymentRequest,
@@ -72,7 +72,7 @@ public class GenericAuthorizationRequest implements BaseProperties {
     
     JSONObjectReader root;
     
-    public GenericAuthorizationRequest(JSONObjectReader rd) throws IOException {
+    public PullAuthorizationRequest(JSONObjectReader rd) throws IOException {
         root = Messages.parseBaseMessage(Messages.PAYER_GENERIC_AUTH_REQ, rd);
         paymentRequest = new PaymentRequest(rd.getObject(PAYMENT_REQUEST_JSON));
         domainName = rd.getString(DOMAIN_NAME_JSON);

@@ -142,9 +142,9 @@ public class InitWallet {
                  .setString(CredentialProperties.AUTH_URL_JSON, args[6])
                  .setString(CredentialProperties.SIGNATURE_ALGORITHM_JSON,
                          rsa_flag ?
-                    AsymSignatureAlgorithms.RSA_SHA256.getURI()
+                    AsymSignatureAlgorithms.RSA_SHA256.getJOSEName()
                                   :
-                    AsymSignatureAlgorithms.ECDSA_SHA256.getURI());
+                    AsymSignatureAlgorithms.ECDSA_SHA256.getJOSEName());
             if (!args[8].contains("@")) {
                 PublicKey publicKey = CertificateUtil.getCertificateFromBlob(ArrayUtil.readFile(args[8])).getPublicKey();
                 ow.setString(CredentialProperties.CONTENT_ENCRYPTION_ALGORITHM_JSON, BaseProperties.JOSE_A256CBC_HS512_ALG_ID)

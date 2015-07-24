@@ -17,42 +17,29 @@
 package org.webpki.w2nb.webpayment.bank;
 
 import java.io.IOException;
-import java.security.PublicKey;
-import java.security.SecureRandom;
-import java.security.cert.X509Certificate;
-import java.util.Date;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.crypto.Cipher;
-import javax.crypto.KeyAgreement;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
 import javax.servlet.ServletException;
+
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.webpki.crypto.AsymEncryptionAlgorithms;
-import org.webpki.crypto.HashAlgorithms;
-import org.webpki.crypto.KeyStoreSigner;
-import org.webpki.crypto.KeyStoreVerifier;
-import org.webpki.crypto.SymEncryptionAlgorithms;
-import org.webpki.crypto.VerifierInterface;
-import org.webpki.json.JSONAlgorithmPreferences;
 import org.webpki.json.JSONDecoderCache;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONParser;
-import org.webpki.json.JSONX509Signer;
-import org.webpki.json.JSONX509Verifier;
-import org.webpki.util.ArrayUtil;
+
 import org.webpki.w2nb.webpayment.common.BaseProperties;
+import org.webpki.w2nb.webpayment.common.PullAuthorizationRequest;
 import org.webpki.w2nb.webpayment.common.GenericAuthorizationRequest;
 import org.webpki.w2nb.webpayment.common.GenericAuthorizationResponse;
 import org.webpki.w2nb.webpayment.common.Messages;
 import org.webpki.w2nb.webpayment.common.PaymentRequest;
+
 import org.webpki.webutil.ServletUtil;
 
 public class PaymentProviderServlet extends HttpServlet implements BaseProperties
@@ -65,6 +52,7 @@ public class PaymentProviderServlet extends HttpServlet implements BasePropertie
     
     public void doPost (HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         JSONObjectWriter authorizationResponse = null;
+        String clientIpAddress = null;
         try {
             String contentType = request.getContentType();
             int i = contentType.indexOf(';');
@@ -78,14 +66,20 @@ public class PaymentProviderServlet extends HttpServlet implements BasePropertie
             JSONObjectReader authorizationRequest = JSONParser.parse (ServletUtil.getData (request));
             logger.info("Received:\n" + authorizationRequest);
 
-            // We rationalize here by using a single end-point for both push and pull
+            ////////////////////////////////////////////////////////////////////////////
+            // We rationalize here by using a single end-point for both push and pull //
+            ////////////////////////////////////////////////////////////////////////////
 
-            // A minor test is though needed to dispatch the right code...
+            // A minor test is though needed for dispatch the proper decoder...
             if (authorizationRequest.getString(JSONDecoderCache.QUALIFIER_JSON).equals(Messages.PAYEE_PULL_AUTH_REQ.toString())) {
                 throw new IOException("Not yet...");
             } else {
                 genericAuthorizationRequest = new GenericAuthorizationRequest(authorizationRequest);
+                clientIpAddress = request.getRemoteAddr();
             }
+
+            // Client IP could be used for risk-based authentication, here it is only logged
+            logger.info("Client address: " + clientIpAddress);
 
             // Verify that the outer signature (the user's) matches the bank's client root
             genericAuthorizationRequest.getSignatureDecoder().verify(PaymentService.clientRoot);
