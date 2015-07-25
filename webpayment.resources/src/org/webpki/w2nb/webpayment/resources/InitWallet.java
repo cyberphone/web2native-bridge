@@ -81,12 +81,10 @@ public class InitWallet {
         // Read importedKey/certificate to be imported
         KeyStoreEnumerator importedKey = new KeyStoreEnumerator(new FileInputStream(args[1]), args[2]);
         boolean rsa_flag = importedKey.getPublicKey() instanceof RSAPublicKey;
-        String[] endorsed_algs = rsa_flag ? new String[] {
-                AsymSignatureAlgorithms.RSA_SHA256.getURI(),
-                AsymSignatureAlgorithms.RSA_SHA512.getURI() } 
-                                          : new String[] {
-                AsymSignatureAlgorithms.ECDSA_SHA256.getURI(),
-                AsymSignatureAlgorithms.ECDSA_SHA512.getURI() };
+        String[] endorsed_algs = rsa_flag ?
+                new String[] {AsymSignatureAlgorithms.RSA_SHA256.getURI()} 
+                                          : 
+                new String[] {AsymSignatureAlgorithms.ECDSA_SHA256.getURI()};
 
         // Setup keystore (SKS)
         SKSReferenceImplementation sks = null;

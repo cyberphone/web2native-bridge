@@ -816,7 +816,7 @@ public class PaymentAgent {
                                         throw new Exception(e);
                                     }
                                     collectPotentialCard(ek.getKeyHandle(),
-                                                         JSONParser.parse(ext.getExtensionData()),
+                                                         JSONParser.parse(ext.getExtensionData(SecureKeyStore.SUB_TYPE_EXTENSION)),
                                                          cardTypes);
                                }
                             } catch (Exception e) {
@@ -857,7 +857,7 @@ public class PaymentAgent {
                 if (cardProperties.getString(CredentialProperties.CARD_TYPE_JSON).equals(cardType)) {
                     Card card = new Card(cardProperties.getString(CredentialProperties.CARD_NUMBER_JSON),
                             getImageIcon(sks.getExtension(keyHandle, 
-                                  KeyGen2URIs.LOGOTYPES.CARD).getExtensionData(),
+                                  KeyGen2URIs.LOGOTYPES.CARD).getExtensionData(SecureKeyStore.SUB_TYPE_LOGOTYPE),
                                   false),
                             cardType,
                             AsymSignatureAlgorithms.getAlgorithmFromID(
