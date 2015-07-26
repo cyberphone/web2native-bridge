@@ -1,12 +1,11 @@
 <project name="Web2Native Bridge - Web Payment Support" default="help" basedir=".">
 
   <!-- set properties for this build -->
-  <property name="src_dir" value="src"/>
-  <property name="common_dir" value="../webpayment.client/common"/>
+  <property name="src.dir" value="src"/>
   
-  <property name="cardimage_dir" location="card-images"/>
+  <property name="cardimage.dir" location="card-images"/>
 
-  <property name="temp_dir" location=".tmp"/>
+  <property name="temp.dir" location=".tmp"/>
   <property name="credentials" location="credentials/sks.serialized"/>
   <property name="testpage" location="../webpayment.client/test/test.html"/>
   
@@ -15,8 +14,6 @@
   <condition property="bank.host" value="https://localhost:8442" else="https://mobilepki.org">
     <isset property="localhost"/>
   </condition>
-  
-  <property name="lib_dir" value="../proxy/install/libs"/>
   
   <condition property="storetype" value="PKCS12" else="JKS">
     <matches pattern=".*\.p12$" string="${keyfilext}"/>
@@ -29,7 +26,7 @@
   <property name="catalina.home" value="${env.CATALINA_HOME}"/>
 
   <path id="compile.classpath">
-     <fileset dir="${lib_dir}">
+     <fileset dir="${common.lib.dir}">
        <include name="*.jar"/>
     </fileset>
   </path>
@@ -40,25 +37,25 @@
  
   <target name="inittestpage">
     <delete file="${testpage}"/>
-    <delete dir="${temp_dir}"/>
-    <mkdir dir="${temp_dir}"/>
+    <delete dir="${temp.dir}"/>
+    <mkdir dir="${temp.dir}"/>
     <javac debug="${debug}"
            source="${javaversion}"
            target="${javaversion}"
-           srcdir="${src_dir}:${common_dir}"
-           destdir="${temp_dir}" 
+           srcdir="${src.dir}:${common.src.dir}"
+           destdir="${temp.dir}" 
            classpathref="compile.classpath"
            includeAntRuntime="false">
     </javac>
     <java fork="yes"
           classname="org.webpki.w2nb.webpayment.resources.InitTestPage"
-          dir="${key_dir}"
+          dir="${key.dir}"
           failonerror="true">
         <classpath>
-             <fileset dir="${lib_dir}">
+             <fileset dir="${common.lib.dir}">
                 <include name="*.jar"/>
              </fileset>
-             <pathelement location="${temp_dir}"/>
+             <pathelement location="${temp.dir}"/>
         </classpath>
         <arg value="${testpage}"/>
         <arg value="${merchantkey}${keyfilext}"/>
@@ -74,25 +71,25 @@
          </not>
        </condition>
      </fail>
-    <delete dir="${temp_dir}"/>
-    <mkdir dir="${temp_dir}"/>
+    <delete dir="${temp.dir}"/>
+    <mkdir dir="${temp.dir}"/>
     <javac debug="${debug}"
            source="${javaversion}"
            target="${javaversion}"
-           srcdir="${src_dir}:${common_dir}"
-           destdir="${temp_dir}" 
+           srcdir="${src.dir}:${common.src.dir}"
+           destdir="${temp.dir}" 
            classpathref="compile.classpath"
            includeAntRuntime="false">
     </javac>
     <java fork="yes"
           classname="org.webpki.w2nb.webpayment.resources.DecryptRequest"
-          dir="${key_dir}"
+          dir="${key.dir}"
           failonerror="true">
         <classpath>
-             <fileset dir="${lib_dir}">
+             <fileset dir="${common.lib.dir}">
                 <include name="*.jar"/>
              </fileset>
-             <pathelement location="${temp_dir}"/>
+             <pathelement location="${temp.dir}"/>
         </classpath>
         <arg value="${clientkey_rsa}${keyfilext}"/>
         <arg value="RSA-OAEP-256"/>
@@ -110,13 +107,13 @@
   <target name="_import">
     <java fork="yes"
           classname="org.webpki.w2nb.webpayment.resources.InitWallet"
-          dir="${key_dir}"
+          dir="${key.dir}"
           failonerror="true">
         <classpath>
-             <fileset dir="${lib_dir}">
+             <fileset dir="${common.lib.dir}">
                 <include name="*.jar"/>
              </fileset>
-             <pathelement location="${temp_dir}"/>
+             <pathelement location="${temp.dir}"/>
         </classpath>
         <arg value="${credentials}"/>
         <arg value="${sks.certificate}${keyfilext}"/>
@@ -125,20 +122,20 @@
         <arg value="${card.type}"/>
         <arg value="${card.number}"/>
         <arg value="${bank.host}/w2nb-bank/transact"/>
-        <arg value="${cardimage_dir}/${sks.image}"/>
+        <arg value="${cardimage.dir}/${sks.image}"/>
         <arg value="${sks.encryption}.cer"/>
     </java>
   </target>
 
   <target name="initwallet">
     <delete file="${credentials}"/>
-    <delete dir="${temp_dir}"/>
-    <mkdir dir="${temp_dir}"/>
+    <delete dir="${temp.dir}"/>
+    <mkdir dir="${temp.dir}"/>
     <javac debug="${debug}"
            source="${javaversion}"
            target="${javaversion}"
-           srcdir="${src_dir}:${common_dir}"
-           destdir="${temp_dir}" 
+           srcdir="${src.dir}:${common.src.dir}"
+           destdir="${temp.dir}" 
            classpathref="compile.classpath"
            includeAntRuntime="false">
     </javac>
@@ -179,10 +176,10 @@
   <target name="_createcert">
   	<java fork="yes"
   		  classname="org.webpki.ca.CommandLineCA"
-  		  dir="${key_dir}"
+  		  dir="${key.dir}"
 		  failonerror="true">
   		<classpath>
-  			 <fileset dir="${lib_dir}">
+  			 <fileset dir="${common.lib.dir}">
   		        <include name="*.jar"/>
   			 </fileset>
   		</classpath>
@@ -191,7 +188,7 @@
   </target>
 
   <target name="_getroot">
-	<exec executable="keytool" failonerror="true" dir="${key_dir}">
+	<exec executable="keytool" failonerror="true" dir="${key.dir}">
 	  <arg line="-exportcert -keystore ${rootfile}${keyfilext} -alias mykey -storepass ${keypassword} -storetype ${storetype} -file ${rootfile}.cer"/>
 	</exec>
   </target>
@@ -268,7 +265,7 @@
     <antcall target="_clientcert"/>
     <antcall target="_authencryption"/>
     <delete>
-  	  <fileset dir="${key_dir}">
+  	  <fileset dir="${key.dir}">
   		<include name="temp*"/>
   	  </fileset>
     </delete>    
