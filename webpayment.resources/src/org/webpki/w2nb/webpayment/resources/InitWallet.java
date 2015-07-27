@@ -176,7 +176,6 @@ public class InitWallet {
         System.out.println("Imported Subject: " +
                 importedKey.getCertificatePath()[0].getSubjectX500Principal().getName() +
                 "\nID=#" + surrogateKey.key_handle + ", " + (rsa_flag ? "RSA" : "EC") +
-                (ow == null ? ", Not a card" : ", Card=" + 
-                new String(ow.serializeJSONObject(JSONOutputFormats.NORMALIZED), "UTF-8")));
+                (ow == null ? ", Not a card" : ", Card=\n" + ow));
     }
 }
