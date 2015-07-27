@@ -102,7 +102,7 @@ import org.webpki.util.ArrayUtil;
 
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.CredentialProperties;
-import org.webpki.w2nb.webpayment.common.EncryptedAuthorizationRequest;
+import org.webpki.w2nb.webpayment.common.PayerPullAuthorizationRequest;
 import org.webpki.w2nb.webpayment.common.GenericAuthorizationRequest;
 import org.webpki.w2nb.webpayment.common.Messages;
 import org.webpki.w2nb.webpayment.common.PaymentRequest;
@@ -930,7 +930,7 @@ public class PaymentAgent {
                         });
                     if (pullPayment) {
                         logger.info("Authorization before \"pull\" encryption:\n" + resultMessage);
-                        resultMessage = EncryptedAuthorizationRequest.encode(resultMessage,
+                        resultMessage = PayerPullAuthorizationRequest.encode(resultMessage,
                                                                              selectedCard.authUrl,
                                                                              selectedCard.contentEncryptionAlgorithm,
                                                                              selectedCard.keyEncryptionKey,
