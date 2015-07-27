@@ -45,9 +45,9 @@ import org.webpki.w2nb.webpayment.common.ServerSigner;
 
 import org.webpki.webutil.InitPropertyReader;
 
-public class PaymentService extends InitPropertyReader implements ServletContextListener {
+public class BankService extends InitPropertyReader implements ServletContextListener {
 
-    static Logger logger = Logger.getLogger(PaymentService.class.getCanonicalName());
+    static Logger logger = Logger.getLogger(BankService.class.getCanonicalName());
     
     static final String KEYSTORE_PASSWORD     = "key_password";
 

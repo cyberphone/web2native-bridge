@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
-package org.webpki.w2nb.webpayment.bank;
+package org.webpki.w2nb.webpayment.merchant;
 
 import java.io.IOException;
 
@@ -42,17 +42,15 @@ import org.webpki.w2nb.webpayment.common.PaymentRequest;
 
 import org.webpki.webutil.ServletUtil;
 
-public class PaymentProviderServlet extends HttpServlet implements BaseProperties
+public class PaymentCoreServlet extends HttpServlet implements BaseProperties
   {
     private static final long serialVersionUID = 1L;
     
-    static Logger logger = Logger.getLogger (PaymentProviderServlet.class.getCanonicalName());
+    static Logger logger = Logger.getLogger (PaymentCoreServlet.class.getCanonicalName());
     
     static int transaction_id = 164006;
     
     public void doPost (HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        JSONObjectWriter authorizationResponse = null;
-        String clientIpAddress = null;
         try {
             String contentType = request.getContentType();
             int i = contentType.indexOf(';');
@@ -99,14 +97,12 @@ public class PaymentProviderServlet extends HttpServlet implements BasePropertie
             logger.info("Returned to caller:\n" + authorizationResponse);
             
         } catch (Exception e) {
-            authorizationResponse = Messages.createBaseMessage (Messages.PROVIDER_GENERIC_AUTH_RES);
-            authorizationResponse.setString (ERROR_JSON, e.getMessage ());
             logger.log (Level.SEVERE, e.getMessage ());
         }
 
-        response.setContentType (JSON_CONTENT_TYPE + "; charset=utf-8");
+        response.setContentType ("text/plain; charset=utf-8");
         response.setHeader ("Pragma", "No-Cache");
         response.setDateHeader ("EXPIRES", 0);
-        response.getOutputStream ().write (authorizationResponse.serializeJSONObject (JSONOutputFormats.NORMALIZED));
+        response.getOutputStream ().println("Done");
       }
   }

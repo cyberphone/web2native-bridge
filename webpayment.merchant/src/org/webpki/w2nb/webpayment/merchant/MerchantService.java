@@ -44,9 +44,7 @@ import org.webpki.webutil.InitPropertyReader;
 
 public class MerchantService extends InitPropertyReader implements ServletContextListener {
 
-    static final String LOGGER_NAME           = "w2nb-merchant";
-
-    static Logger logger = Logger.getLogger(LOGGER_NAME);
+    static Logger logger = Logger.getLogger(MerchantService.class.getCanonicalName());
     
     static final String KEYSTORE_PASSWORD     = "key_password";
 
