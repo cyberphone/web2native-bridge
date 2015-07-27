@@ -30,7 +30,6 @@ import javax.servlet.ServletContextListener;
 
 import org.webpki.crypto.CertificateUtil;
 import org.webpki.crypto.CustomCryptoProvider;
-
 import org.webpki.crypto.KeyStoreVerifier;
 
 import org.webpki.json.JSONX509Verifier;
@@ -52,9 +51,13 @@ public class MerchantService extends InitPropertyReader implements ServletContex
     
     static final String MERCHANT_EECERT       = "merchant_eecert";
     
+    static final String BANK_PORT_MAP         = "bank_port_map";
+
     static JSONX509Verifier paymentRoot;
     
     static ServerSigner merchantKey;
+    
+    static Integer bankPortMapping;
 
     InputStream getResource(String name) throws IOException {
         return this.getClass().getResourceAsStream(getPropertyString(name));
@@ -78,6 +81,10 @@ public class MerchantService extends InitPropertyReader implements ServletContex
         initProperties (event);
          try {
             CustomCryptoProvider.forcedLoad (false);
+
+            if (getPropertyString (BANK_PORT_MAP).length () > 0) {
+                bankPortMapping = getPropertyInt (BANK_PORT_MAP);
+            }
 
             merchantKey = new ServerSigner(new KeyStoreEnumerator(getResource(MERCHANT_EECERT),
                                                                   getPropertyString(KEYSTORE_PASSWORD)));

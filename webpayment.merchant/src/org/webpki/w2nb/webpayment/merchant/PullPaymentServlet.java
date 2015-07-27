@@ -17,13 +17,18 @@
 package org.webpki.w2nb.webpayment.merchant;
 
 import java.io.IOException;
+
+import java.net.URL;
+
 import java.security.GeneralSecurityException;
 
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONParser;
+
 import org.webpki.net.HTTPSWrapper;
+
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.GenericAuthorizationResponse;
 import org.webpki.w2nb.webpayment.common.PayeePullAuthorizationRequest;
@@ -46,6 +51,14 @@ public class PullPaymentServlet extends PaymentCoreServlet {
         JSONObjectWriter providerRequest = PayeePullAuthorizationRequest.encode(input.getObject(AUTH_DATA_JSON),
                                                                                 clientIpAddress,
                                                                                 MerchantService.merchantKey);
+        // Our JBoss installation has some port mapping issues...
+        if (MerchantService.bankPortMapping != null) {
+            URL url = new URL (authUrl);
+            authUrl = new URL (url.getProtocol (),
+                               url.getHost (),
+                               MerchantService.bankPortMapping,
+                               url.getFile ()).toExternalForm (); 
+        }
         logger.info("About to send to \"" + authUrl + "\":\n" + providerRequest);
         HTTPSWrapper wrap = new HTTPSWrapper();
         wrap.setTimeout(TIMEOUT_FOR_REQUEST);
