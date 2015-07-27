@@ -16,19 +16,18 @@
  */
 package org.webpki.w2nb.webpayment.merchant;
 
-import java.io.Serializable;
+import java.io.IOException;
 
-public class ProductEntry implements Serializable {
+import org.webpki.json.JSONObjectReader;
+
+import org.webpki.w2nb.webpayment.common.GenericAuthorizationResponse;
+
+public class PushPaymentServlet extends PaymentCoreServlet {
 
     private static final long serialVersionUID = 1L;
 
-    String image_url;
-    String name;
-    int price_mult_100;
-    
-    public ProductEntry (String image_url, String name, int price_mult_100) {
-        this.image_url = image_url;
-        this.name = name;
-        this.price_mult_100 = price_mult_100;
+    @Override
+    protected GenericAuthorizationResponse processInput(JSONObjectReader input, String clientIpAddress) throws IOException {
+        return new GenericAuthorizationResponse(input);
     }
 }

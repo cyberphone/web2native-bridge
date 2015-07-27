@@ -5,45 +5,21 @@
     version="2.4">
 
     <context-param>
-        <description>Card font name</description>
-        <param-name>card_font</param-name>
-        <param-value>@card-font@</param-value>
-    </context-param>
-
-    <context-param>
         <description>Key Password</description>
         <param-name>key_password</param-name>
         <param-value>@key-password@</param-value>
     </context-param>
  
     <context-param>
-        <description>Bank EE Certificate</description>
-        <param-name>bank_eecert</param-name>
-        <param-value>@bank-eecert@</param-value>
+        <description>Merchant EE Certificate</description>
+        <param-name>merchant_eecert</param-name>
+        <param-value>@merchant-eecert@</param-value>
     </context-param>
 
     <context-param>
-        <description>Bank Decryption Key #1</description>
-        <param-name>bank_decryptionkey1</param-name>
-        <param-value>@bank-decryptionkey1@</param-value>
-    </context-param>
-
-    <context-param>
-        <description>Bank Decryption Key #2</description>
-        <param-name>bank_decryptionkey2</param-name>
-        <param-value>@bank-decryptionkey2@</param-value>
-    </context-param>
-
-    <context-param>
-        <description>Merchant Network Root Certificate</description>
-        <param-name>merchant_root</param-name>
-        <param-value>@merchant-root@</param-value>
-    </context-param>
-
-    <context-param>
-        <description>Bank Client Root</description>
-        <param-name>bank_client_root</param-name>
-        <param-value>@bank-client-root@</param-value>
+        <description>Payment Network Root Certificate</description>
+        <param-name>payment_root</param-name>
+        <param-value>@payment-root@</param-value>
     </context-param>
     
     <listener>
@@ -51,13 +27,23 @@
     </listener>
 
     <servlet>
-        <servlet-name>PaymentCoreServlet</servlet-name>
-        <servlet-class>org.webpki.w2nb.webpayment.merchant.PaymentProviderServlet</servlet-class>
+        <servlet-name>PushPaymentServlet</servlet-name>
+        <servlet-class>org.webpki.w2nb.webpayment.merchant.PushPaymentServlet</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>PullPaymentServlet</servlet-name>
+        <servlet-class>org.webpki.w2nb.webpayment.merchant.PullPaymentServlet</servlet-class>
     </servlet>
 
     <servlet-mapping>
-        <servlet-name>PaymentProviderServlet</servlet-name>
-        <url-pattern>/transact</url-pattern>
+        <servlet-name>PushPaymentServlet</servlet-name>
+        <url-pattern>/pushpay</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>PullPaymentServlet</servlet-name>
+        <url-pattern>/pullpay</url-pattern>
     </servlet-mapping>
 @security-constraints@    
 </web-app>

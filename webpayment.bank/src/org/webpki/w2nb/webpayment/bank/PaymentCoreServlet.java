@@ -34,7 +34,7 @@ import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONParser;
 
 import org.webpki.w2nb.webpayment.common.BaseProperties;
-import org.webpki.w2nb.webpayment.common.PullAuthorizationRequest;
+import org.webpki.w2nb.webpayment.common.PayeePullAuthorizationRequest;
 import org.webpki.w2nb.webpayment.common.GenericAuthorizationRequest;
 import org.webpki.w2nb.webpayment.common.GenericAuthorizationResponse;
 import org.webpki.w2nb.webpayment.common.Messages;
@@ -42,8 +42,8 @@ import org.webpki.w2nb.webpayment.common.PaymentRequest;
 
 import org.webpki.webutil.ServletUtil;
 
-public class PaymentCoreServlet extends HttpServlet implements BaseProperties
-  {
+public class PaymentCoreServlet extends HttpServlet implements BaseProperties {
+
     private static final long serialVersionUID = 1L;
     
     static Logger logger = Logger.getLogger (PaymentCoreServlet.class.getCanonicalName());
@@ -72,7 +72,9 @@ public class PaymentCoreServlet extends HttpServlet implements BaseProperties
 
             // A minor test is though needed for dispatch the proper decoder...
             if (authorizationRequest.getString(JSONDecoderCache.QUALIFIER_JSON).equals(Messages.PAYEE_PULL_AUTH_REQ.toString())) {
-                throw new IOException("Not yet...");
+                PayeePullAuthorizationRequest attestedEncryptedRequest = new PayeePullAuthorizationRequest(authorizationRequest);
+                clientIpAddress = attestedEncryptedRequest.getClientIpAddress();
+                genericAuthorizationRequest = attestedEncryptedRequest.getDecryptedAuthorizationRequest(BankService.decryptionKeys);
             } else {
                 genericAuthorizationRequest = new GenericAuthorizationRequest(authorizationRequest);
                 clientIpAddress = request.getRemoteAddr();

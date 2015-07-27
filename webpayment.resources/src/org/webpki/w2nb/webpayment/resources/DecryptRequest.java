@@ -20,21 +20,23 @@
 package org.webpki.w2nb.webpayment.resources;
 
 import java.io.FileInputStream;
+
 import java.util.Vector;
 
 import org.webpki.crypto.CustomCryptoProvider;
+
 import org.webpki.json.JSONAlgorithmPreferences;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONParser;
+
 import org.webpki.util.ArrayUtil;
-import org.webpki.w2nb.webpayment.common.BaseProperties;
+
 import org.webpki.w2nb.webpayment.common.DecryptionKeyHolder;
-import org.webpki.w2nb.webpayment.common.EncryptedAuthorizationRequest;
+import org.webpki.w2nb.webpayment.common.PayerPullAuthorizationRequest;
 import org.webpki.w2nb.webpayment.common.GenericAuthorizationRequest;
 import org.webpki.w2nb.webpayment.common.KeyStoreEnumerator;
-import org.webpki.w2nb.webpayment.common.Messages;
 
 public class DecryptRequest {
 
@@ -57,16 +59,9 @@ public class DecryptRequest {
                                                                JSONAlgorithmPreferences.JOSE).serializeJSONObject(JSONOutputFormats.PRETTY_PRINT), "UTF-8"));
         }
 
-        JSONObjectReader input =
-                Messages.parseBaseMessage(Messages.PAYER_PULL_AUTH_REQ,
-                                          JSONParser.parse(ArrayUtil.readFile(args[args.length - 1])));
-        input.getString(BaseProperties.AUTH_URL_JSON);
-
-        EncryptedAuthorizationRequest ear =
-                new EncryptedAuthorizationRequest(input.getObject(BaseProperties.AUTH_DATA_JSON));
+        PayerPullAuthorizationRequest ear =
+                new PayerPullAuthorizationRequest(JSONParser.parse(ArrayUtil.readFile(args[args.length - 1])));
         
-        input.checkForUnread();
-
         GenericAuthorizationRequest gar = ear.getDecryptedAuthorizationRequest(decryptionKeys);
 
         System.out.println("Decrypted authorization request:\n" +

@@ -48,11 +48,11 @@ public class MerchantService extends InitPropertyReader implements ServletContex
     
     static final String KEYSTORE_PASSWORD     = "key_password";
 
-    static final String BANK_ROOT             = "bank_root";
+    static final String PAYMENT_ROOT          = "payment_root";
     
     static final String MERCHANT_EECERT       = "merchant_eecert";
     
-    static JSONX509Verifier bankRoot;
+    static JSONX509Verifier paymentRoot;
     
     static ServerSigner merchantKey;
 
@@ -82,7 +82,7 @@ public class MerchantService extends InitPropertyReader implements ServletContex
             merchantKey = new ServerSigner(new KeyStoreEnumerator(getResource(MERCHANT_EECERT),
                                                                   getPropertyString(KEYSTORE_PASSWORD)));
             
-            bankRoot = getRoot(BANK_ROOT);
+            paymentRoot = getRoot(PAYMENT_ROOT);
 
             logger.info("Web2Native Bridge Merchant-server initiated");
         } catch (Exception e) {

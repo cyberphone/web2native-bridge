@@ -21,6 +21,7 @@ import java.io.InputStream;
 
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
+import java.security.interfaces.RSAPublicKey;
 
 import java.util.Vector;
 
@@ -32,13 +33,13 @@ import javax.servlet.ServletContextListener;
 
 import org.webpki.crypto.CertificateUtil;
 import org.webpki.crypto.CustomCryptoProvider;
-
 import org.webpki.crypto.KeyStoreVerifier;
 
 import org.webpki.json.JSONX509Verifier;
 
 import org.webpki.util.ArrayUtil;
 
+import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.DecryptionKeyHolder;
 import org.webpki.w2nb.webpayment.common.KeyStoreEnumerator;
 import org.webpki.w2nb.webpayment.common.ServerSigner;
@@ -76,7 +77,8 @@ public class BankService extends InitPropertyReader implements ServletContextLis
                                                                        getPropertyString(KEYSTORE_PASSWORD));
         decryptionKeys.add(new DecryptionKeyHolder(keyStoreEnumerator.getPublicKey(),
                                                    keyStoreEnumerator.getPrivateKey(),
-                                                   getPropertyString(KEYSTORE_PASSWORD)));
+                                                   keyStoreEnumerator.getPublicKey() instanceof RSAPublicKey ?
+                BaseProperties.JOSE_RSA_OAEP_256_ALG_ID : BaseProperties.JOSE_ECDH_ES_ALG_ID));
     }
 
     JSONX509Verifier getRoot(String name) throws IOException, GeneralSecurityException {
