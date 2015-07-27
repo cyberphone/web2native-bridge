@@ -46,7 +46,7 @@ public class PaymentProviderServlet extends HttpServlet implements BasePropertie
   {
     private static final long serialVersionUID = 1L;
     
-    static Logger logger = Logger.getLogger (PaymentService.LOGGER_NAME);
+    static Logger logger = Logger.getLogger (PaymentProviderServlet.class.getCanonicalName());
     
     static int transaction_id = 164006;
     

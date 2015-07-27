@@ -6,6 +6,6 @@
 	<classpathentry kind="lib" path="../proxy/install/libs/bcprov-jdk16-145.jar"/>
 	<classpathentry kind="lib" path="../proxy/install/libs/webpki.org-libext-1.00.jar"/>
 	<classpathentry kind="lib" path="../webpayment.resources/ref.lib/servlet-api.jar"/>
-	<classpathentry kind="lib" path="../webpayment.resources/server.lib/webpki.org-webutil-1.00.jar"/>
+	<classpathentry kind="lib" path="../webpayment.resources/util.lib/webpki.org-webutil-1.00.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

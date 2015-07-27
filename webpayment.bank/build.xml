@@ -13,7 +13,7 @@
 
   <property name="catalina.home" value="${env.CATALINA_HOME}"/>
 
-	<resources id="security_constraint">
+  <resources id="security_constraint">
 <string><![CDATA[
     <security-constraint>
       <web-resource-collection>
@@ -25,9 +25,9 @@
       </user-data-constraint>
     </security-constraint>
 ]]></string>
-    </resources>
+  </resources>
 
-	<resources id="w2nb_application.xml">
+  <resources id="w2nb_application.xml">
 <string><![CDATA[    <!-- Web2 Payment Demo -->
     <module>
         <web>
@@ -36,7 +36,8 @@
         </web>
     </module>
 </application>]]></string>
-    </resources>
+  </resources>
+
   <property name="ejbca-app-xml-mod" refid="w2nb_application.xml"/>
 
   <condition property="storetype" value="PKCS12" else="JKS">
@@ -44,7 +45,7 @@
   </condition>
 
   <target name="help">
-      <echo message="tomcat -Dhttps=0 mobilepki-ejbca localhost-ejbca zip-distribution createcerts"/>
+      <echo message="tomcat [-Dhttps=0] [-Derr.merchant.ca] mobilepki-ejbca localhost-ejbca zip-distribution"/>
   </target>
 
   <target name="_init" unless="app_path">
@@ -80,22 +81,17 @@
     <replace file="${temp.dir}/web.xml">
       <replacefilter token="@security-constraints@" value="${security.constraints}"/>
 	  <replacefilter token="@card-font@" value="${card.font}"/>
-	  <replacefilter token="@web-crypto@" value="${web.crypto}"/>
 	  <replacefilter token="@key-password@" value="${keypassword}"/>
 	  <replacefilter token="@bank-eecert@" value="${bankkey}${keyfilext}"/>
-	  <replacefilter token="@merchant-eecert@" value="${merchantkey}${keyfilext}"/>
-	  <replacefilter token="@payment-root@" value="${paymentroot}.cer"/>
-	  <replacefilter token="@merchant-root@" value="${merchantroot}.cer"/>
-      <replacefilter token="@bank-client-root@" value="${clientroot}.cer"/>
       <replacefilter token="@bank-decryptionkey1@" value="${encryptionkey_ec}${keyfilext}"/>
 	  <replacefilter token="@bank-decryptionkey2@" value="${encryptionkey_rsa}${keyfilext}"/>
-	  <replacefilter token="@bank-client-eecert@" value="${clientkey}${keyfilext}"/>
+      <replacefilter token="@merchant-root@" value="${merchant.var.root}.cer"/>
+      <replacefilter token="@bank-client-root@" value="${clientroot}.cer"/>
 	</replace>
     <war destfile="${dist.dir}/${application}" webxml="${temp.dir}/web.xml">
       <classes dir="${temp.dir}">
          <exclude name="web.xml"/>
       </classes>
-
       <lib dir="${zip.webpki.lib.dir}">
          <include name="webpki.org-libext*.jar"/>
       </lib>
@@ -110,35 +106,34 @@
          <include name="${encryptionkey_ec}${keyfilext}"/>
          <include name="${bankkey}${keyfilext}"/>
          <include name="${clientroot}.cer"/>
-         <include name="${merchantroot}.cer"/>
+         <include name="${merchant.var.root}.cer"/>
        </zipfileset>
-      <!--
-      <fileset dir="web"/>
-      <zipfileset dir="${packimage_dir}" prefix="${class_war_path}"/>
-        -->
     </war>
   </target>
 
   <target name="tomcat" depends="_init">
-      <property file="../webpayment.resources/common.properties"/>
-      <property name="temp.dir" value=".tmp"/>
+     <property file="../webpayment.resources/common.properties"/>
+     <property name="temp.dir" value=".tmp"/>
      <delete dir="${temp.dir}"/>
      <property name="local_sc" refid="security_constraint"/>
      <condition property="security_constraints" value="${local_sc}" else="">
        <isset property="https"/>
      </condition>
-    <path id="tomcat.compile.classpath">
-      <fileset dir="${common.lib.dir}">
-        <include name="*.jar"/>
-      </fileset>
-     <fileset dir="${utils.lib.dir}">
-        <include name="*.jar"/>
-      </fileset>
-     <fileset dir="${reference.lib.dir}">
-        <include name="*.jar"/>
-      </fileset>
-    </path>
-       <antcall target="_build">
+     <condition property="merchant_root" value="${paymentroot}" else="${merchantroot}">
+       <isset property="err.merchant.root"/>
+     </condition>
+     <path id="tomcat.compile.classpath">
+       <fileset dir="${common.lib.dir}">
+         <include name="*.jar"/>
+       </fileset>
+       <fileset dir="${utils.lib.dir}">
+         <include name="*.jar"/>
+       </fileset>
+       <fileset dir="${reference.lib.dir}">
+         <include name="*.jar"/>
+       </fileset>
+     </path>
+     <antcall target="_build">
        <param name="security.constraints" value="${security_constraints}"/>
        <param name="card.font" value="Arial Unicode MS"/>
        <param name="javaversion" value="1.7"/>
@@ -152,6 +147,8 @@
        <param name="zip.util.lib.dir" value="${utils.lib.dir}"/>
        
        <param name="zip.key.dir" value="${key.dir}"/>
+       
+       <param name="merchant.var.root" value="${merchant_root}"/>
      </antcall>
      <copy file="${dist.dir}/${application}" todir="${env.CATALINA_HOME}/webapps" overwrite="true" preservelastmodified="true"/>
   </target>
@@ -170,7 +167,7 @@
 	 </path>
      <antcall target="_build">
        <param name="security.constraints" refid="security_constraint"/>
-        <param name="card.font" value="Arial Unicode MS"/>
+       <param name="card.font" value="Arial Unicode MS"/>
        <param name="javaversion" value="1.6"/>
 
        <param name="compile.common.src.dir" value="common.src"/>
@@ -182,7 +179,9 @@
        <param name="zip.util.lib.dir" value="empty.lib"/>
        
        <param name="zip.key.dir" value="keys"/>
-       </antcall>
+
+       <param name="merchant.var.root" value="${merchantroot}"/>
+     </antcall>
      <!-- Update application.xml -->
      <replace file="${ejbca.app.xml}" value="${ejbca-app-xml-mod}">
 	    <replacetoken><![CDATA[</application>]]></replacetoken>
@@ -191,9 +190,6 @@
   
   <target name="localhost-ejbca">
      <echo message="Web2Native Bridge &quot;localhost&quot; Bank Plugin"/>
-     <property name="bank_host" value="https://localhost:8442"/>
-     <property name="merchant_host" value="https://localhost:8442"/>
-     <property name="bank.port.map" value=""/>
      <antcall target="mobilepki-ejbca"/>
   </target>
   
@@ -217,7 +213,7 @@
       <zipfileset dir="${common.src.dir}" prefix="${appcorename}/common.src"/>
       <zipfileset dir="${key.dir}" prefix="${appcorename}/keys"/>
       <zipfileset file="../webpayment.resources/common.properties" prefix="${appcorename}"/>
-      </zip>
+    </zip>
     <checksum file="${dd}/${appcorename}.zip" fileext=".SHA1" algorithm="sha1" forceOverwrite="yes"/>
   </target>
    
