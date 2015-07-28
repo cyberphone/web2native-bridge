@@ -34,12 +34,17 @@ public class GenericAuthorizationResponse implements BaseProperties {
     
     public static JSONObjectWriter encode(PaymentRequest paymentRequest,
                                           String cardType,
-                                          String cardReference,
+                                          String cardNumber,
                                           JSONX509Signer signer) throws IOException {
+        StringBuffer cardReference = new StringBuffer();
+        int q = cardNumber.length() - 4;
+        for (char c : cardNumber.toCharArray()) {
+            cardReference.append((--q < 0) ? c : '*');
+        }
         return Messages.createBaseMessage(Messages.PROVIDER_GENERIC_AUTH_RES)
             .setObject(PAYMENT_REQUEST_JSON, paymentRequest.root)
             .setString(CARD_TYPE_JSON, cardType)
-            .setString(CARD_REFERENCE_JSON, cardReference)
+            .setString(CARD_REFERENCE_JSON, cardReference.toString())
             .setDateTime(DATE_TIME_JSON, new Date(), true)
             .setString(SOFTWARE_ID_JSON, SOFTWARE_ID)
             .setString(SOFTWARE_VERSION_JSON, SOFTWARE_VERSION)

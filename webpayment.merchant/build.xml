@@ -144,7 +144,7 @@
        
        <param name="payment.var.root" value="${payment_root}"/>
 
-       <property name="bank.port.map" value=""/>
+       <param name="bank.port.map" value=""/>
      </antcall>
      <copy file="${dist.dir}/${application}" todir="${env.CATALINA_HOME}/webapps" overwrite="true" preservelastmodified="true"/>
   </target>

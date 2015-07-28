@@ -27,7 +27,8 @@ public class PushPaymentServlet extends PaymentCoreServlet {
     private static final long serialVersionUID = 1L;
 
     @Override
-    protected GenericAuthorizationResponse processInput(JSONObjectReader input, String clientIpAddress) throws IOException {
+    protected GenericAuthorizationResponse processInput(JSONObjectReader input,
+                                                        String clientIpAddress) throws IOException {
         return new GenericAuthorizationResponse(input);
     }
 }

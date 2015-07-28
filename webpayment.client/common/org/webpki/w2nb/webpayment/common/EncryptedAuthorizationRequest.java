@@ -18,19 +18,12 @@ package org.webpki.w2nb.webpayment.common;
 
 import java.io.IOException;
 
-import java.security.GeneralSecurityException;
 import java.security.PublicKey;
-import java.security.SecureRandom;
 
 import java.security.interfaces.ECPublicKey;
 
-import java.util.Vector;
-
 import org.webpki.json.JSONAlgorithmPreferences;
 import org.webpki.json.JSONObjectReader;
-import org.webpki.json.JSONObjectWriter;
-import org.webpki.json.JSONOutputFormats;
-import org.webpki.json.JSONParser;
 
 public abstract class EncryptedAuthorizationRequest implements BaseProperties {
 
@@ -54,7 +47,7 @@ public abstract class EncryptedAuthorizationRequest implements BaseProperties {
         return keyEncryptionAlgorithm.contains("RSA");
     }
 
-    public EncryptedAuthorizationRequest(JSONObjectReader rd) throws IOException {
+    EncryptedAuthorizationRequest(JSONObjectReader rd) throws IOException {
         rd = rd.getObject(ENCRYPTED_DATA_JSON);
         contentEncryptionAlgorithm = rd.getString(ALGORITHM_JSON);
         iv = rd.getBinary(IV_JSON);
@@ -69,31 +62,5 @@ public abstract class EncryptedAuthorizationRequest implements BaseProperties {
             ephemeralPublicKey = (ECPublicKey) encryptedKey.getObject(EPHEMERAL_CLIENT_KEY_JSON).getPublicKey(JSONAlgorithmPreferences.JOSE);
         }
         encryptedData = rd.getBinary(CIPHER_TEXT_JSON);
-    }
-
-    public GenericAuthorizationRequest getDecryptedAuthorizationRequest(Vector<DecryptionKeyHolder> decryptionKeys) throws IOException, GeneralSecurityException {
-        boolean notFound = true;
-        for (DecryptionKeyHolder dkh : decryptionKeys) {
-            if (dkh.publicKey.equals(publicKey)) {
-                if (dkh.keyEncryptionAlgorithm.equals(keyEncryptionAlgorithm)) {
-                    return new GenericAuthorizationRequest(JSONParser.parse(
-                        CryptoSupport.contentEncryption(false,
-                                                        contentEncryptionAlgorithm,
-                                                        isRsaKey(keyEncryptionAlgorithm) ?
-                                 CryptoSupport.rsaDecryptKey(keyEncryptionAlgorithm,
-                                                             encryptedKeyData,
-                                                             dkh.privateKey)
-                                    :
-                                 CryptoSupport.serverKeyAgreement(keyEncryptionAlgorithm,
-                                                                  ephemeralPublicKey,
-                                                                  dkh.privateKey),
-                                                        encryptedData,
-                                                        iv,
-                                                        tag)));
-                }
-                notFound = false;
-            }
-        }
-        throw new IOException(notFound ? "No matching key found" : "No matching key+algorithm found");
     }
 }

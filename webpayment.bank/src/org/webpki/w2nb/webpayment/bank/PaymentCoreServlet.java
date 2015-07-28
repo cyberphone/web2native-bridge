@@ -70,11 +70,11 @@ public class PaymentCoreServlet extends HttpServlet implements BaseProperties {
             // We rationalize here by using a single end-point for both push and pull //
             ////////////////////////////////////////////////////////////////////////////
 
-            // A minor test is though needed for dispatch the proper decoder...
+            // A minor test is though needed for dispatching the proper message decoder...
             if (authorizationRequest.getString(JSONDecoderCache.QUALIFIER_JSON).equals(Messages.PAYEE_PULL_AUTH_REQ.toString())) {
                 PayeePullAuthorizationRequest attestedEncryptedRequest = new PayeePullAuthorizationRequest(authorizationRequest);
-                clientIpAddress = attestedEncryptedRequest.getClientIpAddress();
                 genericAuthorizationRequest = attestedEncryptedRequest.getDecryptedAuthorizationRequest(BankService.decryptionKeys);
+                clientIpAddress = attestedEncryptedRequest.getClientIpAddress();
             } else {
                 genericAuthorizationRequest = new GenericAuthorizationRequest(authorizationRequest);
                 clientIpAddress = request.getRemoteAddr();
@@ -91,6 +91,11 @@ public class PaymentCoreServlet extends HttpServlet implements BaseProperties {
 
             // Verify that the merchant's signature belongs to the merchant trust network
             paymentRequest.getSignatureDecoder().verify(BankService.merchantRoot);
+
+            ////////////////////////////////////////////////////////////////////////////
+            // We got an authentic request.  Now we need to check available funds etc.//
+            // However, since we haven't a real bank we simply accept :-)             //
+            ////////////////////////////////////////////////////////////////////////////
 
             // Return the authorized request
             authorizationResponse = GenericAuthorizationResponse.encode(paymentRequest,
