@@ -17,22 +17,24 @@
 package org.webpki.w2nb.webpayment.common;
 
 import java.io.IOException;
+
 import java.security.GeneralSecurityException;
+
 import java.security.cert.X509Certificate;
+
 import java.util.Vector;
 
 import org.webpki.json.JSONAlgorithmPreferences;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONParser;
-import org.webpki.json.JSONSignatureDecoder;
 
 public class PayeePullAuthorizationRequest extends EncryptedAuthorizationRequest {
 
     String clientIpAddress;
-    
+
     X509Certificate[] outerCertificatePath;
-    
+
     public PayeePullAuthorizationRequest(JSONObjectReader rd) throws IOException {
         super(Messages.parseBaseMessage(Messages.PAYEE_PULL_AUTH_REQ, rd).getObject(AUTH_DATA_JSON));
         clientIpAddress = rd.getString(CLIENT_IP_ADDRESS_JSON);
@@ -53,8 +55,8 @@ public class PayeePullAuthorizationRequest extends EncryptedAuthorizationRequest
             .setObject(AUTH_DATA_JSON, encryptedRequest)
             .setSignature(signer);
     }
-    
-    private void assertTrue(boolean assertion) throws IOException {
+
+    void assertTrue(boolean assertion) throws IOException {
         if (!assertion) {
             throw new IOException("Outer and inner certificate paths differ");
         }
