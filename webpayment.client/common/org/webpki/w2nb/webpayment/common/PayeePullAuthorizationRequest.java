@@ -17,26 +17,30 @@
 package org.webpki.w2nb.webpayment.common;
 
 import java.io.IOException;
-
 import java.security.GeneralSecurityException;
-
 import java.security.cert.X509Certificate;
-
 import java.util.Vector;
 
 import org.webpki.json.JSONAlgorithmPreferences;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONParser;
+import org.webpki.util.ArrayUtil;
 
 public class PayeePullAuthorizationRequest extends EncryptedAuthorizationRequest {
 
+    byte[] requestHash;
+    
     String clientIpAddress;
 
     X509Certificate[] outerCertificatePath;
 
     public PayeePullAuthorizationRequest(JSONObjectReader rd) throws IOException {
         super(Messages.parseBaseMessage(Messages.PAYEE_PULL_AUTH_REQ, rd).getObject(AUTH_DATA_JSON));
+        if (!rd.getObject(REQUEST_HASH_JSON).getString(ALGORITHM_JSON).equals(JOSE_SHA_256_ALG_ID)) {
+            throw new IOException("Expected algorithm: " + JOSE_SHA_256_ALG_ID);
+        }
+        requestHash = rd.getObject(REQUEST_HASH_JSON).getBinary(VALUE_JSON);
         clientIpAddress = rd.getString(CLIENT_IP_ADDRESS_JSON);
         outerCertificatePath = rd.getSignature(JSONAlgorithmPreferences.JOSE).getCertificatePath();
         rd.checkForUnread();
@@ -48,9 +52,13 @@ public class PayeePullAuthorizationRequest extends EncryptedAuthorizationRequest
 
     public static JSONObjectWriter encode(JSONObjectReader encryptedRequest,
                                           String clientIpAddress,
+                                          byte[] requestHash,
                                           ServerSigner signer)
         throws IOException, GeneralSecurityException {
         return Messages.createBaseMessage(Messages.PAYEE_PULL_AUTH_REQ)
+            .setObject(REQUEST_HASH_JSON, new JSONObjectWriter()
+                                              .setString(ALGORITHM_JSON, JOSE_SHA_256_ALG_ID)
+                                              .setBinary(VALUE_JSON, requestHash))
             .setString(CLIENT_IP_ADDRESS_JSON, clientIpAddress)
             .setObject(AUTH_DATA_JSON, encryptedRequest)
             .setSignature(signer);
@@ -87,6 +95,9 @@ public class PayeePullAuthorizationRequest extends EncryptedAuthorizationRequest
                     assertTrue(certificatePath.length == outerCertificatePath.length);
                     for (int q = 0; q < certificatePath.length; q++) {
                         assertTrue(certificatePath[q].equals(outerCertificatePath[q]));
+                    }
+                    if (!ArrayUtil.compare(requestHash, genericAuthorizationRequest.paymentRequest.getRequestHash())) {
+                        throw new IOException("Non-matching \"" + REQUEST_HASH_JSON + "\" value");
                     }
                     return genericAuthorizationRequest;
                 }

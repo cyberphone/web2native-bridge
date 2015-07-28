@@ -17,15 +17,15 @@
 package org.webpki.w2nb.webpayment.common;
 
 import java.io.IOException;
-
 import java.math.BigDecimal;
-
 import java.util.Date;
 import java.util.GregorianCalendar;
 
+import org.webpki.crypto.HashAlgorithms;
 import org.webpki.json.JSONAlgorithmPreferences;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
+import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONSignatureDecoder;
 import org.webpki.json.JSONSignatureTypes;
 import org.webpki.json.JSONX509Signer;
@@ -117,5 +117,13 @@ public class PaymentRequest implements BaseProperties {
 
     public JSONObjectReader getRoot() {
         return root;
+    }
+
+    public byte[] getRequestHash() throws IOException {
+        return getRequestHash(root);
+    }
+
+    public static byte[] getRequestHash(JSONObjectReader paymentRequest) throws IOException {
+        return HashAlgorithms.SHA256.digest(paymentRequest.serializeJSONObject(JSONOutputFormats.NORMALIZED));
     }
 }

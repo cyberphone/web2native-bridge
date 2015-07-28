@@ -17,13 +17,11 @@
 package org.webpki.w2nb.webpayment.common;
 
 import java.io.IOException;
-
 import java.util.Date;
 import java.util.GregorianCalendar;
 
 import org.webpki.crypto.AsymSignatureAlgorithms;
 import org.webpki.crypto.SignerInterface;
-
 import org.webpki.json.JSONAlgorithmPreferences;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
@@ -54,6 +52,19 @@ public class GenericAuthorizationRequest implements BaseProperties {
                                                      .setAlgorithmPreferences(JSONAlgorithmPreferences.JOSE));
     }
 
+    public static String formatCardNumber(String cardNumber) {
+        StringBuffer s = new StringBuffer();
+        int q = 0;
+        for (char c : cardNumber.toCharArray()) {
+            if (q != 0 && q % 4 == 0) {
+                s.append(' ');
+            }
+            s.append(c);
+            q++;
+        }
+        return s.toString();
+    }
+    
     PaymentRequest paymentRequest;
     
     String domainName;

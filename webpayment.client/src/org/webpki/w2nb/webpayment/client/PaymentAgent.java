@@ -378,25 +378,13 @@ public class PaymentAgent {
                                       c.gridx == 0 ? fontSize : 0,
                                       0,
                                       c.gridx == 0 ? 0 : fontSize);
-                JLabel cardNumber = new JLabel(formatCardNumber(card.cardNumber), JLabel.CENTER);
+                JLabel cardNumber = new JLabel(GenericAuthorizationRequest.formatCardNumber(card.cardNumber),
+                                               JLabel.CENTER);
                 cardNumber.setFont(cardNumberFont);
                 cardSelectionViewCore.add(cardNumber, c);
                 itemNumber++;
             }
             return cardSelectionViewCore;
-        }
-
-        String formatCardNumber(String cardNumber) {
-            StringBuffer s = new StringBuffer();
-            int q = 0;
-            for (char c : cardNumber.toCharArray()) {
-                if (q != 0 && q % 4 == 0) {
-                    s.append(' ');
-                }
-                s.append(c);
-                q++;
-            }
-            return s.toString();
         }
 
         void initCardSelectionView(boolean actualCards) {
@@ -630,7 +618,7 @@ public class PaymentAgent {
             payeeField.setText("\u200a" + payeeString);
             selectedCardImage.setIcon(selectedCard.cardIcon);
             selectedCardImage.setPressedIcon(selectedCard.cardIcon);
-            selectedCardNumber.setText(formatCardNumber(selectedCard.cardNumber));
+            selectedCardNumber.setText(GenericAuthorizationRequest.formatCardNumber(selectedCard.cardNumber));
             ((CardLayout)views.getLayout()).show(views, VIEW_AUTHORIZE);
             payeeField.setCaretPosition(0);
             pinText.requestFocusInWindow();

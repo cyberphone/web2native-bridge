@@ -102,6 +102,7 @@
          <include name="${merchantkey}${keyfilext}"/>
          <include name="${payment.var.root}.cer"/>
        </zipfileset>
+      <fileset dir="web"/>
     </war>
   </target>
 

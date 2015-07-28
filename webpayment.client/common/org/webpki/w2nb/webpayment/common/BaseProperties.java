@@ -42,7 +42,6 @@ public interface BaseProperties {
     String PAYMENT_PROVIDER_KEY_JSON  = "paymentProviderKey";
     String EPHEMERAL_CLIENT_KEY_JSON  = "ephemeralClientKey";
     String ALGORITHM_JSON             = "algorithm";
-    String HASH_ALGORITHM_JSON        = "hashAlgorithm";
     String IV_JSON                    = "iv";                // For symmetric encryption
     String TAG_JSON                   = "tag";               // Authenticated data for symmetric encryption
     String CIPHER_TEXT_JSON           = "cipherText";

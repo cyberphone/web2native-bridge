@@ -33,6 +33,16 @@
     </listener>
 
     <servlet>
+        <servlet-name>HomeServlet</servlet-name>
+        <servlet-class>org.webpki.w2nb.webpayment.merchant.HomeServlet</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>ShoppingServlet</servlet-name>
+        <servlet-class>org.webpki.w2nb.webpayment.merchant.ShoppingServlet</servlet-class>
+    </servlet>
+
+    <servlet>
         <servlet-name>PushPaymentServlet</servlet-name>
         <servlet-class>org.webpki.w2nb.webpayment.merchant.PushPaymentServlet</servlet-class>
     </servlet>
@@ -41,6 +51,16 @@
         <servlet-name>PullPaymentServlet</servlet-name>
         <servlet-class>org.webpki.w2nb.webpayment.merchant.PullPaymentServlet</servlet-class>
     </servlet>
+
+    <servlet-mapping>
+        <servlet-name>HomeServlet</servlet-name>
+        <url-pattern>/home</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>ShoppingServlet</servlet-name>
+        <url-pattern>/shop</url-pattern>
+    </servlet-mapping>
 
     <servlet-mapping>
         <servlet-name>PushPaymentServlet</servlet-name>
