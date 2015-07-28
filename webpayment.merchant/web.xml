@@ -43,6 +43,11 @@
     </servlet>
 
     <servlet>
+        <servlet-name>CheckoutServlet</servlet-name>
+        <servlet-class>org.webpki.w2nb.webpayment.merchant.CheckoutServlet</servlet-class>
+    </servlet>
+
+    <servlet>
         <servlet-name>PushPaymentServlet</servlet-name>
         <servlet-class>org.webpki.w2nb.webpayment.merchant.PushPaymentServlet</servlet-class>
     </servlet>
@@ -60,6 +65,11 @@
     <servlet-mapping>
         <servlet-name>ShoppingServlet</servlet-name>
         <url-pattern>/shop</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>CheckoutServlet</servlet-name>
+        <url-pattern>/checkout</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>

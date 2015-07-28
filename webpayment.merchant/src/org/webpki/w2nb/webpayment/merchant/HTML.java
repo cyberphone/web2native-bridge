@@ -46,7 +46,7 @@ public class HTML implements BaseProperties
         "<!DOCTYPE html>"+
         "<html><head><meta charset=\"UTF-8\"><link rel=\"shortcut icon\" href=\"favicon.ico\">"+
 //        "<meta name=\"viewport\" content=\"initial-scale=1.0\"/>" +
-        "<title>WebCrypto++ Payment Demo</title>"+
+        "<title>W2NB Payment Demo</title>"+
         "<style type=\"text/css\">html {overflow:auto}\n"+
         ".tftable {border-collapse:collapse;box-shadow:3pt 3pt 3pt #D0D0D0}\n" +
         ".tftable th {font-size:10pt;background:" +
@@ -120,8 +120,8 @@ public class HTML implements BaseProperties
         s.append ("><div onclick=\"document.location.href='")
 // TODO
  //       .append (PaymentDemoService.bank_url)
-         .append ("'\" title=\"Home sweet home...\" style=\"cursor:pointer;position:absolute;top:15px;left:15px;z-index:5;visibility:visible;padding:5pt 8pt 5pt 8pt;font-size:12pt;text-align:center;background: radial-gradient(ellipse at center, rgba(255,255,255,1) 0%,rgba(242,243,252,1) 38%,rgba(196,210,242,1) 100%);border-radius:8pt;border-width:1px;border-style:solid;border-color:#B0B0B0;box-shadow:3pt 3pt 3pt #D0D0D0;}\">" +
-         "WebCrypto++<br><span style=\"font-size:8pt\">Payment Demo Home</span></div>" + "<table cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" height=\"100%\">")
+         .append ("'\" title=\"Home sweet home...\" style=\"cursor:pointer;position:absolute;top:15px;left:15px;z-index:5;visibility:visible;padding:5pt 8pt 5pt 8pt;font-size:10pt;text-align:center;background: radial-gradient(ellipse at center, rgba(255,255,255,1) 0%,rgba(242,243,252,1) 38%,rgba(196,210,242,1) 100%);border-radius:8pt;border-width:1px;border-style:solid;border-color:#B0B0B0;box-shadow:3pt 3pt 3pt #D0D0D0;}\">" +
+         "Web2Native Bridge<br><span style=\"font-size:8pt\">Payment Demo Home</span></div>" + "<table cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" height=\"100%\">")
          .append (box)
          .append ("</table></body></html>");
         return s.toString ();
@@ -140,7 +140,7 @@ public class HTML implements BaseProperties
         HTML.output (response, HTML.getHTML (null, null,
                 "<tr><td width=\"100%\" align=\"center\" valign=\"middle\">" +
                 "<table style=\"max-width:600px;\" cellpadding=\"4\">" +
-                   "<tr><td style=\"text-align:center;font-weight:bolder;font-size:10pt;font-family:" + FONT_ARIAL + "\">WebCrypto++ Payment Demo<br>&nbsp;</td></tr>" +
+                   "<tr><td style=\"text-align:center;font-weight:bolder;font-size:10pt;font-family:" + FONT_ARIAL + "\">Web2Native Bridge Payment Demo<br>&nbsp;</td></tr>" +
                    "<tr><td style=\"text-align:left\">This application is a demo of what a true WebCrypto++ implementation " +
                    "could offer for <span style=\"color:red\">decentralized payment systems</span>.</td></tr>" +
                    "<tr><td style=\"text-align:left\">In particular note the <span style=\"color:red\">automatic payment card discovery</span> process " +
@@ -360,8 +360,9 @@ public class HTML implements BaseProperties
                   "<form name=\"restore\" method=\"POST\" action=\"\">" +
                   "</form></td></tr>");
         
-     StringBuffer temp_string = new StringBuffer (
-        "\n\n\"use strict\";\n\n");
+        StringBuffer temp_string = new StringBuffer ("\n\n\"use strict\";\n\nvar invokeRequest =\n")
+            .append(invoke_json)
+            .append(";\n");
         HTML.output (response, HTML.getHTML (temp_string.toString (), null, s.toString ()));
       }
 
