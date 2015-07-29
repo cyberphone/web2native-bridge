@@ -22,6 +22,9 @@ import java.io.InputStream;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 
+import java.util.EnumSet;
+import java.util.Set;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -36,6 +39,8 @@ import org.webpki.json.JSONX509Verifier;
 
 import org.webpki.util.ArrayUtil;
 
+import org.webpki.w2nb.webpayment.common.CardTypes;
+import org.webpki.w2nb.webpayment.common.Currencies;
 import org.webpki.w2nb.webpayment.common.KeyStoreEnumerator;
 import org.webpki.w2nb.webpayment.common.ServerSigner;
 
@@ -45,6 +50,8 @@ public class MerchantService extends InitPropertyReader implements ServletContex
 
     static Logger logger = Logger.getLogger(MerchantService.class.getCanonicalName());
     
+    static Set<CardTypes> acceptedCards = EnumSet.noneOf(CardTypes.class);
+  
     static final String KEYSTORE_PASSWORD     = "key_password";
 
     static final String PAYMENT_ROOT          = "payment_root";
@@ -52,19 +59,25 @@ public class MerchantService extends InitPropertyReader implements ServletContex
     static final String MERCHANT_EECERT       = "merchant_eecert";
     
     static final String BANK_PORT_MAP         = "bank_port_map";
+    
+    static final String CURRENCY              = "currency";
+
+    static final String ADD_UNUSUAL_CARD      = "add_unusual_card";
 
     static JSONX509Verifier paymentRoot;
     
     static ServerSigner merchantKey;
     
     static Integer bankPortMapping;
+    
+    static Currencies currency;
 
     InputStream getResource(String name) throws IOException {
         return this.getClass().getResourceAsStream(getPropertyString(name));
     }
     
     JSONX509Verifier getRoot(String name) throws IOException, GeneralSecurityException {
-        KeyStore keyStore = KeyStore.getInstance ("JKS");
+        KeyStore keyStore = KeyStore.getInstance("JKS");
         keyStore.load (null, null);
         keyStore.setCertificateEntry ("mykey",
                                       CertificateUtil.getCertificateFromBlob (
@@ -79,7 +92,7 @@ public class MerchantService extends InitPropertyReader implements ServletContex
     @Override
     public void contextInitialized(ServletContextEvent event) {
         initProperties (event);
-         try {
+        try {
             CustomCryptoProvider.forcedLoad (false);
 
             if (getPropertyString (BANK_PORT_MAP).length () > 0) {
@@ -88,8 +101,16 @@ public class MerchantService extends InitPropertyReader implements ServletContex
 
             merchantKey = new ServerSigner(new KeyStoreEnumerator(getResource(MERCHANT_EECERT),
                                                                   getPropertyString(KEYSTORE_PASSWORD)));
-            
+
             paymentRoot = getRoot(PAYMENT_ROOT);
+
+            for (CardTypes card : CardTypes.values()) {
+                if (card != CardTypes.UnusualCard || !getPropertyBoolean(ADD_UNUSUAL_CARD)) {
+                    acceptedCards.add(card);
+                }
+            }
+         
+            currency = Currencies.valueOf(getPropertyString(CURRENCY));
 
             logger.info("Web2Native Bridge Merchant-server initiated");
         } catch (Exception e) {

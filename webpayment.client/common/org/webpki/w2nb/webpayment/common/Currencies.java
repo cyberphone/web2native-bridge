@@ -23,11 +23,11 @@ import java.math.BigDecimal;
 public enum Currencies {
 
     USD ("$\u200a",       true,  2), 
-    EUR ("\u200a\u20ac",  false, 2),
+    EUR ("\u2009\u20ac",  false, 2),
     GBP ("\u00a3\u200a",  true,  2);
     
-    String symbol;
-    boolean symbolFirst;
+    public String symbol;
+    public boolean symbolFirst;
     int decimals;
     
     Currencies (String symbol, boolean symbolFirst, int decimals) {

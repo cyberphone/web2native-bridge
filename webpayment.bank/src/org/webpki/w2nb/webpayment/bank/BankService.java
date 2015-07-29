@@ -60,6 +60,8 @@ public class BankService extends InitPropertyReader implements ServletContextLis
     
     static final String BANK_EECERT           = "bank_eecert";
     
+    static final String ERR_MEDIA             = "err_media_type";
+    
     static Vector<DecryptionKeyHolder> decryptionKeys = new Vector<DecryptionKeyHolder>();
     
     static JSONX509Verifier merchantRoot;
@@ -67,6 +69,8 @@ public class BankService extends InitPropertyReader implements ServletContextLis
     static JSONX509Verifier clientRoot;
     
     static ServerSigner bankKey;
+    
+    static String jsonMediaType = BaseProperties.JSON_CONTENT_TYPE;
 
     InputStream getResource(String name) throws IOException {
         return this.getClass().getResourceAsStream(getPropertyString(name));
@@ -82,7 +86,7 @@ public class BankService extends InitPropertyReader implements ServletContextLis
     }
 
     JSONX509Verifier getRoot(String name) throws IOException, GeneralSecurityException {
-        KeyStore keyStore = KeyStore.getInstance ("JKS");
+        KeyStore keyStore = KeyStore.getInstance("JKS");
         keyStore.load (null, null);
         keyStore.setCertificateEntry ("mykey",
                                       CertificateUtil.getCertificateFromBlob (
@@ -108,6 +112,10 @@ public class BankService extends InitPropertyReader implements ServletContextLis
 
             addDecryptionKey(DECRYPTION_KEY1);
             addDecryptionKey(DECRYPTION_KEY2);
+            
+            if (getPropertyBoolean(ERR_MEDIA)) {
+                jsonMediaType = "text/html";
+            }
 
             logger.info("Web2Native Bridge Bank-server initiated");
         } catch (Exception e) {

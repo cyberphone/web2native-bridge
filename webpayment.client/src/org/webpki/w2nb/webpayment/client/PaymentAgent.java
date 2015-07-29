@@ -962,6 +962,10 @@ public class PaymentAgent {
                         wrap.setRequireSuccess(true);
                         wrap.makePostRequest(selectedCard.authUrl,
                                              resultMessage.serializeJSONObject(JSONOutputFormats.NORMALIZED));
+                        String mimeType = wrap.getContentType();
+                        if (!mimeType.equals(BaseProperties.JSON_CONTENT_TYPE)) {
+                            throw new IOException("Improper media type: " + mimeType);
+                        }
                         resultMessage = new JSONObjectWriter(JSONParser.parse(wrap.getData()));
                         logger.info("Returned from payment provider for handover to payee via the browser:\n"
                                     + resultMessage);

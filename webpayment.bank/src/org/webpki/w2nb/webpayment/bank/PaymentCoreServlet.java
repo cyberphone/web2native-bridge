@@ -55,12 +55,8 @@ public class PaymentCoreServlet extends HttpServlet implements BaseProperties {
         String clientIpAddress = null;
         try {
             String contentType = request.getContentType();
-            int i = contentType.indexOf(';');
-            if (i > 0) {
-                contentType = contentType.substring(0, i).trim();
-            }
             if (!contentType.equals(JSON_CONTENT_TYPE)) {
-                throw new IOException("Content-Type MUST be \"" + JSON_CONTENT_TYPE + "\"");
+                throw new IOException("Content-Type must be \"" + JSON_CONTENT_TYPE + "\" , found: " + contentType);
             }
             GenericAuthorizationRequest genericAuthorizationRequest = null;
             JSONObjectReader authorizationRequest = JSONParser.parse (ServletUtil.getData (request));
@@ -111,7 +107,7 @@ public class PaymentCoreServlet extends HttpServlet implements BaseProperties {
             logger.log (Level.SEVERE, e.getMessage ());
         }
 
-        response.setContentType (JSON_CONTENT_TYPE + "; charset=utf-8");
+        response.setContentType (BankService.jsonMediaType);
         response.setHeader ("Pragma", "No-Cache");
         response.setDateHeader ("EXPIRES", 0);
         response.getOutputStream ().write (authorizationResponse.serializeJSONObject (JSONOutputFormats.NORMALIZED));

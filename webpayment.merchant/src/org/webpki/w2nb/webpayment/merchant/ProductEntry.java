@@ -22,13 +22,13 @@ public class ProductEntry implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    String image_url;
+    String imageUrl;
     String name;
-    int price_mult_100;
+    int priceX100;
     
-    public ProductEntry (String image_url, String name, int price_mult_100) {
-        this.image_url = image_url;
+    public ProductEntry (String imageUrl, String name, int priceX100) {
+        this.imageUrl = imageUrl;
         this.name = name;
-        this.price_mult_100 = price_mult_100;
+        this.priceX100 = priceX100;
     }
 }

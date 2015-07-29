@@ -45,7 +45,13 @@
         <param-name>bank_client_root</param-name>
         <param-value>@bank-client-root@</param-value>
     </context-param>
-    
+
+    <context-param>
+        <description>Force media type error</description>
+        <param-name>err_media_type</param-name>
+        <param-value>@err-media-type@</param-value>
+    </context-param>
+
     <listener>
         <listener-class>org.webpki.w2nb.webpayment.bank.BankService</listener-class>
     </listener>

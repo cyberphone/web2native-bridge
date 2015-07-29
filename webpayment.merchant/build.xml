@@ -45,7 +45,7 @@
   </condition>
 
   <target name="help">
-      <echo message="tomcat [-Dhttps=0] [-Derr.payment.ca] mobilepki-ejbca localhost-ejbca zip-distribution"/>
+      <echo message="tomcat [-Dhttps=0] [-Derr.payment.ca=0] [-Dunusual.card=0] [-Dcurrency=XYZ] mobilepki-ejbca localhost-ejbca zip-distribution"/>
   </target>
 
   <target name="_init" unless="app_path">
@@ -60,6 +60,8 @@
   </target>
 
   <target name="_build">
+    <property name="unusualcard" value="false"/>
+    <property name="currency" value="USD"/>
     <fixcrlf srcdir="${src.dir}"
        tab="remove"
        tablength="4"
@@ -74,17 +76,15 @@
            destdir="${temp.dir}"
            classpath="${compile.classpath}"
            includeAntRuntime="false"/>
-    <property name="encryptionkey" value="${encryptionkey_rsa}"/>
-    <property name="clientkey" value="${clientkey_rsa}"/>
-    <property name="bouncycastle.first" value="true"/>
-    <property name="webpki.jars" value="${library.dir}"/>
     <replace file="${temp.dir}/web.xml">
       <replacefilter token="@security-constraints@" value="${security.constraints}"/>
       <replacefilter token="@bank-port-map@" value="${bank.port.map}"/>
       <replacefilter token="@key-password@" value="${keypassword}"/>
 	  <replacefilter token="@merchant-eecert@" value="${merchantkey}${keyfilext}"/>
       <replacefilter token="@payment-root@" value="${payment.var.root}.cer"/>
-	</replace>
+      <replacefilter token="@currency@" value="${currency}"/>
+      <replacefilter token="@add-unusual-card@" value="${unusualcard}"/>
+   	</replace>
     <war destfile="${dist.dir}/${application}" webxml="${temp.dir}/web.xml">
       <classes dir="${temp.dir}">
          <exclude name="web.xml"/>
@@ -116,6 +116,9 @@
      </condition>
      <condition property="payment_root" value="${merchantroot}" else="${paymentroot}">
        <isset property="err.payment.root"/>
+     </condition>
+     <condition property="unusualcard" value="true">
+       <isset property="unusual.card"/>
      </condition>
      <path id="tomcat.compile.classpath">
        <fileset dir="${common.lib.dir}">

@@ -24,19 +24,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.webpki.crypto.AsymEncryptionAlgorithms;
-import org.webpki.crypto.AsymSignatureAlgorithms;
-import org.webpki.crypto.HashAlgorithms;
-import org.webpki.crypto.SymEncryptionAlgorithms;
-import org.webpki.json.JSONDecoderCache;
-import org.webpki.json.JSONSignatureDecoder;
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.Currencies;
 import org.webpki.w2nb.webpayment.common.Messages;
 import org.webpki.w2nb.webpayment.common.PaymentRequest;
 
-public class HTML implements BaseProperties
-  {
+public class HTML {
+
     static final int PAYMENT_TIMEOUT_INIT            = 5000;
     
     static final String FONT_VERDANA = "Verdana,'Bitstream Vera Sans','DejaVu Sans',Arial,'Liberation Sans'";
@@ -61,83 +55,73 @@ public class HTML implements BaseProperties
         ".stdbtn {font-weight:normal;font-size:10pt;font-family:" + FONT_ARIAL + "}\n" +
         ".updnbtn {vertical-align:middle;text-align:center;font-weight:normal;font-size:8px;font-family:" + FONT_VERDANA + ";margin:0px;border-spacing:0px;padding:2px 3px 2px 3px}\n";
     
-    static String encode (String val)
-      {
-        if (val != null)
-          {
-            StringBuffer buf = new StringBuffer (val.length () + 8);
+    static String encode(String val) {
+        if (val != null) {
+            StringBuffer buf = new StringBuffer(val.length() + 8);
             char c;
-
-            for (int i = 0; i < val.length (); i++)
-              {
-                c = val.charAt (i);
-                switch (c)
-                  {
+            for (int i = 0; i < val.length(); i++) {
+                c = val.charAt(i);
+                switch (c) {
                     case '<':
-                      buf.append ("&lt;");
+                      buf.append("&lt;");
                       break;
                     case '>':
-                      buf.append ("&gt;");
+                      buf.append("&gt;");
                       break;
                     case '&':
-                      buf.append ("&amp;");
+                      buf.append("&amp;");
                       break;
                     case '\"':
-                      buf.append ("&#034;");
+                      buf.append("&#034;");
                       break;
                     case '\'':
-                      buf.append ("&#039;");
+                      buf.append("&#039;");
                       break;
                     default:
-                      buf.append (c);
+                      buf.append(c);
                       break;
-                  }
-              }
-            return buf.toString ();
-          }
-        else
-          {
-            return new String ("");
-          }
-      }
+                }
+            }
+            return buf.toString();
+        } else {
+            return new String("");
+        }
+    }
     
-    static String getHTML (String javascript, String bodyscript, String box)
-      {
-        StringBuffer s = new StringBuffer (HTML_INIT + "html, body {margin:0px;padding:0px;height:100%}</style>");
-        if (javascript != null)
-          {
-            s.append ("<script type=\"text/javascript\">").append (javascript).append ("</script>");
-          }
-        s.append ("</head><body");
-        if (bodyscript != null)
-          {
-            if (bodyscript.charAt (0) != '>')
-              {
-                s.append (' ');
-              }
-             s.append (bodyscript);
-          }
-        s.append ("><div onclick=\"document.location.href='")
-// TODO
- //       .append (PaymentDemoService.bank_url)
-         .append ("'\" title=\"Home sweet home...\" style=\"cursor:pointer;position:absolute;top:15px;left:15px;z-index:5;visibility:visible;padding:5pt 8pt 5pt 8pt;font-size:10pt;text-align:center;background: radial-gradient(ellipse at center, rgba(255,255,255,1) 0%,rgba(242,243,252,1) 38%,rgba(196,210,242,1) 100%);border-radius:8pt;border-width:1px;border-style:solid;border-color:#B0B0B0;box-shadow:3pt 3pt 3pt #D0D0D0;}\">" +
-         "Web2Native Bridge<br><span style=\"font-size:8pt\">Payment Demo Home</span></div>" + "<table cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" height=\"100%\">")
-         .append (box)
-         .append ("</table></body></html>");
-        return s.toString ();
-      }
+    static String getHTML(String javascript, String bodyscript, String box) {
+        StringBuffer s = new StringBuffer(HTML_INIT + "html, body {margin:0px;padding:0px;height:100%}</style>");
+        if (javascript != null) {
+            s.append("<script type=\"text/javascript\">").append(javascript).append("</script>");
+        }
+        s.append("</head><body");
+        if (bodyscript != null) {
+            if (bodyscript.charAt(0) != '>') {
+                s.append(' ');
+            }
+             s.append(bodyscript);
+        }
+        s.append("><div onclick=\"document.location.href='home"
+            + "'\" title=\"Home sweet home...\" style=\"cursor:pointer;position:absolute;top:15px;"
+            + "left:15px;z-index:5;visibility:visible;padding:5pt 8pt 5pt 8pt;font-size:10pt;"
+            + "text-align:center;background: radial-gradient(ellipse at center, rgba(255,255,255,1) "
+            + "0%,rgba(242,243,252,1) 38%,rgba(196,210,242,1) 100%);border-radius:8pt;border-width:1px;"
+            + "border-style:solid;border-color:#B0B0B0;box-shadow:3pt 3pt 3pt #D0D0D0;}\">"
+            + "Web2Native Bridge<br><span style=\"font-size:8pt\">Payment Demo Home</span></div>"
+            + "<table cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" height=\"100%\">")
+         .append(box)
+         .append("</table></body></html>");
+        return s.toString();
+    }
     
-    static void output (HttpServletResponse response, String html) throws IOException, ServletException
-      {
-        response.setContentType ("text/html; charset=utf-8");
-        response.setHeader ("Pragma", "No-Cache");
-        response.setDateHeader ("EXPIRES", 0);
-        response.getOutputStream ().write (html.getBytes ("UTF-8"));
-      }
+    static void output(HttpServletResponse response, String html) throws IOException, ServletException {
+        response.setContentType("text/html; charset=utf-8");
+        response.setHeader("Pragma", "No-Cache");
+        response.setDateHeader("EXPIRES", 0);
+        response.getOutputStream().write(html.getBytes("UTF-8"));
+    }
 
-    public static void homePage (HttpServletResponse response) throws IOException, ServletException
-      {
-        HTML.output (response, HTML.getHTML (null, null,
+    public static void homePage(HttpServletResponse response) throws IOException, ServletException {
+        HTML.output(response, HTML.getHTML(null, null,
                 "<tr><td width=\"100%\" align=\"center\" valign=\"middle\">" +
                 "<table style=\"max-width:600px;\" cellpadding=\"4\">" +
                    "<tr><td style=\"text-align:center;font-weight:bolder;font-size:10pt;font-family:" + FONT_ARIAL + "\">Web2Native Bridge Payment Demo<br>&nbsp;</td></tr>" +
@@ -167,87 +151,83 @@ public class HTML implements BaseProperties
                    "<tr style=\"text-align:left\"><td><a target=\"_blank\" href=\"https://play.google.com/store/apps/details?id=org.webpki.mobile.android\">SKS/KeyGen2</a></td><td>Android PoC</td></tr>" +
                    "<tr style=\"text-align:left\"><td><a target=\"_blank\" href=\"https://mobilepki.org/WCPPSignatureDemo\">User Signatures</a></td><td>WebCrypto++ Signature Demo</td></tr>" +
                  "</table></td></tr></table></td></tr>"));
-      }
+    }
 
-    static String javaScript (String string)
-      {
-        StringBuffer s = new StringBuffer ();
-        for (char c : string.toCharArray ())
-          {
-            if (c == '\n')
-              {
-                s.append ("\\n");
-              }
-            else if (c == '\'')
-              {
-                s.append ("\\'");
-              }
-            else if (c == '\\')
-              {
-                s.append ("\\\\");
-              }
-            else
-              {
-                s.append (c);
-              }
-          }
-        return s.toString ();
-      }
+    static String javaScript(String string) {
+        StringBuffer s = new StringBuffer();
+        for (char c : string.toCharArray()) {
+            if (c == '\n') {
+                s.append("\\n");
+            } else if (c == '\'') {
+                s.append("\\'");
+            } else if (c == '\\') {
+                s.append("\\\\");
+            } else {
+                s.append(c);
+            }
+        }
+        return s.toString();
+    }
 
-    private static StringBuffer productEntry (StringBuffer temp_string, ProductEntry product_entry, String sku, SavedShoppingCart saved_shopping_cart, int index)
-      {
-        int units = saved_shopping_cart.items.containsKey (sku) ? saved_shopping_cart.items.get (sku): 0;
-        StringBuffer s = new StringBuffer (
+    private static StringBuffer productEntry(StringBuffer temp_string,
+                                             ProductEntry product_entry,
+                                             String sku,
+                                             SavedShoppingCart savedShoppingCart,
+                                             int index) {
+        int units = savedShoppingCart.items.containsKey(sku) ? savedShoppingCart.items.get(sku): 0;
+        StringBuffer s = new StringBuffer(
             "<tr style=\"text-align:center\"><td><img src=\"images/")
-        .append (product_entry.image_url)
-        .append ("\"></td><td>")
-        .append (product_entry.name)
-        .append ("</td><td style=\"text-align:right\">")
-        .append (price  (product_entry.price_mult_100))
-        .append (
+        .append(product_entry.imageUrl)
+        .append("\"></td><td>")
+        .append(product_entry.name)
+        .append("</td><td style=\"text-align:right\">")
+        .append(price(product_entry.priceX100))
+        .append(
             "</td><td><form>" +
             "<table style=\"border-width:0px;padding:0px;margin:0px;border-spacing:2px;border-collapse:separate\">" +
             "<tr>" +
-               "<td style=\"border-width:0px;padding:0px;margin:0px\"><input type=\"button\" class=\"updnbtn\" value=\"&#x25b2;\" title=\"More\" onclick=\"updateUnits(this.form.p")
-        .append (index)
-        .append (", 1, ")
-        .append (index)
-        .append (")\"></td>" +
+            "<td style=\"border-width:0px;padding:0px;margin:0px\"><input type=\"button\" class=\"updnbtn\" value=\"&#x25b2;\" title=\"More\" onclick=\"updateUnits(this.form.p")
+        .append(index)
+        .append(", 1, ")
+        .append(index)
+        .append(")\"></td>" +
             "</tr>" +
             "<tr>" +
-               "<td style=\"border-width:0px;padding:0px;margin:0px\"><input size=\"6\" type=\"text\" name=\"p")
-        .append (index)
-        .append ("\" value=\"")
-        .append (units)
-        .append ("\" class=\"quantity\" " +
-                           "oninput=\"updateInput(")
-        .append (index)
-        .append (", this);\" autocomplete=\"off\"/></td>" +
-                 "</tr>" +
-                 "<tr>" +
-                    "<td style=\"border-width:0px;padding:0px;margin:0px\"><input type=\"button\" class=\"updnbtn\" value=\"&#x25bc;\" title=\"Less\" onclick=\"updateUnits(this.form.p")
-         .append (index)
-         .append (", -1, ")
-         .append (index)
-         .append (")\"></td>" +
-                       "</tr>" +
-                       "</table></form></td></tr>");
-        temp_string.insert (0, "shopping_cart[" + index + "] = new webpki.ShopEntry(" 
-                       + product_entry.price_mult_100 + ",'" + product_entry.name + "','" + sku + "'," + units + ");\n");        
+            "<td style=\"border-width:0px;padding:0px;margin:0px\"><input size=\"6\" type=\"text\" name=\"p")
+        .append(index)
+        .append("\" value=\"")
+        .append(units)
+        .append("\" class=\"quantity\" oninput=\"updateInput(")
+        .append(index)
+        .append(", this);\" autocomplete=\"off\"/></td>" +
+            "</tr>" +
+            "<tr>" +
+            "<td style=\"border-width:0px;padding:0px;margin:0px\">"
+            + "<input type=\"button\" class=\"updnbtn\" value=\"&#x25bc;\" title=\"Less\" "
+            + "onclick=\"updateUnits(this.form.p")
+        .append(index)
+        .append(", -1, ")
+        .append(index)
+        .append(")\"></td></tr></table></form></td></tr>");
+        temp_string.insert(0, "shopping_cart[" + index + "] = new webpki.ShopEntry(" 
+                       + product_entry.priceX100 + ",'" + product_entry.name + "','" + sku + "'," + units + ");\n");        
         return s;
-      }
+    }
 
-    private static String price (int price_mult_100) 
-      {
-        return "$&#x200a;" + String.valueOf (price_mult_100 / 100) + "." + String.valueOf ((price_mult_100 % 100) / 10) + String.valueOf (price_mult_100 % 10);
-      }
+    private static String price(int priceX100) {
+        return (MerchantService.currency.symbolFirst ? MerchantService.currency.symbol : "")
+               + String.valueOf(priceX100 / 100) + "."
+               + String.valueOf((priceX100 % 100) / 10)
+               + String.valueOf(priceX100 % 10)
+               + (MerchantService.currency.symbolFirst ? "" : MerchantService.currency.symbol);
+    }
     
-    public static void merchantPage (HttpServletResponse response, SavedShoppingCart saved_shopping_cart) throws IOException, ServletException
-      {
-        StringBuffer temp_string = new StringBuffer (
+    public static void merchantPage(HttpServletResponse response,
+                                    SavedShoppingCart savedShoppingCart) throws IOException, ServletException {
+        StringBuffer temp_string = new StringBuffer(
             "\nfunction checkOut() {\n" +
             "    if (getTotal()) {\n" +
-            "        document.getElementById('shoppingcart').value = JSON.stringify(shopping_cart);\n" +
+            "        document.getElementById('shoppingCart').value = JSON.stringify(shopping_cart);\n" +
             "        document.forms.shoot.submit();\n" +           
             "    } else {\n" +
             "        document.getElementById('emptybasket').style.top = ((window.innerHeight - document.getElementById('emptybasket').offsetHeight) / 2) + 'px';\n" +
@@ -261,21 +241,31 @@ public class HTML implements BaseProperties
             "function getTotal() {\n" +
             "    var total = 0;\n" +
             "    for (var i = 0; i < shopping_cart.length; i++) {\n" +
-            "        total += shopping_cart[i].price_mult_100 * shopping_cart[i].units;\n" +
+            "        total += shopping_cart[i].priceX100 * shopping_cart[i].units;\n" +
             "    }\n" +
             "    return total;\n"+
             "}\n\n" +
             "function getPriceString() {\n" +
-            "    var price_mult_100 = getTotal();\n" +
-//TODO
-//            "    return '"+ Currencies.USD.symbol + "' +  Math.floor(price_mult_100 / 100) + '.' +  Math.floor((price_mult_100 % 100) / 10) +  Math.floor(price_mult_100 % 10);\n" +
-            "    return '$' +  Math.floor(price_mult_100 / 100) + '.' +  Math.floor((price_mult_100 % 100) / 10) +  Math.floor(price_mult_100 % 10);\n" +
+            "    var priceX100 = getTotal();\n" +
+            "    return ");
+        if (MerchantService.currency.symbolFirst) {
+            temp_string.append('\'')
+                       .append(MerchantService.currency.symbol)
+                       .append("' + ");
+        }
+        temp_string.append("Math.floor(priceX100 / 100) + '.' +  Math.floor((priceX100 % 100) / 10) +  Math.floor(priceX100 % 10)");
+        if (!MerchantService.currency.symbolFirst) {
+            temp_string.append(" + '")
+                       .append(MerchantService.currency.symbol)
+                       .append('\'');
+        }
+        temp_string.append(";\n" +
             "}\n\n" +
             "function updateTotal() {\n" +
             "    document.getElementById('total').innerHTML = getPriceString();\n" +
             "}\n\n" +
             "function updateInput(index, control) {\n" +
-            "    if (!numeric_only.test (control.value)) control.value = '0';\n" +
+            "    if (!numeric_only.test(control.value)) control.value = '0';\n" +
             "    while (control.value.length > 1 && control.value.charAt(0) == '0') control.value = control.value.substring(1);\n" +
             "    shopping_cart[index].units = parseInt(control.value);\n" +
             "    updateTotal();\n" +
@@ -285,73 +275,74 @@ public class HTML implements BaseProperties
             "    updateInput(index, control);\n" +
             "}\n");
 
-        StringBuffer page_data = new StringBuffer (
+        StringBuffer page_data = new StringBuffer(
             "<tr><td width=\"100%\" align=\"center\" valign=\"middle\">" +
             "<table>" +
-               "<tr><td style=\"text-align:center;font-weight:bolder;font-size:10pt;font-family:" + FONT_ARIAL + "\">" +
-               ShoppingServlet.COMMON_NAME +
-               "<br>&nbsp;</td></tr>" +
-               "<tr><td id=\"result\"><table style=\"margin-left:auto;margin-right:auto\" class=\"tftable\">" +
-                   "<tr><th>Image</th><th>Description</th><th>Price</th><th>Units</th></tr>");
+            "<tr><td style=\"text-align:center;font-weight:bolder;font-size:10pt;font-family:" + FONT_ARIAL + "\">" +
+            ShoppingServlet.COMMON_NAME +
+            "<br>&nbsp;</td></tr>" +
+            "<tr><td id=\"result\"><table style=\"margin-left:auto;margin-right:auto\" class=\"tftable\">" +
+            "<tr><th>Image</th><th>Description</th><th>Price</th><th>Units</th></tr>");
         int q = 0;
-        for (String sku : ShoppingServlet.products.keySet ())
-          {
-            page_data.append (productEntry (temp_string, ShoppingServlet.products.get (sku), sku, saved_shopping_cart, q++));
-          }
-        page_data.append (
-               "</table></tr></td><tr><td style=\"padding-top:10pt\"><table style=\"margin-left:auto;margin-right:auto\" class=\"tftable\"><tr><th style=\"text-align:center\">Amount to Pay</th><td style=\"text-align:right\" id=\"total\">")
-                 .append (price (saved_shopping_cart.total))
-                 .append ("</td></tr>" +
-                          "</table></td></tr>" +
-                          "<tr><td style=\"text-align:center;padding-top:10pt\" id=\"pay\"><input class=\"stdbtn\" type=\"button\" value=\"Checkout..\" title=\"Paying time has come...\" onclick=\"checkOut()\"></td></tr>" +
-                          "</table>" +
-                          "<form name=\"shoot\" method=\"POST\" action=\"checkout\">" +
-                          "<input type=\"hidden\" name=\"shoppingcart\" id=\"shoppingcart\">" +
-                          "</form></td></tr>");
-         temp_string.insert (0,
-                "\n\n\"use strict\";\n\n" +
-                "var numeric_only = new RegExp('^[0-9]{1,6}$');\n\n" +
-                "var webpki = {};\n\n" +
-                "webpki.ShopEntry = function(price_mult_100, name,sku, units) {\n" +
-                "    this.price_mult_100 = price_mult_100;\n" +
-                "    this.name = name;\n" +
-                "    this.sku = sku;\n" +
-                "    this.units = units;\n" +
-                "};\n\n" +
-                "var shopping_cart = [];\n");
+        for (String sku : ShoppingServlet.products.keySet()) {
+            page_data.append(productEntry(temp_string, ShoppingServlet.products.get(sku), sku, savedShoppingCart, q++));
+        }
+        page_data.append(
+            "</table></tr></td><tr><td style=\"padding-top:10pt\"><table style=\"margin-left:auto;margin-right:auto\" class=\"tftable\"><tr><th style=\"text-align:center\">Amount to Pay</th><td style=\"text-align:right\" id=\"total\">")
+            .append(price(savedShoppingCart.total))
+            .append("</td></tr>" +
+            "</table></td></tr>" +
+            "<tr><td style=\"text-align:center;padding-top:10pt\" id=\"pay\"><input class=\"stdbtn\" type=\"button\" value=\"Checkout..\" title=\"Paying time has come...\" onclick=\"checkOut()\"></td></tr>" +
+            "</table>" +
+            "<form name=\"shoot\" method=\"POST\" action=\"checkout\">" +
+            "<input type=\"hidden\" name=\"shoppingCart\" id=\"shoppingCart\">" +
+            "</form></td></tr>");
+         temp_string.insert(0,
+            "\n\n\"use strict\";\n\n" +
+            "var numeric_only = new RegExp('^[0-9]{1,6}$');\n\n" +
+            "var webpki = {};\n\n" +
+            "webpki.ShopEntry = function(priceX100, name,sku, units) {\n" +
+            "    this.priceX100 = priceX100;\n" +
+            "    this.name = name;\n" +
+            "    this.sku = sku;\n" +
+            "    this.units = units;\n" +
+            "};\n\n" +
+            "var shopping_cart = [];\n");
 
-        HTML.output (response, HTML.getHTML (temp_string.toString(), 
-                                             "><div id=\"emptybasket\" style=\"border-color:grey;border-style:solid;border-width:3px;text-align:center;font-family:" + FONT_ARIAL+ ";z-index:3;background:#f0f0f0;position:absolute;visibility:hidden;padding:5pt 10pt 5pt 10pt\">Nothing ordered yet...</div",
-                                             page_data.toString()));
-      }
+        HTML.output(response, HTML.getHTML(temp_string.toString(), 
+            "><div id=\"emptybasket\" style=\"border-color:grey;border-style:solid;border-width:3px;text-align:center;font-family:"
+            + FONT_ARIAL+ ";z-index:3;background:#f0f0f0;position:absolute;visibility:hidden;padding:5pt 10pt 5pt 10pt\">Nothing ordered yet...</div",
+            page_data.toString()));
+    }
 
-    public static void checkoutPage (HttpServletResponse response, SavedShoppingCart saved_shopping_cart, String invoke_json) throws IOException, ServletException
-      {
-        StringBuffer s = new StringBuffer (
-        "<tr><td width=\"100%\" align=\"center\" valign=\"middle\">" +
-        "<table>" +
-           "<tr><td style=\"text-align:center;font-weight:bolder;font-size:10pt;font-family:" + FONT_ARIAL + "\">Current Order<br>&nbsp;</td></tr>" +
-           "<tr><td id=\"result\"><table style=\"margin-left:auto;margin-right:auto\" class=\"tftable\">" +
-               "<tr><th>Description</th><th>Price</th><th>Units</th></tr>");
-        for (String sku : saved_shopping_cart.items.keySet ())
-          {
-            ProductEntry product_entry = ShoppingServlet.products.get (sku);
-            s.append ("<tr style=\"text-align:center\"><td>")
-             .append (product_entry.name)
-             .append ("</td><td style=\"text-align:right\">")
-             .append (price (product_entry.price_mult_100))
-             .append ("</td><td>")
-             .append (saved_shopping_cart.items.get (sku).intValue ())
-             .append ("</td></tr>");                
-          }
-        s.append (
+    public static void checkoutPage(HttpServletResponse response,
+                                    SavedShoppingCart savedShoppingCart, 
+                                    String invoke_json) throws IOException, ServletException {
+        StringBuffer s = new StringBuffer(
+            "<tr><td width=\"100%\" align=\"center\" valign=\"middle\">" +
+            "<table>" +
+            "<tr><td style=\"text-align:center;font-weight:bolder;font-size:10pt;font-family:"
+            + FONT_ARIAL + "\">Current Order<br>&nbsp;</td></tr>" +
+            "<tr><td id=\"result\"><table style=\"margin-left:auto;margin-right:auto\" class=\"tftable\">" +
+            "<tr><th>Description</th><th>Price</th><th>Units</th></tr>");
+        for (String sku : savedShoppingCart.items.keySet()) {
+            ProductEntry product_entry = ShoppingServlet.products.get(sku);
+            s.append("<tr style=\"text-align:center\"><td>")
+             .append(product_entry.name)
+             .append("</td><td style=\"text-align:right\">")
+             .append(price(product_entry.priceX100))
+             .append("</td><td>")
+             .append(savedShoppingCart.items.get(sku).intValue())
+             .append("</td></tr>");                
+        }
+        s.append(
             "</table></td></tr><tr><td style=\"padding-top:10pt\"><table style=\"margin-left:auto;margin-right:auto\" class=\"tftable\"><tr><th style=\"text-align:center\">Amount to Pay</th><td style=\"text-align:right\" id=\"total\">")
-         .append (price (saved_shopping_cart.total))
+         .append(price(savedShoppingCart.total))
          .append("</td></tr>" +
                  "</table></td></tr>" +
                  "<tr><td style=\"text-align:center;padding-top:10pt\" id=\"pay\">")
-   //      .append (getIframeHTML ())
-         .append ("</td></tr></table>" +
+   //      .append(getIframeHTML())
+         .append("</td></tr></table>" +
                   "<form name=\"shoot\" method=\"POST\" action=\"authreq\">" +
                   "<input type=\"hidden\" name=\"authreq\" id=\"authreq\">" +
                   "</form>" +
@@ -360,46 +351,43 @@ public class HTML implements BaseProperties
                   "<form name=\"restore\" method=\"POST\" action=\"\">" +
                   "</form></td></tr>");
         
-        StringBuffer temp_string = new StringBuffer ("\n\n\"use strict\";\n\nvar invokeRequest =\n")
+        StringBuffer temp_string = new StringBuffer("\n\n\"use strict\";\n\nvar invokeRequest =\n")
             .append(invoke_json)
             .append(";\n");
-        HTML.output (response, HTML.getHTML (temp_string.toString (), null, s.toString ()));
-      }
+        HTML.output(response, HTML.getHTML(temp_string.toString(), null, s.toString()));
+    }
 
-    public static void resultPage (HttpServletResponse response,
-                                   String error_message,
-                                   PaymentRequest payment_request, 
-                                   String card_type,
-                                   String reference_pan,
-                                   String transaction_request,
-                                   String transaction_response) throws IOException, ServletException
-      {
-        StringBuffer s = new StringBuffer ("<tr><td width=\"100%\" align=\"center\" valign=\"middle\">");
-        if (error_message == null)
-          {
-            s.append ("<table>" +
+    public static void resultPage(HttpServletResponse response,
+                                  String error_message,
+                                  PaymentRequest paymentRequest, 
+                                  String cardType,
+                                  String referenceId,
+                                  String transaction_request,
+                                  String transaction_response) throws IOException, ServletException {
+        StringBuffer s = new StringBuffer("<tr><td width=\"100%\" align=\"center\" valign=\"middle\">");
+        if (error_message == null) {
+            s.append("<table>" +
              "<tr><td style=\"text-align:center;font-weight:bolder;font-size:10pt;font-family:" + FONT_ARIAL + "\">Order Status<br>&nbsp;</td></tr>" +
              "<tr><td style=\"text-align:center;padding-bottom:15pt;font-size:10pt\">Dear customer, your order has been successfully processed!</td></tr>" +
              "<tr><td><table class=\"tftable\"><tr><th>Our Reference</th><th>Amount</th><th>Card Type</th><th>Card Number</th></tr>" +
              "<tr><td style=\"text-align:center\">")
-            .append (payment_request.getReferenceId())
-            .append ("</td><td style=\"text-align:center\">")
-            .append (payment_request.getCurrency().convertAmountToString(payment_request.getAmount()))
-            .append ("</td><td style=\"text-align:center\">")
-            .append (card_type)
-            .append ("</td><td style=\"text-align:center\">")
-            .append (reference_pan)
-            .append ("</td></tr></table></td></tr></table>");
-          }
-        else
-          {
-            s.append ("There was a problem with your order: " + error_message);
-          }
-        HTML.output (response, HTML.getHTML ("function listFinalExchange() {\n" +
-                                             "    console.debug('Transaction request:\\n" + transaction_request + "');\n" +
-                                             "    console.debug('Transaction result:\\n" + transaction_response + "')" +
-                                             "}\n", 
-                                             "onload=\"listFinalExchange()\"", 
-                                             s.append ("</td></tr>").toString ()));
-      }
-  }
+            .append(paymentRequest.getReferenceId())
+            .append("</td><td style=\"text-align:center\">")
+            .append(paymentRequest.getCurrency().convertAmountToString(paymentRequest.getAmount()))
+            .append("</td><td style=\"text-align:center\">")
+            .append(cardType)
+            .append("</td><td style=\"text-align:center\">")
+            .append(referenceId)
+            .append("</td></tr></table></td></tr></table>");
+        } else {
+            s.append("There was a problem with your order: " + error_message);
+        }
+        HTML.output(response, 
+                    HTML.getHTML("function listFinalExchange() {\n" +
+                                 "    console.debug('Transaction request:\\n" + transaction_request + "');\n" +
+                                 "    console.debug('Transaction result:\\n" + transaction_response + "')" +
+                                 "}\n", 
+                                 "onload=\"listFinalExchange()\"", 
+                                 s.append("</td></tr>").toString()));
+    }
+}

@@ -28,6 +28,18 @@
         <param-value>@bank-port-map@</param-value>
     </context-param>
 
+    <context-param>
+        <description>Currency</description>
+        <param-name>currency</param-name>
+        <param-value>@currency@</param-value>
+    </context-param>
+
+    <context-param>
+        <description>Add the 'Unusual' card</description>
+        <param-name>add_unusual_card</param-name>
+        <param-value>@add-unusual-card@</param-value>
+    </context-param>
+
     <listener>
         <listener-class>org.webpki.w2nb.webpayment.merchant.MerchantService</listener-class>
     </listener>

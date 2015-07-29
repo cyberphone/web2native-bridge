@@ -45,7 +45,12 @@ import org.webpki.crypto.KeyAlgorithms;
 
 public abstract class CryptoSupport {
     
-    public static byte[] contentEncryption(boolean encrypt, String algorithm, byte[] aesKey, byte[] data, byte[] iv, byte[] tag) throws GeneralSecurityException, IOException {
+    public static byte[] contentEncryption(boolean encrypt,
+                                           String algorithm,
+                                           byte[] aesKey,
+                                           byte[] data,
+                                           byte[] iv,
+                                           byte[] tag) throws GeneralSecurityException, IOException {
         if (!permittedContentEncryptionAlgorithm(algorithm)) {
             throw new IOException("Unsupported content encryption algorithm: " + algorithm);
         }
@@ -56,40 +61,46 @@ public abstract class CryptoSupport {
         return cipher.doFinal(data);
     }
 
-    public static byte[] rsaEncryptKey(String keyEncryptionAlgorithm, byte[] rawKey, PublicKey publicKey) 
-            throws GeneralSecurityException, IOException {
+    public static byte[] rsaEncryptKey(String keyEncryptionAlgorithm,
+                                       byte[] rawKey,
+                                       PublicKey publicKey) throws GeneralSecurityException, IOException {
         checkRsa(keyEncryptionAlgorithm);
         Cipher cipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA256AndMGF1Padding", "BC");
         cipher.init(Cipher.ENCRYPT_MODE, publicKey);
         return cipher.doFinal(rawKey);
     }
 
-    public static byte[] rsaDecryptKey(String keyEncryptionAlgorithm, byte[] encryptedKey, PrivateKey privateKey)
-            throws GeneralSecurityException, IOException {
+    public static byte[] rsaDecryptKey(String keyEncryptionAlgorithm,
+                                       byte[] encryptedKey,
+                                       PrivateKey privateKey) throws GeneralSecurityException, IOException {
         checkRsa(keyEncryptionAlgorithm);
         Cipher cipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA256AndMGF1Padding", "BC");
         cipher.init(Cipher.DECRYPT_MODE, privateKey);
         return cipher.doFinal(encryptedKey);
     }
 
-    private static void checkRsa(String keyEncryptionAlgorithm) throws IOException {
+    static void checkRsa(String keyEncryptionAlgorithm) throws IOException {
         if (!keyEncryptionAlgorithm.equals(BaseProperties.JOSE_RSA_OAEP_256_ALG_ID)) {
             throw new IOException("Unsupported RSA algorithm: " + keyEncryptionAlgorithm);
         }
     }
 
-    public static byte[] serverKeyAgreement(String keyEncryptionAlgorithm, ECPublicKey receivedPublicKey, PrivateKey privateKey) throws GeneralSecurityException, IOException {
+    public static byte[] serverKeyAgreement(String keyEncryptionAlgorithm,
+                                            ECPublicKey receivedPublicKey,
+                                            PrivateKey privateKey) throws GeneralSecurityException, IOException {
         if (!keyEncryptionAlgorithm.equals(BaseProperties.JOSE_ECDH_ES_ALG_ID)) {
             throw new IOException("Unsupported ECDH algorithm: " + keyEncryptionAlgorithm);
         }
         KeyAgreement keyAgreement = KeyAgreement.getInstance("ECDH", "BC");
         keyAgreement.init(privateKey);
         keyAgreement.doPhase(receivedPublicKey, true);
-        byte[] Z = keyAgreement.generateSecret();
-        return HashAlgorithms.SHA256.digest(Z);
+        byte[] z = keyAgreement.generateSecret();
+        return HashAlgorithms.SHA256.digest(z);
     }
 
-    public static byte[] clientKeyAgreement(String keyEncryptionAlgorithm, ECPublicKey[] generatedEphemeralKey, PublicKey staticKey) throws IOException, GeneralSecurityException {
+    public static byte[] clientKeyAgreement(String keyEncryptionAlgorithm,
+                                            ECPublicKey[] generatedEphemeralKey,
+                                            PublicKey staticKey) throws IOException, GeneralSecurityException {
         KeyPairGenerator generator = KeyPairGenerator.getInstance("EC", "BC");
         ECGenParameterSpec eccgen = new ECGenParameterSpec(KeyAlgorithms.getKeyAlgorithm(staticKey).getJCEName());
         generator.initialize (eccgen, new SecureRandom());

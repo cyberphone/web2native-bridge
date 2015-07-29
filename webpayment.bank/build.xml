@@ -45,7 +45,7 @@
   </condition>
 
   <target name="help">
-      <echo message="tomcat [-Dhttps=0] [-Derr.merchant.ca] mobilepki-ejbca localhost-ejbca zip-distribution"/>
+      <echo message="tomcat [-Dhttps=0] [-Derr.merchant.ca=0] [-Derr.media=0] mobilepki-ejbca localhost-ejbca zip-distribution"/>
   </target>
 
   <target name="_init" unless="app_path">
@@ -60,6 +60,7 @@
   </target>
 
   <target name="_build">
+    <property name="errormedia" value="false"/>
     <fixcrlf srcdir="${src.dir}"
        tab="remove"
        tablength="4"
@@ -74,10 +75,6 @@
            destdir="${temp.dir}"
            classpath="${compile.classpath}"
            includeAntRuntime="false"/>
-    <property name="encryptionkey" value="${encryptionkey_rsa}"/>
-    <property name="clientkey" value="${clientkey_rsa}"/>
-    <property name="bouncycastle.first" value="true"/>
-    <property name="webpki.jars" value="${library.dir}"/>
     <replace file="${temp.dir}/web.xml">
       <replacefilter token="@security-constraints@" value="${security.constraints}"/>
 	  <replacefilter token="@card-font@" value="${card.font}"/>
@@ -87,7 +84,8 @@
 	  <replacefilter token="@bank-decryptionkey2@" value="${encryptionkey_rsa}${keyfilext}"/>
       <replacefilter token="@merchant-root@" value="${merchant.var.root}.cer"/>
       <replacefilter token="@bank-client-root@" value="${clientroot}.cer"/>
-	</replace>
+      <replacefilter token="@err-media-type@" value="${errormedia}"/>
+      	</replace>
     <war destfile="${dist.dir}/${application}" webxml="${temp.dir}/web.xml">
       <classes dir="${temp.dir}">
          <exclude name="web.xml"/>
@@ -121,6 +119,9 @@
      </condition>
      <condition property="merchant_root" value="${paymentroot}" else="${merchantroot}">
        <isset property="err.merchant.root"/>
+     </condition>
+     <condition property="errormedia" value="true">
+       <isset property="err.media"/>
      </condition>
      <path id="tomcat.compile.classpath">
        <fileset dir="${common.lib.dir}">
