@@ -23,12 +23,27 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 public class HomeServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
     
+    static final String PULL_ATTR = "PULL";
+    
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        HTML.homePage(response);
+        HttpSession session = request.getSession(true);
+        boolean pullPaymentMode = false;
+        if (session.getAttribute(PULL_ATTR) == null) {
+            session.setAttribute(PULL_ATTR, pullPaymentMode);
+        } else {
+            pullPaymentMode = (boolean) session.getAttribute(PULL_ATTR);
+        }
+        HTML.homePage(response, pullPaymentMode);
+    }
+
+    public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        request.getSession(true).setAttribute(PULL_ATTR, request.getParameter("pull") != null);
+        response.sendRedirect("home");
     }
 }

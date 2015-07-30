@@ -44,13 +44,14 @@ public class PullPaymentServlet extends PaymentCoreServlet {
 
     @Override
     protected GenericAuthorizationResponse processInput(JSONObjectReader input,
+                                                        byte[] requestHash,
                                                         String clientIpAddress)
     throws IOException, GeneralSecurityException {
         PayerPullAuthorizationRequest request = new PayerPullAuthorizationRequest(input);
         String authUrl = request.getAuthUrl();
         JSONObjectWriter providerRequest = PayeePullAuthorizationRequest.encode(input.getObject(AUTH_DATA_JSON),
                                                                                 clientIpAddress,
-                                                                                new byte[]{0,6},
+                                                                                requestHash,
                                                                                 MerchantService.merchantKey);
         // Our JBoss installation has some port mapping issues...
         if (MerchantService.bankPortMapping != null) {

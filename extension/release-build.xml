@@ -1,0 +1,24 @@
+<project name="web2name bridge chrome extension release buils script" default="build" basedir=".">
+
+  <!-- set global properties for this build -->
+
+  <property name="src_dir" value="debug"/>
+  <property name="dest_dir" value="release"/>
+  
+  <target name="build">
+    <delete dir="${dest_dir}"/>
+    <mkdir dir="${dest_dir}"/>
+    <copy todir="${dest_dir}">
+      <fileset dir="${src_dir}"/>
+    </copy> 
+    <replaceregexp
+        match="console\.debug.*\);"
+        replace="// DEBUG"
+        flags="g">
+        <fileset dir="${dest_dir}">
+          <include name="*.js"/>
+        </fileset>
+    </replaceregexp>
+  </target>
+  
+</project>

@@ -30,6 +30,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.webpki.json.JSONArrayReader;
 import org.webpki.json.JSONObjectReader;
@@ -67,7 +68,10 @@ public class CheckoutServlet extends HttpServlet implements BaseProperties {
             }
         }
         savedShoppingCart.total = total;
-        request.getSession(true).setAttribute(SavedShoppingCart.SAVED_SHOPPING_CART, savedShoppingCart);
+        HttpSession session = request.getSession(true);
+        boolean pullPaymentMode = 
+            session.getAttribute(HomeServlet.PULL_ATTR) != null && (boolean)session.getAttribute(HomeServlet.PULL_ATTR);
+        session.setAttribute(SavedShoppingCart.SAVED_SHOPPING_CART, savedShoppingCart);
 
         JSONObjectWriter paymentRequest = PaymentRequest.encode("Demo Merchant",
                                                                 new BigDecimal(BigInteger.valueOf(total), 2),
@@ -75,7 +79,7 @@ public class CheckoutServlet extends HttpServlet implements BaseProperties {
                                                                 "#" + (nextReferenceId++),
                                                                 MerchantService.merchantKey);
 
-        request.getSession(true).setAttribute(REQUEST_HASH_ATTR, PaymentRequest.getRequestHash(paymentRequest));
+        session.setAttribute(REQUEST_HASH_ATTR, PaymentRequest.getRequestHash(paymentRequest));
 
         Vector<String> acceptedCards = new Vector<String>();
         for (CardTypes card : MerchantService.acceptedCards) {
@@ -84,11 +88,12 @@ public class CheckoutServlet extends HttpServlet implements BaseProperties {
         acceptedCards.add("NoSuchCard");
         JSONObjectWriter invokeRequest = Messages.createBaseMessage(Messages.INVOKE_WALLET)
             .setStringArray(ACCEPTED_CARD_TYPES_JSON, acceptedCards.toArray(new String[0]))
-            .setBoolean(PULL_PAYMENT_JSON, false)
+            .setBoolean(PULL_PAYMENT_JSON, pullPaymentMode)
             .setObject(PAYMENT_REQUEST_JSON, paymentRequest);
         
         HTML.checkoutPage(response,
                           savedShoppingCart,
+                          pullPaymentMode,
                           new String(invokeRequest.serializeJSONObject(JSONOutputFormats.JS_NATIVE), "UTF-8"));
     }
 

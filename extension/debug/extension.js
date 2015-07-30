@@ -17,7 +17,7 @@
  
  "use strict";
 
-console.debug("Extension loaded");
+console.log("Extension loaded");
 
 var web2native_bridge = 'org.webpki.w2nb';
 

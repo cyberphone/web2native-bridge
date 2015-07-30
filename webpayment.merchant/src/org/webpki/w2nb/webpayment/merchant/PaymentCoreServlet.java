@@ -32,7 +32,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONParser;
 
+import org.webpki.util.ArrayUtil;
+
 import org.webpki.w2nb.webpayment.common.BaseProperties;
+import org.webpki.w2nb.webpayment.common.GenericAuthorizationRequest;
 import org.webpki.w2nb.webpayment.common.GenericAuthorizationResponse;
 
 public abstract class PaymentCoreServlet extends HttpServlet implements BaseProperties {
@@ -44,26 +47,39 @@ public abstract class PaymentCoreServlet extends HttpServlet implements BaseProp
     static int transaction_id = 164006;
     
     protected abstract GenericAuthorizationResponse processInput(JSONObjectReader input,
+                                                                 byte[] requestHash,
                                                                  String clientIpAddress)
     throws IOException, GeneralSecurityException;
     
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         try {
+            byte[] requestHash = (byte[]) request.getSession(false).getAttribute(CheckoutServlet.REQUEST_HASH_ATTR);
             request.setCharacterEncoding("UTF-8");
-            JSONObjectReader input = JSONParser.parse(request.getParameter("data"));
+            JSONObjectReader input = JSONParser.parse(request.getParameter("authreq"));
             logger.info("Received:\n" + input);
             
-            GenericAuthorizationResponse authorization = processInput(input, request.getRemoteAddr());
-            logger.info("Successful authorization of request: "
-                        + authorization.getPaymentRequest().getReferenceId());
-          
+            GenericAuthorizationResponse authorization = processInput(input, requestHash, request.getRemoteAddr());
+            if (!ArrayUtil.compare(authorization.getPaymentRequest().getRequestHash(), requestHash)) {
+                throw new IOException("Non-matching \"" + REQUEST_HASH_JSON + "\"");
+            }
+
+            logger.info("Successful authorization of request: " + authorization.getPaymentRequest().getReferenceId());
+            HTML.resultPage(response,
+                            null,
+                            authorization.getPaymentRequest(), 
+                            authorization.getCardType(),
+                            GenericAuthorizationRequest.formatCardNumber(authorization.getCardReference()));   
+
         } catch (Exception e) {
             logger.log(Level.SEVERE, e.getMessage(), e);
+            response.setContentType("text/plain; charset=utf-8");
+            response.setHeader("Pragma", "No-Cache");
+            response.setDateHeader("EXPIRES", 0);
+            response.getOutputStream().println("Error: " + e.getMessage());
         }
+    }
 
-        response.setContentType("text/plain; charset=utf-8");
-        response.setHeader("Pragma", "No-Cache");
-        response.setDateHeader("EXPIRES", 0);
-        response.getOutputStream().println("Done");
-      }
-  }
+    public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        response.sendRedirect("home");
+    }
+}

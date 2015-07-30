@@ -28,6 +28,7 @@ public class PushPaymentServlet extends PaymentCoreServlet {
 
     @Override
     protected GenericAuthorizationResponse processInput(JSONObjectReader input,
+                                                        byte[] requestHash,
                                                         String clientIpAddress) throws IOException {
         return new GenericAuthorizationResponse(input);
     }

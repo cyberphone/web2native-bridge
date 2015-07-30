@@ -17,7 +17,7 @@
  
  "use strict";
 
-console.debug("Extension loaded");
+console.log("Extension loaded");
 
 var web2native_bridge = 'org.webpki.w2nb';
 
@@ -60,22 +60,22 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         var port = chrome.runtime.connectNative(web2native_bridge);
         ports[sender.tab.id] = port;
         port.onMessage.addListener(function(message) {
-            console.debug('rec: ' + JSON.stringify(message));
+            // DEBUG
             chrome.tabs.sendMessage(sender.tab.id, {message:message,tabid:sender.tab.id});
         });
         port.onDisconnect.addListener(function() {
-            console.debug('native disconnect');
+            // DEBUG
             getDisconnectPort(sender);
             chrome.tabs.sendMessage(sender.tab.id, {disconnect:true,tabid:sender.tab.id});
         });
-        console.debug('connect: ' + JSON.stringify(request));
+        // DEBUG
         port.postMessage({url:request.origin,application:request.application});
         sendResponse({success:sender.tab.id});
     } else if (request.src === 'webdis') {
-        console.debug('web disconnect');
+        // DEBUG
         getDisconnectPort(sender).disconnect();
     } else if (request.src === 'webmsg') {
-        console.debug('web message');
+        // DEBUG
         getPort(sender).postMessage(request.message);
     } else {
         sendResponse({err:{}});
