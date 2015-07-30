@@ -54,16 +54,16 @@ public class PullPaymentServlet extends PaymentCoreServlet {
                                                                                 MerchantService.merchantKey);
         // Our JBoss installation has some port mapping issues...
         if (MerchantService.bankPortMapping != null) {
-            URL url = new URL (authUrl);
-            authUrl = new URL (url.getProtocol (),
-                               url.getHost (),
-                               MerchantService.bankPortMapping,
-                               url.getFile ()).toExternalForm (); 
+            URL url = new URL(authUrl);
+            authUrl = new URL(url.getProtocol(),
+                              url.getHost(),
+                              MerchantService.bankPortMapping,
+                              url.getFile()).toExternalForm(); 
         }
         logger.info("About to send to \"" + authUrl + "\":\n" + providerRequest);
         HTTPSWrapper wrap = new HTTPSWrapper();
         wrap.setTimeout(TIMEOUT_FOR_REQUEST);
-        wrap.setHeader("Content-Type", BaseProperties.JSON_CONTENT_TYPE);
+        wrap.setHeader("Content-Type", MerchantService.jsonMediaType);
         wrap.setRequireSuccess(true);
         wrap.makePostRequest(authUrl,
                              providerRequest.serializeJSONObject(JSONOutputFormats.NORMALIZED));

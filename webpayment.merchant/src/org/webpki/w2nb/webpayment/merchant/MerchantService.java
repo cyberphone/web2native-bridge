@@ -24,7 +24,6 @@ import java.security.KeyStore;
 
 import java.util.EnumSet;
 import java.util.Set;
-
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -39,6 +38,7 @@ import org.webpki.json.JSONX509Verifier;
 
 import org.webpki.util.ArrayUtil;
 
+import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.CardTypes;
 import org.webpki.w2nb.webpayment.common.Currencies;
 import org.webpki.w2nb.webpayment.common.KeyStoreEnumerator;
@@ -64,6 +64,8 @@ public class MerchantService extends InitPropertyReader implements ServletContex
 
     static final String ADD_UNUSUAL_CARD      = "add_unusual_card";
 
+    static final String ERR_MEDIA             = "err_media_type";
+    
     static JSONX509Verifier paymentRoot;
     
     static ServerSigner merchantKey;
@@ -71,6 +73,8 @@ public class MerchantService extends InitPropertyReader implements ServletContex
     static Integer bankPortMapping;
     
     static Currencies currency;
+
+    static String jsonMediaType = BaseProperties.JSON_CONTENT_TYPE;
 
     InputStream getResource(String name) throws IOException {
         return this.getClass().getResourceAsStream(getPropertyString(name));
@@ -95,8 +99,8 @@ public class MerchantService extends InitPropertyReader implements ServletContex
         try {
             CustomCryptoProvider.forcedLoad (false);
 
-            if (getPropertyString (BANK_PORT_MAP).length () > 0) {
-                bankPortMapping = getPropertyInt (BANK_PORT_MAP);
+            if (getPropertyString(BANK_PORT_MAP).length () > 0) {
+                bankPortMapping = getPropertyInt(BANK_PORT_MAP);
             }
 
             merchantKey = new ServerSigner(new KeyStoreEnumerator(getResource(MERCHANT_EECERT),
@@ -111,6 +115,10 @@ public class MerchantService extends InitPropertyReader implements ServletContex
             }
          
             currency = Currencies.valueOf(getPropertyString(CURRENCY));
+
+            if (getPropertyBoolean(ERR_MEDIA)) {
+                jsonMediaType = "text/html";
+            }
 
             logger.info("Web2Native Bridge Merchant-server initiated");
         } catch (Exception e) {

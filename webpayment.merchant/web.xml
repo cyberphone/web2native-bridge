@@ -40,6 +40,12 @@
         <param-value>@add-unusual-card@</param-value>
     </context-param>
 
+    <context-param>
+        <description>Force media type error</description>
+        <param-name>err_media_type</param-name>
+        <param-value>@err-media-type@</param-value>
+    </context-param>
+
     <listener>
         <listener-class>org.webpki.w2nb.webpayment.merchant.MerchantService</listener-class>
     </listener>

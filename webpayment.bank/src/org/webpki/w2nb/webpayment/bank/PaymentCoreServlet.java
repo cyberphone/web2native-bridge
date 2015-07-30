@@ -50,7 +50,7 @@ public class PaymentCoreServlet extends HttpServlet implements BaseProperties {
     
     static int transaction_id = 164006;
     
-    public void doPost (HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+    public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         JSONObjectWriter authorizationResponse = null;
         String clientIpAddress = null;
         try {
@@ -59,7 +59,7 @@ public class PaymentCoreServlet extends HttpServlet implements BaseProperties {
                 throw new IOException("Content-Type must be \"" + JSON_CONTENT_TYPE + "\" , found: " + contentType);
             }
             GenericAuthorizationRequest genericAuthorizationRequest = null;
-            JSONObjectReader authorizationRequest = JSONParser.parse (ServletUtil.getData (request));
+            JSONObjectReader authorizationRequest = JSONParser.parse(ServletUtil.getData(request));
             logger.info("Received:\n" + authorizationRequest);
 
             ////////////////////////////////////////////////////////////////////////////
@@ -102,14 +102,14 @@ public class PaymentCoreServlet extends HttpServlet implements BaseProperties {
             logger.info("Returned to caller:\n" + authorizationResponse);
             
         } catch (Exception e) {
-            authorizationResponse = Messages.createBaseMessage (Messages.PROVIDER_GENERIC_AUTH_RES);
-            authorizationResponse.setString (ERROR_JSON, e.getMessage ());
-            logger.log (Level.SEVERE, e.getMessage ());
+            authorizationResponse = Messages.createBaseMessage(Messages.PROVIDER_GENERIC_AUTH_RES);
+            authorizationResponse.setString(ERROR_JSON, e.getMessage());
+            logger.log(Level.SEVERE, e.getMessage());
         }
 
-        response.setContentType (BankService.jsonMediaType);
-        response.setHeader ("Pragma", "No-Cache");
-        response.setDateHeader ("EXPIRES", 0);
-        response.getOutputStream ().write (authorizationResponse.serializeJSONObject (JSONOutputFormats.NORMALIZED));
+        response.setContentType(BankService.jsonMediaType);
+        response.setHeader("Pragma", "No-Cache");
+        response.setDateHeader("EXPIRES", 0);
+        response.getOutputStream().write(authorizationResponse.serializeJSONObject(JSONOutputFormats.NORMALIZED));
       }
   }

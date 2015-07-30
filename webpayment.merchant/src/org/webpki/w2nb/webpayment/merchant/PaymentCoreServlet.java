@@ -17,17 +17,21 @@
 package org.webpki.w2nb.webpayment.merchant;
 
 import java.io.IOException;
+
 import java.security.GeneralSecurityException;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
+
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONParser;
+
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.GenericAuthorizationResponse;
 
@@ -35,7 +39,7 @@ public abstract class PaymentCoreServlet extends HttpServlet implements BaseProp
 
     private static final long serialVersionUID = 1L;
     
-    static Logger logger = Logger.getLogger (PaymentCoreServlet.class.getCanonicalName());
+    static Logger logger = Logger.getLogger(PaymentCoreServlet.class.getCanonicalName());
     
     static int transaction_id = 164006;
     
@@ -43,10 +47,10 @@ public abstract class PaymentCoreServlet extends HttpServlet implements BaseProp
                                                                  String clientIpAddress)
     throws IOException, GeneralSecurityException;
     
-    public void doPost (HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+    public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         try {
             request.setCharacterEncoding("UTF-8");
-            JSONObjectReader input = JSONParser.parse (request.getParameter("data"));
+            JSONObjectReader input = JSONParser.parse(request.getParameter("data"));
             logger.info("Received:\n" + input);
             
             GenericAuthorizationResponse authorization = processInput(input, request.getRemoteAddr());
@@ -54,12 +58,12 @@ public abstract class PaymentCoreServlet extends HttpServlet implements BaseProp
                         + authorization.getPaymentRequest().getReferenceId());
           
         } catch (Exception e) {
-            logger.log (Level.SEVERE, e.getMessage ());
+            logger.log(Level.SEVERE, e.getMessage());
         }
 
-        response.setContentType ("text/plain; charset=utf-8");
-        response.setHeader ("Pragma", "No-Cache");
-        response.setDateHeader ("EXPIRES", 0);
-        response.getOutputStream ().println("Done");
+        response.setContentType("text/plain; charset=utf-8");
+        response.setHeader("Pragma", "No-Cache");
+        response.setDateHeader("EXPIRES", 0);
+        response.getOutputStream().println("Done");
       }
   }

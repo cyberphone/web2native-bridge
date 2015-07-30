@@ -28,8 +28,7 @@ public class HomeServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
     
-    public void doGet (HttpServletRequest request,
-                       HttpServletResponse response) throws IOException, ServletException {
-        HTML.homePage (response);
+    public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        HTML.homePage(response);
     }
 }
