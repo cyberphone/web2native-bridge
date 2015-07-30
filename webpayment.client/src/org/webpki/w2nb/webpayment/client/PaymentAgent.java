@@ -395,7 +395,7 @@ public class PaymentAgent {
 
             JLabel headerText = new JLabel("Select Card:");
             headerText.setFont(standardFont);
-            c.insets = new Insets(fontSize, fontSize, fontSize, fontSize);
+            c.insets = new Insets(fontSize / 2, fontSize, fontSize, fontSize);
             c.anchor = GridBagConstraints.WEST;
             cardSelectionView.add(headerText, c);
 
@@ -1000,7 +1000,7 @@ public class PaymentAgent {
             terminate();
         }
 
-        frame = new JDialog(new JFrame(), "Payment Request [" + args[1] + "]");
+        frame = new JDialog(new JFrame(), "Payment Request [" + domainName + "]");
         frame.setResizable(false);
         ApplicationWindow md = new ApplicationWindow();
         frame.pack();
