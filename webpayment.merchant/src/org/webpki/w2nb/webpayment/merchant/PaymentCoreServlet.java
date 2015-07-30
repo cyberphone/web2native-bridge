@@ -58,7 +58,7 @@ public abstract class PaymentCoreServlet extends HttpServlet implements BaseProp
                         + authorization.getPaymentRequest().getReferenceId());
           
         } catch (Exception e) {
-            logger.log(Level.SEVERE, e.getMessage());
+            logger.log(Level.SEVERE, e.getMessage(), e);
         }
 
         response.setContentType("text/plain; charset=utf-8");

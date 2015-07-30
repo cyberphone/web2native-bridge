@@ -104,7 +104,7 @@ public class PaymentCoreServlet extends HttpServlet implements BaseProperties {
         } catch (Exception e) {
             authorizationResponse = Messages.createBaseMessage(Messages.PROVIDER_GENERIC_AUTH_RES);
             authorizationResponse.setString(ERROR_JSON, e.getMessage());
-            logger.log(Level.SEVERE, e.getMessage());
+            logger.log(Level.SEVERE, e.getMessage(), e);
         }
 
         response.setContentType(BankService.jsonMediaType);
