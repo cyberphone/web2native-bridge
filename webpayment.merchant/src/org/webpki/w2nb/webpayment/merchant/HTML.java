@@ -17,15 +17,12 @@
 package org.webpki.w2nb.webpayment.merchant;
 
 import java.io.IOException;
-import java.util.Vector;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
+
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.webpki.w2nb.webpayment.common.BaseProperties;
-import org.webpki.w2nb.webpayment.common.Currencies;
 import org.webpki.w2nb.webpayment.common.Messages;
 import org.webpki.w2nb.webpayment.common.PaymentRequest;
 
@@ -98,7 +95,7 @@ public class HTML {
             if (bodyscript.charAt(0) != '>') {
                 s.append(' ');
             }
-             s.append(bodyscript);
+            s.append(bodyscript);
         }
         s.append("><div onclick=\"document.location.href='home"
             + "'\" title=\"Home sweet home...\" style=\"cursor:pointer;position:absolute;top:15px;"
@@ -120,7 +117,7 @@ public class HTML {
         response.getOutputStream().write(html.getBytes("UTF-8"));
     }
 
-    public static void homePage(HttpServletResponse response) throws IOException, ServletException {
+    public static void homePage(HttpServletResponse response, boolean pullPaymentMode) throws IOException, ServletException {
         HTML.output(response, HTML.getHTML(null, null,
                 "<tr><td width=\"100%\" align=\"center\" valign=\"middle\">" +
                 "<table style=\"max-width:600px;\" cellpadding=\"4\">" +
@@ -142,7 +139,10 @@ public class HTML {
 //TODO
 //                   "<tr style=\"text-align:left\"><td><a href=\"" + "hh" + "/cards\">Initialize Payment Cards&nbsp;&nbsp;</a></td><td><i>Mandatory</i> First Step</td></tr>" +
                    "<tr style=\"text-align:left\"><td><a href=\"" + "shop" + "\">Go To Merchant</a></td><td>Shop Til You Drop!</td></tr>" +
-                   "<tr><td style=\"text-align:center;padding-top:15pt;padding-bottom:5pt\" colspan=\"2\"><b>Documentation</b></td></tr>" +
+                   "<tr style=\"text-align:left\"><td><form name=\"pull\" method=\"POST\"><input type=\"checkbox\" name=\"pull\" onclick=\"document.forms.pull.submit()\"" +
+                   (pullPaymentMode ? " checked" : "") +
+                   "></form></td><td>Pull payment option</td></tr>" +
+                                  "<tr><td style=\"text-align:center;padding-top:15pt;padding-bottom:5pt\" colspan=\"2\"><b>Documentation</b></td></tr>" +
                    "<tr style=\"text-align:left\"><td><a target=\"_blank\" href=\"http://webpki.org/papers/PKI/pki-webcrypto.pdf\">WebCrypto++</a></td><td><i>Conceptual</i> Specification</td></tr>" +
                    "<tr style=\"text-align:left\"><td><a target=\"_blank\" href=\"http://webpki.org/papers/PKI/EMV-Tokenization-SET-3DSecure-WebCryptoPlusPlus-combo.pdf#page=4\">Demo Payment System</a></td><td>State Diagram Etc.</td></tr>" +
                    "<tr style=\"text-align:left\"><td><a target=\"_blank\" href=\"https://code.google.com/p/openkeystore/source/browse/#svn/wcpp-payment-demo\">Demo Source Code</a></td><td>For Nerds...</td></tr>" +
@@ -317,6 +317,7 @@ public class HTML {
 
     public static void checkoutPage(HttpServletResponse response,
                                     SavedShoppingCart savedShoppingCart, 
+                                    boolean pullPaymentMode,
                                     String invoke_json) throws IOException, ServletException {
         StringBuffer s = new StringBuffer(
             "<tr><td width=\"100%\" align=\"center\" valign=\"middle\">" +
@@ -341,29 +342,89 @@ public class HTML {
          .append("</td></tr>" +
                  "</table></td></tr>" +
                  "<tr><td style=\"text-align:center;padding-top:10pt\" id=\"pay\">")
-   //      .append(getIframeHTML())
+         .append("Wallet")
          .append("</td></tr></table>" +
-                  "<form name=\"shoot\" method=\"POST\" action=\"authreq\">" +
-                  "<input type=\"hidden\" name=\"authreq\" id=\"authreq\">" +
+                  "<form name=\"shoot\" method=\"POST\" action=\"")
+         .append(pullPaymentMode ? "pullpay" : "pushpay")
+         .append("\"><input type=\"hidden\" name=\"authreq\" id=\"authreq\">" +
                   "</form>" +
-//TODO
-//                  "<form name=\"restore\" method=\"POST\" action=\"" + PaymentDemoService.merchant_url + "\">" +
-                  "<form name=\"restore\" method=\"POST\" action=\"\">" +
+                  "<form name=\"restore\" method=\"POST\" action=\"shop\">" +
                   "</form></td></tr>");
         
         StringBuffer temp_string = new StringBuffer("\n\n\"use strict\";\n\nvar invokeRequest =\n")
             .append(invoke_json)
-            .append(";\n");
-        HTML.output(response, HTML.getHTML(temp_string.toString(), null, s.toString()));
+            .append(";\n\n" +
+
+                    "var nativePort = null;\n\n" +
+
+                    "function closeWallet() {\n" +
+                    "    if (nativePort) {\n" +
+                    "        nativePort.disconnect();\n" +
+                    "        nativePort = null;\n" +
+                    "    }\n" +
+                    "}\n\n" +
+
+                    "function setString(message) {\n" +
+                    "    closeWallet();\n" +
+                    "    console.debug(message);\n" +
+                    "}\n\n" +
+
+                    "function activateWallet() {\n" +
+                    "    var initMode = true;\n" +
+                    "    if (!navigator.nativeConnect) {\n" +
+                    "        setString('\"navigator.nativeConnect\" not found, \\ncheck Chrome Web2Native Bridge extension settings');\n" +
+                    "        return;\n" +
+                    "    }\n" +
+                    "    navigator.nativeConnect(\"org.webpki.w2nb.webpayment.client\").then(function(port) {\n" +
+                    "        nativePort = port;\n" +
+                    "        port.addMessageListener(function(message) {\n" +
+                    "            if (message[\"@context\"] != \"" + BaseProperties.W2NB_PAY_DEMO_CONTEXT_URI + "\") {\n" +
+                    "                setString(\"Missing or wrong \\\"@context\\\"\");\n" +
+                    "                return;\n" +
+                    "            }\n" +
+                    "            var qualifier = message[\"@qualifier\"];\n" +
+                    "            if ((initMode && qualifier != \"" + Messages.WALLET_IS_READY.toString() + "\")  ||\n" +
+                    "                (!initMode && qualifier != \"")
+             .append(pullPaymentMode ? 
+                     Messages.PAYER_PULL_AUTH_REQ.toString() 
+                                     :
+                     Messages.PROVIDER_GENERIC_AUTH_RES.toString())
+             .append("\")) {\n" +  
+                    "                setString(\"Wrong or missing \\\"@qualifier\\\"\");\n" +
+                    "                return;\n" +
+                    "            }\n" +
+                    "            if (initMode) {\n" +
+                    "                initMode = false;\n" +
+                    "                nativePort.postMessage(invokeRequest);\n" +
+                    "            } else {\n" +
+                    "                document.getElementById(\"authreq\").value = JSON.stringify(message);\n" +
+                    "                document.forms.shoot.submit();\n" +
+                    "            }\n"+
+                    "        });\n" +
+                    "        port.addDisconnectListener(function() {\n" +
+                    "            if (nativePort) {\n" +
+                    "                setString(\"Application Unexpectedly disconnected\");\n" +
+                    "            }\n" +
+                    "            nativePort = null;\n" +
+                    "        });\n" +
+                    "    }, function(err) {\n" +
+                    "        console.debug(err);\n" +
+                    "    });\n" +
+                    "}\n\n" +
+
+                    "window.addEventListener(\"beforeunload\", function(event) {\n" +
+                    "    closeWallet();\n" +
+                    "});\n\n");
+        HTML.output(response, HTML.getHTML(temp_string.toString(),
+                              "onload=\"activateWallet()\"",
+                              s.toString()));
     }
 
     public static void resultPage(HttpServletResponse response,
                                   String error_message,
                                   PaymentRequest paymentRequest, 
                                   String cardType,
-                                  String referenceId,
-                                  String transaction_request,
-                                  String transaction_response) throws IOException, ServletException {
+                                  String cardReference) throws IOException, ServletException {
         StringBuffer s = new StringBuffer("<tr><td width=\"100%\" align=\"center\" valign=\"middle\">");
         if (error_message == null) {
             s.append("<table>" +
@@ -377,17 +438,18 @@ public class HTML {
             .append("</td><td style=\"text-align:center\">")
             .append(cardType)
             .append("</td><td style=\"text-align:center\">")
-            .append(referenceId)
+            .append(cardReference)
             .append("</td></tr></table></td></tr></table>");
         } else {
             s.append("There was a problem with your order: " + error_message);
         }
+        s.append("</td></tr>");
         HTML.output(response, 
-                    HTML.getHTML("function listFinalExchange() {\n" +
-                                 "    console.debug('Transaction request:\\n" + transaction_request + "');\n" +
-                                 "    console.debug('Transaction result:\\n" + transaction_response + "')" +
-                                 "}\n", 
-                                 "onload=\"listFinalExchange()\"", 
-                                 s.append("</td></tr>").toString()));
+                    HTML.getHTML("history.pushState(null, null, 'payment');\n" +
+                                 "window.addEventListener('popstate', function(event) {\n" +
+                                 "    history.pushState(null, null, 'payment');\n" +
+                                 "});",
+                                 null,
+                                 s.toString()));
     }
 }
