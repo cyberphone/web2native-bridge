@@ -789,7 +789,7 @@ public class PaymentAgent {
                 logger.info("Received:\n" + invokeMessage);
                 Messages.parseBaseMessage(Messages.INVOKE_WALLET, invokeMessage);
                 final String[] cardTypes = invokeMessage.getStringArray(BaseProperties.ACCEPTED_CARD_TYPES_JSON);
-                pullPayment = invokeMessage.getBooleanConditional(BaseProperties.PULL_PAYMENT_JSON);
+                pullPayment = invokeMessage.getBoolean(BaseProperties.PULL_PAYMENT_JSON);
                 paymentRequest = new PaymentRequest(invokeMessage.getObject(BaseProperties.PAYMENT_REQUEST_JSON));
                 timer.cancel();
                 if (running) {
