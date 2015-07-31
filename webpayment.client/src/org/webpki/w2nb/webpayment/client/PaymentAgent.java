@@ -956,6 +956,10 @@ public class PaymentAgent {
             public void run() {
                 try {
                     if (!testMode && !pullPayment) {
+                        // In the "push" payment model the Wallet send the user-authorized request
+                        // to the payment provider (bank) for final authorization and funds checking.
+                        // The resulting message is what is finally handed over to the merchant (payee).
+                        // The URL to the payment provider is a part of the user's payment credential (card).
                         HTTPSWrapper wrap = new HTTPSWrapper();
                         wrap.setTimeout(TIMEOUT_FOR_REQUEST);
                         wrap.setHeader("Content-Type", BaseProperties.JSON_CONTENT_TYPE);

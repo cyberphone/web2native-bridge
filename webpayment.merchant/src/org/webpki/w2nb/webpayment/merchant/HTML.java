@@ -52,39 +52,6 @@ public class HTML {
         ".stdbtn {font-weight:normal;font-size:10pt;font-family:" + FONT_ARIAL + "}\n" +
         ".updnbtn {vertical-align:middle;text-align:center;font-weight:normal;font-size:8px;font-family:" + FONT_VERDANA + ";margin:0px;border-spacing:0px;padding:2px 3px 2px 3px}\n";
     
-    static String encode(String val) {
-        if (val != null) {
-            StringBuffer buf = new StringBuffer(val.length() + 8);
-            char c;
-            for (int i = 0; i < val.length(); i++) {
-                c = val.charAt(i);
-                switch (c) {
-                    case '<':
-                      buf.append("&lt;");
-                      break;
-                    case '>':
-                      buf.append("&gt;");
-                      break;
-                    case '&':
-                      buf.append("&amp;");
-                      break;
-                    case '\"':
-                      buf.append("&#034;");
-                      break;
-                    case '\'':
-                      buf.append("&#039;");
-                      break;
-                    default:
-                      buf.append(c);
-                      break;
-                }
-            }
-            return buf.toString();
-        } else {
-            return new String("");
-        }
-    }
-    
     static String getHTML(String javascript, String bodyscript, String box) {
         StringBuffer s = new StringBuffer(HTML_INIT + "html, body {margin:0px;padding:0px;height:100%}</style>");
         if (javascript != null) {
