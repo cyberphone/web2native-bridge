@@ -14,16 +14,6 @@
  *  limitations under the License.
  *
  */
-
-// Web2Native Bridge emulator Payment Agent (a.k.a. Wallet) application
-
-// Note: This is not a product. It is an advanced prototype intended
-// for evaluating a bunch of WebPKI.org technologies including:
-// - SKS (Secure Key Store)
-// - JCS (Java Clear-text Signature)
-// - Federation using credentials with embedded links
-// and (of course...), the Web2Native Bridge.
-
 package org.webpki.w2nb.webpayment.client;
 
 import java.awt.CardLayout;
@@ -119,6 +109,18 @@ import org.webpki.w2nbproxy.StdinJSONPipe;
 import org.webpki.w2nbproxy.StdoutJSONPipe;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+
+//////////////////////////////////////////////////////////////////////////
+// Web2Native Bridge emulator Payment Agent (a.k.a. Wallet) application //
+//                                                                      //
+// Note: This is not a product. It is an advanced prototype intended    //
+// for evaluating a bunch of WebPKI.org technologies including:         //
+//  - SKS (Secure Key Store)                                            //
+//  - JCS (Java Clear-text Signature)                                   //
+//  - Federation using credentials with embedded links                  //
+// and (of course...), the Web2Native Bridge.                           //
+//                                                                      //
+//////////////////////////////////////////////////////////////////////////
 
 public class PaymentAgent {
 
@@ -787,15 +789,17 @@ public class PaymentAgent {
                 paymentRequest = new PaymentRequest(invokeMessage.getObject(BaseProperties.PAYMENT_REQUEST_JSON));
                 timer.cancel();
                 if (running) {
-                    // Swing is rather bad for multi-threading...
+                    // Swing is rather poor for multi-threading...
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
                             running = false;
                             try {
+                                // Primary information to the user...
                                 amountString = paymentRequest.getCurrency()
                                     .convertAmountToString(paymentRequest.getAmount());
                                 payeeString = paymentRequest.getPayee();
+
                                 // Enumerate keys but only go for those who are intended for
                                 // Web Payments (according to our schema...)
                                 EnumeratedKey ek = new EnumeratedKey();
@@ -810,6 +814,10 @@ public class PaymentAgent {
                                         }
                                         throw new Exception(e);
                                     }
+
+                                    // This key had the attribute signifying that it is a payment credential
+                                    // for the fictitious payment scheme this system is supporting but it
+                                    // might still not match the Payee's list of supported sub-types (brands).
                                     collectPotentialCard(ek.getKeyHandle(),
                                                          JSONParser.parse(ext.getExtensionData(SecureKeyStore.SUB_TYPE_EXTENSION)),
                                                          cardTypes);
@@ -903,6 +911,9 @@ public class PaymentAgent {
                     return false;
                 }
                 try {
+                    // User authorizations are always signed by a key that only needs to be
+                    // understood by the issuing Payment Provider (bank).  Tokenization and
+                    // user anonymization is also perormed by the Payment Provider.
                     resultMessage = GenericAuthorizationRequest.encode(
                         paymentRequest,
                         domainName,
@@ -925,6 +936,9 @@ public class PaymentAgent {
                         });
                     if (pullPayment) {
                         logger.info("Authorization before \"pull\" encryption:\n" + resultMessage);
+
+                        // "Pull" payments must be encrypted in order to not leak user information to Payees.
+                        // Only the proper Payment Provider can decrypt and process "pull" user authorizations.
                         resultMessage = PayerPullAuthorizationRequest.encode(resultMessage,
                                                                              selectedCard.authUrl,
                                                                              selectedCard.contentEncryptionAlgorithm,
