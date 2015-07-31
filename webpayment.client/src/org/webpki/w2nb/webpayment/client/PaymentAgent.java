@@ -295,7 +295,7 @@ public class PaymentAgent {
         JPasswordField pinText;
         JButton selectedCardImage;
         JLabel selectedCardNumber;
-        JButton cancelAuthorizationButton;  // Used as a master for creating unified button widths
+        JButton authorizationCancelButton;  // Used as a master for creating unified button widths
         ImageIcon dummyCardIcon;
         boolean macOS;
         boolean retinaFlag;
@@ -428,7 +428,7 @@ public class PaymentAgent {
                 cardSelectionView.add(initCardSelectionViewCore(cards), c);
             }
 
-            JButtonSlave cancelButton = new JButtonSlave(BUTTON_CANCEL, cancelAuthorizationButton);
+            JButtonSlave cancelButton = new JButtonSlave(BUTTON_CANCEL, authorizationCancelButton);
             cancelButton.setFont(standardFont);
             cancelButton.setToolTipText(TOOLTIP_CANCEL);
             cancelButton.addActionListener(new ActionListener() {
@@ -561,11 +561,11 @@ public class PaymentAgent {
             c.anchor = GridBagConstraints.SOUTHWEST;
             c.fill = GridBagConstraints.NONE;
             c.weighty = 0.0;
-            cancelAuthorizationButton = new JButton(BUTTON_CANCEL);
-            cancelAuthorizationButton.setFont(standardFont);
-            cancelAuthorizationButton.setToolTipText(TOOLTIP_CANCEL);
-            authorizationView.add(cancelAuthorizationButton, c);
-            cancelAuthorizationButton.addActionListener(new ActionListener() {
+            authorizationCancelButton = new JButton(BUTTON_CANCEL);
+            authorizationCancelButton.setFont(standardFont);
+            authorizationCancelButton.setToolTipText(TOOLTIP_CANCEL);
+            authorizationView.add(authorizationCancelButton, c);
+            authorizationCancelButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     terminate();
@@ -577,14 +577,18 @@ public class PaymentAgent {
             c.gridwidth = 1;
             c.insets = new Insets(0, 0, fontSize, 0);
             c.anchor = GridBagConstraints.SOUTH;
-            JButtonSlave okAuthorizationButton = new JButtonSlave(BUTTON_OK, cancelAuthorizationButton);
-            okAuthorizationButton.setFont(standardFont);
-            okAuthorizationButton.setToolTipText(TOOLTIP_PAY_OK);
-            authorizationView.add(okAuthorizationButton, c);
-            okAuthorizationButton.addActionListener(new ActionListener() {
+            JButtonSlave authorizationOkButton = new JButtonSlave(BUTTON_OK, authorizationCancelButton);
+            authorizationOkButton.setFont(standardFont);
+            authorizationOkButton.setToolTipText(TOOLTIP_PAY_OK);
+            authorizationView.add(authorizationOkButton, c);
+            authorizationOkButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     if (userAuthorizationSucceeded()) {
+
+                        // The user have done his/her part, now it is up to the rest of
+                        // the infrastructure carry out the user's request.  This may take
+                        // a few seconds so we put up the "Waiting" sign again.
                         waitingText.setText("Payment processing - Please wait");
                         ((CardLayout)views.getLayout()).show(views, VIEW_WAITING);
 
@@ -675,7 +679,7 @@ public class PaymentAgent {
             c.insets = new Insets(0, fontSize * 2, 0, fontSize * 2);
             c.gridy = 1;
             pane.add(errorLabel, c);
-            JButtonSlave okButton = new JButtonSlave(BUTTON_OK, cancelAuthorizationButton);
+            JButtonSlave okButton = new JButtonSlave(BUTTON_OK, authorizationCancelButton);
             okButton.setFont(standardFont);
             c.insets = new Insets(fontSize, fontSize * 2, fontSize, fontSize * 2);
             c.gridy = 2;
