@@ -312,6 +312,7 @@ public class PaymentAgent {
         boolean pullPayment;
         
         ApplicationWindow() {
+            // First we measure all the panes to be used to get the size of the holding window
             views = frame.getContentPane();
             views.setLayout(new CardLayout());
             int screenResolution = Toolkit.getDefaultToolkit().getScreenResolution();
@@ -454,6 +455,7 @@ public class PaymentAgent {
         }
 
         void initAuthorizationView() {
+            // Mastering "GridBagLayout"? Not really...  
             JPanel authorizationView = new JPanel();
             authorizationView.setBackground(Color.WHITE);
             authorizationView.setLayout(new GridBagLayout());
@@ -575,16 +577,18 @@ public class PaymentAgent {
             c.gridwidth = 1;
             c.insets = new Insets(0, 0, fontSize, 0);
             c.anchor = GridBagConstraints.SOUTH;
-            JButtonSlave okButton = new JButtonSlave(BUTTON_OK, cancelAuthorizationButton);
-            okButton.setFont(standardFont);
-            okButton.setToolTipText(TOOLTIP_PAY_OK);
-            authorizationView.add(okButton, c);
-            okButton.addActionListener(new ActionListener() {
+            JButtonSlave okAuthorizationButton = new JButtonSlave(BUTTON_OK, cancelAuthorizationButton);
+            okAuthorizationButton.setFont(standardFont);
+            okAuthorizationButton.setToolTipText(TOOLTIP_PAY_OK);
+            authorizationView.add(okAuthorizationButton, c);
+            okAuthorizationButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     if (userAuthorizationSucceeded()) {
                         waitingText.setText("Payment processing - Please wait");
                         ((CardLayout)views.getLayout()).show(views, VIEW_WAITING);
+
+                        // This is a multi-threaded application, yes!
                         new PerformPayment().start();
                     }
                 }
@@ -801,7 +805,7 @@ public class PaymentAgent {
                                 payeeString = paymentRequest.getPayee();
 
                                 // Enumerate keys but only go for those who are intended for
-                                // Web Payments (according to our schema...)
+                                // Web Payments (according to our fictitious payment schema...)
                                 EnumeratedKey ek = new EnumeratedKey();
                                 while ((ek = sks.enumerateKeys(ek.getKeyHandle())) != null) {
                                     Extension ext = null;
@@ -913,7 +917,7 @@ public class PaymentAgent {
                 try {
                     // User authorizations are always signed by a key that only needs to be
                     // understood by the issuing Payment Provider (bank).  Tokenization and
-                    // user anonymization is also perormed by the Payment Provider.
+                    // user anonymization is also performed by the Payment Provider.
                     resultMessage = GenericAuthorizationRequest.encode(
                         paymentRequest,
                         domainName,
@@ -1019,7 +1023,7 @@ public class PaymentAgent {
         }
         Security.insertProviderAt(new BouncyCastleProvider(), 1);
 
-        // Respond to caller to indicate that we are (almost) ready
+        // Respond to caller to indicate that we are (almost) ready for action
         try {
             if (args[1].startsWith("http")) {
                 domainName = new URL(args[1]).getHost();
@@ -1046,7 +1050,11 @@ public class PaymentAgent {
                 terminate();
             }
         });
+
+        // Show the "Waiting" window
         frame.setVisible(true);
+
+        // Start reading and processing the payment request that should be waiting for us at this stage.
         md.start();
     }
 }
