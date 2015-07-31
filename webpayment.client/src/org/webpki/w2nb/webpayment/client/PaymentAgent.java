@@ -17,6 +17,13 @@
 
 // Web2Native Bridge emulator Payment Agent (a.k.a. Wallet) application
 
+// Note: This is not a product. It is an advanced prototype intended
+// for evaluating a bunch of WebPKI.org technologies including:
+// - SKS (Secure Key Store)
+// - JCS (Java Clear-text Signature)
+// - Federation using credentials with embedded links
+// and (of course...), the Web2Native Bridge.
+
 package org.webpki.w2nb.webpayment.client;
 
 import java.awt.CardLayout;
@@ -956,21 +963,21 @@ public class PaymentAgent {
             public void run() {
                 try {
                     if (!testMode && !pullPayment) {
-                        // In the "push" payment model the Wallet send the user-authorized request
+                        // In the "push" payment model the Wallet sends the user-authorized request
                         // to the Payment Provider (bank) for final authorization and funds checking.
                         // The resulting message is what is finally handed over to the Merchant (Payee).
                         // The URL to the Payment Provider is a part of the user's payment credential (card).
-                        HTTPSWrapper wrap = new HTTPSWrapper();
-                        wrap.setTimeout(TIMEOUT_FOR_REQUEST);
-                        wrap.setHeader("Content-Type", BaseProperties.JSON_CONTENT_TYPE);
-                        wrap.setRequireSuccess(true);
-                        wrap.makePostRequest(selectedCard.authUrl,
-                                             resultMessage.serializeJSONObject(JSONOutputFormats.NORMALIZED));
-                        String mimeType = wrap.getContentType();
+                        HTTPSWrapper httpClient = new HTTPSWrapper();
+                        httpClient.setTimeout(TIMEOUT_FOR_REQUEST);
+                        httpClient.setHeader("Content-Type", BaseProperties.JSON_CONTENT_TYPE);
+                        httpClient.setRequireSuccess(true);
+                        httpClient.makePostRequest(selectedCard.authUrl,
+                                                   resultMessage.serializeJSONObject(JSONOutputFormats.NORMALIZED));
+                        String mimeType = httpClient.getContentType();
                         if (!mimeType.equals(BaseProperties.JSON_CONTENT_TYPE)) {
                             throw new IOException("Improper media type: " + mimeType);
                         }
-                        resultMessage = new JSONObjectWriter(JSONParser.parse(wrap.getData()));
+                        resultMessage = new JSONObjectWriter(JSONParser.parse(httpClient.getData()));
                         logger.info("Returned from payment provider for handover to payee via the browser:\n"
                                     + resultMessage);
                     }
