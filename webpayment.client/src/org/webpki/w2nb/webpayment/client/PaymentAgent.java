@@ -957,9 +957,9 @@ public class PaymentAgent {
                 try {
                     if (!testMode && !pullPayment) {
                         // In the "push" payment model the Wallet send the user-authorized request
-                        // to the payment provider (bank) for final authorization and funds checking.
-                        // The resulting message is what is finally handed over to the merchant (payee).
-                        // The URL to the payment provider is a part of the user's payment credential (card).
+                        // to the Payment Provider (bank) for final authorization and funds checking.
+                        // The resulting message is what is finally handed over to the Merchant (Payee).
+                        // The URL to the Payment Provider is a part of the user's payment credential (card).
                         HTTPSWrapper wrap = new HTTPSWrapper();
                         wrap.setTimeout(TIMEOUT_FOR_REQUEST);
                         wrap.setHeader("Content-Type", BaseProperties.JSON_CONTENT_TYPE);
@@ -974,7 +974,15 @@ public class PaymentAgent {
                         logger.info("Returned from payment provider for handover to payee via the browser:\n"
                                     + resultMessage);
                     }
+
+                    // In both the "push" and "pull" modes the Wallet finishes by sending the specific
+                    // authorization message through the Web2Native Bridge interface to the invoking
+                    // Merchant (Payee) web page which in turn posts it to the Merchant server.  The
+                    // latter should return a new web-page which causes the Wallet to unload (disappear).
+                    // Any further communication with the user (including "insufficient funds") is
+                    // supposed to be performed using standard web technology.
                     stdout.writeJSONObject(resultMessage);
+
                 } catch (Exception e) {
                     logger.log(Level.SEVERE, "Communication error", e);
                     terminatingError("<html>*** Communication Error ***<br>Check log file for details.</html>");
