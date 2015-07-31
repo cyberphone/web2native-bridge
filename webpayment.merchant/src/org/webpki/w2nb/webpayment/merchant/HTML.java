@@ -402,10 +402,8 @@ public class HTML {
                     "            }\n"+
                     "        });\n" +
                     "        port.addDisconnectListener(function() {\n" +
-                    "            if (nativePort) {\n" +
-                    "                setString(\"Application Unexpectedly disconnected\");\n" +
-                    "            }\n" +
                     "            nativePort = null;\n" +
+                    "            document.forms.restore.submit();\n" +
                     "        });\n" +
                     "    }, function(err) {\n" +
                     "        console.debug(err);\n" +
