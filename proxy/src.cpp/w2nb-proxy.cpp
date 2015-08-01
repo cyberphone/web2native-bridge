@@ -67,7 +67,9 @@ static char* getJSONProperty (char *name) {
 int main(int argc, char *argv[]) {
     // Reading an initial JSON message which can be of two kinds:
     // 1. Proxy verification which consists of an object {"proxyVersion":"n.nn"}
-    // 2. Java application call which consists of an object ("application":"dotted-path", "url":"invocation-url"}
+    // 2. Java application call which consists of an object ("application":"dotted-path",
+	//                                                       "url":"invocation-url",
+    //                                                       "argumentsB64":"base64url-encoded-json-object"}
 
     // Chrome presumes message length in native order. Not very cool.
     // The following code therefore only runs on little-endian CPUs.
@@ -128,6 +130,9 @@ int main(int argc, char *argv[]) {
     strcat(cmd, ".log\" ");
 
     strcat(cmd, getJSONProperty("\"url\":"));
+
+	strcat(cmd, " ");
+	strcat(cmd, getJSONProperty("\"argumentsB64\":"));
 
     for (int i = 1; i < argc; i++) {
         strcat(cmd," ");

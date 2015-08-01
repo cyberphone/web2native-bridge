@@ -96,6 +96,7 @@ import org.webpki.sks.SecureKeyStore;
 import org.webpki.sks.test.SKSReferenceImplementation;
 
 import org.webpki.util.ArrayUtil;
+import org.webpki.util.Base64URL;
 
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.CredentialProperties;
@@ -1026,18 +1027,42 @@ public class PaymentAgent {
             logger.info("ARG[" + i + "]=" + args[i]);
         }
         Security.insertProviderAt(new BouncyCastleProvider(), 1);
+/*
+  "screenWidth": 1600,
+  "screenHeight": 900,
+  "windowX": 65,
+  "windowY": 4,
+  "windowOuterWidth": 1484,
+  "windowOuterHeight": 812,
+  "windowInnerWidth": 1468,
+  "windowInnerHeight": 436
 
-        // Respond to caller to indicate that we are (almost) ready for action
+ */
+        Dimension browserScreenDimensions = null;
+        Dimension windowPosition = null;
+        Dimension windowOuter = null;
+        Dimension windowInner = null;
         try {
+            JSONObjectReader arguments = JSONParser.parse(Base64URL.decode(args[2]));
+            if (arguments.hasProperty("screenWidth")) {
+                browserScreenDimensions = new Dimension(arguments.getInt("screenWidth"),
+                                                        arguments.getInt("screenHeight"));
+                windowPosition = new Dimension(arguments.getInt("windowX"),
+                                               arguments.getInt("windowY"));
+                windowOuter = new Dimension(arguments.getInt("windowOuterWidth"),
+                                            arguments.getInt("windowOuterHeight"));
+                windowInner = new Dimension(arguments.getInt("windowInnerWidth"),
+                                            arguments.getInt("windowInnerHeight"));
+            }
+            logger.info("Arguments: " + arguments);
             if (args[1].startsWith("http")) {
                 domainName = new URL(args[1]).getHost();
             } else {
                 testMode = true;
                 domainName = args[1];
             }
-            stdout.writeJSONObject(Messages.createBaseMessage(Messages.WALLET_IS_READY));
-        } catch (IOException e) {
-            logger.log(Level.SEVERE, "Error writing to browser", e);
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "nativeConnect argument errors", e);
             terminate();
         }
 
@@ -1045,8 +1070,24 @@ public class PaymentAgent {
         frame.setResizable(false);
         ApplicationWindow md = new ApplicationWindow();
         frame.pack();
+
+        // Respond to caller to indicate that we are (almost) ready for action
+        try {
+            stdout.writeJSONObject(Messages.createBaseMessage(Messages.WALLET_IS_READY));
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error writing to browser", e);
+            terminate();
+        }
+
         frame.setAlwaysOnTop(true);
-        frame.setLocationRelativeTo(null);
+        if (browserScreenDimensions == null) {
+            frame.setLocationRelativeTo(null);
+        } else {
+            Dimension screenDimension = Toolkit.getDefaultToolkit().getScreenSize();
+            int factor = screenDimension.height / browserScreenDimensions.height;
+            frame.setLocation((windowPosition.width + 4 + (windowOuter.width - windowInner.width) / 2) * factor,
+                              (windowPosition.height + windowOuter.height - windowInner.height - 4) * factor);
+        }
         frame.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         frame.addWindowListener(new WindowAdapter() {
             @Override

@@ -23,6 +23,39 @@ var web2native_bridge = 'org.webpki.w2nb';
 
 var ports = [];
 
+var BASE64URL =
+['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P',
+ 'Q','R','S','T','U','V','W','X','Y','Z','a','b','c','d','e','f',
+ 'g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v',
+ 'w','x','y','z','0','1','2','3','4','5','6','7','8','9','-','_'];
+
+function JSONToBase64URL(jsonObject) {
+    var string = JSON.stringify(jsonObject);
+    var binArray = [];
+    for (var n = 0; n < string.length; n++) {
+        binArray.push(string.charCodeAt(n) & 0xFF);
+    }
+    var encoded = new String();
+    var i = 0;
+    var modulo3 = binArray.length % 3;
+    while (i < binArray.length - modulo3) {
+        encoded += BASE64URL[(binArray[i] >>> 2) & 0x3F];
+        encoded += BASE64URL[((binArray[i++] << 4) & 0x30) | ((binArray[i] >>> 4) & 0x0F)];
+        encoded += BASE64URL[((binArray[i++] << 2) & 0x3C) | ((binArray[i] >>> 6) & 0x03)];
+        encoded += BASE64URL[binArray[i++] & 0x3F];
+    }
+    if (modulo3 == 1) {
+        encoded += BASE64URL[(binArray[i] >>> 2) & 0x3F];
+        encoded += BASE64URL[(binArray[i] << 4) & 0x30];
+    }
+    else if (modulo3 == 2) {
+        encoded += BASE64URL[(binArray[i] >>> 2) & 0x3F];
+        encoded += BASE64URL[((binArray[i++] << 4) & 0x30) | ((binArray[i] >>> 4) & 0x0F)];
+        encoded += BASE64URL[(binArray[i] << 2) & 0x3C];
+    }
+    return encoded;
+}
+
 // Test that the native proxy is alive and kicking
 chrome.runtime.onStartup.addListener(function() {
     chrome.runtime.sendNativeMessage(web2native_bridge, {proxyVersion:"1.00"}, function(response) {
@@ -69,7 +102,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
             chrome.tabs.sendMessage(sender.tab.id, {disconnect:true,tabid:sender.tab.id});
         });
         console.debug('connect: ' + JSON.stringify(request));
-        port.postMessage({url:request.origin,application:request.application});
+        port.postMessage({url:request.origin,application:request.application,argumentsB64:JSONToBase64URL(request.arguments)});
         sendResponse({success:sender.tab.id});
     } else if (request.src === 'webdis') {
         console.debug('web disconnect');

@@ -90,12 +90,13 @@ window.addEventListener("message", function(event) {
     }
 });
 
-navigator.nativeConnect = function(applicationName) {
+navigator.nativeConnect = function(applicationName, optionalArguments) {
     return new Promise(function(resolve, reject) {
         var msg = {};
         msg.src = 'openreq';
         msg.origin = location.href;
         msg.application = applicationName;
+        msg.arguments = optionalArguments ? optionalArguments : {};
         window.postMessage(msg, '*');
         _promise = {resolve: resolve, reject: reject};
     });
