@@ -46,6 +46,12 @@
         <param-value>@err-media-type@</param-value>
     </context-param>
 
+    <context-param>
+        <description>Web2Native Bridge wallet name</description>
+        <param-name>w2nb_name</param-name>
+        <param-value>@w2nb-name@</param-value>
+    </context-param>
+
     <listener>
         <listener-class>org.webpki.w2nb.webpayment.merchant.MerchantService</listener-class>
     </listener>

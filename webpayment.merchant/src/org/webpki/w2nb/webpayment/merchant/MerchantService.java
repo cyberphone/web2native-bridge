@@ -18,10 +18,8 @@ package org.webpki.w2nb.webpayment.merchant;
 
 import java.io.IOException;
 import java.io.InputStream;
-
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
-
 import java.util.EnumSet;
 import java.util.Set;
 import java.util.logging.Level;
@@ -33,17 +31,13 @@ import javax.servlet.ServletContextListener;
 import org.webpki.crypto.CertificateUtil;
 import org.webpki.crypto.CustomCryptoProvider;
 import org.webpki.crypto.KeyStoreVerifier;
-
 import org.webpki.json.JSONX509Verifier;
-
 import org.webpki.util.ArrayUtil;
-
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.CardTypes;
 import org.webpki.w2nb.webpayment.common.Currencies;
 import org.webpki.w2nb.webpayment.common.KeyStoreEnumerator;
 import org.webpki.w2nb.webpayment.common.ServerSigner;
-
 import org.webpki.webutil.InitPropertyReader;
 
 public class MerchantService extends InitPropertyReader implements ServletContextListener {
@@ -66,6 +60,8 @@ public class MerchantService extends InitPropertyReader implements ServletContex
 
     static final String ERR_MEDIA             = "err_media_type";
     
+    static final String W2NB_NAME             = "w2nb_name";
+
     static JSONX509Verifier paymentRoot;
     
     static ServerSigner merchantKey;
@@ -75,6 +71,8 @@ public class MerchantService extends InitPropertyReader implements ServletContex
     static Currencies currency;
 
     static String jsonMediaType = BaseProperties.JSON_CONTENT_TYPE;
+
+    static Object w2nbName;
 
     InputStream getResource(String name) throws IOException {
         return this.getClass().getResourceAsStream(getPropertyString(name));
@@ -115,6 +113,8 @@ public class MerchantService extends InitPropertyReader implements ServletContex
             }
          
             currency = Currencies.valueOf(getPropertyString(CURRENCY));
+
+            w2nbName = getPropertyString(W2NB_NAME);
 
             if (getPropertyBoolean(ERR_MEDIA)) {
                 jsonMediaType = "text/html";

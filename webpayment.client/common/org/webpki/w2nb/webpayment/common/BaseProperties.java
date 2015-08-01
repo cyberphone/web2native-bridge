@@ -48,7 +48,7 @@ public interface BaseProperties {
     String SOFTWARE_ID_JSON           = "softwareId";
     String SOFTWARE_VERSION_JSON      = "softwareVersion";
     
-    String W2NB_PAY_DEMO_CONTEXT_URI  = "http://xmlns.webpki.org/w2nb-payment-demo";
+    String W2NB_WEB_PAY_CONTEXT_URI   = "http://xmlns.webpki.org/webpay/v1";
 
     String JOSE_RSA_OAEP_256_ALG_ID   = "RSA-OAEP-256";
     String JOSE_ECDH_ES_ALG_ID        = "ECDH-ES";

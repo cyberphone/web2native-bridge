@@ -815,7 +815,7 @@ public class PaymentAgent {
                                     Extension ext = null;
                                     try {
                                         ext = sks.getExtension(ek.getKeyHandle(),
-                                                               BaseProperties.W2NB_PAY_DEMO_CONTEXT_URI);
+                                                               BaseProperties.W2NB_WEB_PAY_CONTEXT_URI);
                                     } catch (SKSException e) {
                                         if (e.getError() == SKSException.ERROR_OPTION) {
                                             continue;

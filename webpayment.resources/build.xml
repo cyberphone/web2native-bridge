@@ -60,6 +60,7 @@
         <arg value="${testpage}"/>
         <arg value="${merchantkey}${keyfilext}"/>
         <arg value="${keypassword}"/>
+        <arg value="${w2nb.name}"/>
     </java>
   </target>
 
@@ -80,7 +81,7 @@
         <arg value="${sks.pin}"/>
         <arg value="${card.type}"/>
         <arg value="${card.number}"/>
-        <arg value="${bank.host}/w2nb-bank/transact"/>
+        <arg value="${bank.host}/webpay-bank/transact"/>
         <arg value="${cardimage.dir}/${sks.image}"/>
         <arg value="${sks.encryption}.cer"/>
     </java>

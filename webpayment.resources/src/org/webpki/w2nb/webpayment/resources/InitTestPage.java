@@ -70,10 +70,10 @@ public class InitTestPage implements BaseProperties {
     }
 
     public static void main(String[] args) throws Exception {
-        if (args.length != 3) {
+        if (args.length != 4) {
             System.out.println("\nUsage: " +
                                InitTestPage.class.getCanonicalName() +
-                               "testpage merchantCertFile certFilePassword");
+                               "testpage merchantCertFile certFilePassword w2nbName");
             System.exit(-3);
         }
         CustomCryptoProvider.forcedLoad(true);
@@ -163,11 +163,13 @@ public class InitTestPage implements BaseProperties {
               "        alert('\"navigator.nativeConnect\" not found, \\ncheck Chrome Web2Native Bridge extension settings');\n" +
               "        return;\n" +
               "    }\n" +
-              "    navigator.nativeConnect(\"org.webpki.w2nb.webpayment.client\").then(function(port) {\n" +
+              "    navigator.nativeConnect(\"");
+        write(args[3]);
+        write("\").then(function(port) {\n" +
               "        nativePort = port;\n" +
               "        console.debug('conn=' + JSON.stringify(port));\n" +
               "        port.addMessageListener(function(message) {\n" +
-              "            if (message[\"@context\"] != \"" + BaseProperties.W2NB_PAY_DEMO_CONTEXT_URI + "\") {\n" +
+              "            if (message[\"@context\"] != \"" + BaseProperties.W2NB_WEB_PAY_CONTEXT_URI + "\") {\n" +
               "                setString(\"Missing or wrong \\\"@context\\\"\");\n" +
               "                return;\n" +
               "            }\n" +

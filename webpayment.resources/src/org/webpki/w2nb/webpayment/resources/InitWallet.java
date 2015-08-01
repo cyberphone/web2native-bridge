@@ -154,10 +154,10 @@ public class InitWallet {
                   .setObject(CredentialProperties.KEY_ENCRYPTION_KEY_JSON)
                   .setPublicKey(publicKey, JSONAlgorithmPreferences.JOSE);
             }
-            surrogateKey.addExtension(BaseProperties.W2NB_PAY_DEMO_CONTEXT_URI,
-                    SecureKeyStore.SUB_TYPE_EXTENSION,
-                    "",
-                    ow.serializeJSONObject(JSONOutputFormats.NORMALIZED));
+            surrogateKey.addExtension(BaseProperties.W2NB_WEB_PAY_CONTEXT_URI,
+                                      SecureKeyStore.SUB_TYPE_EXTENSION,
+                                      "",
+                                      ow.serializeJSONObject(JSONOutputFormats.NORMALIZED));
         }
         if (!args[7].endsWith("@")) {
             surrogateKey.addExtension(KeyGen2URIs.LOGOTYPES.CARD,

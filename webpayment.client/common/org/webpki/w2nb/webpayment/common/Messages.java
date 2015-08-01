@@ -44,13 +44,13 @@ public enum Messages {
 
     public static JSONObjectWriter createBaseMessage(Messages message) throws IOException {
         return new JSONObjectWriter()
-           .setString(JSONDecoderCache.CONTEXT_JSON, BaseProperties.W2NB_PAY_DEMO_CONTEXT_URI)
+           .setString(JSONDecoderCache.CONTEXT_JSON, BaseProperties.W2NB_WEB_PAY_CONTEXT_URI)
            .setString(JSONDecoderCache.QUALIFIER_JSON, message.toString());
     }
 
     public static JSONObjectReader parseBaseMessage(Messages expected_message,
                                                     JSONObjectReader request_object) throws IOException {
-        if (!request_object.getString(JSONDecoderCache.CONTEXT_JSON).equals(BaseProperties.W2NB_PAY_DEMO_CONTEXT_URI)) {
+        if (!request_object.getString(JSONDecoderCache.CONTEXT_JSON).equals(BaseProperties.W2NB_WEB_PAY_CONTEXT_URI)) {
             throw new IOException("Unknown context: " + request_object.getString(JSONDecoderCache.CONTEXT_JSON));
         }
         if (!request_object.getString(JSONDecoderCache.QUALIFIER_JSON).equals(expected_message.toString())) {

@@ -342,10 +342,12 @@ public class HTML {
                     "        setString('\"navigator.nativeConnect\" not found, \\ncheck Chrome Web2Native Bridge extension settings');\n" +
                     "        return;\n" +
                     "    }\n" +
-                    "    navigator.nativeConnect(\"org.webpki.w2nb.webpayment.client\").then(function(port) {\n" +
+                    "    navigator.nativeConnect(\"")
+             .append(MerchantService.w2nbName)
+             .append("\").then(function(port) {\n" +
                     "        nativePort = port;\n" +
                     "        port.addMessageListener(function(message) {\n" +
-                    "            if (message[\"@context\"] != \"" + BaseProperties.W2NB_PAY_DEMO_CONTEXT_URI + "\") {\n" +
+                    "            if (message[\"@context\"] != \"" + BaseProperties.W2NB_WEB_PAY_CONTEXT_URI + "\") {\n" +
                     "                setString(\"Missing or wrong \\\"@context\\\"\");\n" +
                     "                return;\n" +
                     "            }\n" +
