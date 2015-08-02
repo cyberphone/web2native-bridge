@@ -96,6 +96,14 @@ navigator.nativeConnect = function(applicationName, optionalArguments) {
         msg.src = 'openreq';
         msg.origin = location.href;
         msg.application = applicationName;
+        msg.window = {screenWidth: window.screen.width,
+                      screenHeight: window.screen.height,
+                      windowX: window.screenX,
+                      windowY: window.screenY,
+                      windowOuterWidth: window.outerWidth,
+                      windowOuterHeight: window.outerHeight,
+                      windowInnerWidth: window.innerWidth,
+                      windowInnerHeight: window.innerHeight};
         msg.arguments = optionalArguments ? optionalArguments : {};
         window.postMessage(msg, '*');
         _promise = {resolve: resolve, reject: reject};

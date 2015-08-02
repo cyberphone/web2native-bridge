@@ -165,15 +165,7 @@ public class InitTestPage implements BaseProperties {
               "    }\n" +
               "    navigator.nativeConnect(\"");
         write(args[3]);
-        write("\",\n" +
-              "                            {screenWidth: window.screen.width,\n" +
-              "                             screenHeight: window.screen.height,\n" +
-              "                             windowX: window.screenX,\n" +
-              "                             windowY: window.screenY,\n" +
-              "                             windowOuterWidth: window.outerWidth,\n" +
-              "                             windowOuterHeight: window.outerHeight,\n" +
-              "                             windowInnerWidth: window.innerWidth,\n" +
-              "                             windowInnerHeight: window.innerHeight}).then(function(port) {\n" +
+        write("\").then(function(port) {\n" +
               "        nativePort = port;\n" +
               "        console.debug('conn=' + JSON.stringify(port));\n" +
               "        port.addMessageListener(function(message) {\n" +

@@ -29,7 +29,7 @@ var BASE64URL =
  'g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v',
  'w','x','y','z','0','1','2','3','4','5','6','7','8','9','-','_'];
 
-function JSONToBase64URL(jsonObject) {
+function json2B64(jsonObject) {
     var string = JSON.stringify(jsonObject);
     var binArray = [];
     for (var n = 0; n < string.length; n++) {
@@ -102,7 +102,10 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
             chrome.tabs.sendMessage(sender.tab.id, {disconnect:true,tabid:sender.tab.id});
         });
         // DEBUG
-        port.postMessage({url:request.origin,application:request.application,argumentsB64:JSONToBase64URL(request.arguments)});
+        port.postMessage({url:request.origin,
+                          application:request.application,
+                          windowB64:json2B64(request.window),
+                          argumentsB64:json2B64(request.arguments)});
         sendResponse({success:sender.tab.id});
     } else if (request.src === 'webdis') {
         // DEBUG

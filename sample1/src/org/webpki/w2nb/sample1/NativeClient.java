@@ -14,27 +14,21 @@
  *  limitations under the License.
  *
  */
-
-// Simple Web2Native Bridge emulator application
-
 package org.webpki.w2nb.sample1;
 
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Toolkit;
 import java.awt.Insets;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowAdapter;
-
 import java.io.IOException;
-
 import java.util.Date;
-
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -49,11 +43,15 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 import org.webpki.json.JSONObjectWriter;
-
+import org.webpki.json.JSONParser;
+import org.webpki.util.Base64URL;
 import org.webpki.util.ISODateTime;
-
+import org.webpki.w2nbproxy.BrowserWindow;
 import org.webpki.w2nbproxy.StdinJSONPipe;
 import org.webpki.w2nbproxy.StdoutJSONPipe;
+
+
+//Simple Web2Native Bridge emulator application
 
 class ApplicationFrame extends Thread {
     StdinJSONPipe stdin = new StdinJSONPipe();
@@ -157,7 +155,7 @@ public class NativeClient {
             SimpleFormatter formatter = new SimpleFormatter();
             fh.setFormatter(formatter);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            System.exit(3);
         }
     }
 
@@ -167,11 +165,30 @@ public class NativeClient {
             logger.info("ARG[" + i + "]=" + args[i]);
         }
 
+        BrowserWindow browserWindow = null;
+        try {
+            browserWindow = new BrowserWindow(args[2]);
+            logger.info("Browser window: " + browserWindow);
+            logger.info("Arguments: " + JSONParser.parse(Base64URL.decode(args[3])));
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "nativeConnect argument errors", e);
+        }
         JDialog frame = new JDialog(new JFrame(), "W2NB - Sample #1 [" + args[1] + "]");
         ApplicationFrame md = new ApplicationFrame(frame.getContentPane());
         frame.pack();
+
+        // Put the extension window on top of the upper right of the calling (browser)window
+        // The alignment varies a bit between platforms :-(
+        Dimension screenDimension = Toolkit.getDefaultToolkit().getScreenSize();
+        Dimension extensionWindow = frame.getSize();
+        double factor = screenDimension.height / browserWindow.screenHeight;
+        double gutter = (browserWindow.outerWidth - browserWindow.innerWidth) / 2;
+        double x = (browserWindow.x + gutter) * factor;
+        x += browserWindow.innerWidth  * factor - extensionWindow.width;
+        double y = (browserWindow.y + browserWindow.outerHeight - browserWindow.innerHeight - gutter) * factor;
+        frame.setLocation((int)x, (int)y);
         frame.setAlwaysOnTop(true);
-        frame.setLocationRelativeTo(null);
+
         frame.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         frame.addWindowListener(new WindowAdapter() {
             @Override

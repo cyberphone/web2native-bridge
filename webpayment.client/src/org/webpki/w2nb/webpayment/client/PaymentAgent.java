@@ -68,9 +68,7 @@ import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
-
 import javax.swing.border.EmptyBorder;
-
 import javax.swing.plaf.metal.MetalButtonUI;
 
 import org.webpki.crypto.AsymSignatureAlgorithms;
@@ -92,7 +90,6 @@ import org.webpki.sks.Extension;
 import org.webpki.sks.KeyProtectionInfo;
 import org.webpki.sks.SKSException;
 import org.webpki.sks.SecureKeyStore;
-
 import org.webpki.sks.test.SKSReferenceImplementation;
 
 import org.webpki.util.ArrayUtil;
@@ -106,6 +103,7 @@ import org.webpki.w2nb.webpayment.common.Messages;
 import org.webpki.w2nb.webpayment.common.PaymentRequest;
 import org.webpki.w2nb.webpayment.common.CryptoSupport;
 
+import org.webpki.w2nbproxy.BrowserWindow;
 import org.webpki.w2nbproxy.StdinJSONPipe;
 import org.webpki.w2nbproxy.StdoutJSONPipe;
 
@@ -1027,34 +1025,12 @@ public class PaymentAgent {
             logger.info("ARG[" + i + "]=" + args[i]);
         }
         Security.insertProviderAt(new BouncyCastleProvider(), 1);
-/*
-  "screenWidth": 1600,
-  "screenHeight": 900,
-  "windowX": 65,
-  "windowY": 4,
-  "windowOuterWidth": 1484,
-  "windowOuterHeight": 812,
-  "windowInnerWidth": 1468,
-  "windowInnerHeight": 436
-
- */
-        Dimension browserScreenDimensions = null;
-        Dimension windowPosition = null;
-        Dimension windowOuter = null;
-        Dimension windowInner = null;
+        
+        BrowserWindow browserWindow = null;
         try {
-            JSONObjectReader arguments = JSONParser.parse(Base64URL.decode(args[2]));
-            if (arguments.hasProperty("screenWidth")) {
-                browserScreenDimensions = new Dimension(arguments.getInt("screenWidth"),
-                                                        arguments.getInt("screenHeight"));
-                windowPosition = new Dimension(arguments.getInt("windowX"),
-                                               arguments.getInt("windowY"));
-                windowOuter = new Dimension(arguments.getInt("windowOuterWidth"),
-                                            arguments.getInt("windowOuterHeight"));
-                windowInner = new Dimension(arguments.getInt("windowInnerWidth"),
-                                            arguments.getInt("windowInnerHeight"));
-            }
-            logger.info("Arguments: " + arguments);
+            browserWindow = new BrowserWindow(args[2]);
+            logger.info("Browser window: " + browserWindow);
+            logger.info("Arguments: " + JSONParser.parse(Base64URL.decode(args[3])));
             if (args[1].startsWith("http")) {
                 domainName = new URL(args[1]).getHost();
             } else {
@@ -1067,10 +1043,19 @@ public class PaymentAgent {
         }
 
         frame = new JDialog(new JFrame(), "Payment Request [" + domainName + "]");
-        frame.setResizable(false);
         ApplicationWindow md = new ApplicationWindow();
+        frame.setResizable(false);
         frame.pack();
-
+        Dimension screenDimension = Toolkit.getDefaultToolkit().getScreenSize();
+        Dimension extensionWindow = frame.getSize();
+        logger.info("Frame=" + extensionWindow);
+        double factor = screenDimension.height / browserWindow.screenHeight;
+        double gutter = (browserWindow.outerWidth - browserWindow.innerWidth) / 2;
+        double x = (browserWindow.x + gutter) * factor;
+        x += browserWindow.innerWidth  * factor - extensionWindow.width;
+        double y = (browserWindow.y + browserWindow.outerHeight - browserWindow.innerHeight - gutter) * factor;
+        frame.setLocation((int)x, (int)y);
+        frame.setAlwaysOnTop(true);
         // Respond to caller to indicate that we are (almost) ready for action
         try {
             stdout.writeJSONObject(Messages.createBaseMessage(Messages.WALLET_IS_READY));
@@ -1079,15 +1064,6 @@ public class PaymentAgent {
             terminate();
         }
 
-        frame.setAlwaysOnTop(true);
-        if (browserScreenDimensions == null) {
-            frame.setLocationRelativeTo(null);
-        } else {
-            Dimension screenDimension = Toolkit.getDefaultToolkit().getScreenSize();
-            int factor = screenDimension.height / browserScreenDimensions.height;
-            frame.setLocation((windowPosition.width + 4 + (windowOuter.width - windowInner.width) / 2) * factor,
-                              (windowPosition.height + windowOuter.height - windowInner.height - 4) * factor);
-        }
         frame.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         frame.addWindowListener(new WindowAdapter() {
             @Override

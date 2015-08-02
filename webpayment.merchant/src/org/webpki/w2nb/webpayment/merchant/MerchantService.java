@@ -107,7 +107,7 @@ public class MerchantService extends InitPropertyReader implements ServletContex
             paymentRoot = getRoot(PAYMENT_ROOT);
 
             for (CardTypes card : CardTypes.values()) {
-                if (card != CardTypes.UnusualCard || !getPropertyBoolean(ADD_UNUSUAL_CARD)) {
+                if (card != CardTypes.UnusualCard || getPropertyBoolean(ADD_UNUSUAL_CARD)) {
                     acceptedCards.add(card);
                 }
             }
