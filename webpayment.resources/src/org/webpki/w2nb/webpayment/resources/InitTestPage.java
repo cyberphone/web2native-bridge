@@ -38,6 +38,8 @@ import org.webpki.w2nb.webpayment.common.Messages;
 import org.webpki.w2nb.webpayment.common.PaymentRequest;
 import org.webpki.w2nb.webpayment.common.ServerSigner;
 
+import org.webpki.w2nbproxy.ExtensionPositioning;
+
 public class InitTestPage implements BaseProperties {
     
     enum TESTS {
@@ -147,7 +149,7 @@ public class InitTestPage implements BaseProperties {
 
               "function sendMessageConditional(message) {\n" +
               "    if (nativePort) {\n" +
-              "        message." + PULL_PAYMENT_JSON + " = document.getElementById(\"pull\").checked;\n" +
+              "        message." + PULL_PAYMENT_JSON + " = document.getElementById(\"pullPayment\").checked;\n" +
               "        nativePort.postMessage(message);\n" +
               "    }\n" +
               "}\n\n" +
@@ -165,7 +167,16 @@ public class InitTestPage implements BaseProperties {
               "    }\n" +
               "    navigator.nativeConnect(\"");
         write(args[3]);
-        write("\").then(function(port) {\n" +
+        write("\",\n" +
+              "                            document.getElementById(\"positionWallet\").checked ?\n" +
+              "                                ");
+        write(ExtensionPositioning.encode(ExtensionPositioning.HORIZONTAL_ALIGNMENT.Right,
+                                          ExtensionPositioning.VERTICAL_ALIGNMENT.Top, "wallet"));
+        write(" :\n" +
+              "                                ");
+        write(ExtensionPositioning.encode(ExtensionPositioning.HORIZONTAL_ALIGNMENT.Center,
+                                          ExtensionPositioning.VERTICAL_ALIGNMENT.Center, null));
+        write(").then(function(port) {\n" +
               "        nativePort = port;\n" +
               "        console.debug('conn=' + JSON.stringify(port));\n" +
               "        port.addMessageListener(function(message) {\n" +
@@ -225,6 +236,12 @@ public class InitTestPage implements BaseProperties {
               "window.addEventListener(\"beforeunload\", function(event) {\n" +
               "    closeExtension();\n" +
               "});\n\n" +
+              
+              "function setTargetState() {\n" +
+              "    document.getElementById(\"wallet\").style.visibility = document.getElementById(\"positionWallet\").checked ? 'visible' : 'hidden';\n" +
+              "}\n\n" +
+              
+              ExtensionPositioning.SET_EXTENSION_POSITION_FUNCTION_TEXT + "\n" +
 
               "</script>\n" +
               "<h2>Web2Native Bridge &quot;Emulator&quot; - Payment Agent (Wallet) Tester</h2>\n" +
@@ -242,9 +259,12 @@ public class InitTestPage implements BaseProperties {
             write("<br>\n");
         }
         write("</form>\n" +
-              "<input type=\"checkbox\" id=\"pull\" style=\"margin-top:10pt\">&quot;Pull&quot; payment flow (default is &quot;push&quot;)\n" +
+              "<input type=\"checkbox\" id=\"pullPayment\" style=\"margin-top:10pt\">&quot;Pull&quot; payment flow (default is &quot;push&quot;)<br>\n" +
+              "<input type=\"checkbox\" id=\"positionWallet\" style=\"margin-top:10pt\" onchange=\"setTargetState()\">Position/update target element (default is centered)\n" +
               "<div style=\"margin-top:10pt;margin-bottom:10pt\">Result:</div>\n" +
               "<div id=\"response\" style=\"font-family:courier;font-size:10pt;word-wrap:break-word;width:800pt\"></div>\n" +
+              "<div id=\"wallet\" style=\"border-width:1px;border-style:solid;border-color:#a9a9a9;position:absolute;top:50px;" +
+              "right:50px;z-index:5;padding:5px;visibility:hidden\">The wallet should launch in this<br>corner and update width+height</div>" +
               "</body></html>\n");
         fos.close();
     }

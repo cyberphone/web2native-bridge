@@ -19,12 +19,13 @@ package org.webpki.w2nb.webpayment.merchant;
 import java.io.IOException;
 
 import javax.servlet.ServletException;
-
 import javax.servlet.http.HttpServletResponse;
 
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.Messages;
 import org.webpki.w2nb.webpayment.common.PaymentRequest;
+
+import org.webpki.w2nbproxy.ExtensionPositioning;
 
 public class HTML {
 
@@ -344,7 +345,12 @@ public class HTML {
                     "    }\n" +
                     "    navigator.nativeConnect(\"")
              .append(MerchantService.w2nbName)
-             .append("\").then(function(port) {\n" +
+             .append("\",\n" +
+                    "                            ")
+             .append(ExtensionPositioning.encode(ExtensionPositioning.HORIZONTAL_ALIGNMENT.Center,
+                                                 ExtensionPositioning.VERTICAL_ALIGNMENT.Center,
+                                                 "result"))
+             .append(").then(function(port) {\n" +
                     "        nativePort = port;\n" +
                     "        port.addMessageListener(function(message) {\n" +
                     "            if (message[\"@context\"] != \"" + BaseProperties.W2NB_WEB_PAY_CONTEXT_URI + "\") {\n" +
@@ -378,6 +384,8 @@ public class HTML {
                     "        console.debug(err);\n" +
                     "    });\n" +
                     "}\n\n" +
+
+                    ExtensionPositioning.SET_EXTENSION_POSITION_FUNCTION_TEXT + "\n" +
 
                     "window.addEventListener(\"beforeunload\", function(event) {\n" +
                     "    closeWallet();\n" +

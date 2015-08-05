@@ -27,8 +27,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowAdapter;
+
 import java.io.IOException;
+
 import java.util.Date;
+
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -43,9 +46,9 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 import org.webpki.json.JSONObjectWriter;
-import org.webpki.json.JSONParser;
-import org.webpki.util.Base64URL;
+
 import org.webpki.util.ISODateTime;
+
 import org.webpki.w2nbproxy.BrowserWindow;
 import org.webpki.w2nbproxy.StdinJSONPipe;
 import org.webpki.w2nbproxy.StdoutJSONPipe;
@@ -169,7 +172,6 @@ public class NativeClient {
         try {
             browserWindow = new BrowserWindow(args[2]);
             logger.info("Browser window: " + browserWindow);
-            logger.info("Arguments: " + JSONParser.parse(Base64URL.decode(args[3])));
         } catch (Exception e) {
             logger.log(Level.SEVERE, "nativeConnect argument errors", e);
         }
@@ -183,10 +185,10 @@ public class NativeClient {
         Dimension extensionWindow = frame.getSize();
         double factor = screenDimension.height / browserWindow.screenHeight;
         double gutter = (browserWindow.outerWidth - browserWindow.innerWidth) / 2;
-        double x = (browserWindow.x + gutter) * factor;
-        x += browserWindow.innerWidth  * factor - extensionWindow.width;
-        double y = (browserWindow.y + browserWindow.outerHeight - browserWindow.innerHeight - gutter) * factor;
-        frame.setLocation((int)x, (int)y);
+        double x = browserWindow.x + gutter;
+        x += browserWindow.innerWidth - extensionWindow.width / factor;
+        double y = browserWindow.y + browserWindow.outerHeight - browserWindow.innerHeight - gutter;
+        frame.setLocation((int)(x * factor), (int)(y * factor));
         frame.setAlwaysOnTop(true);
 
         frame.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);

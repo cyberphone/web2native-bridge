@@ -63,7 +63,14 @@
     <property name="errormedia" value="false"/>
     <property name="unusualcard" value="false"/>
     <property name="currency" value="USD"/>
+    <property name="testfiledir" value="empty.lib"/>
     <fixcrlf srcdir="${src.dir}"
+       tab="remove"
+       tablength="4"
+       eol="lf"
+       eof="remove"
+       includes="**/*.java"/>
+    <fixcrlf srcdir="${compile.common.src.dir}"
        tab="remove"
        tablength="4"
        eol="lf"
@@ -73,7 +80,7 @@
     <javac debug="${debug}"
            source="${javaversion}"
            target="${javaversion}"
-           srcdir="${src.dir}:${compile.common.src.dir}"
+           srcdir="${src.dir}:${compile.common.src.dir}:proxy"
            destdir="${temp.dir}"
            classpath="${compile.classpath}"
            includeAntRuntime="false"/>
@@ -106,11 +113,20 @@
          <include name="${payment.var.root}.cer"/>
        </zipfileset>
       <fileset dir="web"/>
+      <fileset dir="${testfiledir}">
+         <include name="*.html"/>
+      </fileset>
     </war>
   </target>
 
   <target name="tomcat" depends="_init">
+    <copy todir="proxy" overwrite="yes">
+      <fileset dir="../proxy/src.java">
+          <include name="**/ExtensionPositioning.java"/>
+      </fileset>
+     </copy>
      <property file="../webpayment.resources/common.properties"/>
+     <property name="testfiledir" value="../webpayment.client/test"/>
      <property name="temp.dir" value=".tmp"/>
      <delete dir="${temp.dir}"/>
      <property name="local_sc" refid="security_constraint"/>

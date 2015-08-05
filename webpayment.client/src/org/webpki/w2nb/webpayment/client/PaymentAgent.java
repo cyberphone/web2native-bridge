@@ -68,7 +68,9 @@ import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+
 import javax.swing.border.EmptyBorder;
+
 import javax.swing.plaf.metal.MetalButtonUI;
 
 import org.webpki.crypto.AsymSignatureAlgorithms;
@@ -90,10 +92,10 @@ import org.webpki.sks.Extension;
 import org.webpki.sks.KeyProtectionInfo;
 import org.webpki.sks.SKSException;
 import org.webpki.sks.SecureKeyStore;
+
 import org.webpki.sks.test.SKSReferenceImplementation;
 
 import org.webpki.util.ArrayUtil;
-import org.webpki.util.Base64URL;
 
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.CredentialProperties;
@@ -104,6 +106,7 @@ import org.webpki.w2nb.webpayment.common.PaymentRequest;
 import org.webpki.w2nb.webpayment.common.CryptoSupport;
 
 import org.webpki.w2nbproxy.BrowserWindow;
+import org.webpki.w2nbproxy.ExtensionPositioning;
 import org.webpki.w2nbproxy.StdinJSONPipe;
 import org.webpki.w2nbproxy.StdoutJSONPipe;
 
@@ -1030,7 +1033,7 @@ public class PaymentAgent {
         try {
             browserWindow = new BrowserWindow(args[2]);
             logger.info("Browser window: " + browserWindow);
-            logger.info("Arguments: " + JSONParser.parse(Base64URL.decode(args[3])));
+            logger.info("Arguments: " + new ExtensionPositioning(args[3]).toString());
             if (args[1].startsWith("http")) {
                 domainName = new URL(args[1]).getHost();
             } else {
@@ -1046,13 +1049,13 @@ public class PaymentAgent {
         ApplicationWindow md = new ApplicationWindow();
         frame.setResizable(false);
         frame.pack();
-        Dimension screenDimension = Toolkit.getDefaultToolkit().getScreenSize();
         Dimension extensionWindow = frame.getSize();
         logger.info("Frame=" + extensionWindow);
+        Dimension screenDimension = Toolkit.getDefaultToolkit().getScreenSize();
         double factor = screenDimension.height / browserWindow.screenHeight;
         double gutter = (browserWindow.outerWidth - browserWindow.innerWidth) / 2;
         double x = (browserWindow.x + gutter) * factor;
-        x += browserWindow.innerWidth  * factor - extensionWindow.width;
+        x += browserWindow.innerWidth * factor - extensionWindow.width;
         double y = (browserWindow.y + browserWindow.outerHeight - browserWindow.innerHeight - gutter) * factor;
         frame.setLocation((int)x, (int)y);
         frame.setAlwaysOnTop(true);
