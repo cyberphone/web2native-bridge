@@ -128,7 +128,10 @@ public class PaymentAgent {
 
     static StdinJSONPipe stdin = new StdinJSONPipe();
     static StdoutJSONPipe stdout = new StdoutJSONPipe();
+
     static JDialog frame;
+
+    static Dimension screenDimension;
 
     static boolean testMode;
 
@@ -330,7 +333,7 @@ public class PaymentAgent {
                                       hiResImages ? Font.PLAIN : Font.BOLD,
                                       (fontSize * 4) / 5);
             logger.info("Display Data: Screen resolution=" + screenResolution +
-                         ", Screen size=" + Toolkit.getDefaultToolkit().getScreenSize() +
+                         ", Screen size=" + screenDimension +
                          ", Font size=" + font.getSize() +
                          ", Adjusted font size=" + fontSize +
                          ", Retina=" + retinaFlag);
@@ -804,7 +807,7 @@ public class PaymentAgent {
             }, TIMEOUT_FOR_REQUEST);
             try {
                 JSONObjectReader invokeMessage = stdin.readJSONObject();
-                logger.info("Received:\n" + invokeMessage);
+                logger.info("Received from browser:\n" + invokeMessage);
                 Messages.parseBaseMessage(Messages.INVOKE_WALLET, invokeMessage);
                 final String[] cardTypes = invokeMessage.getStringArray(BaseProperties.ACCEPTED_CARD_TYPES_JSON);
                 pullPayment = invokeMessage.getBoolean(BaseProperties.PULL_PAYMENT_JSON);
@@ -1059,6 +1062,10 @@ public class PaymentAgent {
             terminate();
         }
 
+        // Note that Swing returns native precision
+        screenDimension = Toolkit.getDefaultToolkit().getScreenSize();
+
+        // Do all the difficult layout stuff
         frame = new JDialog(new JFrame(), "Payment Request [" + domainName + "]");
         ApplicationWindow md = new ApplicationWindow();
         frame.setResizable(false);
@@ -1071,7 +1078,6 @@ public class PaymentAgent {
         // Note that Swing returns native precision
         Dimension extensionWindow = frame.getSize();
         logger.info("Frame=" + extensionWindow);
-        Dimension screenDimension = Toolkit.getDefaultToolkit().getScreenSize();
 
         // We need to know the difference between Browser/Native precision
         double factor = screenDimension.height / browserWindow.screenHeight;
@@ -1115,9 +1121,11 @@ public class PaymentAgent {
         // it more look like a Web application.  Note that this measurement
         // lacks the 'px' part; you have to add it in the Web application.
         try {
-            stdout.writeJSONObject(Messages.createBaseMessage(Messages.WALLET_IS_READY)
+            JSONObjectWriter readyMessage = Messages.createBaseMessage(Messages.WALLET_IS_READY)
                 .setDouble(BaseProperties.TARGET_WIDTH_JSON, extWidth)
-                .setDouble(BaseProperties.TARGET_HEIGHT_JSON, extHeight));
+                .setDouble(BaseProperties.TARGET_HEIGHT_JSON, extHeight);
+            logger.info("Sent to browser:\n" + readyMessage);
+            stdout.writeJSONObject(readyMessage);
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Error writing to browser", e);
             terminate();
