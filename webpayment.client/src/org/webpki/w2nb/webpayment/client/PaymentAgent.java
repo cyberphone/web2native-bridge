@@ -1042,10 +1042,12 @@ public class PaymentAgent {
         Security.insertProviderAt(new BouncyCastleProvider(), 1);
         
         BrowserWindow browserWindow = null;
+        ExtensionPositioning extensionPositioning = null;
         try {
             browserWindow = new BrowserWindow(args[2]);
+            extensionPositioning = new ExtensionPositioning(args[3]);
             logger.info("Browser window: " + browserWindow);
-            logger.info("Arguments: " + new ExtensionPositioning(args[3]).toString());
+            logger.info("Positioning arguments: " + extensionPositioning);
             if (args[1].startsWith("http")) {
                 domainName = new URL(args[1]).getHost();
             } else {
@@ -1059,17 +1061,53 @@ public class PaymentAgent {
 
         frame = new JDialog(new JFrame(), "Payment Request [" + domainName + "]");
         ApplicationWindow md = new ApplicationWindow();
-        frame.setResizable(false);
+  //      frame.setResizable(false);
         frame.pack();
+
+        ////////////////////////////////////////////////////////////////
+        // Positioning: Calculate coordinates in Browser resolution
+        ////////////////////////////////////////////////////////////////
+
+        // Note that Swing returns native precision
         Dimension extensionWindow = frame.getSize();
         logger.info("Frame=" + extensionWindow);
         Dimension screenDimension = Toolkit.getDefaultToolkit().getScreenSize();
+
+        // We need to know the difference between Browser/Native precision
         double factor = screenDimension.height / browserWindow.screenHeight;
+
+        // Browser border size
         double gutter = (browserWindow.outerWidth - browserWindow.innerWidth) / 2;
-        double x = (browserWindow.x + gutter) * factor;
-        x += browserWindow.innerWidth * factor - extensionWindow.width;
-        double y = (browserWindow.y + browserWindow.outerHeight - browserWindow.innerHeight - gutter) * factor;
-        frame.setLocation((int)x, (int)y);
+
+        // The browser window's position (modulo fixed "chrome") on the screen
+        double left = browserWindow.x + gutter;
+        double top = browserWindow.y + browserWindow.outerHeight - browserWindow.innerHeight - gutter;
+        double width = browserWindow.innerWidth;
+        double height = browserWindow.innerHeight;
+
+        // We may rather be targeting a specific HTML element on the invoking page
+        if (extensionPositioning.targetRectangle != null) {
+            left += extensionPositioning.targetRectangle.left;
+            top += extensionPositioning.targetRectangle.top;
+            width = extensionPositioning.targetRectangle.width;
+            height = extensionPositioning.targetRectangle.height;
+        }
+
+        // Now, position it!
+        double extWidth = extensionWindow.getWidth() / factor;
+        if (extensionPositioning.horizontalAlignment == ExtensionPositioning.HORIZONTAL_ALIGNMENT.Center) {
+            left += (width - extWidth) / 2;
+        } else if (extensionPositioning.horizontalAlignment == ExtensionPositioning.HORIZONTAL_ALIGNMENT.Right) {
+            left += width - extWidth;
+        }
+        double extHeight = extensionWindow.getHeight() / factor; 
+        if (extensionPositioning.verticalAlignment == ExtensionPositioning.VERTICAL_ALIGNMENT.Center) {
+            top += (height - extHeight) / 2;
+        } else if (extensionPositioning.verticalAlignment == ExtensionPositioning.VERTICAL_ALIGNMENT.Bottom) {
+            top += height - extHeight;
+        }
+
+        frame.setLocation((int)(left * factor), (int)(top * factor));
         frame.setAlwaysOnTop(true);
         // Respond to caller to indicate that we are (almost) ready for action
         try {
