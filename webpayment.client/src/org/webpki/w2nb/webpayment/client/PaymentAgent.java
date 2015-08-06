@@ -288,7 +288,6 @@ public class PaymentAgent {
         boolean running = true;
         Font standardFont;
         Font cardNumberFont;
-        int cardNumberSpacing;
         int fontSize;
         JTextField amountField;
         JTextField payeeField;
@@ -360,22 +359,32 @@ public class PaymentAgent {
             return cardButton;
         }
 
+        void insertSpacer(JPanel cardSelectionViewCore, int x, int y) {
+            GridBagConstraints c = new GridBagConstraints();
+            c.gridx = x;
+            c.gridy = y;
+            c.gridheight = 2;
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.weightx = 1.0;
+            cardSelectionViewCore.add(new JLabel(), c);
+        }
+
         JPanel initCardSelectionViewCore(LinkedHashMap<Integer,Card> cards) {
             JPanel cardSelectionViewCore = new JPanel();
             cardSelectionViewCore.setBackground(Color.WHITE);
             cardSelectionViewCore.setLayout(new GridBagLayout());
             GridBagConstraints c = new GridBagConstraints();
-            c.fill = GridBagConstraints.BOTH;
-            c.weightx = 1.0;
             int itemNumber = 0;
             for (final Integer keyHandle : cards.keySet()) {
                 Card card = cards.get(keyHandle);
-                c.gridx = itemNumber % 2;
+                boolean even = itemNumber % 2 == 0;
+                c.gridx = even ? 1 : 3;
                 c.gridy = (itemNumber / 2) * 2;
+                insertSpacer(cardSelectionViewCore, c.gridx - 1, c.gridy);
                 c.insets = new Insets(c.gridy == 0 ? 0 : fontSize,
-                                      c.gridx == 0 ? fontSize : 0,
                                       0,
-                                      c.gridx == 0 ? 0 : fontSize);
+                                      0,
+                                      0);
                 JButton cardImage = createCardButton(card.cardIcon, TOOLTIP_CARD_SELECTION);
                 cardImage.addActionListener(new ActionListener() {
                     @Override
@@ -386,14 +395,17 @@ public class PaymentAgent {
                 cardSelectionViewCore.add(cardImage, c);
 
                 c.gridy++;
-                c.insets = new Insets(cardNumberSpacing,
-                                      c.gridx == 0 ? fontSize : 0,
+                c.insets = new Insets(0,
                                       0,
-                                      c.gridx == 0 ? 0 : fontSize);
+                                      0,
+                                      0);
                 JLabel cardNumber = new JLabel(GenericAuthorizationRequest.formatCardNumber(card.cardNumber),
                                                JLabel.CENTER);
                 cardNumber.setFont(cardNumberFont);
                 cardSelectionViewCore.add(cardNumber, c);
+                if (!even) {
+                    insertSpacer(cardSelectionViewCore, c.gridx + 1, c.gridy - 1);
+                }
                 itemNumber++;
             }
             return cardSelectionViewCore;
@@ -604,7 +616,7 @@ public class PaymentAgent {
             c.gridy = 0;
             c.gridheight = 6;
             c.gridwidth = 1;
-            c.insets = new Insets(0, fontSize, 0, fontSize * 2);
+            c.insets = new Insets(0, 0, 0, fontSize);
             c.anchor = GridBagConstraints.CENTER;
             c.fill = GridBagConstraints.BOTH;
             c.weightx = 0.0;
@@ -617,7 +629,7 @@ public class PaymentAgent {
             cardAndNumber.add(selectedCardImage, c2);
             selectedCardNumber = new JLabel(DUMMY_CARD_NUMBER);
             selectedCardNumber.setFont(cardNumberFont);
-            c2.insets = new Insets(cardNumberSpacing, 0, 0, 0);
+            c2.insets = new Insets(0, 0, 0, 0);
             c2.gridy = 1;
             cardAndNumber.add(selectedCardNumber, c2);
             authorizationView.add(cardAndNumber, c);
