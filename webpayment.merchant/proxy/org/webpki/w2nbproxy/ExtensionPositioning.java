@@ -25,21 +25,18 @@ import org.webpki.util.Base64URL;
 
 public class ExtensionPositioning {
     
-    public class TargetDimensions {
+    public class TargetRectangle {
         
-        public double targetTop;
-        public double targetLeft;
-        public double targetWidth;
-        public double targetHeight;
+        public double left;
+        public double top;
+        public double width;
+        public double height;
 
-        TargetDimensions(double targetTop,
-                         double targetLeft,
-                         double targetWidth,
-                         double targetHeight) {
-            this.targetTop = targetTop;
-            this.targetLeft = targetLeft;
-            this.targetWidth = targetWidth;
-            this.targetHeight = targetHeight;
+        TargetRectangle(double left, double top, double width, double height) {
+            this.left = left;
+            this.top = top;
+            this.width = width;
+            this.height = height;
         }
     }
     
@@ -51,15 +48,17 @@ public class ExtensionPositioning {
     public static final String HORIZONTAL_ALIGNMENT_JSON = "horizontalAlignment";
     public static final String VERTICAL_ALIGNMENT_JSON   = "verticalAlignment";
     
-    public static final String TARGET_TOP_JSON           = "targetTop";
-    public static final String TARGET_LEFT_JSON          = "targetLeft";
-    public static final String TARGET_WIDTH_JSON         = "targetWidth";
-    public static final String TARGET_HEIGHT_JSON        = "targetHeight";
+    public static final String TARGET_RECTANGLE_JSON     = "targetRectangle";
+    
+    public static final String TARGET_LEFT_JSON          = "left";
+    public static final String TARGET_TOP_JSON           = "top";
+    public static final String TARGET_WIDTH_JSON         = "width";
+    public static final String TARGET_HEIGHT_JSON        = "height";
     
     public HORIZONTAL_ALIGNMENT horizontalAlignment;
     public VERTICAL_ALIGNMENT verticalAlignment;
     
-    public TargetDimensions targetElement;  // Optional (may be null)
+    public TargetRectangle targetRectangle;  // Optional (may be null)
 
     public ExtensionPositioning(String base64UrlEncodedArguments) throws IOException {
         positioningArguments = JSONParser.parse(Base64URL.decode(base64UrlEncodedArguments));
@@ -67,11 +66,12 @@ public class ExtensionPositioning {
                 positioningArguments.getString(HORIZONTAL_ALIGNMENT_JSON));
         verticalAlignment = VERTICAL_ALIGNMENT.valueOf(
                 positioningArguments.getString(VERTICAL_ALIGNMENT_JSON));
-        if (positioningArguments.hasProperty(TARGET_HEIGHT_JSON)) {
-            targetElement = new TargetDimensions(positioningArguments.getDouble(TARGET_TOP_JSON),
-                                                 positioningArguments.getDouble(TARGET_LEFT_JSON),
-                                                 positioningArguments.getDouble(TARGET_WIDTH_JSON),
-                                                 positioningArguments.getDouble(TARGET_HEIGHT_JSON));
+        if (positioningArguments.hasProperty(TARGET_RECTANGLE_JSON)) {
+            JSONObjectReader values = positioningArguments.getObject(TARGET_RECTANGLE_JSON);
+            targetRectangle = new TargetRectangle(values.getDouble(TARGET_LEFT_JSON),
+                                                  values.getDouble(TARGET_TOP_JSON),
+                                                  values.getDouble(TARGET_WIDTH_JSON),
+                                                  values.getDouble(TARGET_HEIGHT_JSON));
         }
         positioningArguments.checkForUnread();
     }
@@ -89,11 +89,13 @@ public class ExtensionPositioning {
             "    var result = {" + HORIZONTAL_ALIGNMENT_JSON + ":hAlign, " +
                                    VERTICAL_ALIGNMENT_JSON + ":vAlign}\n" +
             "    if (optionalId) {\n" +
-            "        var element = document.getElementById(optionalId);\n" +
-            "        result." + TARGET_TOP_JSON + " = element.style.top;\n" +
-            "        result." + TARGET_LEFT_JSON + " = element.style.left;\n" +
-            "        result." + TARGET_WIDTH_JSON + " = element.style.width;\n" +
-            "        result." + TARGET_HEIGHT_JSON + " = element.style.height;\n" +
+            "        var input = document.getElementById(optionalId).getBoundingClientRect();\n" +
+            "        var rectangle = {};\n" +
+            "        rectangle." + TARGET_LEFT_JSON + " = input." + TARGET_LEFT_JSON + ";\n" +
+            "        rectangle." + TARGET_TOP_JSON + " = input." + TARGET_TOP_JSON + ";\n" +
+            "        rectangle." + TARGET_WIDTH_JSON + " = input." + TARGET_WIDTH_JSON + ";\n" +
+            "        rectangle." + TARGET_HEIGHT_JSON + " = input." + TARGET_HEIGHT_JSON + ";\n" +
+            "        result." + TARGET_RECTANGLE_JSON + " = rectangle;\n" +
             "    }\n" +
             "    return result;\n" +
             "}\n";

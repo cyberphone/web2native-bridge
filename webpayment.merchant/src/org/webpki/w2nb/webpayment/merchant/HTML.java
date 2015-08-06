@@ -309,10 +309,8 @@ public class HTML {
          .append(price(savedShoppingCart.total))
          .append("</td></tr>" +
                  "</table></td></tr>" +
-                 "<tr><td style=\"text-align:center;padding-top:10pt\" id=\"pay\">")
-         .append("Wallet")
-         .append("</td></tr></table>" +
-                  "<form name=\"shoot\" method=\"POST\" action=\"")
+                 "<tr><td style=\"padding:20pt\" id=\"wallet\">&nbsp;</td></tr></table>" +
+                 "<form name=\"shoot\" method=\"POST\" action=\"")
          .append(pullPaymentMode ? "pullpay" : "pushpay")
          .append("\"><input type=\"hidden\" name=\"authreq\" id=\"authreq\">" +
                   "</form>" +
@@ -349,7 +347,7 @@ public class HTML {
                     "                            ")
              .append(ExtensionPositioning.encode(ExtensionPositioning.HORIZONTAL_ALIGNMENT.Center,
                                                  ExtensionPositioning.VERTICAL_ALIGNMENT.Center,
-                                                 "result"))
+                                                 "wallet"))
              .append(").then(function(port) {\n" +
                     "        nativePort = port;\n" +
                     "        port.addMessageListener(function(message) {\n" +
@@ -369,6 +367,7 @@ public class HTML {
                     "                return;\n" +
                     "            }\n" +
                     "            if (initMode) {\n" +
+                    "                document.getElementById(\"wallet\").style.height = message." + BaseProperties.TARGET_HEIGHT_JSON + " + 'px';\n" +
                     "                initMode = false;\n" +
                     "                nativePort.postMessage(invokeRequest);\n" +
                     "            } else {\n" +
