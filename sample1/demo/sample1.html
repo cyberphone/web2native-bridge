@@ -42,7 +42,6 @@ function activateExtension() {
     }
     navigator.nativeConnect("org.webpki.w2nb.sample1").then(function(port) {
         nativePort = port;
-        console.debug('conn=' + JSON.stringify(port));
         port.addMessageListener(function(message) {
             appendJSONMessage(message);
         });

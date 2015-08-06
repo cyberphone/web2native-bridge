@@ -93,7 +93,7 @@ public class InitTestPage implements BaseProperties {
                                                                  signer);
         // Header
         write("<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><title>Payment Agent (Wallet) Tester</title>"
-              + "</head><body><script>\n\n" +
+              + "</head><body onload=\"getTargetDimensions()\"><script>\n\n" +
 
               "\"use strict\";\n\n" +
 
@@ -178,7 +178,6 @@ public class InitTestPage implements BaseProperties {
                                           ExtensionPositioning.VERTICAL_ALIGNMENT.Center, null));
         write(").then(function(port) {\n" +
               "        nativePort = port;\n" +
-              "        console.debug('conn=' + JSON.stringify(port));\n" +
               "        port.addMessageListener(function(message) {\n" +
               "            if (message[\"@context\"] != \"" + BaseProperties.W2NB_WEB_PAY_CONTEXT_URI + "\") {\n" +
               "                setString(\"Missing or wrong \\\"@context\\\"\");\n" +
@@ -194,6 +193,10 @@ public class InitTestPage implements BaseProperties {
               "            }\n" +
               "            if (initMode) {\n" +
               "                initMode = false;\n" +
+              "                if (document.getElementById(\"positionWallet\").checked) {\n" +
+              "                    document.getElementById(\"wallet\").style.width = message." + TARGET_WIDTH_JSON + " + 'px';\n" +
+              "                    document.getElementById(\"wallet\").style.height = message." + TARGET_HEIGHT_JSON + " + 'px';\n" +
+              "                }\n" +
               "                if (test == \"" + TESTS.Normal + "\") {\n" +
               "                    sendMessageConditional(normalRequest);\n" +
               "                } else if (test == \"" + TESTS.Slow + "\") {\n" +
@@ -237,8 +240,17 @@ public class InitTestPage implements BaseProperties {
               "    closeExtension();\n" +
               "});\n\n" +
               
+              "var targetWidth;\n" +
+              "var targetHeight;\n" +
+              "function getTargetDimensions() {\n" +
+              "    targetWidth = document.getElementById(\"wallet\").style.width;\n" +
+              "    targetHeight = document.getElementById(\"wallet\").style.height;\n" +
+              "}\n\n" +
+              
               "function setTargetState() {\n" +
               "    document.getElementById(\"wallet\").style.visibility = document.getElementById(\"positionWallet\").checked ? 'visible' : 'hidden';\n" +
+              "    document.getElementById(\"wallet\").style.width = targetWidth;\n" +
+              "    document.getElementById(\"wallet\").style.height = targetHeight;\n" +
               "}\n\n" +
               
               ExtensionPositioning.SET_EXTENSION_POSITION_FUNCTION_TEXT + "\n" +
@@ -263,8 +275,8 @@ public class InitTestPage implements BaseProperties {
               "<input type=\"checkbox\" id=\"positionWallet\" style=\"margin-top:10pt\" onchange=\"setTargetState()\">Position/update target element (default is centered)\n" +
               "<div style=\"margin-top:10pt;margin-bottom:10pt\">Result:</div>\n" +
               "<div id=\"response\" style=\"font-family:courier;font-size:10pt;word-wrap:break-word;width:800pt\"></div>\n" +
-              "<div id=\"wallet\" style=\"border-width:1px;border-style:solid;border-color:#a9a9a9;position:absolute;top:50px;" +
-              "right:50px;z-index:5;padding:5px;visibility:hidden\">The wallet should launch in this<br>corner and update width+height</div>" +
+              "<div id=\"wallet\" style=\"position:absolute;top:50px;background:yellow;" +
+              "right:50px;z-index:5;visibility:hidden\">The wallet should launch in this<br>corner and update width+height</div>" +
               "</body></html>\n");
         fos.close();
     }

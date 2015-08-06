@@ -17,6 +17,8 @@
 package org.webpki.w2nb.webpayment.common;
 
 public interface BaseProperties {
+    String TARGET_WIDTH_JSON          = "targetWidth";
+    String TARGET_HEIGHT_JSON         = "targetHeight";
     String PAYMENT_REQUEST_JSON       = "paymentRequest";
     String PULL_PAYMENT_JSON          = "pullPayment";       // false or absent => "push" payment        
     String AMOUNT_JSON                = "amount";

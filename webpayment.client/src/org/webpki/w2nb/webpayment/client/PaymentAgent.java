@@ -1061,7 +1061,7 @@ public class PaymentAgent {
 
         frame = new JDialog(new JFrame(), "Payment Request [" + domainName + "]");
         ApplicationWindow md = new ApplicationWindow();
-  //      frame.setResizable(false);
+        frame.setResizable(false);
         frame.pack();
 
         ////////////////////////////////////////////////////////////////
@@ -1094,6 +1094,7 @@ public class PaymentAgent {
         }
 
         // Now, position it!
+        // 
         double extWidth = extensionWindow.getWidth() / factor;
         if (extensionPositioning.horizontalAlignment == ExtensionPositioning.HORIZONTAL_ALIGNMENT.Center) {
             left += (width - extWidth) / 2;
@@ -1106,16 +1107,23 @@ public class PaymentAgent {
         } else if (extensionPositioning.verticalAlignment == ExtensionPositioning.VERTICAL_ALIGNMENT.Bottom) {
             top += height - extHeight;
         }
-
         frame.setLocation((int)(left * factor), (int)(top * factor));
-        frame.setAlwaysOnTop(true);
+
         // Respond to caller to indicate that we are (almost) ready for action
+        // We provide the new width and height data which can be used by the
+        // calling Web application to update the page for the Wallet to make
+        // it more look like a Web application.  Note that this measurement
+        // lacks the 'px' part; you have to add it in the Web application.
         try {
-            stdout.writeJSONObject(Messages.createBaseMessage(Messages.WALLET_IS_READY));
+            stdout.writeJSONObject(Messages.createBaseMessage(Messages.WALLET_IS_READY)
+                .setDouble(BaseProperties.TARGET_WIDTH_JSON, extWidth)
+                .setDouble(BaseProperties.TARGET_HEIGHT_JSON, extHeight));
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Error writing to browser", e);
             terminate();
         }
+
+        frame.setAlwaysOnTop(true);
 
         frame.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         frame.addWindowListener(new WindowAdapter() {
