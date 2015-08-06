@@ -1109,7 +1109,7 @@ public class PaymentAgent {
         }
         frame.setLocation((int)(left * factor), (int)(top * factor));
 
-        // Respond to caller to indicate that we are (almost) ready for action
+        // Respond to caller to indicate that we are (almost) ready for action.
         // We provide the new width and height data which can be used by the
         // calling Web application to update the page for the Wallet to make
         // it more look like a Web application.  Note that this measurement
