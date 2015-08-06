@@ -37,7 +37,7 @@ public class HomeServlet extends HttpServlet {
         if (session.getAttribute(PULL_ATTR) == null) {
             session.setAttribute(PULL_ATTR, pullPaymentMode);
         } else {
-            pullPaymentMode = (boolean) session.getAttribute(PULL_ATTR);
+            pullPaymentMode = (Boolean) session.getAttribute(PULL_ATTR);
         }
         HTML.homePage(response, pullPaymentMode);
     }
