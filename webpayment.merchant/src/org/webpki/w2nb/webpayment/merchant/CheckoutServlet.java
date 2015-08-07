@@ -56,7 +56,7 @@ public class CheckoutServlet extends HttpServlet implements BaseProperties {
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         JSONArrayReader ar = JSONParser.parse(request.getParameter("shoppingCart")).getJSONArrayReader();
         SavedShoppingCart savedShoppingCart = new SavedShoppingCart();
-        int total = 0;
+        long total = 0;
         while (ar.hasMore()) {
             JSONObjectReader or = ar.getObject();
             int units = or.getInt("units");
@@ -64,7 +64,7 @@ public class CheckoutServlet extends HttpServlet implements BaseProperties {
                 String sku = or.getString("sku");
                 savedShoppingCart.items.put(sku, units);
                 logger.info("SKU=" + sku + " Units=" + units);
-                total += units * or.getInt("priceX100");
+                total += units * or.getLong("priceX100");
             }
         }
         savedShoppingCart.total = total;

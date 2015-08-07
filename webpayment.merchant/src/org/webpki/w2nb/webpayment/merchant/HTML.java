@@ -182,7 +182,7 @@ public class HTML {
         return s;
     }
 
-    private static String price(int priceX100) {
+    private static String price(long priceX100) {
         return (MerchantService.currency.symbolFirst ? MerchantService.currency.symbol : "")
                + String.valueOf(priceX100 / 100) + "."
                + String.valueOf((priceX100 % 100) / 10)
@@ -317,7 +317,7 @@ public class HTML {
                   "<form name=\"restore\" method=\"POST\" action=\"shop\">" +
                   "</form></td></tr>");
         
-        StringBuffer temp_string = new StringBuffer("\n\n\"use strict\";\n\nvar invokeRequest =\n")
+        StringBuffer temp_string = new StringBuffer("\n\n\"use strict\";\n\nvar invocationData =\n")
             .append(invoke_json)
             .append(";\n\n" +
 
@@ -369,7 +369,7 @@ public class HTML {
                     "            if (initMode) {\n" +
                     "                document.getElementById(\"wallet\").style.height = message." + BaseProperties.TARGET_HEIGHT_JSON + " + 'px';\n" +
                     "                initMode = false;\n" +
-                    "                nativePort.postMessage(invokeRequest);\n" +
+                    "                nativePort.postMessage(invocationData);\n" +
                     "            } else {\n" +
                     "                document.getElementById(\"authreq\").value = JSON.stringify(message);\n" +
                     "                document.forms.shoot.submit();\n" +
@@ -419,9 +419,9 @@ public class HTML {
         }
         s.append("</td></tr>");
         HTML.output(response, 
-                    HTML.getHTML("history.pushState(null, null, 'payment');\n" +
+                    HTML.getHTML("history.pushState(null, null, 'home');\n" +
                                  "window.addEventListener('popstate', function(event) {\n" +
-                                 "    history.pushState(null, null, 'payment');\n" +
+                                 "    history.pushState(null, null, 'home');\n" +
                                  "});",
                                  null,
                                  s.toString()));
