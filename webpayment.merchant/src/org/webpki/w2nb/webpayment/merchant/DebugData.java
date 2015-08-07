@@ -28,5 +28,7 @@ public class DebugData implements Serializable {
     
     public byte[] walletResponse;
     
+    public byte[] pullBankRequest;
+    
     public byte[] pullBankResponse;
 }

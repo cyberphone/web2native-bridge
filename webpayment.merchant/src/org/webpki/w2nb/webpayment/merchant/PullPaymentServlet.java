@@ -73,12 +73,12 @@ public class PullPaymentServlet extends PaymentCoreServlet {
 
         // Call the payment provider (which is the only party that can deal with
         // encrypted user authorizations)
+        byte[] bankRequest = providerRequest.serializeJSONObject(JSONOutputFormats.NORMALIZED);
         HTTPSWrapper wrap = new HTTPSWrapper();
         wrap.setTimeout(TIMEOUT_FOR_REQUEST);
         wrap.setHeader("Content-Type", MerchantService.jsonMediaType);
         wrap.setRequireSuccess(true);
-        wrap.makePostRequest(authUrl,
-                             providerRequest.serializeJSONObject(JSONOutputFormats.NORMALIZED));
+        wrap.makePostRequest(authUrl, bankRequest);
         if (!wrap.getContentType().equals(JSON_CONTENT_TYPE)) {
             throw new IOException("Content-Type must be \"" + JSON_CONTENT_TYPE + "\" , found: " + wrap.getContentType());
         }
@@ -87,7 +87,9 @@ public class PullPaymentServlet extends PaymentCoreServlet {
         logger.info("Returned from payment provider:\n" + resultMessage);
 
         if (CheckoutServlet.getOption(session, HomeServlet.DEBUG_SESSION_ATTR)) {
-            ((DebugData)session.getAttribute(CheckoutServlet.DEBUG_DATA_SESSION_ATTR)).pullBankResponse = wrap.getData();
+            DebugData debugData = (DebugData)session.getAttribute(CheckoutServlet.DEBUG_DATA_SESSION_ATTR); 
+            debugData.pullBankResponse = wrap.getData();
+            debugData.pullBankRequest = bankRequest;
         }
 
         // The result should be a provider-signed authorization

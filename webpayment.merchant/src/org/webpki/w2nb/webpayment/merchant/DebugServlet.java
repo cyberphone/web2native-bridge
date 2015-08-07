@@ -80,7 +80,11 @@ public class DebugServlet extends HttpServlet {
             if (CheckoutServlet.getOption(session, HomeServlet.PULL_SESSION_ATTR)) {
             s.append(description("In the pull mode encrypted."));
             s.append(fancyBox(debugData.walletResponse));
-            s.append(description("In the pull mode." +
+            s.append(description("In the pull mode encrypted."));
+            s.append(fancyBox(debugData.pullBankRequest));
+            s.append(description("The following message is <i>NOT</i> exchange between the " +
+                        "Wallet and Merchant but is the response from the Payment Provider " +
+                        "to the the pull mode." +
                         "<p>As can been seen the authorization is <i>digitally signed</i> by the " +
                         "Payment Provider and contains both the original Merchant payment request " +
                         "as well as a minimal set of card data.</p>"));
