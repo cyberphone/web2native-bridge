@@ -315,7 +315,7 @@ public class HTML {
          .append(price(savedShoppingCart.tax))
          .append("</td></tr>" +
             "</table></td></tr><tr><td style=\"padding-top:10pt\"><table style=\"margin-left:auto;margin-right:auto\" class=\"tftable\"><tr><th style=\"text-align:center\">Amount to Pay</th><td style=\"text-align:right\" id=\"total\">")
-         .append(price(savedShoppingCart.total + savedShoppingCart.tax))
+         .append(price(savedShoppingCart.roundedPaymentAmount))
          .append("</td></tr>" +
                  "</table></td></tr>" +
                  "<tr><td style=\"padding:20pt\" id=\"wallet\">&nbsp;</td></tr></table>" +

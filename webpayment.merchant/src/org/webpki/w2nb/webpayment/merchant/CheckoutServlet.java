@@ -69,13 +69,14 @@ public class CheckoutServlet extends HttpServlet implements BaseProperties {
         }
         savedShoppingCart.total = total;
         savedShoppingCart.tax = total / 10;  // 10%
+        savedShoppingCart.roundedPaymentAmount = ((savedShoppingCart.tax + total + 24) / 25) * 25;
         HttpSession session = request.getSession(true);
         boolean pullPaymentMode = 
             session.getAttribute(HomeServlet.PULL_ATTR) != null && (Boolean)session.getAttribute(HomeServlet.PULL_ATTR);
         session.setAttribute(SavedShoppingCart.SAVED_SHOPPING_CART, savedShoppingCart);
 
         JSONObjectWriter paymentRequest = PaymentRequest.encode("Demo Merchant",
-                                                                new BigDecimal(BigInteger.valueOf(total + savedShoppingCart.tax), 2),
+                                                                new BigDecimal(BigInteger.valueOf(savedShoppingCart.roundedPaymentAmount), 2),
                                                                 MerchantService.currency,
                                                                 "#" + (nextReferenceId++),
                                                                 MerchantService.merchantKey);
