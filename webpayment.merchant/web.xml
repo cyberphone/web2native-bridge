@@ -81,6 +81,11 @@
         <servlet-class>org.webpki.w2nb.webpayment.merchant.PullPaymentServlet</servlet-class>
     </servlet>
 
+    <servlet>
+        <servlet-name>DebugServlet</servlet-name>
+        <servlet-class>org.webpki.w2nb.webpayment.merchant.DebugServlet</servlet-class>
+    </servlet>
+
     <servlet-mapping>
         <servlet-name>HomeServlet</servlet-name>
         <url-pattern>/home</url-pattern>
@@ -105,5 +110,10 @@
         <servlet-name>PullPaymentServlet</servlet-name>
         <url-pattern>/pullpay</url-pattern>
     </servlet-mapping>
-@security-constraints@    
+
+    <servlet-mapping>
+        <servlet-name>DebugServlet</servlet-name>
+        <url-pattern>/debug</url-pattern>
+    </servlet-mapping>
+    @security-constraints@    
 </web-app>

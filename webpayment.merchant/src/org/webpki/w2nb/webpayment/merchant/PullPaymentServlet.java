@@ -22,6 +22,8 @@ import java.net.URL;
 
 import java.security.GeneralSecurityException;
 
+import javax.servlet.http.HttpSession;
+
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONOutputFormats;
@@ -40,7 +42,8 @@ public class PullPaymentServlet extends PaymentCoreServlet {
     static final int TIMEOUT_FOR_REQUEST = 5000;
 
     @Override
-    protected GenericAuthorizationResponse processInput(JSONObjectReader input,
+    protected GenericAuthorizationResponse processInput(HttpSession session,
+                                                        JSONObjectReader input,
                                                         byte[] requestHash,
                                                         String clientIpAddress)
     throws IOException, GeneralSecurityException {
@@ -82,7 +85,11 @@ public class PullPaymentServlet extends PaymentCoreServlet {
 
         JSONObjectReader resultMessage = JSONParser.parse(wrap.getData());
         logger.info("Returned from payment provider:\n" + resultMessage);
-        
+
+        if (CheckoutServlet.getOption(session, HomeServlet.DEBUG_SESSION_ATTR)) {
+            ((DebugData)session.getAttribute(CheckoutServlet.DEBUG_DATA_SESSION_ATTR)).pullBankResponse = wrap.getData();
+        }
+
         // The result should be a provider-signed authorization
         return new GenericAuthorizationResponse(resultMessage);
     }

@@ -47,11 +47,19 @@ public class CheckoutServlet extends HttpServlet implements BaseProperties {
 
     private static final long serialVersionUID = 1L;
     
-    static final String REQUEST_HASH_ATTR = "REQHASH";
+    static final String REQUEST_HASH_SESSION_ATTR = "REQHASH";
+    static final String DEBUG_DATA_SESSION_ATTR   = "DBGDATA";
+    
+    static final String AUTHREQ_FORM_ATTR = "authreq";
+    static final String INITMSG_FORM_ATTR = "initmsg";
     
     static Logger logger = Logger.getLogger(CheckoutServlet.class.getName());
     
     static int nextReferenceId = 1000000;
+    
+    static boolean getOption(HttpSession session, String name) {
+        return session.getAttribute(name) != null && (Boolean)session.getAttribute(name);
+    }
     
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         JSONArrayReader ar = JSONParser.parse(request.getParameter("shoppingCart")).getJSONArrayReader();
@@ -71,8 +79,12 @@ public class CheckoutServlet extends HttpServlet implements BaseProperties {
         savedShoppingCart.tax = total / 10;  // 10%
         savedShoppingCart.roundedPaymentAmount = ((savedShoppingCart.tax + total + 24) / 25) * 25;
         HttpSession session = request.getSession(true);
-        boolean pullPaymentMode = 
-            session.getAttribute(HomeServlet.PULL_ATTR) != null && (Boolean)session.getAttribute(HomeServlet.PULL_ATTR);
+        boolean pullPaymentMode = getOption(session, HomeServlet.PULL_SESSION_ATTR);
+        boolean debugMode = getOption(session, HomeServlet.DEBUG_SESSION_ATTR);
+        DebugData debugData = null;
+        if (debugMode) {
+            session.setAttribute(DEBUG_DATA_SESSION_ATTR, debugData = new DebugData());
+        }
         session.setAttribute(SavedShoppingCart.SAVED_SHOPPING_CART, savedShoppingCart);
 
         JSONObjectWriter paymentRequest = PaymentRequest.encode("Demo Merchant",
@@ -81,7 +93,7 @@ public class CheckoutServlet extends HttpServlet implements BaseProperties {
                                                                 "#" + (nextReferenceId++),
                                                                 MerchantService.merchantKey);
 
-        session.setAttribute(REQUEST_HASH_ATTR, PaymentRequest.getRequestHash(paymentRequest));
+        session.setAttribute(REQUEST_HASH_SESSION_ATTR, PaymentRequest.getRequestHash(paymentRequest));
 
         Vector<String> acceptedCards = new Vector<String>();
         for (CardTypes card : MerchantService.acceptedCards) {
@@ -92,10 +104,15 @@ public class CheckoutServlet extends HttpServlet implements BaseProperties {
             .setStringArray(ACCEPTED_CARD_TYPES_JSON, acceptedCards.toArray(new String[0]))
             .setBoolean(PULL_PAYMENT_JSON, pullPaymentMode)
             .setObject(PAYMENT_REQUEST_JSON, paymentRequest);
+   
+        if (debugMode) {
+            debugData.paymentRequest = invokeRequest.serializeJSONObject(JSONOutputFormats.NORMALIZED);
+        }
         
         HTML.checkoutPage(response,
                           savedShoppingCart,
                           pullPaymentMode,
+                          debugMode,
                           new String(invokeRequest.serializeJSONObject(JSONOutputFormats.JS_NATIVE), "UTF-8"));
     }
 

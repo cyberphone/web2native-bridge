@@ -18,10 +18,13 @@ package org.webpki.w2nb.webpayment.merchant;
 
 import java.io.IOException;
 import java.io.InputStream;
+
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
+
 import java.util.EnumSet;
 import java.util.Set;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -31,13 +34,17 @@ import javax.servlet.ServletContextListener;
 import org.webpki.crypto.CertificateUtil;
 import org.webpki.crypto.CustomCryptoProvider;
 import org.webpki.crypto.KeyStoreVerifier;
+
 import org.webpki.json.JSONX509Verifier;
+
 import org.webpki.util.ArrayUtil;
+
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.CardTypes;
 import org.webpki.w2nb.webpayment.common.Currencies;
 import org.webpki.w2nb.webpayment.common.KeyStoreEnumerator;
 import org.webpki.w2nb.webpayment.common.ServerSigner;
+
 import org.webpki.webutil.InitPropertyReader;
 
 public class MerchantService extends InitPropertyReader implements ServletContextListener {

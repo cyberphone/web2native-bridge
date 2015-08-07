@@ -16,23 +16,17 @@
  */
 package org.webpki.w2nb.webpayment.merchant;
 
-import java.io.IOException;
+import java.io.Serializable;
 
-import javax.servlet.http.HttpSession;
-
-import org.webpki.json.JSONObjectReader;
-
-import org.webpki.w2nb.webpayment.common.GenericAuthorizationResponse;
-
-public class PushPaymentServlet extends PaymentCoreServlet {
+public class DebugData implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    
+    public byte[] initMessage;
 
-    @Override
-    protected GenericAuthorizationResponse processInput(HttpSession session,
-                                                        JSONObjectReader input,
-                                                        byte[] requestHash,
-                                                        String clientIpAddress) throws IOException {
-        return new GenericAuthorizationResponse(input);
-    }
+    public byte[] paymentRequest;
+    
+    public byte[] walletResponse;
+    
+    public byte[] pullBankResponse;
 }

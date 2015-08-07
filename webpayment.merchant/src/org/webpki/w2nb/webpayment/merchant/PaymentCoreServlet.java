@@ -28,8 +28,10 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.webpki.json.JSONObjectReader;
+import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONParser;
 
 import org.webpki.util.ArrayUtil;
@@ -46,25 +48,41 @@ public abstract class PaymentCoreServlet extends HttpServlet implements BaseProp
     
     static int transaction_id = 164006;
     
-    protected abstract GenericAuthorizationResponse processInput(JSONObjectReader input,
+    protected abstract GenericAuthorizationResponse processInput(HttpSession session,
+                                                                 JSONObjectReader input,
                                                                  byte[] requestHash,
                                                                  String clientIpAddress)
     throws IOException, GeneralSecurityException;
     
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         try {
-            byte[] requestHash = (byte[]) request.getSession(false).getAttribute(CheckoutServlet.REQUEST_HASH_ATTR);
+            HttpSession session = request.getSession(false);
+            if (session == null) {
+                throw new IOException("Session timed out!");
+            }
+            byte[] requestHash = (byte[]) session.getAttribute(CheckoutServlet.REQUEST_HASH_SESSION_ATTR);
+
             request.setCharacterEncoding("UTF-8");
-            JSONObjectReader input = JSONParser.parse(request.getParameter("authreq"));
-            logger.info("Received:\n" + input);
-            
-            GenericAuthorizationResponse authorization = processInput(input, requestHash, request.getRemoteAddr());
+            JSONObjectReader input = JSONParser.parse(request.getParameter(CheckoutServlet.AUTHREQ_FORM_ATTR));
+            logger.info("Received from wallet:\n" + input);
+
+            if (CheckoutServlet.getOption(session, HomeServlet.DEBUG_SESSION_ATTR)) {
+                DebugData debugData = (DebugData) session.getAttribute(CheckoutServlet.DEBUG_DATA_SESSION_ATTR);
+                debugData.initMessage = request.getParameter(CheckoutServlet.INITMSG_FORM_ATTR).getBytes("UTF-8");
+                debugData.walletResponse = input.serializeJSONObject(JSONOutputFormats.NORMALIZED);
+            }
+
+            GenericAuthorizationResponse authorization = processInput(session,
+                                                                      input,
+                                                                      requestHash,
+                                                                      request.getRemoteAddr());
             if (!ArrayUtil.compare(authorization.getPaymentRequest().getRequestHash(), requestHash)) {
                 throw new IOException("Non-matching \"" + REQUEST_HASH_JSON + "\"");
             }
 
             logger.info("Successful authorization of request: " + authorization.getPaymentRequest().getReferenceId());
             HTML.resultPage(response,
+                            CheckoutServlet.getOption(session, HomeServlet.DEBUG_SESSION_ATTR),
                             null,
                             authorization.getPaymentRequest(), 
                             authorization.getCardType(),

@@ -29,21 +29,34 @@ public class HomeServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
     
-    static final String PULL_ATTR = "PULL";
+    static final String PULL_SESSION_ATTR = "pull";
+    static final String DEBUG_SESSION_ATTR = "debug";
     
+    boolean checkBoxGet(HttpSession session, String name) {
+        boolean argument = false;
+        if (session.getAttribute(name) == null) {
+            session.setAttribute(name, argument);
+        } else {
+            argument = (Boolean) session.getAttribute(name);
+        }
+        return argument;
+    }
+    
+    void checkBoxSet(HttpSession session, HttpServletRequest request, String name) {
+        session.setAttribute(name, request.getParameter(name) != null);
+    }
+
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         HttpSession session = request.getSession(true);
-        boolean pullPaymentMode = false;
-        if (session.getAttribute(PULL_ATTR) == null) {
-            session.setAttribute(PULL_ATTR, pullPaymentMode);
-        } else {
-            pullPaymentMode = (Boolean) session.getAttribute(PULL_ATTR);
-        }
-        HTML.homePage(response, pullPaymentMode);
+        HTML.homePage(response,
+                      checkBoxGet(session, PULL_SESSION_ATTR),
+                      checkBoxGet(session, DEBUG_SESSION_ATTR));
     }
 
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        request.getSession(true).setAttribute(PULL_ATTR, request.getParameter("pull") != null);
+        HttpSession session = request.getSession(true);
+        checkBoxSet(session, request, PULL_SESSION_ATTR);
+        checkBoxSet(session, request, DEBUG_SESSION_ATTR);
         response.sendRedirect("home");
     }
 }

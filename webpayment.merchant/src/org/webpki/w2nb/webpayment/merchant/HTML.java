@@ -19,6 +19,7 @@ package org.webpki.w2nb.webpayment.merchant;
 import java.io.IOException;
 
 import javax.servlet.ServletException;
+
 import javax.servlet.http.HttpServletResponse;
 
 import org.webpki.w2nb.webpayment.common.BaseProperties;
@@ -85,7 +86,9 @@ public class HTML {
         response.getOutputStream().write(html.getBytes("UTF-8"));
     }
 
-    public static void homePage(HttpServletResponse response, boolean pullPaymentMode) throws IOException, ServletException {
+    public static void homePage(HttpServletResponse response,
+                                boolean pullPaymentMode,
+                                boolean debugMode) throws IOException, ServletException {
         HTML.output(response, HTML.getHTML(null, null,
                 "<tr><td width=\"100%\" align=\"center\" valign=\"middle\">" +
                 "<table style=\"max-width:600px;\" cellpadding=\"4\">" +
@@ -107,10 +110,16 @@ public class HTML {
 //TODO
 //                   "<tr style=\"text-align:left\"><td><a href=\"" + "hh" + "/cards\">Initialize Payment Cards&nbsp;&nbsp;</a></td><td><i>Mandatory</i> First Step</td></tr>" +
                    "<tr style=\"text-align:left\"><td><a href=\"" + "shop" + "\">Go To Merchant</a></td><td>Shop Til You Drop!</td></tr>" +
-                   "<tr style=\"text-align:left\"><td><form name=\"pull\" method=\"POST\"><input type=\"checkbox\" name=\"pull\" onclick=\"document.forms.pull.submit()\"" +
+                   "<tr style=\"text-align:left\"><form name=\"options\" method=\"POST\"><td>" +
+                   "<input type=\"checkbox\" name=\"" + 
+                   HomeServlet.PULL_SESSION_ATTR + "\" onclick=\"document.forms.options.submit()\"" +
                    (pullPaymentMode ? " checked" : "") +
-                   "></form></td><td>Pull payment option</td></tr>" +
-                                  "<tr><td style=\"text-align:center;padding-top:15pt;padding-bottom:5pt\" colspan=\"2\"><b>Documentation</b></td></tr>" +
+                   "></td><td>&quot;Pull&quot; Payment Option</td></tr>" +
+                   "<tr style=\"text-align:left\"><td><input type=\"checkbox\" name=\"" +
+                   HomeServlet.DEBUG_SESSION_ATTR + "\" onclick=\"document.forms.options.submit()\"" +
+                   (debugMode ? " checked" : "") +
+                   "></td><td>Debug Option</td></form></tr>" +
+                   "<tr><td style=\"text-align:center;padding-top:15pt;padding-bottom:5pt\" colspan=\"2\"><b>Documentation</b></td></tr>" +
                    "<tr style=\"text-align:left\"><td><a target=\"_blank\" href=\"http://webpki.org/papers/PKI/pki-webcrypto.pdf\">WebCrypto++</a></td><td><i>Conceptual</i> Specification</td></tr>" +
                    "<tr style=\"text-align:left\"><td><a target=\"_blank\" href=\"http://webpki.org/papers/PKI/EMV-Tokenization-SET-3DSecure-WebCryptoPlusPlus-combo.pdf#page=4\">Demo Payment System</a></td><td>State Diagram Etc.</td></tr>" +
                    "<tr style=\"text-align:left\"><td><a target=\"_blank\" href=\"https://code.google.com/p/openkeystore/source/browse/#svn/wcpp-payment-demo\">Demo Source Code</a></td><td>For Nerds...</td></tr>" +
@@ -286,6 +295,7 @@ public class HTML {
     public static void checkoutPage(HttpServletResponse response,
                                     SavedShoppingCart savedShoppingCart, 
                                     boolean pullPaymentMode,
+                                    boolean debugMode,
                                     String invoke_json) throws IOException, ServletException {
         StringBuffer s = new StringBuffer(
             "<tr><td width=\"100%\" align=\"center\" valign=\"middle\">" +
@@ -321,10 +331,13 @@ public class HTML {
                  "<tr><td style=\"padding:20pt\" id=\"wallet\">&nbsp;</td></tr></table>" +
                  "<form name=\"shoot\" method=\"POST\" action=\"")
          .append(pullPaymentMode ? "pullpay" : "pushpay")
-         .append("\"><input type=\"hidden\" name=\"authreq\" id=\"authreq\">" +
-                  "</form>" +
-                  "<form name=\"restore\" method=\"POST\" action=\"shop\">" +
-                  "</form></td></tr>");
+         .append("\"><input type=\"hidden\" name=\"" + CheckoutServlet.AUTHREQ_FORM_ATTR + "\" id=\"" + CheckoutServlet.AUTHREQ_FORM_ATTR + "\">");
+        if (debugMode) {
+            s.append("<input type=\"hidden\" name=\"" + CheckoutServlet.INITMSG_FORM_ATTR + "\" id=\"" + CheckoutServlet.INITMSG_FORM_ATTR + "\">");
+        }
+        s.append("</form>" +
+                 "<form name=\"restore\" method=\"POST\" action=\"shop\">" +
+                 "</form></td></tr>");
         
         StringBuffer temp_string = new StringBuffer("\n\n\"use strict\";\n\nvar invocationData =\n")
             .append(invoke_json)
@@ -375,12 +388,17 @@ public class HTML {
                     "                setString(\"Wrong or missing \\\"@qualifier\\\"\");\n" +
                     "                return;\n" +
                     "            }\n" +
-                    "            if (initMode) {\n" +
+                    "            if (initMode) {\n");
+           if (debugMode) {
+               temp_string.append(
+                    "                document.getElementById(\"" + CheckoutServlet.INITMSG_FORM_ATTR + "\").value = JSON.stringify(message);\n");
+           }
+           temp_string.append(
                     "                document.getElementById(\"wallet\").style.height = message." + BaseProperties.TARGET_HEIGHT_JSON + " + 'px';\n" +
                     "                initMode = false;\n" +
                     "                nativePort.postMessage(invocationData);\n" +
                     "            } else {\n" +
-                    "                document.getElementById(\"authreq\").value = JSON.stringify(message);\n" +
+                    "                document.getElementById(\"" + CheckoutServlet.AUTHREQ_FORM_ATTR + "\").value = JSON.stringify(message);\n" +
                     "                document.forms.shoot.submit();\n" +
                     "            }\n"+
                     "        });\n" +
@@ -404,6 +422,7 @@ public class HTML {
     }
 
     public static void resultPage(HttpServletResponse response,
+                                  boolean debugMode,
                                   String error_message,
                                   PaymentRequest paymentRequest, 
                                   String cardType,
@@ -422,7 +441,11 @@ public class HTML {
             .append(cardType)
             .append("</td><td style=\"text-align:center\">")
             .append(cardReference)
-            .append("</td></tr></table></td></tr></table>");
+            .append("</td></tr></table></td></tr>");
+            if (debugMode) {
+                s.append("<tr><td style=\"text-align:center;padding-top:20pt\"><a href=\"debug\">Show Debug Info</a></td></tr>");
+            }
+            s.append("</table></td></tr></table>");
         } else {
             s.append("There was a problem with your order: " + error_message);
         }
