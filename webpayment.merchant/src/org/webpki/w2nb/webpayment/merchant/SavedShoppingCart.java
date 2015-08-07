@@ -27,6 +27,7 @@ public class SavedShoppingCart implements Serializable {
     static final String SAVED_SHOPPING_CART    = "SSD";
 
     long total;
+    long tax;
     LinkedHashMap<String, Integer> items = new LinkedHashMap<String, Integer> ();
 }
 

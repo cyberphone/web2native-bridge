@@ -256,7 +256,7 @@ public class HTML {
             page_data.append(productEntry(temp_string, ShoppingServlet.products.get(sku), sku, savedShoppingCart, q++));
         }
         page_data.append(
-            "</table></tr></td><tr><td style=\"padding-top:10pt\"><table style=\"margin-left:auto;margin-right:auto\" class=\"tftable\"><tr><th style=\"text-align:center\">Amount to Pay</th><td style=\"text-align:right\" id=\"total\">")
+            "</table></tr></td><tr><td style=\"padding-top:10pt\"><table style=\"margin-left:auto;margin-right:auto\" class=\"tftable\"><tr><th>Total</th><td style=\"text-align:right\" id=\"total\">")
             .append(price(savedShoppingCart.total))
             .append("</td></tr>" +
             "</table></td></tr>" +
@@ -293,7 +293,7 @@ public class HTML {
             "<tr><td style=\"text-align:center;font-weight:bolder;font-size:10pt;font-family:"
             + FONT_ARIAL + "\">Current Order<br>&nbsp;</td></tr>" +
             "<tr><td id=\"result\"><table style=\"margin-left:auto;margin-right:auto\" class=\"tftable\">" +
-            "<tr><th>Description</th><th>Price</th><th>Units</th></tr>");
+            "<tr><th>Description</th><th>Price</th><th>Units</th><th>Sum</th></tr>");
         for (String sku : savedShoppingCart.items.keySet()) {
             ProductEntry product_entry = ShoppingServlet.products.get(sku);
             s.append("<tr style=\"text-align:center\"><td>")
@@ -302,11 +302,20 @@ public class HTML {
              .append(price(product_entry.priceX100))
              .append("</td><td>")
              .append(savedShoppingCart.items.get(sku).intValue())
+             .append("</td><td style=\"text-align:right\">")
+             .append(price(product_entry.priceX100 * savedShoppingCart.items.get(sku).intValue()))
              .append("</td></tr>");                
         }
         s.append(
-            "</table></td></tr><tr><td style=\"padding-top:10pt\"><table style=\"margin-left:auto;margin-right:auto\" class=\"tftable\"><tr><th style=\"text-align:center\">Amount to Pay</th><td style=\"text-align:right\" id=\"total\">")
+             "<tr><td colspan=\"4\" style=\"height:1px;padding:0px\"></td></tr>" +
+             "<tr><td colspan=\"3\" style=\"text-align:right\">Total</td><td style=\"text-align:right\">")
          .append(price(savedShoppingCart.total))
+         .append("</td></tr>" +
+             "<tr><td colspan=\"3\" style=\"text-align:right\">Tax (10%)</td><td style=\"text-align:right\">")
+         .append(price(savedShoppingCart.tax))
+         .append("</td></tr>" +
+            "</table></td></tr><tr><td style=\"padding-top:10pt\"><table style=\"margin-left:auto;margin-right:auto\" class=\"tftable\"><tr><th style=\"text-align:center\">Amount to Pay</th><td style=\"text-align:right\" id=\"total\">")
+         .append(price(savedShoppingCart.total + savedShoppingCart.tax))
          .append("</td></tr>" +
                  "</table></td></tr>" +
                  "<tr><td style=\"padding:20pt\" id=\"wallet\">&nbsp;</td></tr></table>" +
