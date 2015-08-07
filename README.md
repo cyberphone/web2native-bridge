@@ -1,4 +1,6 @@
 # Web2Native Bridge - Emulator
+
+<table><tr><td><i>Note: this is a system in development, the specification may change anytime without notice</i></td></tr></table>
 This repository contains all code for building and testing an emulation of
 the Web2Native Bridge concept
 (https://cyberphone.github.io/openkeystore/resources/docs/web2native-bridge.pdf)
@@ -13,7 +15,7 @@ if you accidentally navigate to a malicious page since
 an improperly designed native message extension could enable web access to *any* local application!
 
 ### API
-The Web2Native Bridge emulator extends the **navigator** object by a *single* method **nativeConnect**(*NameOfTargetApplication* [, *JSONArgumentObject*]) which
+The Web2Native Bridge emulator extends the **navigator** object by a *single* method **nativeConnect**(*NameOfTargetApplication* [, *OptionalArgument*]) which
 returns a JS promise to a **port** object.
 
 The **port** object supports the following methods and events:
@@ -58,6 +60,17 @@ For debugging purposes there is also a logging system writing data in <code>prox
 All local I/O is between the browser, proxy and the callable applications
 is performed through <code>stdin</code> and <code>stdout</code>.
 
+### Native Application Interface
+Native applications (in the prototype Java applications hosted in JAR-files) are called as follows:
+<table>
+<tr><td>args[0]</td><td>Path to logfile</td></tr>
+<tr><td>args[1]</td><td>URL of calling web page</td></tr>
+<tr><td>args[2]</td><td>Dimension data of calling web page</td></tr>
+<tr><td>args[3]</td><td>Custom invocation data (<i>OptionalArgument</i>)</td></tr>
+<tr><td>args[4...]</td><td>Chrome's Native Messaging arguments</td></tr>
+</table>
+For detailed information about the format of these fields, turn to the code :-)
+
 ### Installation
 Prerequisites: You need to have Java SE version 7 or 8 installed to run the Web2Native Bridge emulator. OS/X and Linux
 installations also presume that **clang** respectively **g++** is available.
@@ -78,6 +91,7 @@ http://www.cnet.com/news/google-paves-over-hole-left-by-chrome-plug-in-ban/
 albeit with two major differences:
 * The sample application runs in an ordinary web page
 * The Web2Native Bridge browser extension is fully generic and can support any number of very different applications
+* The Web2Native Bridge adds positioning support enabling integration UI-wise with the web  
 
 The native part of the sample application resides in <code>proxy/install/apps/org.webpki.w2nb.sample1/org.webpki.w2nb.sample1.jar</code>.
 
