@@ -24,9 +24,9 @@ public class ProductEntry implements Serializable {
 
     String imageUrl;
     String name;
-    int priceX100;
+    long priceX100;
     
-    public ProductEntry (String imageUrl, String name, int priceX100) {
+    public ProductEntry (String imageUrl, String name, long priceX100) {
         this.imageUrl = imageUrl;
         this.name = name;
         this.priceX100 = priceX100;
