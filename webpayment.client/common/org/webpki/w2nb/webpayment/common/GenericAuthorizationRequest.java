@@ -17,11 +17,13 @@
 package org.webpki.w2nb.webpayment.common;
 
 import java.io.IOException;
+
 import java.util.Date;
 import java.util.GregorianCalendar;
 
 import org.webpki.crypto.AsymSignatureAlgorithms;
 import org.webpki.crypto.SignerInterface;
+
 import org.webpki.json.JSONAlgorithmPreferences;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
@@ -29,27 +31,41 @@ import org.webpki.json.JSONSignatureDecoder;
 import org.webpki.json.JSONX509Signer;
 
 public class GenericAuthorizationRequest implements BaseProperties {
-    
+
     public static final String SOFTWARE_ID      = "WebPKI.org - Wallet";
     public static final String SOFTWARE_VERSION = "1.00";
-    
+
+    public static JSONObjectWriter encode(PaymentRequest paymentRequest,
+                                          String domainName,
+                                          String cardType,
+                                          String cardNumber,
+                                          Date dateTime,
+                                          JSONX509Signer signer) throws IOException {
+        return Messages.createBaseMessage(Messages.PAYER_GENERIC_AUTH_REQ)
+            .setObject(PAYMENT_REQUEST_JSON, paymentRequest.root)
+            .setString(DOMAIN_NAME_JSON, domainName)
+            .setString(CARD_TYPE_JSON, cardType)
+            .setString(CARD_NUMBER_JSON, cardNumber)
+            .setDateTime(DATE_TIME_JSON, dateTime, false)
+            .setString(SOFTWARE_ID_JSON, SOFTWARE_ID)
+            .setString(SOFTWARE_VERSION_JSON, SOFTWARE_VERSION)
+            .setSignature (signer);
+    }
+
     public static JSONObjectWriter encode(PaymentRequest paymentRequest,
                                           String domainName,
                                           String cardType,
                                           String cardNumber,
                                           AsymSignatureAlgorithms signatureAlgorithm,
                                           SignerInterface signer) throws IOException {
-        return Messages.createBaseMessage(Messages.PAYER_GENERIC_AUTH_REQ)
-            .setObject(PAYMENT_REQUEST_JSON, paymentRequest.root)
-            .setString(DOMAIN_NAME_JSON, domainName)
-            .setString(CARD_TYPE_JSON, cardType)
-            .setString(CARD_NUMBER_JSON, cardNumber)
-            .setDateTime(DATE_TIME_JSON, new Date(), false)
-            .setString(SOFTWARE_ID_JSON, SOFTWARE_ID)
-            .setString(SOFTWARE_VERSION_JSON, SOFTWARE_VERSION)
-            .setSignature (new JSONX509Signer(signer).setSignatureAlgorithm(signatureAlgorithm)
-                                                     .setSignatureCertificateAttributes(true)
-                                                     .setAlgorithmPreferences(JSONAlgorithmPreferences.JOSE));
+        return encode(paymentRequest,
+                      domainName,
+                      cardType,
+                      cardNumber,
+                      new Date(),
+                      new JSONX509Signer(signer).setSignatureAlgorithm(signatureAlgorithm)
+                                                .setSignatureCertificateAttributes(true)
+                                                .setAlgorithmPreferences(JSONAlgorithmPreferences.JOSE));
     }
 
     public static String formatCardNumber(String cardNumber) {
