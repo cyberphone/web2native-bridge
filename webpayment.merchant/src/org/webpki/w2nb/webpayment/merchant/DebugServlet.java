@@ -53,12 +53,12 @@ public class DebugServlet extends HttpServlet {
             DebugData debugData = null;
             HttpSession session = request.getSession(false);
             if (session == null ||
-                (debugData = (DebugData)session.getAttribute(CheckoutServlet.DEBUG_DATA_SESSION_ATTR)) == null) {
+                (debugData = (DebugData)session.getAttribute(UserPaymentServlet.DEBUG_DATA_SESSION_ATTR)) == null) {
                 throw new IOException("Session timed out");
             }
             StringBuffer s = new StringBuffer(HTML.HTML_INIT +  "</style><body>" +
             "<h3>Payment Session Debug Information - ")
-              .append(CheckoutServlet.getOption(session, HomeServlet.PULL_SESSION_ATTR) ?
+              .append(UserPaymentServlet.getOption(session, HomeServlet.PULL_SESSION_ATTR) ?
                     "Pull" : "Push")
               .append(" Mode</h3>" +
                       "The following page shows the messages exchanged between the " +
@@ -77,7 +77,7 @@ public class DebugServlet extends HttpServlet {
                                  "with the payment request.</p>"));
             s.append(fancyBox(debugData.paymentRequest));
 
-            if (CheckoutServlet.getOption(session, HomeServlet.PULL_SESSION_ATTR)) {
+            if (UserPaymentServlet.getOption(session, HomeServlet.PULL_SESSION_ATTR)) {
             s.append(description("In the pull mode encrypted."));
             s.append(fancyBox(debugData.walletResponse));
             s.append(description("In the pull mode encrypted."));

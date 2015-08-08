@@ -60,15 +60,15 @@ public abstract class PaymentCoreServlet extends HttpServlet implements BaseProp
             if (session == null) {
                 throw new IOException("Session timed out!");
             }
-            byte[] requestHash = (byte[]) session.getAttribute(CheckoutServlet.REQUEST_HASH_SESSION_ATTR);
+            byte[] requestHash = (byte[]) session.getAttribute(UserPaymentServlet.REQUEST_HASH_SESSION_ATTR);
 
             request.setCharacterEncoding("UTF-8");
-            JSONObjectReader input = JSONParser.parse(request.getParameter(CheckoutServlet.AUTHREQ_FORM_ATTR));
+            JSONObjectReader input = JSONParser.parse(request.getParameter(UserPaymentServlet.AUTHREQ_FORM_ATTR));
             logger.info("Received from wallet:\n" + input);
 
-            if (CheckoutServlet.getOption(session, HomeServlet.DEBUG_SESSION_ATTR)) {
-                DebugData debugData = (DebugData) session.getAttribute(CheckoutServlet.DEBUG_DATA_SESSION_ATTR);
-                debugData.initMessage = request.getParameter(CheckoutServlet.INITMSG_FORM_ATTR).getBytes("UTF-8");
+            if (UserPaymentServlet.getOption(session, HomeServlet.DEBUG_SESSION_ATTR)) {
+                DebugData debugData = (DebugData) session.getAttribute(UserPaymentServlet.DEBUG_DATA_SESSION_ATTR);
+                debugData.initMessage = request.getParameter(UserPaymentServlet.INITMSG_FORM_ATTR).getBytes("UTF-8");
                 debugData.walletResponse = input.serializeJSONObject(JSONOutputFormats.NORMALIZED);
             }
 
@@ -82,7 +82,7 @@ public abstract class PaymentCoreServlet extends HttpServlet implements BaseProp
 
             logger.info("Successful authorization of request: " + authorization.getPaymentRequest().getReferenceId());
             HTML.resultPage(response,
-                            CheckoutServlet.getOption(session, HomeServlet.DEBUG_SESSION_ATTR),
+                            UserPaymentServlet.getOption(session, HomeServlet.DEBUG_SESSION_ATTR),
                             null,
                             authorization.getPaymentRequest(), 
                             authorization.getCardType(),

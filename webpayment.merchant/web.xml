@@ -67,8 +67,8 @@
     </servlet>
 
     <servlet>
-        <servlet-name>CheckoutServlet</servlet-name>
-        <servlet-class>org.webpki.w2nb.webpayment.merchant.CheckoutServlet</servlet-class>
+        <servlet-name>UserPaymentServlet</servlet-name>
+        <servlet-class>org.webpki.w2nb.webpayment.merchant.UserPaymentServlet</servlet-class>
     </servlet>
 
     <servlet>
@@ -97,8 +97,8 @@
     </servlet-mapping>
 
     <servlet-mapping>
-        <servlet-name>CheckoutServlet</servlet-name>
-        <url-pattern>/checkout</url-pattern>
+        <servlet-name>UserPaymentServlet</servlet-name>
+        <url-pattern>/userpay</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>

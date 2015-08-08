@@ -86,8 +86,8 @@ public class PullPaymentServlet extends PaymentCoreServlet {
         JSONObjectReader resultMessage = JSONParser.parse(wrap.getData());
         logger.info("Returned from payment provider:\n" + resultMessage);
 
-        if (CheckoutServlet.getOption(session, HomeServlet.DEBUG_SESSION_ATTR)) {
-            DebugData debugData = (DebugData)session.getAttribute(CheckoutServlet.DEBUG_DATA_SESSION_ATTR); 
+        if (UserPaymentServlet.getOption(session, HomeServlet.DEBUG_SESSION_ATTR)) {
+            DebugData debugData = (DebugData)session.getAttribute(UserPaymentServlet.DEBUG_DATA_SESSION_ATTR); 
             debugData.pullBankResponse = wrap.getData();
             debugData.pullBankRequest = bankRequest;
         }

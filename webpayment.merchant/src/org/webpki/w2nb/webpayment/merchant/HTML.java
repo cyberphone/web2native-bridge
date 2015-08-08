@@ -271,7 +271,7 @@ public class HTML {
             "</table></td></tr>" +
             "<tr><td style=\"text-align:center;padding-top:10pt\" id=\"pay\"><input class=\"stdbtn\" type=\"button\" value=\"Checkout..\" title=\"Paying time has come...\" onclick=\"checkOut()\"></td></tr>" +
             "</table>" +
-            "<form name=\"shoot\" method=\"POST\" action=\"checkout\">" +
+            "<form name=\"shoot\" method=\"POST\" action=\"userpay\">" +
             "<input type=\"hidden\" name=\"shoppingCart\" id=\"shoppingCart\">" +
             "</form></td></tr>");
          temp_string.insert(0,
@@ -292,11 +292,11 @@ public class HTML {
             page_data.toString()));
     }
 
-    public static void checkoutPage(HttpServletResponse response,
-                                    SavedShoppingCart savedShoppingCart, 
-                                    boolean pullPaymentMode,
-                                    boolean debugMode,
-                                    String invoke_json) throws IOException, ServletException {
+    public static void userPayPage(HttpServletResponse response,
+                                   SavedShoppingCart savedShoppingCart, 
+                                   boolean pullPaymentMode,
+                                   boolean debugMode,
+                                   String invoke_json) throws IOException, ServletException {
         StringBuffer s = new StringBuffer(
             "<tr><td width=\"100%\" align=\"center\" valign=\"middle\">" +
             "<table>" +
@@ -331,9 +331,9 @@ public class HTML {
                  "<tr><td style=\"padding:20pt\" id=\"wallet\">&nbsp;</td></tr></table>" +
                  "<form name=\"shoot\" method=\"POST\" action=\"")
          .append(pullPaymentMode ? "pullpay" : "pushpay")
-         .append("\"><input type=\"hidden\" name=\"" + CheckoutServlet.AUTHREQ_FORM_ATTR + "\" id=\"" + CheckoutServlet.AUTHREQ_FORM_ATTR + "\">");
+         .append("\"><input type=\"hidden\" name=\"" + UserPaymentServlet.AUTHREQ_FORM_ATTR + "\" id=\"" + UserPaymentServlet.AUTHREQ_FORM_ATTR + "\">");
         if (debugMode) {
-            s.append("<input type=\"hidden\" name=\"" + CheckoutServlet.INITMSG_FORM_ATTR + "\" id=\"" + CheckoutServlet.INITMSG_FORM_ATTR + "\">");
+            s.append("<input type=\"hidden\" name=\"" + UserPaymentServlet.INITMSG_FORM_ATTR + "\" id=\"" + UserPaymentServlet.INITMSG_FORM_ATTR + "\">");
         }
         s.append("</form>" +
                  "<form name=\"restore\" method=\"POST\" action=\"shop\">" +
@@ -391,14 +391,14 @@ public class HTML {
                     "            if (initMode) {\n");
            if (debugMode) {
                temp_string.append(
-                    "                document.getElementById(\"" + CheckoutServlet.INITMSG_FORM_ATTR + "\").value = JSON.stringify(message);\n");
+                    "                document.getElementById(\"" + UserPaymentServlet.INITMSG_FORM_ATTR + "\").value = JSON.stringify(message);\n");
            }
            temp_string.append(
                     "                document.getElementById(\"wallet\").style.height = message." + BaseProperties.TARGET_HEIGHT_JSON + " + 'px';\n" +
                     "                initMode = false;\n" +
                     "                nativePort.postMessage(invocationData);\n" +
                     "            } else {\n" +
-                    "                document.getElementById(\"" + CheckoutServlet.AUTHREQ_FORM_ATTR + "\").value = JSON.stringify(message);\n" +
+                    "                document.getElementById(\"" + UserPaymentServlet.AUTHREQ_FORM_ATTR + "\").value = JSON.stringify(message);\n" +
                     "                document.forms.shoot.submit();\n" +
                     "            }\n"+
                     "        });\n" +
