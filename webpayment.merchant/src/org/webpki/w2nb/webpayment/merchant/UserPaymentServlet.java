@@ -50,8 +50,9 @@ public class UserPaymentServlet extends HttpServlet implements BaseProperties {
     static final String REQUEST_HASH_SESSION_ATTR = "REQHASH";
     static final String DEBUG_DATA_SESSION_ATTR   = "DBGDATA";
     
-    static final String AUTHREQ_FORM_ATTR = "authreq";
-    static final String INITMSG_FORM_ATTR = "initmsg";
+    static final String AUTHREQ_FORM_ATTR         = "authreq";
+    static final String INITMSG_FORM_ATTR         = "initmsg";
+    static final String SHOPPING_CART_FORM_ATTR   = "shoppingCart";
     
     static Logger logger = Logger.getLogger(UserPaymentServlet.class.getName());
     
@@ -62,7 +63,7 @@ public class UserPaymentServlet extends HttpServlet implements BaseProperties {
     }
     
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        JSONArrayReader ar = JSONParser.parse(request.getParameter("shoppingCart")).getJSONArrayReader();
+        JSONArrayReader ar = JSONParser.parse(request.getParameter(SHOPPING_CART_FORM_ATTR)).getJSONArrayReader();
         SavedShoppingCart savedShoppingCart = new SavedShoppingCart();
         long total = 0;
         while (ar.hasMore()) {
@@ -76,7 +77,11 @@ public class UserPaymentServlet extends HttpServlet implements BaseProperties {
             }
         }
         savedShoppingCart.total = total;
-        savedShoppingCart.tax = total / 10;  // 10%
+
+        // We add a fictitious 10% sales tax as well
+        savedShoppingCart.tax = total / 10;
+
+        // Then we round up to the nearest 25 centimes, cents, or pennies
         savedShoppingCart.roundedPaymentAmount = ((savedShoppingCart.tax + total + 24) / 25) * 25;
         HttpSession session = request.getSession(true);
         boolean pullPaymentMode = getOption(session, HomeServlet.PULL_SESSION_ATTR);
@@ -87,11 +92,12 @@ public class UserPaymentServlet extends HttpServlet implements BaseProperties {
         }
         session.setAttribute(SavedShoppingCart.SAVED_SHOPPING_CART, savedShoppingCart);
 
-        JSONObjectWriter paymentRequest = PaymentRequest.encode("Demo Merchant",
-                                                                new BigDecimal(BigInteger.valueOf(savedShoppingCart.roundedPaymentAmount), 2),
-                                                                MerchantService.currency,
-                                                                "#" + (nextReferenceId++),
-                                                                MerchantService.merchantKey);
+        JSONObjectWriter paymentRequest =
+                PaymentRequest.encode("Demo Merchant",
+                                      new BigDecimal(BigInteger.valueOf(savedShoppingCart.roundedPaymentAmount), 2),
+                                      MerchantService.currency,
+                                      "#" + (nextReferenceId++),
+                                      MerchantService.merchantKey);
 
         session.setAttribute(REQUEST_HASH_SESSION_ATTR, PaymentRequest.getRequestHash(paymentRequest));
 
@@ -110,10 +116,10 @@ public class UserPaymentServlet extends HttpServlet implements BaseProperties {
         }
         
         HTML.userPayPage(response,
-                          savedShoppingCart,
-                          pullPaymentMode,
-                          debugMode,
-                          new String(invokeRequest.serializeJSONObject(JSONOutputFormats.JS_NATIVE), "UTF-8"));
+                         savedShoppingCart,
+                         pullPaymentMode,
+                         debugMode,
+                         new String(invokeRequest.serializeJSONObject(JSONOutputFormats.JS_NATIVE), "UTF-8"));
     }
 
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {

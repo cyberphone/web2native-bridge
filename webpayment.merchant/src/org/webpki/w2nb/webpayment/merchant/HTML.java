@@ -186,7 +186,7 @@ public class HTML {
         .append(", -1, ")
         .append(index)
         .append(")\"></td></tr></table></form></td></tr>");
-        temp_string.insert(0, "shopping_cart[" + index + "] = new webpki.ShopEntry(" 
+        temp_string.insert(0, "shoppingCart[" + index + "] = new webpki.ShopEntry(" 
                        + product_entry.priceX100 + ",'" + product_entry.name + "','" + sku + "'," + units + ");\n");        
         return s;
     }
@@ -202,9 +202,9 @@ public class HTML {
     public static void merchantPage(HttpServletResponse response,
                                     SavedShoppingCart savedShoppingCart) throws IOException, ServletException {
         StringBuffer temp_string = new StringBuffer(
-            "\nfunction checkOut() {\n" +
+            "\nfunction userPay() {\n" +
             "    if (getTotal()) {\n" +
-            "        document.getElementById('shoppingCart').value = JSON.stringify(shopping_cart);\n" +
+            "        document.getElementById('" + UserPaymentServlet.SHOPPING_CART_FORM_ATTR + "').value = JSON.stringify(shoppingCart);\n" +
             "        document.forms.shoot.submit();\n" +           
             "    } else {\n" +
             "        document.getElementById('emptybasket').style.top = ((window.innerHeight - document.getElementById('emptybasket').offsetHeight) / 2) + 'px';\n" +
@@ -217,8 +217,8 @@ public class HTML {
             "}\n\n" +
             "function getTotal() {\n" +
             "    var total = 0;\n" +
-            "    for (var i = 0; i < shopping_cart.length; i++) {\n" +
-            "        total += shopping_cart[i].priceX100 * shopping_cart[i].units;\n" +
+            "    for (var i = 0; i < shoppingCart.length; i++) {\n" +
+            "        total += shoppingCart[i].priceX100 * shoppingCart[i].units;\n" +
             "    }\n" +
             "    return total;\n"+
             "}\n\n" +
@@ -244,7 +244,7 @@ public class HTML {
             "function updateInput(index, control) {\n" +
             "    if (!numeric_only.test(control.value)) control.value = '0';\n" +
             "    while (control.value.length > 1 && control.value.charAt(0) == '0') control.value = control.value.substring(1);\n" +
-            "    shopping_cart[index].units = parseInt(control.value);\n" +
+            "    shoppingCart[index].units = parseInt(control.value);\n" +
             "    updateTotal();\n" +
             "}\n\n" +
             "function updateUnits(control, value, index) {\n" +
@@ -269,10 +269,10 @@ public class HTML {
             .append(price(savedShoppingCart.total))
             .append("</td></tr>" +
             "</table></td></tr>" +
-            "<tr><td style=\"text-align:center;padding-top:10pt\" id=\"pay\"><input class=\"stdbtn\" type=\"button\" value=\"Checkout..\" title=\"Paying time has come...\" onclick=\"checkOut()\"></td></tr>" +
+            "<tr><td style=\"text-align:center;padding-top:10pt\" id=\"pay\"><input class=\"stdbtn\" type=\"button\" value=\"Checkout..\" title=\"Paying time has come...\" onclick=\"userPay()\"></td></tr>" +
             "</table>" +
             "<form name=\"shoot\" method=\"POST\" action=\"userpay\">" +
-            "<input type=\"hidden\" name=\"shoppingCart\" id=\"shoppingCart\">" +
+            "<input type=\"hidden\" name=\"" + UserPaymentServlet.SHOPPING_CART_FORM_ATTR + "\" id=\"" + UserPaymentServlet.SHOPPING_CART_FORM_ATTR + "\">" +
             "</form></td></tr>");
          temp_string.insert(0,
             "\n\n\"use strict\";\n\n" +
@@ -284,7 +284,7 @@ public class HTML {
             "    this.sku = sku;\n" +
             "    this.units = units;\n" +
             "};\n\n" +
-            "var shopping_cart = [];\n");
+            "var shoppingCart = [];\n");
 
         HTML.output(response, HTML.getHTML(temp_string.toString(), 
             "><div id=\"emptybasket\" style=\"border-color:grey;border-style:solid;border-width:3px;text-align:center;font-family:"
