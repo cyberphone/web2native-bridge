@@ -67,12 +67,23 @@ public class PaymentCoreServlet extends HttpServlet implements BaseProperties {
             ////////////////////////////////////////////////////////////////////////////
 
             // A minor test is though needed for dispatching the proper message decoder...
-            if (authorizationRequest.getString(JSONDecoderCache.QUALIFIER_JSON).equals(Messages.PAYEE_PULL_AUTH_REQ.toString())) {
-                PayeePullAuthorizationRequest attestedEncryptedRequest = new PayeePullAuthorizationRequest(authorizationRequest);
-                genericAuthorizationRequest = attestedEncryptedRequest.getDecryptedAuthorizationRequest(BankService.decryptionKeys);
+            if (authorizationRequest.getString(JSONDecoderCache.QUALIFIER_JSON)
+                    .equals(Messages.PAYEE_PULL_AUTH_REQ.toString())) {
+
+                // Read the attested and encrypted request. Validate attestation signature
+                PayeePullAuthorizationRequest attestedEncryptedRequest =
+                        new PayeePullAuthorizationRequest(authorizationRequest);
+
+                // Decrypt encrypted request and validate the embedded signatures
+                genericAuthorizationRequest =
+                        attestedEncryptedRequest.getDecryptedAuthorizationRequest(BankService.decryptionKeys);
+
+                // In the pull mode the merchant is the only one who can provide the client's IP address
                 clientIpAddress = attestedEncryptedRequest.getClientIpAddress();
             } else {
                 genericAuthorizationRequest = new GenericAuthorizationRequest(authorizationRequest);
+
+                // In the push mode the payment provider can derive the client's IP address from the request
                 clientIpAddress = request.getRemoteAddr();
             }
 
@@ -85,7 +96,7 @@ public class PaymentCoreServlet extends HttpServlet implements BaseProperties {
             // Get the embedded (counter-signed) payment request
             PaymentRequest paymentRequest = genericAuthorizationRequest.getPaymentRequest();
 
-            // Verify that the merchant's signature belongs to the merchant trust network
+            // Verify that the merchant's signature belongs to a valid merchant trust network
             paymentRequest.getSignatureDecoder().verify(BankService.merchantRoot);
 
             ////////////////////////////////////////////////////////////////////////////
