@@ -194,8 +194,8 @@ public class InitTestPage implements BaseProperties {
               "            if (initMode) {\n" +
               "                initMode = false;\n" +
               "                if (document.getElementById(\"positionWallet\").checked) {\n" +
-              "                    document.getElementById(\"wallet\").style.width = message." + TARGET_WIDTH_JSON + " + 'px';\n" +
-              "                    document.getElementById(\"wallet\").style.height = message." + TARGET_HEIGHT_JSON + " + 'px';\n" +
+              "                    document.getElementById(\"wallet\").style.width = message." + WINDOW_JSON + "." + WIDTH_JSON + " + 'px';\n" +
+              "                    document.getElementById(\"wallet\").style.height = message." + WINDOW_JSON + "." + HEIGHT_JSON + " + 'px';\n" +
               "                }\n" +
               "                if (test == \"" + TESTS.Normal + "\") {\n" +
               "                    sendMessageConditional(normalRequest);\n" +

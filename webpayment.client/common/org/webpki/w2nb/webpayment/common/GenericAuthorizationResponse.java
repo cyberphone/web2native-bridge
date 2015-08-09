@@ -35,6 +35,7 @@ public class GenericAuthorizationResponse implements BaseProperties {
     public static JSONObjectWriter encode(PaymentRequest paymentRequest,
                                           String cardType,
                                           String cardNumber,
+                                          String referenceId,
                                           JSONX509Signer signer) throws IOException {
         StringBuffer cardReference = new StringBuffer();
         int q = cardNumber.length() - 4;
@@ -45,6 +46,7 @@ public class GenericAuthorizationResponse implements BaseProperties {
             .setObject(PAYMENT_REQUEST_JSON, paymentRequest.root)
             .setString(CARD_TYPE_JSON, cardType)
             .setString(CARD_REFERENCE_JSON, cardReference.toString())
+            .setString(REFERENCE_ID_JSON, referenceId)
             .setDateTime(DATE_TIME_JSON, new Date(), true)
             .setString(SOFTWARE_ID_JSON, SOFTWARE_ID)
             .setString(SOFTWARE_VERSION_JSON, SOFTWARE_VERSION)
@@ -56,6 +58,8 @@ public class GenericAuthorizationResponse implements BaseProperties {
     String cardType;
     
     String cardReference;
+    
+    String referenceId;
     
     GregorianCalendar dateTime;
     
@@ -72,6 +76,7 @@ public class GenericAuthorizationResponse implements BaseProperties {
         paymentRequest = new PaymentRequest(rd.getObject(PAYMENT_REQUEST_JSON));
         cardType = rd.getString(CARD_TYPE_JSON);
         cardReference = rd.getString(CARD_REFERENCE_JSON);
+        referenceId = rd.getString(REFERENCE_ID_JSON);
         dateTime = rd.getDateTime(DATE_TIME_JSON);
         softwareId = rd.getString(SOFTWARE_ID_JSON);
         softwareVersion = rd.getString(SOFTWARE_VERSION_JSON);
@@ -89,6 +94,10 @@ public class GenericAuthorizationResponse implements BaseProperties {
 
     public String getCardReference() {
         return cardReference;
+    }
+
+    public String getReferenceId() {
+        return referenceId;
     }
 
     public GregorianCalendar getDateTime() {

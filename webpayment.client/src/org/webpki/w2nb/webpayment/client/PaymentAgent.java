@@ -1116,14 +1116,15 @@ public class PaymentAgent {
         frame.setLocation((int)(left * factor), (int)(top * factor));
 
         // Respond to caller to indicate that we are (almost) ready for action.
-        // We provide the new width and height data which can be used by the
+        // We provide the Wallet's width and height data which can be used by the
         // calling Web application to update the page for the Wallet to make
         // it more look like a Web application.  Note that this measurement
         // lacks the 'px' part; you have to add it in the Web application.
         try {
             JSONObjectWriter readyMessage = Messages.createBaseMessage(Messages.WALLET_IS_READY)
-                .setDouble(BaseProperties.TARGET_WIDTH_JSON, extWidth)
-                .setDouble(BaseProperties.TARGET_HEIGHT_JSON, extHeight);
+                .setObject(BaseProperties.WINDOW_JSON, new JSONObjectWriter()
+                    .setDouble(BaseProperties.WIDTH_JSON, extWidth)
+                    .setDouble(BaseProperties.HEIGHT_JSON, extHeight));
             logger.info("Sent to browser:\n" + readyMessage);
             stdout.writeJSONObject(readyMessage);
         } catch (Exception e) {

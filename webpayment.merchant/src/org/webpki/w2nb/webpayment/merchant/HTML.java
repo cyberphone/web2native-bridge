@@ -19,13 +19,11 @@ package org.webpki.w2nb.webpayment.merchant;
 import java.io.IOException;
 
 import javax.servlet.ServletException;
-
 import javax.servlet.http.HttpServletResponse;
 
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.Messages;
 import org.webpki.w2nb.webpayment.common.PaymentRequest;
-
 import org.webpki.w2nbproxy.ExtensionPositioning;
 
 public class HTML {
@@ -394,7 +392,8 @@ public class HTML {
                     "                document.getElementById(\"" + UserPaymentServlet.INITMSG_FORM_ATTR + "\").value = JSON.stringify(message);\n");
            }
            temp_string.append(
-                    "                document.getElementById(\"wallet\").style.height = message." + BaseProperties.TARGET_HEIGHT_JSON + " + 'px';\n" +
+                    "                document.getElementById(\"wallet\").style.height = message." + 
+                                         BaseProperties.WINDOW_JSON + "." + BaseProperties.HEIGHT_JSON + " + 'px';\n" +
                     "                initMode = false;\n" +
                     "                nativePort.postMessage(invocationData);\n" +
                     "            } else {\n" +
@@ -457,5 +456,19 @@ public class HTML {
                                  "});",
                                  null,
                                  s.toString()));
+    }
+
+    public static void debugPage(HttpServletResponse response,
+                                 String string,
+                                 boolean pullMode) throws IOException, ServletException {
+        StringBuffer s = new StringBuffer("<tr><td width=\"100%\" align=\"center\" valign=\"middle\">" + 
+        "<table>" +
+        "<tr><td style=\"padding-top:50pt;text-align:center;font-weight:bolder;font-size:10pt;font-family:" + FONT_ARIAL +
+        "\">Payment Session Debug Information - \"")
+        .append(pullMode ? "Pull" : "Push")
+        .append("\" Mode&nbsp;<br></td></tr><tr><td style=\"text-align:left\">")
+        .append(string)
+        .append("</td></tr></table></td></tr>");
+        HTML.output(response, HTML.getHTML(null, null,s.toString()));
     }
 }

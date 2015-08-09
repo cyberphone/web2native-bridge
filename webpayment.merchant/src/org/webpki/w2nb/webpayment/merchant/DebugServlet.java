@@ -56,15 +56,11 @@ public class DebugServlet extends HttpServlet {
                 (debugData = (DebugData)session.getAttribute(UserPaymentServlet.DEBUG_DATA_SESSION_ATTR)) == null) {
                 throw new IOException("Session timed out");
             }
-            StringBuffer s = new StringBuffer(HTML.HTML_INIT +  "</style><body>" +
-            "<h3>Payment Session Debug Information - ")
-              .append(UserPaymentServlet.getOption(session, HomeServlet.PULL_SESSION_ATTR) ?
-                    "Pull" : "Push")
-              .append(" Mode</h3>" +
-                      "The following page shows the messages exchanged between the " +
-                      "Merchant (Payee) the Wallet (Payer).");
+            StringBuffer s = new StringBuffer( );
             
-            s.append(description("In both modes (push and pull) the Wallet sends (after invocation by the " +
+            s.append(description("<p>The following page shows the messages exchanged between the " +
+                                 "Merchant (Payee) the Wallet (Payer).</p>" +
+                                 "In both modes (push and pull) the Wallet sends (after invocation by the " +
                                  "merchant's checkout page) a &quot;ready&quot; signal that also holds the " +
                                  "size of the payment application window which the demo payment application " +
                                  "uses to adapt the the layout so that the Wallet doesn't cover the " +
@@ -100,7 +96,7 @@ public class DebugServlet extends HttpServlet {
                         "as well as a minimal set of card data.</p>"));
                 s.append(fancyBox(debugData.walletResponse));
             }
-            HTML.output(response, s.append("</body></html>").toString());
+            HTML.debugPage(response, s.toString(), UserPaymentServlet.getOption(session, HomeServlet.PULL_SESSION_ATTR));
             
          } catch (Exception e) {
             logger.log(Level.SEVERE, e.getMessage(), e);

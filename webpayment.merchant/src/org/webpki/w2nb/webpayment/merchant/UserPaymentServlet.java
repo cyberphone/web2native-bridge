@@ -17,16 +17,12 @@
 package org.webpki.w2nb.webpayment.merchant;
 
 import java.io.IOException;
-
 import java.math.BigDecimal;
 import java.math.BigInteger;
-
 import java.util.Vector;
-
 import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
-
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -37,7 +33,6 @@ import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONParser;
-
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.CardTypes;
 import org.webpki.w2nb.webpayment.common.Messages;
@@ -47,12 +42,14 @@ public class UserPaymentServlet extends HttpServlet implements BaseProperties {
 
     private static final long serialVersionUID = 1L;
     
-    static final String REQUEST_HASH_SESSION_ATTR = "REQHASH";
-    static final String DEBUG_DATA_SESSION_ATTR   = "DBGDATA";
+    static final String REQUEST_HASH_SESSION_ATTR  = "REQHASH";
+    static final String DEBUG_DATA_SESSION_ATTR    = "DBGDATA";
+    static final String SHOPPING_CART_SESSION_ATTR = "SHOPCART";
+
     
-    static final String AUTHREQ_FORM_ATTR         = "authreq";
-    static final String INITMSG_FORM_ATTR         = "initmsg";
-    static final String SHOPPING_CART_FORM_ATTR   = "shoppingCart";
+    static final String AUTHREQ_FORM_ATTR          = "authreq";
+    static final String INITMSG_FORM_ATTR          = "initmsg";
+    static final String SHOPPING_CART_FORM_ATTR    = "shoppingCart";
     
     static Logger logger = Logger.getLogger(UserPaymentServlet.class.getName());
     
@@ -90,7 +87,7 @@ public class UserPaymentServlet extends HttpServlet implements BaseProperties {
         if (debugMode) {
             session.setAttribute(DEBUG_DATA_SESSION_ATTR, debugData = new DebugData());
         }
-        session.setAttribute(SavedShoppingCart.SAVED_SHOPPING_CART, savedShoppingCart);
+        session.setAttribute(SHOPPING_CART_SESSION_ATTR, savedShoppingCart);
 
         JSONObjectWriter paymentRequest =
                 PaymentRequest.encode("Demo Merchant",

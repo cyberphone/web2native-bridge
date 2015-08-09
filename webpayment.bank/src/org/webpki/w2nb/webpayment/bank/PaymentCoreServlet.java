@@ -48,7 +48,7 @@ public class PaymentCoreServlet extends HttpServlet implements BaseProperties {
     
     static Logger logger = Logger.getLogger (PaymentCoreServlet.class.getCanonicalName());
     
-    static int transaction_id = 164006;
+    static int referenceId = 164006;
     
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         JSONObjectWriter authorizationResponse = null;
@@ -58,13 +58,15 @@ public class PaymentCoreServlet extends HttpServlet implements BaseProperties {
             if (!contentType.equals(JSON_CONTENT_TYPE)) {
                 throw new IOException("Content-Type must be \"" + JSON_CONTENT_TYPE + "\" , found: " + contentType);
             }
-            GenericAuthorizationRequest genericAuthorizationRequest = null;
             JSONObjectReader authorizationRequest = JSONParser.parse(ServletUtil.getData(request));
             logger.info("Received:\n" + authorizationRequest);
 
             ////////////////////////////////////////////////////////////////////////////
             // We rationalize here by using a single end-point for both push and pull //
             ////////////////////////////////////////////////////////////////////////////
+
+            // Pull and push technically end-up as a generic request
+            GenericAuthorizationRequest genericAuthorizationRequest = null;
 
             // A minor test is though needed for dispatching the proper message decoder...
             if (authorizationRequest.getString(JSONDecoderCache.QUALIFIER_JSON)
@@ -81,6 +83,7 @@ public class PaymentCoreServlet extends HttpServlet implements BaseProperties {
                 // In the pull mode the merchant is the only one who can provide the client's IP address
                 clientIpAddress = attestedEncryptedRequest.getClientIpAddress();
             } else {
+                // In push mode the request is fine "as is"
                 genericAuthorizationRequest = new GenericAuthorizationRequest(authorizationRequest);
 
                 // In the push mode the payment provider can derive the client's IP address from the request
@@ -108,6 +111,7 @@ public class PaymentCoreServlet extends HttpServlet implements BaseProperties {
             authorizationResponse = GenericAuthorizationResponse.encode(paymentRequest,
                                                                         genericAuthorizationRequest.getCardType(),
                                                                         genericAuthorizationRequest.getCardNumber(),
+                                                                        "#" + (referenceId ++),
                                                                         BankService.bankKey);
 
             logger.info("Returned to caller:\n" + authorizationResponse);

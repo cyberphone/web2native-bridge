@@ -47,12 +47,12 @@ public class ShoppingServlet extends HttpServlet {
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         HttpSession session = request.getSession(false);
         SavedShoppingCart saved_shopping_cart =
-            (session != null && session.getAttribute(SavedShoppingCart.SAVED_SHOPPING_CART) != null) ?
-                (SavedShoppingCart)session.getAttribute(SavedShoppingCart.SAVED_SHOPPING_CART)
+            (session != null && session.getAttribute(UserPaymentServlet.SHOPPING_CART_SESSION_ATTR) != null) ?
+                (SavedShoppingCart)session.getAttribute(UserPaymentServlet.SHOPPING_CART_SESSION_ATTR)
                                        :
                 new SavedShoppingCart();
         if (session != null) {
-            session.removeAttribute(SavedShoppingCart.SAVED_SHOPPING_CART);
+            session.removeAttribute(UserPaymentServlet.SHOPPING_CART_SESSION_ATTR);
         }
         HTML.merchantPage(response, saved_shopping_cart);
     }
