@@ -65,7 +65,7 @@ Native applications (in the prototype Java applications hosted in JAR-files) are
 <table>
 <tr><td>args[0]</td><td>Path to logfile</td></tr>
 <tr><td>args[1]</td><td>URL of calling web page</td></tr>
-<tr><td>args[2]</td><td>Dimension data of calling web page</td></tr>
+<tr><td>args[2]</td><td>Coordinates of calling web page</td></tr>
 <tr><td>args[3]</td><td>Custom invocation data (<i>OptionalArgument</i>)</td></tr>
 <tr><td>args[4...]</td><td>Chrome's Native Messaging arguments</td></tr>
 </table>
