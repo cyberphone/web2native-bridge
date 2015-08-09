@@ -1121,7 +1121,7 @@ public class PaymentAgent {
         // it more look like a Web application.  Note that this measurement
         // lacks the 'px' part; you have to add it in the Web application.
         try {
-            JSONObjectWriter readyMessage = Messages.createBaseMessage(Messages.WALLET_IS_READY)
+            JSONObjectWriter readyMessage = Messages.createBaseMessage(Messages.WALLET_READY)
                 .setObject(BaseProperties.WINDOW_JSON, new JSONObjectWriter()
                     .setDouble(BaseProperties.WIDTH_JSON, extWidth)
                     .setDouble(BaseProperties.HEIGHT_JSON, extHeight));

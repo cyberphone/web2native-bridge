@@ -17,11 +17,8 @@
 package org.webpki.w2nb.webpayment.common;
 
 import java.io.IOException;
-
 import java.security.GeneralSecurityException;
-
 import java.security.cert.X509Certificate;
-
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Vector;
@@ -30,7 +27,6 @@ import org.webpki.json.JSONAlgorithmPreferences;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONParser;
-
 import org.webpki.util.ArrayUtil;
 
 public class PayeePullAuthorizationRequest extends EncryptedAuthorizationRequest {
@@ -43,10 +39,8 @@ public class PayeePullAuthorizationRequest extends EncryptedAuthorizationRequest
 
     GregorianCalendar dateTime;
 
-    String softwareId;
+    Software software;
     
-    String softwareVersion;
-
     X509Certificate[] outerCertificatePath;
 
     public PayeePullAuthorizationRequest(JSONObjectReader rd) throws IOException {
@@ -58,8 +52,7 @@ public class PayeePullAuthorizationRequest extends EncryptedAuthorizationRequest
         clientIpAddress = rd.getString(CLIENT_IP_ADDRESS_JSON);
         referenceId = rd.getString(REFERENCE_ID_JSON);
         dateTime = rd.getDateTime(DATE_TIME_JSON);
-        softwareId = rd.getString(SOFTWARE_ID_JSON);
-        softwareVersion = rd.getString(SOFTWARE_VERSION_JSON);
+        software = new Software(rd);
         outerCertificatePath = rd.getSignature(JSONAlgorithmPreferences.JOSE).getCertificatePath();
         rd.checkForUnread();
     }
@@ -82,8 +75,8 @@ public class PayeePullAuthorizationRequest extends EncryptedAuthorizationRequest
             .setString(CLIENT_IP_ADDRESS_JSON, clientIpAddress)
             .setString(REFERENCE_ID_JSON, referenceId)
             .setDateTime(DATE_TIME_JSON, new Date(), true)
-            .setString(SOFTWARE_ID_JSON, PaymentRequest.SOFTWARE_ID)
-            .setString(SOFTWARE_VERSION_JSON, PaymentRequest.SOFTWARE_VERSION)
+            .setObject(SOFTWARE_JSON, Software.encode (PaymentRequest.SOFTWARE_ID,
+                                                       PaymentRequest.SOFTWARE_VERSION))
             .setSignature(signer);
     }
 

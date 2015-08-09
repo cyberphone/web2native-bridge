@@ -49,8 +49,7 @@ public class PaymentRequest implements BaseProperties {
             .setString(CURRENCY_JSON, currency.toString())
             .setString(REFERENCE_ID_JSON, referenceId)
             .setDateTime(DATE_TIME_JSON, new Date(), true)
-            .setString(SOFTWARE_ID_JSON, SOFTWARE_ID)
-            .setString(SOFTWARE_VERSION_JSON, SOFTWARE_VERSION)
+            .setObject(SOFTWARE_JSON, Software.encode (SOFTWARE_ID, SOFTWARE_VERSION))
             .setSignature(x509Signer);
     }
 
@@ -64,9 +63,7 @@ public class PaymentRequest implements BaseProperties {
     
     GregorianCalendar dateTime;
 
-    String softwareId;
-    
-    String softwareVersion;
+    Software software;
     
     JSONSignatureDecoder signatureDecoder;
     
@@ -83,8 +80,7 @@ public class PaymentRequest implements BaseProperties {
         }
         referenceId = rd.getString(REFERENCE_ID_JSON);
         dateTime = rd.getDateTime(DATE_TIME_JSON);
-        softwareId = rd.getString(SOFTWARE_ID_JSON);
-        softwareVersion = rd.getString(SOFTWARE_VERSION_JSON);
+        software = new Software(rd);
         signatureDecoder = rd.getSignature(JSONAlgorithmPreferences.JOSE);
         signatureDecoder.verify(JSONSignatureTypes.X509_CERTIFICATE);
         rd.checkForUnread();
@@ -106,12 +102,8 @@ public class PaymentRequest implements BaseProperties {
         return referenceId;
     }
 
-    public String getSoftwareId() {
-        return softwareId;
-    }
-
-    public String getSoftwareVersion() {
-        return softwareVersion;
+    public Software getSoftware() {
+        return software;
     }
 
     public JSONSignatureDecoder getSignatureDecoder() {

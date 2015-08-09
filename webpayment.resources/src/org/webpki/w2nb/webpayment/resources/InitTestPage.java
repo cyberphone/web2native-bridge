@@ -184,7 +184,7 @@ public class InitTestPage implements BaseProperties {
               "                return;\n" +
               "            }\n" +
               "            var qualifier = message[\"@qualifier\"];\n" +
-              "            if ((initMode && qualifier != \"" + Messages.WALLET_IS_READY.toString() + "\" ) ||\n" +
+              "            if ((initMode && qualifier != \"" + Messages.WALLET_READY.toString() + "\" ) ||\n" +
               "                (!initMode && qualifier != \"" + Messages.PAYER_GENERIC_AUTH_REQ.toString()
               +                "\" && qualifier != \"" + Messages.PAYER_PULL_AUTH_REQ.toString() + "\")) {\n" +  
               "                setString(\"Wrong or missing \\\"@qualifier\\\"\");\n" +

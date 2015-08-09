@@ -47,8 +47,7 @@ public class GenericAuthorizationRequest implements BaseProperties {
             .setString(CARD_TYPE_JSON, cardType)
             .setString(CARD_NUMBER_JSON, cardNumber)
             .setDateTime(DATE_TIME_JSON, dateTime, false)
-            .setString(SOFTWARE_ID_JSON, SOFTWARE_ID)
-            .setString(SOFTWARE_VERSION_JSON, SOFTWARE_VERSION)
+            .setObject(SOFTWARE_JSON, Software.encode(SOFTWARE_ID, SOFTWARE_VERSION))
             .setSignature (signer);
     }
 
@@ -91,9 +90,7 @@ public class GenericAuthorizationRequest implements BaseProperties {
     
     GregorianCalendar dateTime;
     
-    String softwareId;
-    
-    String softwareVersion;
+    Software software;
     
     JSONSignatureDecoder signatureDecoder;
     
@@ -106,8 +103,7 @@ public class GenericAuthorizationRequest implements BaseProperties {
         cardType = rd.getString(CARD_TYPE_JSON);
         cardNumber = rd.getString(CARD_NUMBER_JSON);
         dateTime = rd.getDateTime(DATE_TIME_JSON);
-        softwareId = rd.getString(SOFTWARE_ID_JSON);
-        softwareVersion = rd.getString(SOFTWARE_VERSION_JSON);
+        software = new Software(rd);
         signatureDecoder = rd.getSignature(JSONAlgorithmPreferences.JOSE);
         rd.checkForUnread();
     }
@@ -132,12 +128,8 @@ public class GenericAuthorizationRequest implements BaseProperties {
         return dateTime;
     }
 
-    public String getSoftwareId() {
-        return softwareId;
-    }
-
-    public String getSoftwareVersion() {
-        return softwareVersion;
+    public Software getSoftware() {
+        return software;
     }
 
     public JSONSignatureDecoder getSignatureDecoder() {

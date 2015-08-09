@@ -376,7 +376,7 @@ public class HTML {
                     "                return;\n" +
                     "            }\n" +
                     "            var qualifier = message[\"@qualifier\"];\n" +
-                    "            if ((initMode && qualifier != \"" + Messages.WALLET_IS_READY.toString() + "\")  ||\n" +
+                    "            if ((initMode && qualifier != \"" + Messages.WALLET_READY.toString() + "\")  ||\n" +
                     "                (!initMode && qualifier != \"")
              .append(pullPaymentMode ? 
                      Messages.PAYER_PULL_AUTH_REQ.toString() 
