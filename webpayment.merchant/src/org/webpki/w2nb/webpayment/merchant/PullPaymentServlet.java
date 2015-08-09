@@ -40,7 +40,7 @@ public class PullPaymentServlet extends PaymentCoreServlet {
     private static final long serialVersionUID = 1L;
     
     static final int TIMEOUT_FOR_REQUEST = 5000;
-
+    
     @Override
     protected GenericAuthorizationResponse processInput(HttpSession session,
                                                         JSONObjectReader input,
@@ -56,10 +56,12 @@ public class PullPaymentServlet extends PaymentCoreServlet {
         String authUrl = request.getAuthUrl();
 
         // Attest the user's encrypted authorization 
-        JSONObjectWriter providerRequest = PayeePullAuthorizationRequest.encode(input.getObject(AUTH_DATA_JSON),
-                                                                                clientIpAddress,
-                                                                                requestHash,
-                                                                                MerchantService.merchantKey);
+        JSONObjectWriter providerRequest =
+                PayeePullAuthorizationRequest.encode(input.getObject(AUTH_DATA_JSON),
+                                                     requestHash,
+                                                     clientIpAddress,
+                                                     (String)session.getAttribute(UserPaymentServlet.REQUEST_REFID_SESSION_ATTR),
+                                                     MerchantService.merchantKey);
         // Our JBoss installation has some port mapping issues...
         if (MerchantService.bankPortMapping != null) {
             URL url = new URL(authUrl);

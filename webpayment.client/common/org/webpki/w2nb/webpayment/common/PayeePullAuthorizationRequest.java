@@ -17,21 +17,35 @@
 package org.webpki.w2nb.webpayment.common;
 
 import java.io.IOException;
+
 import java.security.GeneralSecurityException;
+
 import java.security.cert.X509Certificate;
+
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.Vector;
 
 import org.webpki.json.JSONAlgorithmPreferences;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONParser;
+
 import org.webpki.util.ArrayUtil;
 
 public class PayeePullAuthorizationRequest extends EncryptedAuthorizationRequest {
 
     byte[] requestHash;
     
+    String referenceId;
+    
     String clientIpAddress;
+
+    GregorianCalendar dateTime;
+
+    String softwareId;
+    
+    String softwareVersion;
 
     X509Certificate[] outerCertificatePath;
 
@@ -42,6 +56,10 @@ public class PayeePullAuthorizationRequest extends EncryptedAuthorizationRequest
         }
         requestHash = rd.getObject(REQUEST_HASH_JSON).getBinary(VALUE_JSON);
         clientIpAddress = rd.getString(CLIENT_IP_ADDRESS_JSON);
+        referenceId = rd.getString(REFERENCE_ID_JSON);
+        dateTime = rd.getDateTime(DATE_TIME_JSON);
+        softwareId = rd.getString(SOFTWARE_ID_JSON);
+        softwareVersion = rd.getString(SOFTWARE_VERSION_JSON);
         outerCertificatePath = rd.getSignature(JSONAlgorithmPreferences.JOSE).getCertificatePath();
         rd.checkForUnread();
     }
@@ -51,16 +69,21 @@ public class PayeePullAuthorizationRequest extends EncryptedAuthorizationRequest
     }
 
     public static JSONObjectWriter encode(JSONObjectReader encryptedRequest,
-                                          String clientIpAddress,
                                           byte[] requestHash,
+                                          String clientIpAddress,
+                                          String referenceId,
                                           ServerSigner signer)
         throws IOException, GeneralSecurityException {
         return Messages.createBaseMessage(Messages.PAYEE_PULL_AUTH_REQ)
+            .setObject(AUTH_DATA_JSON, encryptedRequest)
             .setObject(REQUEST_HASH_JSON, new JSONObjectWriter()
                                               .setString(ALGORITHM_JSON, JOSE_SHA_256_ALG_ID)
                                               .setBinary(VALUE_JSON, requestHash))
             .setString(CLIENT_IP_ADDRESS_JSON, clientIpAddress)
-            .setObject(AUTH_DATA_JSON, encryptedRequest)
+            .setString(REFERENCE_ID_JSON, referenceId)
+            .setDateTime(DATE_TIME_JSON, new Date(), true)
+            .setString(SOFTWARE_ID_JSON, PaymentRequest.SOFTWARE_ID)
+            .setString(SOFTWARE_VERSION_JSON, PaymentRequest.SOFTWARE_VERSION)
             .setSignature(signer);
     }
 
@@ -98,6 +121,9 @@ public class PayeePullAuthorizationRequest extends EncryptedAuthorizationRequest
                     }
                     if (!ArrayUtil.compare(requestHash, genericAuthorizationRequest.paymentRequest.getRequestHash())) {
                         throw new IOException("Non-matching \"" + REQUEST_HASH_JSON + "\" value");
+                    }
+                    if (!referenceId.equals(genericAuthorizationRequest.paymentRequest.getReferenceId())) {
+                        throw new IOException("Non-matching \"" + REFERENCE_ID_JSON + "\" value");
                     }
                     return genericAuthorizationRequest;
                 }

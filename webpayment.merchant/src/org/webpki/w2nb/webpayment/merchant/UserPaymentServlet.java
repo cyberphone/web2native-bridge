@@ -17,12 +17,16 @@
 package org.webpki.w2nb.webpayment.merchant;
 
 import java.io.IOException;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
+
 import java.util.Vector;
+
 import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
+
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -33,6 +37,7 @@ import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONParser;
+
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.CardTypes;
 import org.webpki.w2nb.webpayment.common.Messages;
@@ -43,6 +48,7 @@ public class UserPaymentServlet extends HttpServlet implements BaseProperties {
     private static final long serialVersionUID = 1L;
     
     static final String REQUEST_HASH_SESSION_ATTR  = "REQHASH";
+    static final String REQUEST_REFID_SESSION_ATTR = "REQREFID";
     static final String DEBUG_DATA_SESSION_ATTR    = "DBGDATA";
     static final String SHOPPING_CART_SESSION_ATTR = "SHOPCART";
 
@@ -89,14 +95,18 @@ public class UserPaymentServlet extends HttpServlet implements BaseProperties {
         }
         session.setAttribute(SHOPPING_CART_SESSION_ATTR, savedShoppingCart);
 
+        String referenceID = "#" + (nextReferenceId++);
         JSONObjectWriter paymentRequest =
                 PaymentRequest.encode("Demo Merchant",
                                       new BigDecimal(BigInteger.valueOf(savedShoppingCart.roundedPaymentAmount), 2),
                                       MerchantService.currency,
-                                      "#" + (nextReferenceId++),
+                                      referenceID,
                                       MerchantService.merchantKey);
 
         session.setAttribute(REQUEST_HASH_SESSION_ATTR, PaymentRequest.getRequestHash(paymentRequest));
+
+        // Only used in pull mode
+        session.setAttribute(REQUEST_REFID_SESSION_ATTR, referenceID);
 
         Vector<String> acceptedCards = new Vector<String>();
         for (CardTypes card : MerchantService.acceptedCards) {
