@@ -101,7 +101,14 @@ public class InitTestPage implements BaseProperties {
               "    var text = \"\";\n" +
               "    for (var n = 0; n < rawString.length; n++) {\n" +
               "        var c = rawString.charAt(n);\n" +
-              "        text += c == \"<\" ? \"&lt;\" : c == \">\" ? \"&gt;\" : c;\n" +
+              "        if (c == \"<\") {\n" +
+              "            c = \"&lt;\";\n" +
+              "        } else if (c == \">\") {\n" +
+              "            c = \"&gt;\";\n" + 
+              "        } else if  (c == \"&\") {\n" +
+              "            c = \"&amp;\";\n" +
+              "        }\n" +
+              "        text += c;\n" +
               "    }\n" +
               "    document.getElementById(\"response\").innerHTML = text;\n" +
               "}\n\n" +
@@ -184,7 +191,7 @@ public class InitTestPage implements BaseProperties {
               "                return;\n" +
               "            }\n" +
               "            var qualifier = message[\"@qualifier\"];\n" +
-              "            if ((initMode && qualifier != \"" + Messages.WALLET_READY.toString() + "\" ) ||\n" +
+              "            if ((initMode && qualifier != \"" + Messages.WALLET_INITIALIZED.toString() + "\" ) ||\n" +
               "                (!initMode && qualifier != \"" + Messages.PAYER_GENERIC_AUTH_REQ.toString()
               +                "\" && qualifier != \"" + Messages.PAYER_PULL_AUTH_REQ.toString() + "\")) {\n" +  
               "                setString(\"Wrong or missing \\\"@qualifier\\\"\");\n" +

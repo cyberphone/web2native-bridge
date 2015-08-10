@@ -14,11 +14,18 @@ function appendString(string) {
 }
 
 function appendJSONMessage(message) {
-    var raw = JSON.stringify(message);
+    var rawString = JSON.stringify(message);
     var text = "";
-    for (var n = 0; n < raw.length; n++) {
-         var c = raw.charAt(n);
-         text += c == "<" ? "&lt;" : c == ">" ? "&gt;" : c;
+    for (var n = 0; n < rawString.length; n++) {
+        var c = rawString.charAt(n);
+        if (c == "<") {
+            c = "&lt;";
+        } else if (c == ">") {
+            c = "&gt;"; 
+        } else if  (c == "&") {
+            c = "&amp;";
+        }
+        text += c;
     }
     appendString(text);
 }

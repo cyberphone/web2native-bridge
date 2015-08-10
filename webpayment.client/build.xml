@@ -50,7 +50,7 @@
       <zipfileset dir="${image.dir}" prefix="${client.package.dir}"/>
       <zipfileset dir="${credentials.dir}" prefix="${client.package.dir}"/>
       <manifest>
-        <attribute name="Main-Class" value="${java.dotted.path}.PaymentAgent"/>
+        <attribute name="Main-Class" value="${java.dotted.path}.Wallet"/>
         <attribute name="Class-path" value="../../libs/webpki.org-libext-1.00.jar ../../libs/proxy-support.jar ../../libs/bcprov-jdk16-145.jar"/>
       </manifest>
     </jar>

@@ -24,7 +24,7 @@ import org.webpki.json.JSONObjectWriter;
 
 public enum Messages {
 
-    WALLET_READY              ("WalletReady"),                // Wallet to payee web page message
+    WALLET_INITIALIZED        ("WalletInitialized"),          // Wallet to payee web page message
     INVOKE_WALLET             ("InvokeWallet"),               // Payee payment request + other data
     PAYER_GENERIC_AUTH_REQ    ("PayerGenericAuthReq"),        // Used as is for "push" and wrapped in
     PAYER_PULL_AUTH_REQ       ("PayerPullAuthReq"),           // this one for "pull"
