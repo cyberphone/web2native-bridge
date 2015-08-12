@@ -1,0 +1,6 @@
+<svg width="100.0" height="130.0" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">
+<line x1="10.0" y1="30.0" x2="10.0" y2="120.0" stroke-width="2.0" stroke="#0000FF"/>
+<rect x="30.0" y="20.0" width="20.0" height="20.0" stroke-width="2.0" stroke="#FF0000"/>
+<line x1="70.0" y1="30.0" x2="70.0" y2="120.0" stroke-width="2.0" stroke="#0000FF"/>
+<rect x="35.0" y="60.0" width="10.0" height="20.0" stroke-width="2.0" stroke="#FF0000"/>
+</svg>

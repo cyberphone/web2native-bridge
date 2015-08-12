@@ -32,7 +32,7 @@
   </path>
   
   <target name="help">
-      <echo message="createcerts initwallet [-Dlocalhost=0] inittestpage"/>
+      <echo message="createcerts initwallet [-Dlocalhost=0] inittestpage svg-pullmode"/>
   </target>
  
   <target name="inittestpage">
@@ -64,6 +64,39 @@
     </java>
   </target>
 
+  <target name="_svg">
+    <delete dir="${temp.dir}"/>
+    <mkdir dir="${temp.dir}"/>
+    <javac debug="${debug}"
+           source="${javaversion}"
+           target="${javaversion}"
+           srcdir="${src.dir}:${common.src.dir}"
+           destdir="${temp.dir}" 
+           classpathref="compile.classpath"
+           includeAntRuntime="false">
+    </javac>
+    <java fork="yes"
+          classname="org.webpki.w2nb.webpayment.resources.svg.SVG"
+          dir="."
+          failonerror="true">
+        <classpath>
+             <fileset dir="${common.lib.dir}">
+                <include name="*.jar"/>
+             </fileset>
+             <pathelement location="${temp.dir}"/>
+        </classpath>
+        <arg value="${svgfile}"/>
+        <arg value="${svgclass}"/>
+    </java>
+  </target>
+  
+  <target name="svg-pullmode">
+    <antcall target="_svg">
+       <param name="svgfile" value="svg-gen/pullmode.svg"/>
+       <param name="svgclass" value="org.webpki.w2nb.webpayment.resources.svg.diagrams.PullMode"/>
+    </antcall>
+  </target>
+  
   <target name="_import">
     <java fork="yes"
           classname="org.webpki.w2nb.webpayment.resources.InitWallet"

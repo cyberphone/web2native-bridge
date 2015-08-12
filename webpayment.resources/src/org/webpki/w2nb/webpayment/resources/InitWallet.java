@@ -15,7 +15,7 @@
  *
  */
 
-// Web2Native Bridge emulator Payment Agent (a.k.a. Wallet) application
+// Credential initiator to the Payment Agent (a.k.a. Wallet) application
 
 package org.webpki.w2nb.webpayment.resources;
 
