@@ -18,18 +18,26 @@ package org.webpki.w2nb.webpayment.resources.svg.diagrams;
 
 import org.webpki.w2nb.webpayment.resources.svg.SVGAddDouble;
 import org.webpki.w2nb.webpayment.resources.svg.SVGAddOffset;
+import org.webpki.w2nb.webpayment.resources.svg.SVGAttributes;
 import org.webpki.w2nb.webpayment.resources.svg.SVGCenter;
 import org.webpki.w2nb.webpayment.resources.svg.SVGDocument;
+import org.webpki.w2nb.webpayment.resources.svg.SVGHorizontalLine;
+import org.webpki.w2nb.webpayment.resources.svg.SVGPolygon;
 import org.webpki.w2nb.webpayment.resources.svg.SVGRect;
-import org.webpki.w2nb.webpayment.resources.svg.SVGStaticDouble;
-import org.webpki.w2nb.webpayment.resources.svg.SVGStaticString;
+import org.webpki.w2nb.webpayment.resources.svg.SVGDoubleValue;
+import org.webpki.w2nb.webpayment.resources.svg.SVGStringValue;
+import org.webpki.w2nb.webpayment.resources.svg.SVGText;
 import org.webpki.w2nb.webpayment.resources.svg.SVGValue;
 import org.webpki.w2nb.webpayment.resources.svg.SVGVerticalLine;
+import org.webpki.w2nb.webpayment.resources.svg.SVGText.TEXT_ANCHOR;
 
 public class PullMode extends SVGDocument {
-    SVGStaticDouble linesLength = new SVGStaticDouble(500);
-    SVGStaticDouble verticalLineWidth = new SVGStaticDouble(2);
-    SVGStaticString verticalLineColor = new SVGStaticString("#0000FF");
+    SVGDoubleValue linesLength = new SVGDoubleValue(500);
+    SVGDoubleValue verticalLineWidth = new SVGDoubleValue(2);
+    SVGStringValue verticalLineColor = new SVGStringValue("#0000FF");
+    SVGVerticalLine vertLine1;
+    SVGVerticalLine vertLine2;
+    
     SVGValue lines1_X;
     SVGValue lines2_X;
     SVGValue linesY;
@@ -51,32 +59,74 @@ public class PullMode extends SVGDocument {
 
     @Override
     public void generate() {
-        add(new SVGVerticalLine(lines1_X = new SVGStaticDouble(10), 
-                                linesY = new SVGStaticDouble(30),
+        add(vertLine1 = new SVGVerticalLine(lines1_X = new SVGDoubleValue(10), 
+                                linesY = new SVGDoubleValue(30),
                                 linesLength,
                                 verticalLineWidth,
                                 verticalLineColor));
 
         add(new SVGRect(boxOneX = new SVGAddOffset(lines1_X, 20),
-                        boxOneY = new SVGStaticDouble(20),
-                        boxOneWidth = new SVGStaticDouble(20),
-                        boxOneHeight = new SVGStaticDouble(20),
-                        new SVGStaticDouble(2),
-                        new SVGStaticString("#FF0000")));
+                        boxOneY = new SVGDoubleValue(20),
+                        boxOneWidth = new SVGDoubleValue(20),
+                        boxOneHeight = new SVGDoubleValue(20),
+                        new SVGDoubleValue(2.5),
+                        new SVGStringValue("#FF0000"),
+                        null));
 
-        add(new SVGVerticalLine(lines2_X = new SVGAddDouble(boxOneX, boxOneWidth, 20), 
+        add(vertLine2 = new SVGVerticalLine(lines2_X = new SVGAddDouble(boxOneX, boxOneWidth, 20), 
                                 linesY,
                                 linesLength,
                                 verticalLineWidth,
                                 verticalLineColor));
         
         add(new SVGRect(        new SVGCenter(lines1_X, lines2_X, 10),
-                        lastY = new SVGAddDouble(boxOneY, boxOneHeight, 20),
-                                new SVGStaticDouble(10),
-                                new SVGStaticDouble(20),
-                                new SVGStaticDouble(2),
-                                new SVGStaticString("#FF0000")));
+                                new SVGAddDouble(boxOneY, boxOneHeight, 20),
+                                new SVGDoubleValue(10),
+                                new SVGDoubleValue(20),
+                                null,
+                                null,
+                                new SVGStringValue("#00FF00")));
         
+        add(new SVGText(new SVGCenter(lines1_X, lines2_X),
+                        lastY = new SVGDoubleValue(80),
+                        new SVGStringValue("Sans-serif"),
+                        new SVGDoubleValue(10),
+                        SVGText.TEXT_ANCHOR.MIDDLE,
+                        "Hi There!"));
+/*
+    public SVGHorizontalLine(SVGVerticalLine vertLine1,
+                             SVGVerticalLine vertLine2,
+                             SVGValue y,
+                             SVGValue strokeWidth,
+                             SVGValue strokeColor) {
+        super(vertLine1.getAttribute(SVGAttributes.X1),
+        
+ */
+        add(new SVGHorizontalLine(vertLine1, 
+                                  vertLine2,
+                                  new SVGDoubleValue(90),
+                                  new SVGDoubleValue(0.5),
+                                  new SVGStringValue("#000000")).setLeftArrow(new SVGHorizontalLine.Arrow(4, 3, 0.5)));
+
+        add(new SVGHorizontalLine(vertLine1, 
+                vertLine2,
+                new SVGDoubleValue(92),
+                new SVGDoubleValue(0.5),
+                new SVGStringValue("#000000")).setRightArrow(new SVGHorizontalLine.Arrow(4, 3, 0.5)));
+
+        add(new SVGHorizontalLine(vertLine1, 
+                vertLine2,
+                new SVGDoubleValue(95),
+                new SVGDoubleValue(0.5),
+                new SVGStringValue("#000000")).setLeftGutter(2));
+
+        add(new SVGPolygon(        new SVGCenter(lines1_X, lines2_X),
+                new SVGDoubleValue(60),
+                new double[]{-5,-5,-5, 5, 5, 0},
+                null,
+                null,
+                new SVGStringValue("#80ff80")));
+
         linesLength.setDouble(lastY.getDouble() + 20 + 10);
     }
 }

@@ -16,13 +16,26 @@
  */
 package org.webpki.w2nb.webpayment.resources.svg;
 
-public class SVGVerticalLine extends SVGLine {
+public class SVGDoubleValue extends SVGValue {
+    
+    private double value;
 
-    public SVGVerticalLine(SVGValue x,
-                           SVGValue y,
-                           SVGValue length,
-                           SVGValue strokeWidth,
-                           SVGValue strokeColor) {
-        super(x, y, x, new SVGAddDouble(y, length), strokeWidth, strokeColor);
+    public SVGDoubleValue(double value) {
+        this.value = value;
     }
-}
+
+    @Override
+    public String getStringRepresentation() {
+        return niceDouble(value);
+    }
+
+    @Override
+    public double getDouble() {
+        return value;
+    }
+
+    public void setDouble(double value) {
+        this.value = value;
+    }
+};
+

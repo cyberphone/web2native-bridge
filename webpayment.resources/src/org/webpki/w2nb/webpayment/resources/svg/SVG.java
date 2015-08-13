@@ -22,6 +22,25 @@ import org.webpki.util.ArrayUtil;
 
 public class SVG {
     
+    static StringBuffer svgText = new StringBuffer();
+    
+    static void writeSVGObject(SVGObject svgObject) {
+        svgText.append("<").append(svgObject.getTag());
+        for (SVGAttributes svgAttribute : svgObject.getSVGAttributes().keySet()) {
+            svgText.append(" ")
+                   .append(svgAttribute.toString())
+                   .append("=\"")
+                   .append(svgObject.getAttribute(svgAttribute).getStringRepresentation())
+                   .append("\"");
+        }
+        if (svgObject.hasBody()) {
+            svgText.append(">").append(svgObject.getBody()).append("</").append(svgObject.getTag());
+        } else {
+            svgText.append("/");
+        }
+        svgText.append(">\n");
+    }
+
     public static void main(String[] args) {
         if (args.length != 2) {
             System.out.println("Arguments outout-file class");
@@ -32,29 +51,19 @@ public class SVG {
             SVGDocument doc = (SVGDocument) Class.forName(args[1]).newInstance();
             doc.svgObjects = svgObjects;
             doc.generate();
-            StringBuffer svgText = new StringBuffer();
             for (SVGObject svgObject : svgObjects) {
-                svgText.append("<").append(svgObject.getTag());
-                for (SVGAttributes svgAttribute : svgObject.getSVGAttributes().keySet()) {
-                    svgText.append(" ")
-                           .append(svgAttribute.toString())
-                           .append("=\"")
-                           .append(svgObject.getSVGAttributes().get(svgAttribute).getStringRepresentation())
-                           .append("\"");
+                writeSVGObject(svgObject);
+                for (SVGObject dependencyElement : svgObject.dependencyElements) {
+                    writeSVGObject(dependencyElement);
                 }
-                if (svgObject.hasBody()) {
-                    svgText.append("</").append(svgObject.getTag());
-                } else {
-                    svgText.append("/");
-                }
-                svgText.append(">\n");
             }
-            svgText.append("</svg>");
+            svgText.append("</g>\n</svg>");
             svgText = new StringBuffer("<svg width=\"")
                 .append(doc.getWidth())
                 .append("\" height=\"")
                 .append(doc.getHeight())
                 .append("\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:svg=\"http://www.w3.org/2000/svg\">\n")
+                .append("<g>\n")
                 .append(svgText);
             ArrayUtil.writeFile(args[0], svgText.toString().getBytes("UTF-8"));
         } catch (Exception e) {

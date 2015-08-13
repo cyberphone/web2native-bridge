@@ -16,7 +16,7 @@
  */
 package org.webpki.w2nb.webpayment.resources.svg;
 
-public class SVGCenter implements SVGValue {
+public class SVGCenter extends SVGValue {
     
     SVGValue lowVal;
     SVGValue highVal;
@@ -28,18 +28,17 @@ public class SVGCenter implements SVGValue {
         this.width = width;
     }
 
+    public SVGCenter(SVGValue lowVal, SVGValue highVal) {
+        this(lowVal, highVal, 0);
+    }
+
     private double getValue() {
         return (highVal.getDouble() + lowVal.getDouble() - width) / 2;
     }
 
     @Override
-    public String getString() {
-        throw new RuntimeException("Not lowVal string");
-    }
-
-    @Override
     public String getStringRepresentation() {
-        return Double.toString(getValue());
+        return niceDouble(getValue());
     }
 
     @Override

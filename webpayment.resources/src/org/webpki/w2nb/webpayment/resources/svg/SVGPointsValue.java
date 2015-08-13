@@ -16,28 +16,34 @@
  */
 package org.webpki.w2nb.webpayment.resources.svg;
 
-public class SVGAddOffset extends SVGValue {
+public class SVGPointsValue extends SVGValue {
     
-    SVGValue value;
-    double offset;
-    
-    public SVGAddOffset(SVGValue value, double offset) {
-        this.value = value;
-        this.offset = offset;
-    }
+    SVGValue x;
+    SVGValue y;
+    double[] points;
 
-    private double getValue() {
-        return value.getDouble() + offset;
+    public SVGPointsValue(SVGValue x, SVGValue y, double[] points) {
+        this.x = x;
+        this.y = y;
+        this.points = points;
+        if ((points.length & 1) != 0) {
+            throw new RuntimeException("Wrong number of points");
+        }
     }
 
     @Override
     public String getStringRepresentation() {
-        return niceDouble(getValue());
-    }
-
-    @Override
-    public double getDouble() {
-        return getValue();
+        int i = 0;
+        StringBuffer result = new StringBuffer();
+        while (i < points.length) {
+            if (i > 0) {
+                result.append(' ');
+            }
+            result.append(niceDouble(x.getDouble() + points[i++]))
+                  .append(',')
+                  .append(niceDouble(y.getDouble() + points[i++]));
+        }
+        return result.toString();
     }
 };
 

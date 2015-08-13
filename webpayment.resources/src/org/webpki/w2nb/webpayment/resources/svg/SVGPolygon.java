@@ -16,22 +16,17 @@
  */
 package org.webpki.w2nb.webpayment.resources.svg;
 
-public class SVGRect extends SVGObject {
-    
-    public SVGRect(SVGValue x,
-                   SVGValue y,
-                   SVGValue width,
-                   SVGValue height,
-                   SVGValue strokeWidth,
-                   SVGValue strokeColor,
-                   SVGValue fillColor) {
+public class SVGPolygon extends SVGObject {
+
+    public SVGPolygon(SVGValue x,
+                      SVGValue y,
+                      double[] coordinates,
+                      SVGValue strokeWidth,
+                      SVGValue strokeColor,
+                      SVGValue fillColor) {
         if (strokeWidth == null ^ strokeColor == null) {
             throw new RuntimeException("You must either specify color+stroke or nulls");
         }
-        addDouble(SVGAttributes.X, x);
-        addDouble(SVGAttributes.Y, y);
-        addDouble(SVGAttributes.WIDTH, width);
-        addDouble(SVGAttributes.HEIGHT, height);
         if (strokeWidth == null) {
             addString(SVGAttributes.STROKE_COLOR, new SVGStringValue("none"));
         } else {
@@ -41,11 +36,12 @@ public class SVGRect extends SVGObject {
             addString(SVGAttributes.STROKE_COLOR, strokeColor);
         }
         addString(SVGAttributes.FILL_COLOR, fillColor == null ? new SVGStringValue("none") : fillColor);
+        addPoints(SVGAttributes.POINTS, new SVGPointsValue(x, y, coordinates));
       }
 
     @Override
     String getTag() {
-        return "rect";
+        return "polygon";
     }
 
     @Override

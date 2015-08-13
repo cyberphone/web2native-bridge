@@ -17,17 +17,28 @@
 package org.webpki.w2nb.webpayment.resources.svg;
 
 import java.util.LinkedHashMap;
+import java.util.Vector;
 
 public abstract class SVGObject {
     
     private LinkedHashMap<SVGAttributes,SVGValue> _attributes = new LinkedHashMap<SVGAttributes,SVGValue>();
     
-    public abstract String getTag();
+    Vector<SVGObject> dependencyElements = new Vector<SVGObject>();
     
-    public abstract boolean hasBody();
+    abstract String getTag();
     
-    public LinkedHashMap<SVGAttributes,SVGValue> getAttributes() {
+    abstract boolean hasBody();
+    
+    String getBody() {
+        throw new RuntimeException("Unexptected call to getBody() by " + this.getClass().getCanonicalName());
+    }
+    
+    LinkedHashMap<SVGAttributes,SVGValue> getAttributes() {
         return _attributes;
+    }
+    
+    SVGValue getAttribute(SVGAttributes attribute) {
+        return _attributes.get(attribute);
     }
     
     private void _addAttribute(SVGAttributes svgAttribute, SVGValue svgValue) {
@@ -36,7 +47,7 @@ public abstract class SVGObject {
         }
     }
     
-    public void addDouble(SVGAttributes svgAttribute, SVGValue svgValue) {
+    void addDouble(SVGAttributes svgAttribute, SVGValue svgValue) {
         svgValue.getDouble(); // For type checking
         _addAttribute(svgAttribute, svgValue);
     }
@@ -44,6 +55,10 @@ public abstract class SVGObject {
 
     public void addString(SVGAttributes svgAttribute, SVGValue svgValue) {
         svgValue.getString(); // For type checking
+        _addAttribute(svgAttribute, svgValue);
+    }
+
+    public void addPoints(SVGAttributes svgAttribute, SVGPointsValue svgValue) {
         _addAttribute(svgAttribute, svgValue);
     }
 

@@ -16,7 +16,34 @@
  */
 package org.webpki.w2nb.webpayment.resources.svg;
 
-public interface SVGStaticValue extends SVGValue {
+public class SVGSubtractDouble extends SVGValue {
     
+    SVGValue a;
+    SVGValue b;
+    double offset;
+    
+    public SVGSubtractDouble(SVGValue a, SVGValue b) {
+        this(a, b, 0);
+    }
+    
+    public SVGSubtractDouble(SVGValue a, SVGValue b, double offset) {
+        this.a = a;
+        this.b = b;
+        this.offset = offset;
+    }
+
+    private double getValue() {
+        return a.getDouble() - b.getDouble() + offset;
+    }
+
+    @Override
+    public String getStringRepresentation() {
+        return niceDouble(getValue());
+    }
+
+    @Override
+    public double getDouble() {
+        return getValue();
+    }
 };
 

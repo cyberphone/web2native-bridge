@@ -16,12 +16,23 @@
  */
 package org.webpki.w2nb.webpayment.resources.svg;
 
-public interface SVGValue {
+public abstract class SVGValue {
     
-    public String getStringRepresentation();
+    public abstract String getStringRepresentation();
     
-    public double getDouble();
+    public double getDouble() {
+        throw new RuntimeException("getDouble() invalid for this type " + this.getClass().getCanonicalName());
+    }
 
-    public String getString();
+    public String getString() {
+        throw new RuntimeException("getString() invalid for this type " + this.getClass().getCanonicalName());
+    }
+
+    String niceDouble(double value) {
+        if (value == (long)value) {
+            return Long.toString((long)value);
+        }
+        return Double.toString(value);
+    }
 };
 

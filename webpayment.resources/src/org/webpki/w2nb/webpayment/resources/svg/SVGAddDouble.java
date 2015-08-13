@@ -16,7 +16,7 @@
  */
 package org.webpki.w2nb.webpayment.resources.svg;
 
-public class SVGAddDouble implements SVGValue {
+public class SVGAddDouble extends SVGValue {
     
     SVGValue a;
     SVGValue b;
@@ -37,13 +37,8 @@ public class SVGAddDouble implements SVGValue {
     }
 
     @Override
-    public String getString() {
-        throw new RuntimeException("Not a string");
-    }
-
-    @Override
     public String getStringRepresentation() {
-        return Double.toString(getValue());
+        return niceDouble(getValue());
     }
 
     @Override

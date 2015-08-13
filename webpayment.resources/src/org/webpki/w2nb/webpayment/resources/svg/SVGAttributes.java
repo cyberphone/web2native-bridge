@@ -25,8 +25,14 @@ public enum SVGAttributes {
     Y2            ("y2"),
     WIDTH         ("width"),
     HEIGHT        ("height"),
+    POINTS        ("points"),
     STROKE_WIDTH  ("stroke-width"),
-    STROKE_COLOR  ("stroke");
+    FILL_COLOR    ("fill"),
+    FILL_OPACITY  ("fill-opacity"),
+    STROKE_COLOR  ("stroke"),
+    FONT_FAMILY   ("font-family"),
+    FONT_SIZE     ("font-size"),
+    TEXT_ANCHOR   ("text-anchor");
 
     String svgNotation;
     

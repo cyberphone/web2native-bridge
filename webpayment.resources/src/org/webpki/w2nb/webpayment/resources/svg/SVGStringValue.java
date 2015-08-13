@@ -16,7 +16,22 @@
  */
 package org.webpki.w2nb.webpayment.resources.svg;
 
-public interface SVGDependsOnValue extends SVGValue {
+public class SVGStringValue extends SVGValue {
     
+    private String value;
+
+    public SVGStringValue(String value) {
+        this.value = value;
+    }
+
+    @Override
+    public String getString() {
+         return value;
+    }
+
+    @Override
+    public String getStringRepresentation() {
+         return value;
+    }
 };
 

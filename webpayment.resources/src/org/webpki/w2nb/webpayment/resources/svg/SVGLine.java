@@ -17,7 +17,7 @@
 package org.webpki.w2nb.webpayment.resources.svg;
 
 public class SVGLine extends SVGObject {
-    
+
     public SVGLine(SVGValue x1,
                    SVGValue y1,
                    SVGValue x2,
@@ -33,12 +33,12 @@ public class SVGLine extends SVGObject {
     }
 
     @Override
-    public String getTag() {
+    String getTag() {
         return "line";
     }
 
     @Override
-    public boolean hasBody() {
+    boolean hasBody() {
         return false;
     }
 }
