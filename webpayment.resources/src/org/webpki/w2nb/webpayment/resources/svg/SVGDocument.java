@@ -22,6 +22,9 @@ public abstract class SVGDocument {
 
     static Vector<SVGObject> svgObjects = new Vector<SVGObject>();
     
+    double currentMaxX;
+    double currentMaxY;
+    
     public abstract double getWidth();
     
     public abstract double getHeight();
@@ -35,5 +38,16 @@ public abstract class SVGDocument {
 
     public SVGAnchor createDocumentAnchor(double x,double y, SVGAnchor.ALIGNMENT alignment) {
         return new SVGAnchor(new SVGDoubleValue(x), new SVGDoubleValue(y), alignment);
+    }
+
+    void findLargestSize(SVGObject svgObject) {
+        double maxX = svgObject.getMaxX();
+        if (maxX > currentMaxX) {
+            currentMaxX = maxX;
+        }
+        double maxY = svgObject.getMaxY();
+        if (maxY > currentMaxY) {
+            currentMaxY = maxY;
+        }
     }
 }

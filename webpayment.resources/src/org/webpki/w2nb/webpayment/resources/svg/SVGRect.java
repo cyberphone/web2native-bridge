@@ -129,4 +129,14 @@ public class SVGRect extends SVGObject {
         beforeDependencyElements.add(temp);
         return this;
     }
+
+    @Override
+    double getMaxX() {
+        return getAttribute(SVGAttributes.X).getDouble() + getAttribute(SVGAttributes.WIDTH).getDouble();
+    }
+
+    @Override
+    double getMaxY() {
+        return getAttribute(SVGAttributes.Y).getDouble() + getAttribute(SVGAttributes.HEIGHT).getDouble();
+    }
 }

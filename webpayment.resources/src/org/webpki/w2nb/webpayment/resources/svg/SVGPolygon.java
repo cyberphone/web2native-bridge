@@ -19,37 +19,41 @@ package org.webpki.w2nb.webpayment.resources.svg;
 public class SVGPolygon extends SVGObject {
 
     double[] coordinates;
+    SVGValue x;
+    SVGValue y;
     
     public SVGPolygon(SVGValue x,
                       SVGValue y,
                       double[] coordinates,
-                      SVGValue strokeWidth,
-                      SVGValue strokeColor,
-                      SVGValue fillColor) {
+                      Double strokeWidth,
+                      String strokeColor,
+                      String fillColor) {
         if (strokeWidth == null ^ strokeColor == null) {
             throw new RuntimeException("You must either specify color+stroke or nulls");
         }
         if (strokeWidth == null) {
             addString(SVGAttributes.STROKE_COLOR, new SVGStringValue("none"));
         } else {
-            addDouble(SVGAttributes.STROKE_WIDTH, strokeWidth);
+            addDouble(SVGAttributes.STROKE_WIDTH, new SVGDoubleValue(strokeWidth));
         }
         if (strokeColor != null) {
-            addString(SVGAttributes.STROKE_COLOR, strokeColor);
+            addString(SVGAttributes.STROKE_COLOR, new SVGStringValue(strokeColor));
         }
-        addString(SVGAttributes.FILL_COLOR, fillColor == null ? new SVGStringValue("none") : fillColor);
+        addString(SVGAttributes.FILL_COLOR, fillColor == null ? new SVGStringValue("none") : new SVGStringValue(fillColor));
         addPoints(SVGAttributes.POINTS, new SVGPointsValue(x, y, coordinates));
         this.coordinates = coordinates;
+        this.x = x;
+        this.y = y;
       }
 
     @Override
     SVGValue getAnchorX() {
-        return new SVGAddOffset(getAttribute(SVGAttributes.POINTS), coordinates[0]);
+        return new SVGAddOffset(x, coordinates[0]);
     }
     
     @Override
     SVGValue getAnchorY() {
-        return new SVGAddOffset(getAttribute(SVGAttributes.POINTS), coordinates[1]);
+        return new SVGAddOffset(y, coordinates[1]);
     }
 
     @Override
@@ -61,4 +65,26 @@ public class SVGPolygon extends SVGObject {
     boolean hasBody() {
         return false;
     }
+
+    private double maxCoordinate(int start) {
+        double max = -10000;
+        while (start < coordinates.length) {
+            if (coordinates[start] > max) {
+                max = coordinates[start];
+            }
+            start += 2;
+        }
+        return max;
+    }
+
+    @Override
+    double getMaxX() {
+        return x.getDouble() + maxCoordinate(0);
+    }
+
+    @Override
+    double getMaxY() {
+        return y.getDouble() + maxCoordinate(1);
+    }
+    
 }

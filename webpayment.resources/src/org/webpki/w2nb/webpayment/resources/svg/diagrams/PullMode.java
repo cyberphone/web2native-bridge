@@ -126,7 +126,7 @@ public class PullMode extends SVGDocument {
                 new double[]{-5,-5,-5, 5, 5, 0},
                 null,
                 null,
-                new SVGStringValue("#80ff80")));
+                "#80ff80"));
 
         add(new SVGHorizontalLine(vertLine1, 
                                   vertLine2,

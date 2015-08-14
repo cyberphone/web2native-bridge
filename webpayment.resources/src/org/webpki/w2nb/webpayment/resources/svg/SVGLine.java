@@ -51,4 +51,18 @@ public class SVGLine extends SVGObject {
     boolean hasBody() {
         return false;
     }
+
+    @Override
+    double getMaxX() {
+        double x1 = getAttribute(SVGAttributes.X1).getDouble();
+        double x2 = getAttribute(SVGAttributes.X2).getDouble();
+        return x1 > x2 ? x1 : x2;
+    }
+
+    @Override
+    double getMaxY() {
+        double y1 = getAttribute(SVGAttributes.Y1).getDouble();
+        double y2 = getAttribute(SVGAttributes.Y2).getDouble();
+        return y1 > y2 ? y1 : y2;
+    }
 }

@@ -22,7 +22,10 @@ public class SVG {
     
     static StringBuffer svgText = new StringBuffer();
     
+    static SVGDocument doc;
+    
     static void writeSVGObject(SVGObject svgObject) {
+        doc.findLargestSize(svgObject);
         svgText.append("<").append(svgObject.getTag());
         for (SVGAttributes svgAttribute : svgObject.getSVGAttributes().keySet()) {
             svgText.append(" ")
@@ -45,7 +48,7 @@ public class SVG {
             System.exit(3);
         }
         try {
-            SVGDocument doc = (SVGDocument) Class.forName(args[1]).newInstance();
+            doc = (SVGDocument) Class.forName(args[1]).newInstance();
             String filters = "";
             if (args.length == 3) {
                 filters = new String(ArrayUtil.readFile(args[2]), "UTF-8");
@@ -62,9 +65,9 @@ public class SVG {
             }
             svgText.append("</g>\n</svg>");
             svgText = new StringBuffer("<svg width=\"")
-                .append(doc.getWidth())
+                .append((long)(doc.currentMaxX + 10))
                 .append("\" height=\"")
-                .append(doc.getHeight())
+                .append((long)(doc.currentMaxY + 10))
                 .append("\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:svg=\"http://www.w3.org/2000/svg\">\n")
                 .append(filters)
                 .append("<g>\n")

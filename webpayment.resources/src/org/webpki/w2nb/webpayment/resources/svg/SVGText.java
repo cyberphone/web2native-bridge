@@ -66,4 +66,14 @@ public class SVGText extends SVGObject {
         addString(SVGAttributes.DY, new SVGStringValue(dy));
         return this;
     }
+
+    @Override
+    double getMaxX() {
+         return getAttribute(SVGAttributes.X).getDouble();
+    }
+
+    @Override
+    double getMaxY() {
+        return getAttribute(SVGAttributes.Y).getDouble();
+    }
 }

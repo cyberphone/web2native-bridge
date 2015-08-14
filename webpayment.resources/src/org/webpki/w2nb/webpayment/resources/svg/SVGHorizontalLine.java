@@ -141,7 +141,7 @@ public class SVGHorizontalLine extends SVGLine {
                                                                 arrow.length, arrow.height / 2},
                                                    null,
                                                    null,
-                                                   getAttribute(SVGAttributes.STROKE_COLOR)));
+                                                   getAttribute(SVGAttributes.STROKE_COLOR).getStringRepresentation()));
         return this;
     }
 
@@ -156,7 +156,7 @@ public class SVGHorizontalLine extends SVGLine {
                                                                 0, 0},
                                                    null,
                                                    null,
-                                                   getAttribute(SVGAttributes.STROKE_COLOR)));
+                                                   getAttribute(SVGAttributes.STROKE_COLOR).getStringRepresentation()));
         return this;
     }
     

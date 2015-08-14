@@ -29,6 +29,10 @@ public abstract class SVGObject {
     
     abstract String getTag();
     
+    abstract double getMaxX();
+
+    abstract double getMaxY();
+
     SVGValue getAnchorX() {
         return _attributes.get(SVGAttributes.X);
     }
