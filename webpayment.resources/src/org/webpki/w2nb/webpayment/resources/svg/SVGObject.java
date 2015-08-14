@@ -72,7 +72,7 @@ public abstract class SVGObject {
         _addAttribute(svgAttribute, svgValue);
     }
 
-    public void addPoints(SVGAttributes svgAttribute, SVGPointsValue svgValue) {
+    public void addPoints(SVGAttributes svgAttribute, SVGPolygon.SVGPointsValue svgValue) {
         _addAttribute(svgAttribute, svgValue);
     }
 
