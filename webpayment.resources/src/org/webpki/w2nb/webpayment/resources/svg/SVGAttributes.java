@@ -29,6 +29,7 @@ public enum SVGAttributes {
     WIDTH         ("width"),
     HEIGHT        ("height"),
     POINTS        ("points"),
+    FILTER        ("filter"),
     STROKE_WIDTH  ("stroke-width"),
     FILL_COLOR    ("fill"),
     FILL_OPACITY  ("fill-opacity"),

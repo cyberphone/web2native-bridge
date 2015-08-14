@@ -18,12 +18,15 @@ package org.webpki.w2nb.webpayment.resources.svg.diagrams;
 
 import org.webpki.w2nb.webpayment.resources.svg.SVGAddDouble;
 import org.webpki.w2nb.webpayment.resources.svg.SVGAddOffset;
+import org.webpki.w2nb.webpayment.resources.svg.SVGAnchor;
 import org.webpki.w2nb.webpayment.resources.svg.SVGCenter;
 import org.webpki.w2nb.webpayment.resources.svg.SVGDocument;
 import org.webpki.w2nb.webpayment.resources.svg.SVGHorizontalLine;
+import org.webpki.w2nb.webpayment.resources.svg.SVGObject;
 import org.webpki.w2nb.webpayment.resources.svg.SVGPolygon;
 import org.webpki.w2nb.webpayment.resources.svg.SVGRect;
 import org.webpki.w2nb.webpayment.resources.svg.SVGDoubleValue;
+import org.webpki.w2nb.webpayment.resources.svg.SVGShaderTemplate;
 import org.webpki.w2nb.webpayment.resources.svg.SVGStringValue;
 import org.webpki.w2nb.webpayment.resources.svg.SVGText;
 import org.webpki.w2nb.webpayment.resources.svg.SVGValue;
@@ -47,7 +50,7 @@ public class PullMode extends SVGDocument {
 
     @Override
     public double getWidth() {
-        return 200;
+        return 400;
     }
 
     @Override
@@ -178,7 +181,38 @@ public class PullMode extends SVGDocument {
                     new SVGDoubleValue(12),
                     new SVGStringValue("#000000"),
                     "Some text")));
+        
+SVGObject someRect;        
+add(someRect = new SVGRect(createDocumentAnchor(300, 150, SVGAnchor.ALIGNMENT.BOTTOM_RIGHT),
+                        new SVGDoubleValue(156),
+                        new SVGDoubleValue(48),
+                        new SVGDoubleValue(0.5),
+                        new SVGStringValue("#969191"),
+                        new SVGStringValue("#edbca6")).setRadiusX(10).setRadiusY(10));
 
-        linesLength.setDouble(lastY.getDouble() + 200);
+add(new SVGRect(new SVGAnchor(someRect, someRect, SVGAnchor.ALIGNMENT.TOP_LEFT)
+.derive(new SVGDoubleValue(2), new SVGDoubleValue(2), SVGAnchor.ALIGNMENT.TOP_LEFT),
+        new SVGDoubleValue(152),
+        new SVGDoubleValue(44),
+        null,
+        null,
+        new SVGStringValue("#ffffff")).setRadiusX(9).setRadiusY(9).setFilter("url(#actorsBlur)"));
+
+SVGAnchor anchor = new SVGAnchor(someRect, someRect, SVGAnchor.ALIGNMENT.BOTTOM_CENTER);
+add(new SVGRect(anchor.derive(new SVGDoubleValue(20), new SVGDoubleValue(10), SVGAnchor.ALIGNMENT.TOP_LEFT),
+        new SVGDoubleValue(80),
+        new SVGDoubleValue(20),
+        new SVGDoubleValue(2.5),
+        new SVGStringValue("#00FF00"),
+        null).setRadiusX(3).setRadiusY(3));
+add(new SVGRect(anchor.derive(new SVGDoubleValue(-18.3), new SVGDoubleValue(9.3), SVGAnchor.ALIGNMENT.TOP_RIGHT),
+        new SVGDoubleValue(81.5),
+        new SVGDoubleValue(21.5),
+        new SVGDoubleValue(0.8),
+        new SVGStringValue("#FF0000"),
+        new SVGStringValue("#FFFFE8")).setShader(new SVGShaderTemplate("url(#messageBlur)", "#7f7f7f", 2, 2)));
+
+linesLength.setDouble(lastY.getDouble() + 200);
     }
-}
+    
+ }

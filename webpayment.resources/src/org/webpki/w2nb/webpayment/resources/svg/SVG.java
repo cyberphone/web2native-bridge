@@ -42,18 +42,23 @@ public class SVG {
     }
 
     public static void main(String[] args) {
-        if (args.length != 2) {
-            System.out.println("Arguments outout-file class");
+        if (args.length != 2 && args.length != 3) {
+            System.out.println("Arguments outout-file class [filter-file]");
             System.exit(3);
         }
         try {
-            Vector<SVGObject> svgObjects = new Vector<SVGObject>(); 
             SVGDocument doc = (SVGDocument) Class.forName(args[1]).newInstance();
-            doc.svgObjects = svgObjects;
+            String filters = "";
+            if (args.length == 3) {
+                filters = new String(ArrayUtil.readFile(args[2]), "UTF-8");
+            }
             doc.generate();
-            for (SVGObject svgObject : svgObjects) {
+            for (SVGObject svgObject : doc.svgObjects) {
+                for (SVGObject dependencyElement : svgObject.beforeDependencyElements) {
+                    writeSVGObject(dependencyElement);
+                }
                 writeSVGObject(svgObject);
-                for (SVGObject dependencyElement : svgObject.dependencyElements) {
+                for (SVGObject dependencyElement : svgObject.afterDependencyElements) {
                     writeSVGObject(dependencyElement);
                 }
             }
@@ -63,6 +68,7 @@ public class SVG {
                 .append("\" height=\"")
                 .append(doc.getHeight())
                 .append("\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:svg=\"http://www.w3.org/2000/svg\">\n")
+                .append(filters)
                 .append("<g>\n")
                 .append(svgText);
             ArrayUtil.writeFile(args[0], svgText.toString().getBytes("UTF-8"));

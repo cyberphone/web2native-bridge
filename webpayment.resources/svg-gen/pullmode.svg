@@ -1,5 +1,12 @@
-<svg width="200.0" height="320.0" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">
-<g>
+<svg width="400.0" height="320.0" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">
+ <defs>
+  <filter height="150%" width="150%" y="-25%" x="-25%" id="actorsBlur">
+   <feGaussianBlur stdDeviation="3"/>
+  </filter>
+  <filter width="200%" height="200%" x="-50%" y="-50%" id="messageBlur">
+   <feGaussianBlur stdDeviation="2"/>
+  </filter>  </defs>
+ <g>
 <line x1="10" y1="30" x2="10" y2="310" stroke-width="2" stroke="#0000FF"/>
 <rect x="30" y="20" width="80" height="20" stroke-width="2.5" stroke="#FF0000" fill="none" rx="3" ry="3"/>
 <line x1="130" y1="30" x2="130" y2="310" stroke-width="2" stroke="#0000FF"/>
@@ -22,5 +29,10 @@
 <line x1="13.5" y1="200" x2="129" y2="200" stroke-width="0.8" stroke="#000000"/>
 <polygon stroke="none" fill="#000000" points="11.5,200 15.5,198.5 15.5,201.5"/>
 <text x="21" y="195" font-family="Sans-serif" font-size="12" text-anchor="start" fill="#000000">Some text</text>
+<rect x="144" y="102" width="156" height="48" stroke-width="0.5" stroke="#969191" fill="#edbca6" rx="10" ry="10"/>
+<rect x="146" y="104" width="152" height="44" fill="#ffffff" rx="9" ry="9" filter="url(#actorsBlur)"/>
+<rect x="242" y="160" width="80" height="20" stroke-width="2.5" stroke="#00FF00" fill="none" rx="3" ry="3"/>
+<rect x="123.79999999999998" y="160.9" width="82.3" height="22.3" fill="#7f7f7f" filter="url(#messageBlur)"/>
+<rect x="122.19999999999999" y="159.3" width="81.5" height="21.5" stroke-width="0.8" stroke="#FF0000" fill="#FFFFE8"/>
 </g>
 </svg>

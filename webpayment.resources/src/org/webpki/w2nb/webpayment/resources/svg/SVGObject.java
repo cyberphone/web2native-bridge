@@ -23,10 +23,20 @@ public abstract class SVGObject {
     
     private LinkedHashMap<SVGAttributes,SVGValue> _attributes = new LinkedHashMap<SVGAttributes,SVGValue>();
     
-    Vector<SVGObject> dependencyElements = new Vector<SVGObject>();
+    Vector<SVGObject> beforeDependencyElements = new Vector<SVGObject>();
+
+    Vector<SVGObject> afterDependencyElements = new Vector<SVGObject>();
     
     abstract String getTag();
     
+    SVGValue getAnchorX() {
+        return _attributes.get(SVGAttributes.X);
+    }
+    
+    SVGValue getAnchorY() {
+        return _attributes.get(SVGAttributes.Y);
+    }
+
     abstract boolean hasBody();
     
     String getBody() {
@@ -64,5 +74,21 @@ public abstract class SVGObject {
 
     public LinkedHashMap<SVGAttributes,SVGValue> getSVGAttributes() {
          return _attributes;
+    }
+
+    public SVGValue getPrimaryX() {
+        throw new RuntimeException ("Unimplemented: getPrimaryX()");
+    }
+
+    public SVGValue getPrimaryY() {
+        throw new RuntimeException ("Unimplemented: getPrimaryY()");
+    }
+
+    public SVGValue getPrimaryWidth() {
+        throw new RuntimeException ("Unimplemented: getPrimaryWidth()");
+    }
+
+    public SVGValue getPrimaryHeight() {
+        throw new RuntimeException ("Unimplemented: getPrimaryHeight()");
     }
 }

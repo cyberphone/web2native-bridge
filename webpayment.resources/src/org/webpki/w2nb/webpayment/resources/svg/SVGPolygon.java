@@ -18,6 +18,8 @@ package org.webpki.w2nb.webpayment.resources.svg;
 
 public class SVGPolygon extends SVGObject {
 
+    double[] coordinates;
+    
     public SVGPolygon(SVGValue x,
                       SVGValue y,
                       double[] coordinates,
@@ -37,7 +39,18 @@ public class SVGPolygon extends SVGObject {
         }
         addString(SVGAttributes.FILL_COLOR, fillColor == null ? new SVGStringValue("none") : fillColor);
         addPoints(SVGAttributes.POINTS, new SVGPointsValue(x, y, coordinates));
+        this.coordinates = coordinates;
       }
+
+    @Override
+    SVGValue getAnchorX() {
+        return new SVGAddOffset(getAttribute(SVGAttributes.POINTS), coordinates[0]);
+    }
+    
+    @Override
+    SVGValue getAnchorY() {
+        return new SVGAddOffset(getAttribute(SVGAttributes.POINTS), coordinates[1]);
+    }
 
     @Override
     String getTag() {

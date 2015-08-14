@@ -134,7 +134,7 @@ public class SVGHorizontalLine extends SVGLine {
         SVGValue x = new SVGAddOffset(getAttribute(SVGAttributes.X1), arrow.gutter);
         SVGValue y = getAttribute(SVGAttributes.Y1);
         setLeftGutter(arrow.gutter + arrow.length / 2);
-        dependencyElements.add(new SVGPolygon(x,
+        afterDependencyElements.add(new SVGPolygon(x,
                                               y,
                                               new double[]{0, 0,
                                                            arrow.length,-arrow.height / 2,
@@ -149,7 +149,7 @@ public class SVGHorizontalLine extends SVGLine {
         SVGValue x = new SVGAddOffset(getAttribute(SVGAttributes.X2), -arrow.gutter);
         SVGValue y = getAttribute(SVGAttributes.Y2);
         setRightGutter(arrow.gutter + arrow.length / 2);
-        dependencyElements.add(new SVGPolygon(x,
+        afterDependencyElements.add(new SVGPolygon(x,
                                               y,
                                               new double[]{-arrow.length, -arrow.height / 2,
                                                            -arrow.length, arrow.height / 2,
@@ -177,7 +177,7 @@ public class SVGHorizontalLine extends SVGLine {
  //       rect.getAttributes().put(SVGAttributes.Y,
  //               new SVGAddOffset(getAttribute(SVGAttributes.Y1),
  //                                (strokeWidth / 2)));
-        dependencyElements.add(rect);
+        afterDependencyElements.add(rect);
         return this;
     }
 
@@ -207,7 +207,7 @@ public class SVGHorizontalLine extends SVGLine {
  //       rect.getAttributes().put(SVGAttributes.Y,
  //               new SVGAddOffset(getAttribute(SVGAttributes.Y1),
  //                                (strokeWidth / 2)));
-        dependencyElements.add(text);
+        afterDependencyElements.add(text);
         return this;
     }
 }

@@ -16,24 +16,26 @@
  */
 package org.webpki.w2nb.webpayment.resources.svg;
 
-import java.util.Vector;
-
-public abstract class SVGDocument {
-
-    static Vector<SVGObject> svgObjects = new Vector<SVGObject>();
+public class SVGNegate extends SVGValue {
     
-    public abstract double getWidth();
+    SVGValue value;
     
-    public abstract double getHeight();
-    
-    public abstract void generate();
+    public SVGNegate(SVGValue value) {
+        this.value = value;
+     }
 
-    public SVGObject add(SVGObject svgObject) {
-        svgObjects.add(svgObject);
-        return svgObject;
+    private double getValue() {
+        return -value.getDouble();
     }
 
-    public SVGAnchor createDocumentAnchor(double x,double y, SVGAnchor.ALIGNMENT alignment) {
-        return new SVGAnchor(new SVGDoubleValue(x), new SVGDoubleValue(y), alignment);
+    @Override
+    public String getStringRepresentation() {
+        return niceDouble(getValue());
     }
-}
+
+    @Override
+    public double getDouble() {
+        return getValue();
+    }
+};
+

@@ -16,24 +16,17 @@
  */
 package org.webpki.w2nb.webpayment.resources.svg;
 
-import java.util.Vector;
-
-public abstract class SVGDocument {
-
-    static Vector<SVGObject> svgObjects = new Vector<SVGObject>();
+public class SVGShaderTemplate {
     
-    public abstract double getWidth();
-    
-    public abstract double getHeight();
-    
-    public abstract void generate();
+    String filter;
+    String fillColor;
+    double xOffset;
+    double yOffset;
 
-    public SVGObject add(SVGObject svgObject) {
-        svgObjects.add(svgObject);
-        return svgObject;
-    }
-
-    public SVGAnchor createDocumentAnchor(double x,double y, SVGAnchor.ALIGNMENT alignment) {
-        return new SVGAnchor(new SVGDoubleValue(x), new SVGDoubleValue(y), alignment);
+    public SVGShaderTemplate(String filter, String fillColor, double xOffset, double yOffset) {
+        this.filter = filter;
+        this.fillColor = fillColor;
+        this.xOffset = xOffset;
+        this.yOffset = yOffset;
     }
 }

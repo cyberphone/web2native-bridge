@@ -65,6 +65,7 @@
   </target>
 
   <target name="_svg">
+    <property name="svgfilters" value=""/>
     <delete dir="${temp.dir}"/>
     <mkdir dir="${temp.dir}"/>
     <javac debug="${debug}"
@@ -85,8 +86,7 @@
              </fileset>
              <pathelement location="${temp.dir}"/>
         </classpath>
-        <arg value="${svgfile}"/>
-        <arg value="${svgclass}"/>
+        <arg line="${svgfile} ${svgclass} ${svgfilters}"/>
     </java>
   </target>
   
@@ -94,7 +94,8 @@
     <antcall target="_svg">
        <param name="svgfile" value="svg-gen/pullmode.svg"/>
        <param name="svgclass" value="org.webpki.w2nb.webpayment.resources.svg.diagrams.PullMode"/>
-    </antcall>
+       <param name="svgfilters" value="svg-filters/wallet-filters.xml"/>
+       </antcall>
   </target>
   
   <target name="_import">

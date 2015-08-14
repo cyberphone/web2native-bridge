@@ -39,6 +39,21 @@ public class SVGRect extends SVGObject {
         addString(SVGAttributes.FILL_COLOR, fillColor == null ? new SVGStringValue("none") : fillColor);
       }
 
+    public SVGRect(SVGAnchor anchor,
+                   SVGValue width,
+                   SVGValue height,
+                   SVGValue strokeWidth,
+                   SVGValue strokeColor,
+                   SVGValue fillColor) {
+        this(anchor.xAlignment(width),
+             anchor.yAlignment(height),
+             width,
+             height,
+             strokeWidth,
+             strokeColor,
+             fillColor);
+    }
+
     @Override
     String getTag() {
         return "rect";
@@ -56,6 +71,62 @@ public class SVGRect extends SVGObject {
 
     public SVGRect setRadiusX(double value) {
         addDouble(SVGAttributes.RX, new SVGDoubleValue(value));
+        return this;
+    }
+    public SVGRect setFilter(String filter) {
+        addString(SVGAttributes.FILTER, new SVGStringValue(filter));
+        return this;
+    }
+
+    @Override
+    public SVGValue getPrimaryX() {
+        return getAttribute(SVGAttributes.X);
+    }
+
+    @Override
+    public SVGValue getPrimaryY() {
+        return getAttribute(SVGAttributes.Y);
+    }
+
+    @Override
+    public SVGValue getPrimaryWidth() {
+        return getAttribute(SVGAttributes.WIDTH);
+    }
+
+    @Override
+    public SVGValue getPrimaryHeight() {
+        return getAttribute(SVGAttributes.HEIGHT);
+    }
+
+    public SVGRect setShader (SVGShaderTemplate shading) {
+        SVGValue width = getAttribute(SVGAttributes.WIDTH);
+        SVGValue height = getAttribute(SVGAttributes.HEIGHT);
+        double xOffset = shading.xOffset;
+        double yOffset = shading.yOffset;
+        if (getAttribute(SVGAttributes.STROKE_WIDTH) != null) {
+            double strokeWidth = getAttribute(SVGAttributes.STROKE_WIDTH).getDouble();
+            height = new SVGAddOffset(height, strokeWidth);
+            width = new SVGAddOffset(width, strokeWidth);
+            xOffset -= strokeWidth / 2;
+            yOffset -= strokeWidth / 2;
+        }
+        SVGRect temp = new SVGRect(new SVGAddOffset(getAttribute(SVGAttributes.X), xOffset),
+                                           new SVGAddOffset(getAttribute(SVGAttributes.Y), yOffset),
+                                           width,
+                                           height,
+                                           null,
+                                           null,
+                                           new SVGStringValue(shading.fillColor));
+        if (getAttribute(SVGAttributes.RX) != null) {
+            temp.setRadiusX(getAttribute(SVGAttributes.RX).getDouble());
+        }
+        if (getAttribute(SVGAttributes.RY) != null) {
+            temp.setRadiusY(getAttribute(SVGAttributes.RY).getDouble());
+        }
+        if (shading.filter != null) {
+            temp.setFilter(shading.filter);
+        }
+        beforeDependencyElements.add(temp);
         return this;
     }
 }
