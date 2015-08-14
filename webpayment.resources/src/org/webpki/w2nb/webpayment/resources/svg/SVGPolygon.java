@@ -104,11 +104,13 @@ public class SVGPolygon extends SVGObject {
 
     @Override
     double getMaxX() {
+        x = new SVGAddOffset(x, SVGDocument.marginX);
         return x.getDouble() + maxCoordinate(0);
     }
 
     @Override
     double getMaxY() {
+        y = new SVGAddOffset(y, SVGDocument.marginY);
         return y.getDouble() + maxCoordinate(1);
     }
     

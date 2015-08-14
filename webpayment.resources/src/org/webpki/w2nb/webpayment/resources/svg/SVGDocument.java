@@ -24,10 +24,14 @@ public abstract class SVGDocument {
     
     double currentMaxX;
     double currentMaxY;
+
+    static double marginX;
+    static double marginY;
     
-    public abstract double getWidth();
-    
-    public abstract double getHeight();
+    protected SVGDocument(double marginX, double marginY) {
+        SVGDocument.marginX = marginX;
+        SVGDocument.marginY = marginY;
+    }
     
     public abstract void generate();
 

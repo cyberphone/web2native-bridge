@@ -27,12 +27,15 @@ import org.webpki.w2nb.webpayment.resources.svg.SVGPolygon;
 import org.webpki.w2nb.webpayment.resources.svg.SVGRect;
 import org.webpki.w2nb.webpayment.resources.svg.SVGDoubleValue;
 import org.webpki.w2nb.webpayment.resources.svg.SVGShaderTemplate;
-import org.webpki.w2nb.webpayment.resources.svg.SVGStringValue;
 import org.webpki.w2nb.webpayment.resources.svg.SVGText;
 import org.webpki.w2nb.webpayment.resources.svg.SVGValue;
 import org.webpki.w2nb.webpayment.resources.svg.SVGVerticalLine;
 
 public class PullMode extends SVGDocument {
+    public PullMode() {
+        super(15, 10);
+    }
+
     SVGDoubleValue linesLength = new SVGDoubleValue(500);
     double verticalLineWidth = 2;
     String verticalLineColor = "#0000FF";
@@ -49,25 +52,15 @@ public class PullMode extends SVGDocument {
     SVGValue boxOneHeight;
 
     @Override
-    public double getWidth() {
-        return 400;
-    }
-
-    @Override
-    public double getHeight() {
-        return linesLength.getDouble() + linesY.getDouble() + 10;
-    }
-
-    @Override
     public void generate() {
-        add(vertLine1 = new SVGVerticalLine(lines1_X = new SVGDoubleValue(10), 
+        add(vertLine1 = new SVGVerticalLine(lines1_X = new SVGDoubleValue(0), 
                                 linesY = new SVGDoubleValue(30),
                                 linesLength,
                                 verticalLineWidth,
                                 verticalLineColor));
 
         add(new SVGRect(boxOneX = new SVGAddOffset(lines1_X, 20),
-                        boxOneY = new SVGDoubleValue(20),
+                        boxOneY = new SVGDoubleValue(0),
                         boxOneWidth = new SVGDoubleValue(80),
                         boxOneHeight = new SVGDoubleValue(20),
                         2.5,

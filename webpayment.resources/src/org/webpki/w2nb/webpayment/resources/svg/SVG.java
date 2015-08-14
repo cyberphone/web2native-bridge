@@ -65,9 +65,9 @@ public class SVG {
             }
             svgText.append("</g>\n</svg>");
             svgText = new StringBuffer("<svg width=\"")
-                .append((long)(doc.currentMaxX + 10))
+                .append((long)(doc.currentMaxX + SVGDocument.marginX))
                 .append("\" height=\"")
-                .append((long)(doc.currentMaxY + 10))
+                .append((long)(doc.currentMaxY +  + SVGDocument.marginY))
                 .append("\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:svg=\"http://www.w3.org/2000/svg\">\n")
                 .append(filters)
                 .append("<g>\n")

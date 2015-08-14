@@ -95,4 +95,10 @@ public abstract class SVGObject {
     public SVGValue getPrimaryHeight() {
         throw new RuntimeException ("Unimplemented: getPrimaryHeight()");
     }
+    
+    public double updateMargin(double margin, SVGAttributes svgAttribute) {
+        double value = getAttribute(svgAttribute).getDouble() + margin;
+        _attributes.put(svgAttribute, new SVGDoubleValue(value));
+        return value;
+    }
 }

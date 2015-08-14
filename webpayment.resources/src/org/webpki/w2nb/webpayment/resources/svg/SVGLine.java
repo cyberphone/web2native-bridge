@@ -54,15 +54,15 @@ public class SVGLine extends SVGObject {
 
     @Override
     double getMaxX() {
-        double x1 = getAttribute(SVGAttributes.X1).getDouble();
-        double x2 = getAttribute(SVGAttributes.X2).getDouble();
+        double x1 = updateMargin(SVGDocument.marginX, SVGAttributes.X1);
+        double x2 = updateMargin(SVGDocument.marginX, SVGAttributes.X2);
         return x1 > x2 ? x1 : x2;
     }
 
     @Override
     double getMaxY() {
-        double y1 = getAttribute(SVGAttributes.Y1).getDouble();
-        double y2 = getAttribute(SVGAttributes.Y2).getDouble();
+        double y1 = updateMargin(SVGDocument.marginY, SVGAttributes.Y1);
+        double y2 = updateMargin(SVGDocument.marginY, SVGAttributes.Y2);
         return y1 > y2 ? y1 : y2;
     }
 }

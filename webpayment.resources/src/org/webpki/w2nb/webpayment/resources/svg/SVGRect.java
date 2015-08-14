@@ -132,11 +132,11 @@ public class SVGRect extends SVGObject {
 
     @Override
     double getMaxX() {
-        return getAttribute(SVGAttributes.X).getDouble() + getAttribute(SVGAttributes.WIDTH).getDouble();
+        return updateMargin(SVGDocument.marginX, SVGAttributes.X) + getAttribute(SVGAttributes.WIDTH).getDouble();
     }
 
     @Override
     double getMaxY() {
-        return getAttribute(SVGAttributes.Y).getDouble() + getAttribute(SVGAttributes.HEIGHT).getDouble();
+        return updateMargin(SVGDocument.marginY, SVGAttributes.Y) + getAttribute(SVGAttributes.HEIGHT).getDouble();
     }
 }

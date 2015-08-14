@@ -69,11 +69,11 @@ public class SVGText extends SVGObject {
 
     @Override
     double getMaxX() {
-         return getAttribute(SVGAttributes.X).getDouble();
+         return updateMargin(SVGDocument.marginX,SVGAttributes.X);
     }
 
     @Override
     double getMaxY() {
-        return getAttribute(SVGAttributes.Y).getDouble();
+        return updateMargin(SVGDocument.marginY,SVGAttributes.Y);
     }
 }
