@@ -20,9 +20,13 @@ public class SVGCenter extends SVGValue {
     
     SVGValue lowVal;
     SVGValue highVal;
-    double width;
+    SVGValue width;
     
     public SVGCenter(SVGValue lowVal, SVGValue highVal, double width) {
+        this(lowVal, highVal, new SVGDoubleValue(width));
+    }
+
+    public SVGCenter(SVGValue lowVal, SVGValue highVal, SVGValue width) {
         this.lowVal = lowVal;
         this.highVal = highVal;
         this.width = width;
@@ -33,7 +37,7 @@ public class SVGCenter extends SVGValue {
     }
 
     private double getValue() {
-        return (highVal.getDouble() + lowVal.getDouble() - width) / 2;
+        return (highVal.getDouble() + lowVal.getDouble() - width.getDouble()) / 2;
     }
 
     @Override

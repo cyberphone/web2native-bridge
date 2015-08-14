@@ -30,6 +30,70 @@ public class SVGHorizontalLine extends SVGLine {
         }
     }
     
+    public static class Rect extends SVGRect {
+
+        Double alignX;
+        Double alignY;
+        
+        public Rect(Double alignX,
+                    Double alignY,
+                    SVGValue width,
+                    SVGValue height,
+                    SVGValue strokeWidth,
+                    SVGValue strokeColor,
+                    SVGValue fillColor) {
+            super(new SVGDoubleValue(0),
+                  new SVGDoubleValue(0),
+                  width,
+                  height,
+                  strokeWidth,
+                  strokeColor,
+                  fillColor);
+            this.alignX = alignX;
+            this.alignY = alignY;
+        }
+
+        @Override
+        public Rect setRadiusY(double value) {
+            super.setRadiusY(value);
+            return this;
+        }
+
+        @Override
+        public Rect setRadiusX(double value) {
+            super.setRadiusX(value);
+            return this;
+        }
+    }
+    
+    public static class Text extends SVGText {
+
+        Double alignX;
+        Double alignY;
+
+        public Text(Double alignX,
+                    Double alignY,
+                    SVGValue fontFamily,
+                    SVGValue fontSize,
+                    SVGValue fillColor,
+                    String text) {
+            super(new SVGDoubleValue(0),
+                  new SVGDoubleValue(0),
+                  fontFamily,
+                  fontSize,
+                  TEXT_ANCHOR.MIDDLE,
+                  fillColor,
+                  text);
+            this.alignX = alignX;
+            this.alignY = alignY;
+        }
+        
+    }
+
+    double leftGutter;
+
+    double rightGutter;
+    
     public SVGHorizontalLine(SVGValue x,
                              SVGValue y,
                              SVGValue length,
@@ -55,12 +119,14 @@ public class SVGHorizontalLine extends SVGLine {
     }
     
     public SVGHorizontalLine setLeftGutter(double gutter) {
-        getAttributes().put(SVGAttributes.X1, new SVGAddOffset(getAttribute(SVGAttributes.X1), gutter));
+        getAttributes().put(SVGAttributes.X1,
+                        new SVGAddOffset(getAttribute(SVGAttributes.X1), leftGutter = gutter));
         return this;
     }
 
     public SVGHorizontalLine setRightGutter(double gutter) {
-        getAttributes().put(SVGAttributes.X2, new SVGAddOffset(getAttribute(SVGAttributes.X2), -gutter));
+        getAttributes().put(SVGAttributes.X2,
+                            new SVGAddOffset(getAttribute(SVGAttributes.X2), rightGutter = -gutter));
         return this;
     }
 
@@ -91,6 +157,57 @@ public class SVGHorizontalLine extends SVGLine {
                                               null,
                                               null,
                                               getAttribute(SVGAttributes.STROKE_COLOR)));
+        return this;
+    }
+    
+    public SVGHorizontalLine setRect(Rect rect) {
+        double strokeWidth = rect.getAttribute(SVGAttributes.STROKE_WIDTH) == null ?
+                                   0 : rect.getAttribute(SVGAttributes.STROKE_WIDTH).getDouble();
+        double xOffset = 0;
+        SVGValue x1 = new SVGAddOffset(getAttribute(SVGAttributes.X1), - leftGutter);
+        SVGValue x2 = new SVGAddOffset(getAttribute(SVGAttributes.X2), + rightGutter);
+        if (rect.alignX == null) {
+            rect.getAttributes().put(SVGAttributes.X, new SVGCenter(x1, x2, rect.getAttribute(SVGAttributes.WIDTH)));
+        }
+        if (rect.alignY == null) {
+            rect.getAttributes().put(SVGAttributes.Y,
+                    new SVGAddOffset(getAttribute(SVGAttributes.Y1), -(rect.getAttribute(SVGAttributes.HEIGHT).getDouble() / 2)));
+        }
+        
+ //       rect.getAttributes().put(SVGAttributes.Y,
+ //               new SVGAddOffset(getAttribute(SVGAttributes.Y1),
+ //                                (strokeWidth / 2)));
+        dependencyElements.add(rect);
+        return this;
+    }
+
+    public SVGHorizontalLine setText(Text text) {
+        SVGValue x1 = new SVGAddOffset(getAttribute(SVGAttributes.X1), - leftGutter);
+        SVGValue x2 = new SVGAddOffset(getAttribute(SVGAttributes.X2), + rightGutter);
+
+        SVGValue x = new SVGCenter(x1, x2, 0);
+        if (text.alignX == null) {
+        } else if (text.alignX > 0) {
+            x = new SVGAddOffset(x1, text.alignX);
+            text.getAttributes().put(SVGAttributes.TEXT_ANCHOR, new SVGStringValue(SVGText.TEXT_ANCHOR.START.toString().toLowerCase()));
+        } else {
+            x = new SVGAddOffset(x2, text.alignX);
+            text.getAttributes().put(SVGAttributes.TEXT_ANCHOR, new SVGStringValue(SVGText.TEXT_ANCHOR.END.toString().toLowerCase()));
+        }
+        text.getAttributes().put(SVGAttributes.X, x);
+
+        SVGValue y = getAttribute(SVGAttributes.Y1);
+        if (text.alignY == null) {
+            text.setDy("0.35em");
+        } else {
+            y = new SVGAddOffset(y, -text.alignY);
+        }
+        text.getAttributes().put(SVGAttributes.Y, y);
+        
+ //       rect.getAttributes().put(SVGAttributes.Y,
+ //               new SVGAddOffset(getAttribute(SVGAttributes.Y1),
+ //                                (strokeWidth / 2)));
+        dependencyElements.add(text);
         return this;
     }
 }

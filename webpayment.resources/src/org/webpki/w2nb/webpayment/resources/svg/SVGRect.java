@@ -32,12 +32,8 @@ public class SVGRect extends SVGObject {
         addDouble(SVGAttributes.Y, y);
         addDouble(SVGAttributes.WIDTH, width);
         addDouble(SVGAttributes.HEIGHT, height);
-        if (strokeWidth == null) {
-            addString(SVGAttributes.STROKE_COLOR, new SVGStringValue("none"));
-        } else {
+        if (strokeWidth != null) {
             addDouble(SVGAttributes.STROKE_WIDTH, strokeWidth);
-        }
-        if (strokeColor != null) {
             addString(SVGAttributes.STROKE_COLOR, strokeColor);
         }
         addString(SVGAttributes.FILL_COLOR, fillColor == null ? new SVGStringValue("none") : fillColor);
@@ -51,5 +47,15 @@ public class SVGRect extends SVGObject {
     @Override
     boolean hasBody() {
         return false;
+    }
+    
+    public SVGRect setRadiusY(double value) {
+        addDouble(SVGAttributes.RY, new SVGDoubleValue(value));
+        return this;
+    }
+
+    public SVGRect setRadiusX(double value) {
+        addDouble(SVGAttributes.RX, new SVGDoubleValue(value));
+        return this;
     }
 }

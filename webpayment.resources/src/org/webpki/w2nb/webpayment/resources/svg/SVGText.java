@@ -62,4 +62,8 @@ public class SVGText extends SVGObject {
     String getBody() {
         return text;
     }
+    public SVGText setDy(String dy) {
+        addString(SVGAttributes.DY, new SVGStringValue(dy));
+        return this;
+    }
 }

@@ -18,7 +18,6 @@ package org.webpki.w2nb.webpayment.resources.svg.diagrams;
 
 import org.webpki.w2nb.webpayment.resources.svg.SVGAddDouble;
 import org.webpki.w2nb.webpayment.resources.svg.SVGAddOffset;
-import org.webpki.w2nb.webpayment.resources.svg.SVGAttributes;
 import org.webpki.w2nb.webpayment.resources.svg.SVGCenter;
 import org.webpki.w2nb.webpayment.resources.svg.SVGDocument;
 import org.webpki.w2nb.webpayment.resources.svg.SVGHorizontalLine;
@@ -29,7 +28,6 @@ import org.webpki.w2nb.webpayment.resources.svg.SVGStringValue;
 import org.webpki.w2nb.webpayment.resources.svg.SVGText;
 import org.webpki.w2nb.webpayment.resources.svg.SVGValue;
 import org.webpki.w2nb.webpayment.resources.svg.SVGVerticalLine;
-import org.webpki.w2nb.webpayment.resources.svg.SVGText.TEXT_ANCHOR;
 
 public class PullMode extends SVGDocument {
     SVGDoubleValue linesLength = new SVGDoubleValue(500);
@@ -49,7 +47,7 @@ public class PullMode extends SVGDocument {
 
     @Override
     public double getWidth() {
-        return 100;
+        return 200;
     }
 
     @Override
@@ -67,11 +65,11 @@ public class PullMode extends SVGDocument {
 
         add(new SVGRect(boxOneX = new SVGAddOffset(lines1_X, 20),
                         boxOneY = new SVGDoubleValue(20),
-                        boxOneWidth = new SVGDoubleValue(20),
+                        boxOneWidth = new SVGDoubleValue(80),
                         boxOneHeight = new SVGDoubleValue(20),
                         new SVGDoubleValue(2.5),
                         new SVGStringValue("#FF0000"),
-                        null));
+                        null).setRadiusX(3).setRadiusY(3));
 
         add(vertLine2 = new SVGVerticalLine(lines2_X = new SVGAddDouble(boxOneX, boxOneWidth, 20), 
                                 linesY,
@@ -105,19 +103,19 @@ public class PullMode extends SVGDocument {
         add(new SVGHorizontalLine(vertLine1, 
                                   vertLine2,
                                   new SVGDoubleValue(90),
-                                  new SVGDoubleValue(0.5),
+                                  new SVGDoubleValue(0.8),
                                   new SVGStringValue("#000000")).setLeftArrow(new SVGHorizontalLine.Arrow(4, 3, 0.5)));
 
         add(new SVGHorizontalLine(vertLine1, 
                 vertLine2,
                 new SVGDoubleValue(92),
-                new SVGDoubleValue(0.5),
+                new SVGDoubleValue(0.8),
                 new SVGStringValue("#000000")).setRightArrow(new SVGHorizontalLine.Arrow(4, 3, 0.5)));
 
         add(new SVGHorizontalLine(vertLine1, 
                 vertLine2,
                 new SVGDoubleValue(95),
-                new SVGDoubleValue(0.5),
+                new SVGDoubleValue(0.8),
                 new SVGStringValue("#000000")).setLeftGutter(2));
 
         add(new SVGPolygon(        new SVGCenter(lines1_X, lines2_X),
@@ -127,6 +125,60 @@ public class PullMode extends SVGDocument {
                 null,
                 new SVGStringValue("#80ff80")));
 
-        linesLength.setDouble(lastY.getDouble() + 20 + 10);
+        add(new SVGHorizontalLine(vertLine1, 
+                                  vertLine2,
+                                  new SVGDoubleValue(140),
+                                  new SVGDoubleValue(0.8),
+                                  new SVGStringValue("#000000"))
+                    .setLeftArrow(new SVGHorizontalLine.Arrow(4, 3, 0.5))
+                    .setRect(new SVGHorizontalLine.Rect(null,
+                                                        null,
+                                                        new SVGDoubleValue(44),
+                                                        new SVGDoubleValue(16),
+                                                        null,
+                                                        null,
+                                                        new SVGStringValue("#0c960c")
+                    ).setRadiusX(4).setRadiusY(4))
+                    .setText(new SVGHorizontalLine.Text(null,
+                                                        null,
+                                                        new SVGStringValue("Sans-serif"),
+                                                        new SVGDoubleValue(12),
+                                                        new SVGStringValue("#FFFFFF"),
+                                                        "W2NB")));
+
+        add(new SVGHorizontalLine(vertLine1, 
+                                  vertLine2,
+                                  new SVGDoubleValue(170),
+                                  new SVGDoubleValue(0.8),
+                                  new SVGStringValue("#000000"))
+                    .setLeftArrow(new SVGHorizontalLine.Arrow(4, 3, 0.5))
+                    .setRect(new SVGHorizontalLine.Rect(null,
+                                      null,
+                                      new SVGDoubleValue(44),
+                                      new SVGDoubleValue(14),
+                                      new SVGDoubleValue(0.5),
+                                      new SVGStringValue("#000000"),
+                                      new SVGStringValue("#FFFFFF")
+  ).setRadiusX(4).setRadiusY(4))
+  .setText(new SVGHorizontalLine.Text(null,
+                                      null,
+                                      new SVGStringValue("Sans-serif"),
+                                      new SVGDoubleValue(12),
+                                      new SVGStringValue("#000000"),
+                                      "HTTP")));
+        add(new SVGHorizontalLine(vertLine1, 
+                vertLine2,
+                new SVGDoubleValue(200),
+                new SVGDoubleValue(0.8),
+                new SVGStringValue("#000000"))
+  .setLeftArrow(new SVGHorizontalLine.Arrow(4, 3, 0.5))
+.setText(new SVGHorizontalLine.Text(10.0,
+                    5.0,
+                    new SVGStringValue("Sans-serif"),
+                    new SVGDoubleValue(12),
+                    new SVGStringValue("#000000"),
+                    "Some text")));
+
+        linesLength.setDouble(lastY.getDouble() + 200);
     }
 }
