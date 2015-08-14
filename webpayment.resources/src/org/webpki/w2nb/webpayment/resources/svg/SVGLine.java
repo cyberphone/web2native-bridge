@@ -22,14 +22,14 @@ public class SVGLine extends SVGObject {
                    SVGValue y1,
                    SVGValue x2,
                    SVGValue y2,
-                   SVGValue strokeWidth,
-                   SVGValue strokeColor) {
+                   Double strokeWidth,
+                   String strokeColor) {
         addDouble(SVGAttributes.X1, x1);
         addDouble(SVGAttributes.Y1, y1);
         addDouble(SVGAttributes.X2, x2);
         addDouble(SVGAttributes.Y2, y2);
-        addDouble(SVGAttributes.STROKE_WIDTH, strokeWidth);
-        addString(SVGAttributes.STROKE_COLOR, strokeColor);
+        addDouble(SVGAttributes.STROKE_WIDTH, new SVGDoubleValue(strokeWidth));
+        addString(SVGAttributes.STROKE_COLOR, new SVGStringValue(strokeColor));
     }
 
     @Override

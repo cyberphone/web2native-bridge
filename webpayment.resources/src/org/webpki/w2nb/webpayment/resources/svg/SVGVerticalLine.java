@@ -21,8 +21,8 @@ public class SVGVerticalLine extends SVGLine {
     public SVGVerticalLine(SVGValue x,
                            SVGValue y,
                            SVGValue length,
-                           SVGValue strokeWidth,
-                           SVGValue strokeColor) {
+                           double strokeWidth,
+                           String strokeColor) {
         super(x, y, x, new SVGAddDouble(y, length), strokeWidth, strokeColor);
     }
 }

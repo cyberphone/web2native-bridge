@@ -34,8 +34,8 @@ import org.webpki.w2nb.webpayment.resources.svg.SVGVerticalLine;
 
 public class PullMode extends SVGDocument {
     SVGDoubleValue linesLength = new SVGDoubleValue(500);
-    SVGDoubleValue verticalLineWidth = new SVGDoubleValue(2);
-    SVGStringValue verticalLineColor = new SVGStringValue("#0000FF");
+    double verticalLineWidth = 2;
+    String verticalLineColor = "#0000FF";
     SVGVerticalLine vertLine1;
     SVGVerticalLine vertLine2;
     
@@ -70,8 +70,8 @@ public class PullMode extends SVGDocument {
                         boxOneY = new SVGDoubleValue(20),
                         boxOneWidth = new SVGDoubleValue(80),
                         boxOneHeight = new SVGDoubleValue(20),
-                        new SVGDoubleValue(2.5),
-                        new SVGStringValue("#FF0000"),
+                        2.5,
+                        "#FF0000",
                         null).setRadiusX(3).setRadiusY(3));
 
         add(vertLine2 = new SVGVerticalLine(lines2_X = new SVGAddDouble(boxOneX, boxOneWidth, 20), 
@@ -86,12 +86,12 @@ public class PullMode extends SVGDocument {
                                 new SVGDoubleValue(20),
                                 null,
                                 null,
-                                new SVGStringValue("#00FF00")));
+                                "#00FF00"));
         
         add(new SVGText(new SVGCenter(lines1_X, lines2_X),
                         lastY = new SVGDoubleValue(80),
-                        new SVGStringValue("Sans-serif"),
-                        new SVGDoubleValue(10),
+                        "Sans-serif",
+                        10,
                         SVGText.TEXT_ANCHOR.MIDDLE,
                         "Hi There!"));
 /*
@@ -106,20 +106,20 @@ public class PullMode extends SVGDocument {
         add(new SVGHorizontalLine(vertLine1, 
                                   vertLine2,
                                   new SVGDoubleValue(90),
-                                  new SVGDoubleValue(0.8),
-                                  new SVGStringValue("#000000")).setLeftArrow(new SVGHorizontalLine.Arrow(4, 3, 0.5)));
+                                  0.8,
+                                  "#000000").setLeftArrow(new SVGHorizontalLine.Arrow(4, 3, 0.5)));
 
         add(new SVGHorizontalLine(vertLine1, 
                 vertLine2,
                 new SVGDoubleValue(92),
-                new SVGDoubleValue(0.8),
-                new SVGStringValue("#000000")).setRightArrow(new SVGHorizontalLine.Arrow(4, 3, 0.5)));
+                0.8,
+                "#000000").setRightArrow(new SVGHorizontalLine.Arrow(4, 3, 0.5)));
 
         add(new SVGHorizontalLine(vertLine1, 
                 vertLine2,
                 new SVGDoubleValue(95),
-                new SVGDoubleValue(0.8),
-                new SVGStringValue("#000000")).setLeftGutter(2));
+                0.8,
+                "#000000").setLeftGutter(2));
 
         add(new SVGPolygon(        new SVGCenter(lines1_X, lines2_X),
                 new SVGDoubleValue(60),
@@ -131,8 +131,8 @@ public class PullMode extends SVGDocument {
         add(new SVGHorizontalLine(vertLine1, 
                                   vertLine2,
                                   new SVGDoubleValue(140),
-                                  new SVGDoubleValue(0.8),
-                                  new SVGStringValue("#000000"))
+                                  0.8,
+                                  "#000000")
                     .setLeftArrow(new SVGHorizontalLine.Arrow(4, 3, 0.5))
                     .setRect(new SVGHorizontalLine.Rect(null,
                                                         null,
@@ -140,55 +140,54 @@ public class PullMode extends SVGDocument {
                                                         new SVGDoubleValue(16),
                                                         null,
                                                         null,
-                                                        new SVGStringValue("#0c960c")
-                    ).setRadiusX(4).setRadiusY(4))
+                                                        "#0c960c").setRadiusX(4).setRadiusY(4))
                     .setText(new SVGHorizontalLine.Text(null,
                                                         null,
-                                                        new SVGStringValue("Sans-serif"),
-                                                        new SVGDoubleValue(12),
-                                                        new SVGStringValue("#FFFFFF"),
+                                                        "Sans-serif",
+                                                        12,
+                                                        "#FFFFFF",
                                                         "W2NB")));
 
         add(new SVGHorizontalLine(vertLine1, 
                                   vertLine2,
                                   new SVGDoubleValue(170),
-                                  new SVGDoubleValue(0.8),
-                                  new SVGStringValue("#000000"))
+                                  0.8,
+                                  "#000000")
                     .setLeftArrow(new SVGHorizontalLine.Arrow(4, 3, 0.5))
                     .setRect(new SVGHorizontalLine.Rect(null,
                                       null,
                                       new SVGDoubleValue(44),
                                       new SVGDoubleValue(14),
-                                      new SVGDoubleValue(0.5),
-                                      new SVGStringValue("#000000"),
-                                      new SVGStringValue("#FFFFFF")
+                                      0.5,
+                                      "#000000",
+                                      "#FFFFFF"
   ).setRadiusX(4).setRadiusY(4))
   .setText(new SVGHorizontalLine.Text(null,
                                       null,
-                                      new SVGStringValue("Sans-serif"),
-                                      new SVGDoubleValue(12),
-                                      new SVGStringValue("#000000"),
+                                      "Sans-serif",
+                                      12,
+                                      "#000000",
                                       "HTTP")));
         add(new SVGHorizontalLine(vertLine1, 
                 vertLine2,
                 new SVGDoubleValue(200),
-                new SVGDoubleValue(0.8),
-                new SVGStringValue("#000000"))
+                0.8,
+                "#000000")
   .setLeftArrow(new SVGHorizontalLine.Arrow(4, 3, 0.5))
 .setText(new SVGHorizontalLine.Text(10.0,
                     5.0,
-                    new SVGStringValue("Sans-serif"),
-                    new SVGDoubleValue(12),
-                    new SVGStringValue("#000000"),
+                    "Sans-serif",
+                    12,
+                    "#000000",
                     "Some text")));
         
 SVGObject someRect;        
 add(someRect = new SVGRect(createDocumentAnchor(300, 150, SVGAnchor.ALIGNMENT.BOTTOM_RIGHT),
                         new SVGDoubleValue(156),
                         new SVGDoubleValue(48),
-                        new SVGDoubleValue(0.5),
-                        new SVGStringValue("#969191"),
-                        new SVGStringValue("#edbca6")).setRadiusX(10).setRadiusY(10));
+                        0.5,
+                        "#969191",
+                        "#edbca6").setRadiusX(10).setRadiusY(10));
 
 add(new SVGRect(new SVGAnchor(someRect, someRect, SVGAnchor.ALIGNMENT.TOP_LEFT)
 .derive(new SVGDoubleValue(2), new SVGDoubleValue(2), SVGAnchor.ALIGNMENT.TOP_LEFT),
@@ -196,21 +195,21 @@ add(new SVGRect(new SVGAnchor(someRect, someRect, SVGAnchor.ALIGNMENT.TOP_LEFT)
         new SVGDoubleValue(44),
         null,
         null,
-        new SVGStringValue("#ffffff")).setRadiusX(9).setRadiusY(9).setFilter("url(#actorsBlur)"));
+        "#ffffff").setRadiusX(9).setRadiusY(9).setFilter("url(#actorsBlur)"));
 
 SVGAnchor anchor = new SVGAnchor(someRect, someRect, SVGAnchor.ALIGNMENT.BOTTOM_CENTER);
 add(new SVGRect(anchor.derive(new SVGDoubleValue(20), new SVGDoubleValue(10), SVGAnchor.ALIGNMENT.TOP_LEFT),
         new SVGDoubleValue(80),
         new SVGDoubleValue(20),
-        new SVGDoubleValue(2.5),
-        new SVGStringValue("#00FF00"),
+        2.5,
+        "#00FF00",
         null).setRadiusX(3).setRadiusY(3));
-add(new SVGRect(anchor.derive(new SVGDoubleValue(-18.3), new SVGDoubleValue(9.3), SVGAnchor.ALIGNMENT.TOP_RIGHT),
+add(new SVGRect(anchor.derive(new SVGDoubleValue(-19.35), new SVGDoubleValue(9.35), SVGAnchor.ALIGNMENT.TOP_RIGHT),
         new SVGDoubleValue(81.5),
-        new SVGDoubleValue(21.5),
-        new SVGDoubleValue(0.8),
-        new SVGStringValue("#FF0000"),
-        new SVGStringValue("#FFFFE8")).setShader(new SVGShaderTemplate("url(#messageBlur)", "#7f7f7f", 2, 2)));
+        new SVGDoubleValue(60),
+        1.2,
+        "#FF0000",
+        "#FFFFE8").setShader(new SVGShaderTemplate("url(#messageBlur)", "#7f7f7f", 2, 2)));
 
 linesLength.setDouble(lastY.getDouble() + 200);
     }

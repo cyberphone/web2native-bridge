@@ -16,8 +16,6 @@
  */
 package org.webpki.w2nb.webpayment.resources.svg;
 
-import java.util.Vector;
-
 import org.webpki.util.ArrayUtil;
 
 public class SVG {
@@ -53,7 +51,7 @@ public class SVG {
                 filters = new String(ArrayUtil.readFile(args[2]), "UTF-8");
             }
             doc.generate();
-            for (SVGObject svgObject : doc.svgObjects) {
+            for (SVGObject svgObject : SVGDocument.svgObjects) {
                 for (SVGObject dependencyElement : svgObject.beforeDependencyElements) {
                     writeSVGObject(dependencyElement);
                 }

@@ -25,27 +25,27 @@ public class SVGText extends SVGObject {
 
     public SVGText(SVGValue x,
                    SVGValue y,
-                   SVGValue fontFamily,
-                   SVGValue fontSize,
+                   String fontFamily,
+                   double fontSize,
                    TEXT_ANCHOR textAnchor,
-                   SVGValue fillColor,
+                   String fillColor,
                    String text) {
         addDouble(SVGAttributes.X, x);
         addDouble(SVGAttributes.Y, y);
-        addString(SVGAttributes.FONT_FAMILY, fontFamily);
-        addDouble(SVGAttributes.FONT_SIZE, fontSize);
+        addString(SVGAttributes.FONT_FAMILY, new SVGStringValue(fontFamily));
+        addDouble(SVGAttributes.FONT_SIZE, new SVGDoubleValue(fontSize));
         addString(SVGAttributes.TEXT_ANCHOR, new SVGStringValue(textAnchor.toString().toLowerCase()));
-        addString(SVGAttributes.FILL_COLOR, fillColor);
+        addString(SVGAttributes.FILL_COLOR, new SVGStringValue(fillColor));
         this.text = text;
     }
     
     public SVGText(SVGValue x,
                    SVGValue y,
-                   SVGValue fontFamily,
-                   SVGValue fontSize,
+                   String fontFamily,
+                   double fontSize,
                    TEXT_ANCHOR textAnchor,
                    String text) {
-        this(x, y, fontFamily, fontSize, textAnchor, new SVGStringValue("#000000"), text);
+        this(x, y, fontFamily, fontSize, textAnchor, "#000000", text);
     }
 
     @Override

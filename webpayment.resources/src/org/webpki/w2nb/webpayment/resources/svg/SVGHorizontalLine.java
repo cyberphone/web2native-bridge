@@ -39,9 +39,9 @@ public class SVGHorizontalLine extends SVGLine {
                     Double alignY,
                     SVGValue width,
                     SVGValue height,
-                    SVGValue strokeWidth,
-                    SVGValue strokeColor,
-                    SVGValue fillColor) {
+                    Double strokeWidth,
+                    String strokeColor,
+                    String fillColor) {
             super(new SVGDoubleValue(0),
                   new SVGDoubleValue(0),
                   width,
@@ -73,9 +73,9 @@ public class SVGHorizontalLine extends SVGLine {
 
         public Text(Double alignX,
                     Double alignY,
-                    SVGValue fontFamily,
-                    SVGValue fontSize,
-                    SVGValue fillColor,
+                    String fontFamily,
+                    double fontSize,
+                    String fillColor,
                     String text) {
             super(new SVGDoubleValue(0),
                   new SVGDoubleValue(0),
@@ -97,16 +97,16 @@ public class SVGHorizontalLine extends SVGLine {
     public SVGHorizontalLine(SVGValue x,
                              SVGValue y,
                              SVGValue length,
-                             SVGValue strokeWidth,
-                             SVGValue strokeColor) {
+                             double strokeWidth,
+                             String strokeColor) {
         super(x, y, new SVGAddDouble(x, length), y, strokeWidth, strokeColor);
     }
     
     public SVGHorizontalLine(SVGVerticalLine vertLine1,
                              SVGVerticalLine vertLine2,
                              SVGValue y,
-                             SVGValue strokeWidth,
-                             SVGValue strokeColor) {
+                             double strokeWidth,
+                             String strokeColor) {
         this(new SVGAddOffset(vertLine1.getAttribute(SVGAttributes.X1),
                               vertLine1.getAttribute(SVGAttributes.STROKE_WIDTH).getDouble() / 2),
              y,
@@ -135,13 +135,13 @@ public class SVGHorizontalLine extends SVGLine {
         SVGValue y = getAttribute(SVGAttributes.Y1);
         setLeftGutter(arrow.gutter + arrow.length / 2);
         afterDependencyElements.add(new SVGPolygon(x,
-                                              y,
-                                              new double[]{0, 0,
-                                                           arrow.length,-arrow.height / 2,
-                                                           arrow.length, arrow.height / 2},
-                                              null,
-                                              null,
-                                              getAttribute(SVGAttributes.STROKE_COLOR)));
+                                                   y,
+                                                   new double[]{0, 0,
+                                                                arrow.length,-arrow.height / 2,
+                                                                arrow.length, arrow.height / 2},
+                                                   null,
+                                                   null,
+                                                   getAttribute(SVGAttributes.STROKE_COLOR)));
         return this;
     }
 
@@ -150,13 +150,13 @@ public class SVGHorizontalLine extends SVGLine {
         SVGValue y = getAttribute(SVGAttributes.Y2);
         setRightGutter(arrow.gutter + arrow.length / 2);
         afterDependencyElements.add(new SVGPolygon(x,
-                                              y,
-                                              new double[]{-arrow.length, -arrow.height / 2,
-                                                           -arrow.length, arrow.height / 2,
-                                                           0, 0},
-                                              null,
-                                              null,
-                                              getAttribute(SVGAttributes.STROKE_COLOR)));
+                                                   y,
+                                                   new double[]{-arrow.length, -arrow.height / 2,
+                                                                -arrow.length, arrow.height / 2,
+                                                                0, 0},
+                                                   null,
+                                                   null,
+                                                   getAttribute(SVGAttributes.STROKE_COLOR)));
         return this;
     }
     
