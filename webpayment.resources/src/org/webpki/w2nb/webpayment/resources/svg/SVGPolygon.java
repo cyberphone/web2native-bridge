@@ -67,21 +67,27 @@ public class SVGPolygon extends SVGObject {
         addString(SVGAttributes.FILL_COLOR, fillColor == null ? new SVGStringValue("none") : new SVGStringValue(fillColor));
         addPoints(SVGAttributes.POINTS, new SVGPointsValue());
         this.coordinates = coordinates;
+        for (int q = 0; q < coordinates.length; q++) {
+            if (coordinates[q] < 0) {
+                throw new RuntimeException("Polygon data must be >= 0");
+            }
+        }
         this.x = x;
         this.y = y;
       }
     
-    private static SVGValue distance(int start, double[] coordinates) {
-        double min = coordinates[start];
-        double max = min;
-        while ((start += 2) < coordinates.length) {
-            if (coordinates[start] < min) {
-                min = coordinates[start];
-            } else if (coordinates[start] > max) {
-                max = coordinates[start];
+    private static double getMax(int start, double[] coordinates) {
+        double max = coordinates[start];
+        for (int q = start; q < coordinates.length; q += 2) {
+            if (coordinates[q] > max) {
+                max = coordinates[q];
             }
         }
-        return new SVGDoubleValue(max - min);
+        return max;
+    }
+    
+    private double getMax(int start) {
+        return SVGPolygon.getMax(start, coordinates);
     }
 
     public SVGPolygon(SVGAnchor anchor,
@@ -89,8 +95,8 @@ public class SVGPolygon extends SVGObject {
                       Double strokeWidth,
                       String strokeColor,
                       String fillColor) {
-        this(anchor.xAlignment(SVGPolygon.distance(0, coordinates)),
-             anchor.yAlignment(SVGPolygon.distance(1, coordinates)),
+        this(anchor.xAlignment(new SVGDoubleValue(SVGPolygon.getMax(0, coordinates))),
+             anchor.yAlignment(new SVGDoubleValue(SVGPolygon.getMax(1, coordinates))),
              coordinates,
              strokeWidth,
              strokeColor,
@@ -117,27 +123,16 @@ public class SVGPolygon extends SVGObject {
         return false;
     }
 
-    private double maxCoordinate(int start) {
-        double max = -10000;
-        while (start < coordinates.length) {
-            if (coordinates[start] > max) {
-                max = coordinates[start];
-            }
-            start += 2;
-        }
-        return max;
-    }
-
     @Override
     double getMaxX() {
         x = new SVGAddOffset(x, SVGDocument.marginX);
-        return x.getDouble() + maxCoordinate(0);
+        return x.getDouble() + getMax(0);
     }
 
     @Override
     double getMaxY() {
         y = new SVGAddOffset(y, SVGDocument.marginY);
-        return y.getDouble() + maxCoordinate(1);
+        return y.getDouble() + getMax(1);
     }
 
     public SVGPolygon setShader(SVGShaderTemplate shading) {

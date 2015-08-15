@@ -107,9 +107,12 @@ public class PullMode extends SVGDocument {
                 0.8,
                 "#000000").setLeftGutter(2));
 
-        add(new SVGPolygon(        new SVGCenter(lines1_X, lines2_X),
+        
+        add(new SVGPolygon(        new SVGCenter(lines1_X, lines2_X, 10),
                 new SVGDoubleValue(60),
-                new double[]{-5,-5,-5, 5, 5, 0},
+                new double[]{0, 5,
+                             10, 0,
+                             10, 10},
                 null,
                 null,
                 "#ff0000"));
@@ -203,15 +206,23 @@ SVGObject lo= add(new SVGCircle(new SVGDoubleValue(300), new SVGDoubleValue(250)
         "#FF0000",
         "#FFFFE8").setShader(new SVGShaderTemplate("url(#messageBlur)", "#7f7f7f", 2.5, 2.5)));
 
-add(new SVGPolygon(createDocumentAnchor(150, 300, SVGAnchor.ALIGNMENT.TOP_LEFT),
-        new double[]{-20,-10,
-                     -10,-20,
-                     10, -20,
-                     20, -10,
-                     20, 10,
-                     10, 20,
-                     -10, 20,
-                     -20, 10},
+
+add(new SVGPolygon(anchor.derive(new SVGDoubleValue(200), new SVGDoubleValue(9.35), SVGAnchor.ALIGNMENT.TOP_LEFT),
+        new double[]{0, 10,
+                     10, 0,
+                     30, 0,
+                     40, 10,
+                     40, 30,
+                     30, 40,
+                     10, 40,
+                     0, 30},
+        1.2,
+        "#FF0000",
+        "#FFFFE8").setShader(new SVGShaderTemplate("url(#messageBlur)", "#7f7f7f", 3, 3)));
+
+add(new SVGRect(createDocumentAnchor(600, 150, SVGAnchor.ALIGNMENT.BOTTOM_LEFT),
+        new SVGDoubleValue(40),
+        new SVGDoubleValue(40),
         1.2,
         "#FF0000",
         "#FFFFE8").setShader(new SVGShaderTemplate("url(#messageBlur)", "#7f7f7f", 3, 3)));

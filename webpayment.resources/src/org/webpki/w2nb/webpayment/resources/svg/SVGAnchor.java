@@ -63,7 +63,7 @@ public class SVGAnchor {
         return new SVGAnchor(new SVGAddDouble(x, xOffset), new SVGAddDouble(y, yOffset), alignment);
     }
 
-    private static SVGValue xAlignment(SVGValue x, SVGValue width, ALIGNMENT alignment) {
+    static SVGValue xAlignment(SVGValue x, SVGValue width, ALIGNMENT alignment) {
         if (alignment.leftAlign) {
             return x;
         } else if (alignment.rightAlign) {
@@ -72,7 +72,7 @@ public class SVGAnchor {
         return new SVGCenter(x, x, width);
     }
 
-    private static SVGValue yAlignment(SVGValue y, SVGValue height, ALIGNMENT alignment) {
+    static SVGValue yAlignment(SVGValue y, SVGValue height, ALIGNMENT alignment) {
         if (alignment.topAlign) {
             return y;
         } else if (alignment.bottomAlign) {

@@ -132,13 +132,13 @@ public class SVGHorizontalLine extends SVGLine {
 
     public SVGHorizontalLine setLeftArrow (Arrow arrow) {
         SVGValue x = new SVGAddOffset(getAttribute(SVGAttributes.X1), arrow.gutter);
-        SVGValue y = getAttribute(SVGAttributes.Y1);
+        SVGValue y = new SVGAddOffset(getAttribute(SVGAttributes.Y1), -arrow.height / 2);
         setLeftGutter(arrow.gutter + arrow.length / 2);
         afterDependencyElements.add(new SVGPolygon(x,
                                                    y,
-                                                   new double[]{0, 0,
-                                                                arrow.length,-arrow.height / 2,
-                                                                arrow.length, arrow.height / 2},
+                                                   new double[]{0, arrow.height / 2,
+                                                                arrow.length, 0,
+                                                                arrow.length, arrow.height},
                                                    null,
                                                    null,
                                                    getAttribute(SVGAttributes.STROKE_COLOR).getStringRepresentation()));
@@ -146,14 +146,14 @@ public class SVGHorizontalLine extends SVGLine {
     }
 
     public SVGHorizontalLine setRightArrow (Arrow arrow) {
-        SVGValue x = new SVGAddOffset(getAttribute(SVGAttributes.X2), -arrow.gutter);
-        SVGValue y = getAttribute(SVGAttributes.Y2);
+        SVGValue x = new SVGAddOffset(getAttribute(SVGAttributes.X2), -arrow.gutter - arrow.length);
+        SVGValue y = new SVGAddOffset(getAttribute(SVGAttributes.Y2), -arrow.height / 2);
         setRightGutter(arrow.gutter + arrow.length / 2);
         afterDependencyElements.add(new SVGPolygon(x,
                                                    y,
-                                                   new double[]{-arrow.length, -arrow.height / 2,
-                                                                -arrow.length, arrow.height / 2,
-                                                                0, 0},
+                                                   new double[]{0, 0,
+                                                                0, arrow.height,
+                                                                arrow.length, arrow.height / 2},
                                                    null,
                                                    null,
                                                    getAttribute(SVGAttributes.STROKE_COLOR).getStringRepresentation()));

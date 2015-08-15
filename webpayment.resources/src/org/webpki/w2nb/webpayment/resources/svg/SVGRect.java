@@ -112,12 +112,12 @@ public class SVGRect extends SVGObject {
             yOffset -= strokeWidth / 2;
         }
         SVGRect temp = new SVGRect(new SVGAddOffset(getAttribute(SVGAttributes.X), xOffset),
-                                           new SVGAddOffset(getAttribute(SVGAttributes.Y), yOffset),
-                                           width,
-                                           height,
-                                           null,
-                                           null,
-                                           shading.fillColor);
+                                   new SVGAddOffset(getAttribute(SVGAttributes.Y), yOffset),
+                                   width,
+                                   height,
+                                   null,
+                                   null,
+                                   shading.fillColor);
         if (getAttribute(SVGAttributes.RX) != null) {
             temp.setRadiusX(getAttribute(SVGAttributes.RX).getDouble());
         }
