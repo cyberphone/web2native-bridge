@@ -37,5 +37,5 @@ public class SVGDoubleValue extends SVGValue {
     public void setDouble(double value) {
         this.value = value;
     }
-};
+}
 

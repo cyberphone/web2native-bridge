@@ -49,5 +49,5 @@ public class SVGCenter extends SVGValue {
     public double getDouble() {
         return getValue();
     }
-};
+}
 

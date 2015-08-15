@@ -29,10 +29,12 @@ public abstract class SVGValue {
     }
 
     String niceDouble(double value) {
+        long lval = (long)(value * 100);
+        value = ((double)lval) / 100;
         if (value == (long)value) {
             return Long.toString((long)value);
         }
         return Double.toString(value);
     }
-};
+}
 

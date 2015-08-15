@@ -33,5 +33,5 @@ public class SVGStringValue extends SVGValue {
     public String getStringRepresentation() {
          return value;
     }
-};
+}
 

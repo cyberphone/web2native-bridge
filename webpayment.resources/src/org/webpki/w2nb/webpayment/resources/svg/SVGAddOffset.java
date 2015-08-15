@@ -39,5 +39,5 @@ public class SVGAddOffset extends SVGValue {
     public double getDouble() {
         return getValue();
     }
-};
+}
 

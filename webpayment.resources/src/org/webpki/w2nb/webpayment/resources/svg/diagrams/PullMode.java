@@ -20,6 +20,7 @@ import org.webpki.w2nb.webpayment.resources.svg.SVGAddDouble;
 import org.webpki.w2nb.webpayment.resources.svg.SVGAddOffset;
 import org.webpki.w2nb.webpayment.resources.svg.SVGAnchor;
 import org.webpki.w2nb.webpayment.resources.svg.SVGCenter;
+import org.webpki.w2nb.webpayment.resources.svg.SVGCircle;
 import org.webpki.w2nb.webpayment.resources.svg.SVGDocument;
 import org.webpki.w2nb.webpayment.resources.svg.SVGHorizontalLine;
 import org.webpki.w2nb.webpayment.resources.svg.SVGObject;
@@ -87,15 +88,7 @@ public class PullMode extends SVGDocument {
                         10,
                         SVGText.TEXT_ANCHOR.MIDDLE,
                         "Hi There!"));
-/*
-    public SVGHorizontalLine(SVGVerticalLine vertLine1,
-                             SVGVerticalLine vertLine2,
-                             SVGValue y,
-                             SVGValue strokeWidth,
-                             SVGValue strokeColor) {
-        super(vertLine1.getAttribute(SVGAttributes.X1),
-        
- */
+
         add(new SVGHorizontalLine(vertLine1, 
                                   vertLine2,
                                   new SVGDoubleValue(90),
@@ -119,7 +112,7 @@ public class PullMode extends SVGDocument {
                 new double[]{-5,-5,-5, 5, 5, 0},
                 null,
                 null,
-                "#80ff80"));
+                "#ff0000"));
 
         add(new SVGHorizontalLine(vertLine1, 
                                   vertLine2,
@@ -204,7 +197,19 @@ add(new SVGRect(anchor.derive(new SVGDoubleValue(-19.35), new SVGDoubleValue(9.3
         "#FF0000",
         "#FFFFE8").setShader(new SVGShaderTemplate("url(#messageBlur)", "#7f7f7f", 2, 2)));
 
-linesLength.setDouble(lastY.getDouble() + 200);
-    }
+SVGObject lo= add(new SVGCircle(new SVGDoubleValue(300), new SVGDoubleValue(250),
+        new SVGDoubleValue(50),
+        1.2,
+        "#FF0000",
+        "#FFFFE8").setShader(new SVGShaderTemplate("url(#messageBlur)", "#7f7f7f", 2.5, 2.5)));
+
+add(new SVGCircle(createDocumentAnchor(300, 150, SVGAnchor.ALIGNMENT.TOP_LEFT),
+        new SVGDoubleValue(18),
+        0.5,
+        "#000000",
+        "#FF0000"));
+
+linesLength.setDouble(lo.getPrimaryY().getDouble() + lo.getPrimaryHeight().getDouble() - linesY.getDouble() + 15);
+}
     
  }

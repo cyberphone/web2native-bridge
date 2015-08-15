@@ -37,5 +37,5 @@ public class SVGNegate extends SVGValue {
     public double getDouble() {
         return getValue();
     }
-};
+}
 
