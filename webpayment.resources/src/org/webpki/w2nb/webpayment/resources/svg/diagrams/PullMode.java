@@ -22,8 +22,10 @@ import org.webpki.w2nb.webpayment.resources.svg.SVGAnchor;
 import org.webpki.w2nb.webpayment.resources.svg.SVGCenter;
 import org.webpki.w2nb.webpayment.resources.svg.SVGCircle;
 import org.webpki.w2nb.webpayment.resources.svg.SVGDocument;
+import org.webpki.w2nb.webpayment.resources.svg.SVGEllipse;
 import org.webpki.w2nb.webpayment.resources.svg.SVGHorizontalLine;
 import org.webpki.w2nb.webpayment.resources.svg.SVGObject;
+import org.webpki.w2nb.webpayment.resources.svg.SVGPath;
 import org.webpki.w2nb.webpayment.resources.svg.SVGPolygon;
 import org.webpki.w2nb.webpayment.resources.svg.SVGRect;
 import org.webpki.w2nb.webpayment.resources.svg.SVGDoubleValue;
@@ -98,8 +100,8 @@ public class PullMode extends SVGDocument {
         add(new SVGHorizontalLine(vertLine1, 
                 vertLine2,
                 new SVGDoubleValue(92),
-                0.8,
-                "#000000").setRightArrow(new SVGHorizontalLine.Arrow(4, 3, 0.5)));
+                0.5,
+                "#000000").setRightArrow(new SVGHorizontalLine.Arrow(4, 3, 0.5)).setDashMode(2.5, 1.8));
 
         add(new SVGHorizontalLine(vertLine1, 
                 vertLine2,
@@ -206,19 +208,21 @@ SVGObject lo= add(new SVGCircle(new SVGDoubleValue(300), new SVGDoubleValue(250)
         "#FF0000",
         "#FFFFE8").setShader(new SVGShaderTemplate("url(#messageBlur)", "#7f7f7f", 2.5, 2.5)));
 
+    add(new SVGPath(new SVGDoubleValue(400), new SVGDoubleValue(250),0.5,
+        "#000000",
+        null).moveAbsolute(0, 0)
+             .lineToRelative(20, 20)
+             .lineToRelative(20, -20)
+             .lineToRelative(40, 0)
+             .setDashMode(1.2, 1));
 
-add(new SVGPolygon(anchor.derive(new SVGDoubleValue(200), new SVGDoubleValue(9.35), SVGAnchor.ALIGNMENT.TOP_LEFT),
-        new double[]{0, 10,
-                     10, 0,
-                     30, 0,
-                     40, 10,
-                     40, 30,
-                     30, 40,
-                     10, 40,
-                     0, 30},
+
+add(new SVGEllipse(anchor.derive(new SVGDoubleValue(20), new SVGDoubleValue(9.35), SVGAnchor.ALIGNMENT.TOP_LEFT),
+        new SVGDoubleValue(70),
+new SVGDoubleValue(50),
         1.2,
         "#FF0000",
-        "#FFFFE8").setShader(new SVGShaderTemplate("url(#messageBlur)", "#7f7f7f", 3, 3)));
+        "#FFFFE8").setShader(new SVGShaderTemplate("url(#messageBlur)", "#7f7f7f", 3, 3)).setDashMode(3, 2));
 
 add(new SVGRect(createDocumentAnchor(600, 150, SVGAnchor.ALIGNMENT.BOTTOM_LEFT),
         new SVGDoubleValue(40),

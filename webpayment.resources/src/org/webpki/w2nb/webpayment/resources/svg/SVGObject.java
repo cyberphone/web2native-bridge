@@ -21,6 +21,22 @@ import java.util.Vector;
 
 public abstract class SVGObject {
     
+    class SVGDashes extends SVGValue {
+
+        double written;
+        double empty;
+       
+        public SVGDashes(double written, double empty) {
+            this.written = written;
+            this.empty = empty;
+        }
+        
+        @Override
+        public String getStringRepresentation() {
+            return niceDouble(written) + "," + niceDouble(empty);
+        }
+    };
+
     private LinkedHashMap<SVGAttributes,SVGValue> _attributes = new LinkedHashMap<SVGAttributes,SVGValue>();
     
     Vector<SVGObject> beforeDependencyElements = new Vector<SVGObject>();
@@ -55,7 +71,7 @@ public abstract class SVGObject {
         return _attributes.get(attribute);
     }
     
-    private void _addAttribute(SVGAttributes svgAttribute, SVGValue svgValue) {
+    void _addAttribute(SVGAttributes svgAttribute, SVGValue svgValue) {
         if (_attributes.put(svgAttribute, svgValue) != null) {
             throw new RuntimeException("Trying to assign attribute multiple times: " + svgAttribute);
         }
@@ -72,8 +88,8 @@ public abstract class SVGObject {
         _addAttribute(svgAttribute, svgValue);
     }
 
-    public void addPoints(SVGAttributes svgAttribute, SVGPolygon.SVGPointsValue svgValue) {
-        _addAttribute(svgAttribute, svgValue);
+    void addDashes(double written, double empty) {
+        _addAttribute(SVGAttributes.DASHES, new SVGDashes(written, empty));
     }
 
     public LinkedHashMap<SVGAttributes,SVGValue> getSVGAttributes() {
@@ -101,4 +117,17 @@ public abstract class SVGObject {
         _attributes.put(svgAttribute, new SVGDoubleValue(value));
         return value;
     }
+    
+    void processColor(Double strokeWidth, String strokeColor, String fillColor) {
+        if (strokeWidth == null ^ strokeColor == null) {
+            throw new RuntimeException("You must either specify color+stroke or nulls");
+        }
+        if (strokeColor != null) {
+            addString(SVGAttributes.STROKE_COLOR, new SVGStringValue(strokeColor));
+            addDouble(SVGAttributes.STROKE_WIDTH, new SVGDoubleValue(strokeWidth));
+        }
+        addString(SVGAttributes.FILL_COLOR, fillColor == null ? 
+                                   new SVGStringValue("none") : new SVGStringValue(fillColor));
+    }
+
 }

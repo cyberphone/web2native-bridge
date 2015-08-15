@@ -17,7 +17,7 @@
 package org.webpki.w2nb.webpayment.resources.svg;
 
 public class SVGLine extends SVGObject {
-
+    
     public SVGLine(SVGValue x1,
                    SVGValue y1,
                    SVGValue x2,
@@ -64,5 +64,10 @@ public class SVGLine extends SVGObject {
         double y1 = updateMargin(SVGDocument.marginY, SVGAttributes.Y1);
         double y2 = updateMargin(SVGDocument.marginY, SVGAttributes.Y2);
         return y1 > y2 ? y1 : y2;
+    }
+    
+    public SVGLine setDashMode(double written, double empty) {
+        addDashes(written, empty);
+        return this;
     }
 }

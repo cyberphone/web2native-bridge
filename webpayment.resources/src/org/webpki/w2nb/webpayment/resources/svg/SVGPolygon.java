@@ -24,9 +24,6 @@ public class SVGPolygon extends SVGObject {
     
     class SVGPointsValue extends SVGValue {
  
-        public SVGPointsValue() {
-        }
-
         @Override
         public String getStringRepresentation() {
             int i = 0;
@@ -41,9 +38,8 @@ public class SVGPolygon extends SVGObject {
             }
             return result.toString();
         }
-    };
+    }
     
-   
     public SVGPolygon(SVGValue x,
                       SVGValue y,
                       double[] coordinates,
@@ -53,19 +49,8 @@ public class SVGPolygon extends SVGObject {
         if ((coordinates.length & 1) != 0) {
             throw new RuntimeException("Wrong number of points");
         }
-        if (strokeWidth == null ^ strokeColor == null) {
-            throw new RuntimeException("You must either specify color+stroke or nulls");
-        }
-        if (strokeWidth == null) {
-            addString(SVGAttributes.STROKE_COLOR, new SVGStringValue("none"));
-        } else {
-            addDouble(SVGAttributes.STROKE_WIDTH, new SVGDoubleValue(strokeWidth));
-        }
-        if (strokeColor != null) {
-            addString(SVGAttributes.STROKE_COLOR, new SVGStringValue(strokeColor));
-        }
-        addString(SVGAttributes.FILL_COLOR, fillColor == null ? new SVGStringValue("none") : new SVGStringValue(fillColor));
-        addPoints(SVGAttributes.POINTS, new SVGPointsValue());
+        _addAttribute(SVGAttributes.POINTS, new SVGPointsValue());
+        processColor(strokeWidth, strokeColor, fillColor);
         this.coordinates = coordinates;
         for (int q = 0; q < coordinates.length; q++) {
             if (coordinates[q] < 0) {

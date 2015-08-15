@@ -29,6 +29,8 @@ public enum SVGAttributes {
     CX            ("cx"),
     CY            ("cy"),
     R             ("r"),
+    D             ("d"),
+    DASHES        ("stroke-dasharray"),
     WIDTH         ("width"),
     HEIGHT        ("height"),
     POINTS        ("points"),

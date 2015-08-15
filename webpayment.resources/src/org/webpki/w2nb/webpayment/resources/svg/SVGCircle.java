@@ -24,18 +24,11 @@ public class SVGCircle extends SVGObject {
                      Double strokeWidth,
                      String strokeColor,
                      String fillColor) {
-        if (strokeWidth == null ^ strokeColor == null) {
-            throw new RuntimeException("You must either specify color+stroke or nulls");
-        }
         SVGValue radius = new SVGDivOffset(width, 2);
         addDouble(SVGAttributes.CX, new SVGAddDouble(x, radius));
         addDouble(SVGAttributes.CY, new SVGAddDouble(y, radius));
         addDouble(SVGAttributes.R, radius);
-        if (strokeWidth != null) {
-            addDouble(SVGAttributes.STROKE_WIDTH, new SVGDoubleValue(strokeWidth));
-            addString(SVGAttributes.STROKE_COLOR, new SVGStringValue(strokeColor));
-        }
-        addString(SVGAttributes.FILL_COLOR, fillColor == null ? new SVGStringValue("none") : new SVGStringValue(fillColor));
+        processColor(strokeWidth, strokeColor, fillColor);
       }
 
     public SVGCircle(SVGAnchor anchor,
