@@ -73,6 +73,7 @@ public class SVGRect extends SVGObject {
         addDouble(SVGAttributes.RX, new SVGDoubleValue(value));
         return this;
     }
+
     public SVGRect setFilter(String filter) {
         addString(SVGAttributes.FILTER, new SVGStringValue(filter));
         return this;

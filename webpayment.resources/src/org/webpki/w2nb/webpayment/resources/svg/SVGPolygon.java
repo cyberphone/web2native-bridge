@@ -70,6 +70,32 @@ public class SVGPolygon extends SVGObject {
         this.x = x;
         this.y = y;
       }
+    
+    private static SVGValue distance(int start, double[] coordinates) {
+        double min = coordinates[start];
+        double max = min;
+        while ((start += 2) < coordinates.length) {
+            if (coordinates[start] < min) {
+                min = coordinates[start];
+            } else if (coordinates[start] > max) {
+                max = coordinates[start];
+            }
+        }
+        return new SVGDoubleValue(max - min);
+    }
+
+    public SVGPolygon(SVGAnchor anchor,
+                      double[] coordinates,
+                      Double strokeWidth,
+                      String strokeColor,
+                      String fillColor) {
+        this(anchor.xAlignment(SVGPolygon.distance(0, coordinates)),
+             anchor.yAlignment(SVGPolygon.distance(1, coordinates)),
+             coordinates,
+             strokeWidth,
+             strokeColor,
+             fillColor);
+    }
 
     @Override
     SVGValue getAnchorX() {
@@ -113,5 +139,31 @@ public class SVGPolygon extends SVGObject {
         y = new SVGAddOffset(y, SVGDocument.marginY);
         return y.getDouble() + maxCoordinate(1);
     }
-    
+
+    public SVGPolygon setShader(SVGShaderTemplate shading) {
+        double xOffset = shading.xOffset;
+        double yOffset = shading.yOffset;
+        if (getAttribute(SVGAttributes.STROKE_WIDTH) != null) {
+            double strokeWidth = getAttribute(SVGAttributes.STROKE_WIDTH).getDouble();
+            xOffset -= strokeWidth / 2;
+            yOffset -= strokeWidth / 2;
+        }
+        SVGPolygon temp = new SVGPolygon(new SVGAddOffset(x, xOffset),
+                                         new SVGAddOffset(y, yOffset),
+                                         coordinates,
+                                         null,
+                                         null,
+                                         shading.fillColor);
+
+        if (shading.filter != null) {
+            temp.setFilter(shading.filter);
+        }
+        beforeDependencyElements.add(temp);
+        return this;
+    }
+
+    public SVGPolygon setFilter(String filter) {
+        addString(SVGAttributes.FILTER, new SVGStringValue(filter));
+        return this;
+    }    
 }

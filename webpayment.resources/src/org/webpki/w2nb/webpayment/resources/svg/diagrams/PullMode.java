@@ -203,11 +203,18 @@ SVGObject lo= add(new SVGCircle(new SVGDoubleValue(300), new SVGDoubleValue(250)
         "#FF0000",
         "#FFFFE8").setShader(new SVGShaderTemplate("url(#messageBlur)", "#7f7f7f", 2.5, 2.5)));
 
-add(new SVGCircle(createDocumentAnchor(300, 150, SVGAnchor.ALIGNMENT.TOP_LEFT),
-        new SVGDoubleValue(18),
-        0.5,
-        "#000000",
-        "#FF0000"));
+add(new SVGPolygon(createDocumentAnchor(150, 300, SVGAnchor.ALIGNMENT.TOP_LEFT),
+        new double[]{-20,-10,
+                     -10,-20,
+                     10, -20,
+                     20, -10,
+                     20, 10,
+                     10, 20,
+                     -10, 20,
+                     -20, 10},
+        1.2,
+        "#FF0000",
+        "#FFFFE8").setShader(new SVGShaderTemplate("url(#messageBlur)", "#7f7f7f", 3, 3)));
 
 linesLength.setDouble(lo.getPrimaryY().getDouble() + lo.getPrimaryHeight().getDouble() - linesY.getDouble() + 15);
 }

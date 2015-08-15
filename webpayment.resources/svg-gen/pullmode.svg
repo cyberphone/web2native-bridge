@@ -1,4 +1,4 @@
-<svg width="382" height="335" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">
+<svg width="382" height="342" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">
  <defs>
   <filter height="150%" width="150%" y="-25%" x="-25%" id="actorsBlur">
    <feGaussianBlur stdDeviation="3"/>
@@ -37,6 +37,7 @@
 <rect x="136.15" y="169.35" width="81.5" height="60" stroke-width="1.2" stroke="#FF0000" fill="#FFFFE8"/>
 <circle cx="341.9" cy="286.9" r="25.6" fill="#7f7f7f" filter="url(#messageBlur)"/>
 <circle cx="340" cy="285" r="25" stroke-width="1.2" stroke="#FF0000" fill="#FFFFE8"/>
-<circle cx="324" cy="169" r="9" stroke-width="0.5" stroke="#000000" fill="#FF0000"/>
+<polygon stroke="none" fill="#7f7f7f" points="147.4,302.39 157.4,292.39 177.4,292.39 187.4,302.39 187.4,322.39 177.4,332.4 157.4,332.4 147.4,322.39" filter="url(#messageBlur)"/>
+<polygon stroke-width="1.2" stroke="#FF0000" fill="#FFFFE8" points="145,300 155,290 175,290 185,300 185,320 175,330 155,330 145,320"/>
 </g>
 </svg>
