@@ -208,13 +208,20 @@ SVGObject lo= add(new SVGCircle(new SVGDoubleValue(300), new SVGDoubleValue(250)
         "#FF0000",
         "#FFFFE8").setShader(new SVGShaderTemplate("url(#messageBlur)", "#7f7f7f", 2.5, 2.5)));
 
-    add(new SVGPath(new SVGDoubleValue(400), new SVGDoubleValue(250),0.5,
+    add(new SVGPath(new SVGDoubleValue(400), new SVGDoubleValue(220),2.0,
         "#000000",
         null).moveAbsolute(0, 0)
-             .lineToRelative(20, 20)
-             .lineToRelative(20, -20)
-             .lineToRelative(40, 0)
-             .setDashMode(1.2, 1));
+             .lineToRelative(100, 0)
+             .setDashMode(1.2, 1)
+             .cubicBezier(25, 0, 25, 0, 25,-25)
+             .lineToRelative(0, -100)
+             .cubicBezier(0, -25, 0, -25, 25,-25)
+             .lineToRelative(50, 0)
+             .cubicBezier(25, 0, 25, 0, 25, 25)
+             .lineToRelative(0, 150)
+             .cubicBezier(0, 25, 0, 25, -25, 25)
+             .lineToRelative(-200, 0)
+            );
 
 
 add(new SVGEllipse(anchor.derive(new SVGDoubleValue(20), new SVGDoubleValue(9.35), SVGAnchor.ALIGNMENT.TOP_LEFT),

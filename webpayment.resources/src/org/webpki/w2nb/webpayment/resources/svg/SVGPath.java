@@ -118,6 +118,18 @@ public class SVGPath extends SVGObject {
         return this;
     }
 
+    public SVGPath cubicBezier(double c1x, double c1y, double c2x,double c2y, double x, double y) {
+        path.addSubCommand(new SubCommand('c').addCoordinate(false, c1x, c1y)
+                                              .addCoordinate(false, c2x, c2y)
+                                              .addCoordinate(false, x, y));
+        return this;
+    }
+
+    public SVGPath endPath() {
+        path.addSubCommand(new SubCommand('z'));
+        return this;
+    }
+
     @Override
     String getTag() {
         return "path";
