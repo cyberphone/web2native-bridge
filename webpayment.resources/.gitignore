@@ -1,4 +1,9 @@
 /bin/
 .tmp
 /credentials/
+/svg-gen/play.svg
+/svg-filters/play-filters.xml
+/src/org/webpki/w2nb/webpayment/resources/svg/play
+
+
 

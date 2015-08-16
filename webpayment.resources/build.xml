@@ -32,7 +32,7 @@
   </path>
   
   <target name="help">
-      <echo message="createcerts initwallet [-Dlocalhost=0] inittestpage svg-pullmode"/>
+      <echo message="createcerts initwallet [-Dlocalhost=0] inittestpage svg-test svg-pushmode svg-pullmode svg-play"/>
   </target>
  
   <target name="inittestpage">
@@ -95,7 +95,31 @@
        <param name="svgfile" value="svg-gen/pullmode.svg"/>
        <param name="svgclass" value="org.webpki.w2nb.webpayment.resources.svg.diagrams.PullMode"/>
        <param name="svgfilters" value="svg-filters/wallet-filters.xml"/>
-       </antcall>
+     </antcall>
+  </target>
+  
+  <target name="svg-pushmode">
+    <antcall target="_svg">
+       <param name="svgfile" value="svg-gen/pushmode.svg"/>
+       <param name="svgclass" value="org.webpki.w2nb.webpayment.resources.svg.diagrams.PushMode"/>
+       <param name="svgfilters" value="svg-filters/wallet-filters.xml"/>
+     </antcall>
+  </target>
+  
+  <target name="svg-test">
+    <antcall target="_svg">
+       <param name="svgfile" value="svg-gen/test.svg"/>
+       <param name="svgclass" value="org.webpki.w2nb.webpayment.resources.svg.test.Test"/>
+       <param name="svgfilters" value="svg-filters/test-filters.xml"/>
+    </antcall>
+  </target>
+
+  <target name="svg-play">
+    <antcall target="_svg">
+       <param name="svgfile" value="svg-gen/play.svg"/>
+       <param name="svgclass" value="org.webpki.w2nb.webpayment.resources.svg.play.Play"/>
+       <param name="svgfilters" value="svg-filters/play-filters.xml"/>
+    </antcall>
   </target>
   
   <target name="_import">
