@@ -115,10 +115,16 @@
   </target>
 
   <target name="svg-play">
-    <antcall target="_svg">
-       <param name="svgfile" value="svg-gen/play.svg"/>
-       <param name="svgclass" value="org.webpki.w2nb.webpayment.resources.svg.play.Play"/>
-       <param name="svgfilters" value="svg-filters/play-filters.xml"/>
+    <fail unless="playclass" message="-&#10;
+***************************************************************&#10;
+ You must specify the &quot;playclass&quot; residing in the directory&#10;
+ &quot;org.webpki.w2nb.webpayment.resources.svg.play&quot;&#10;
+ using the -D option&#10;
+***************************************************************&#10;"/>
+     <antcall target="_svg">
+       <param name="svgfile" value="svg-gen/play/${playclass}.svg"/>
+       <param name="svgclass" value="org.webpki.w2nb.webpayment.resources.svg.play.${playclass}"/>
+       <param name="svgfilters" value="svg-filters/play/${playclass}.xml"/>
     </antcall>
   </target>
   
