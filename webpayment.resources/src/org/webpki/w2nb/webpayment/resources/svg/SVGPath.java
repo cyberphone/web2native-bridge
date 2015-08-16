@@ -24,19 +24,47 @@ public class SVGPath extends SVGObject {
     SVGValue y;
     SVGPathValue path;
     
-    static class Coordinate {
+    double maxX;
+    double maxY;
+    
+    double minX;
+    double minY;
+
+    double currX;
+    double currY;
+    
+    class Coordinate {
         boolean absolute;
-        double x;
-        double y;
+        double xValue;
+        double yValue;
         
-        Coordinate (boolean absolute, double x, double y) {
+        Coordinate (boolean absolute, boolean actual, double xValue, double yValue) {
             this.absolute = absolute;
-            this.x = x;
-            this.y = y;
+            this.xValue = xValue;
+            this.yValue = yValue;
+            if (actual) {
+                if (absolute) {
+                    currX = xValue;
+                    currY = yValue;
+                } else {
+                    currX += xValue;
+                    currY += yValue;
+                    if (currX > maxX) {
+                        maxX = currX;
+                    } else if (currX < minX) {
+                        minX = currX;
+                    }
+                    if (currY > maxY) {
+                        maxY = currY;
+                    } else if (currY < minY) {
+                        minY = currY;
+                    }
+                }
+            }
         }
     }
 
-    static class SubCommand {
+    class SubCommand {
         char command;
         Vector<Coordinate> coordinates = new Vector<Coordinate>();
         
@@ -44,8 +72,8 @@ public class SVGPath extends SVGObject {
             this.command = command;
         }
         
-        SubCommand addCoordinate(boolean absolute, double x, double y) {
-            coordinates.add(new Coordinate(absolute, x, y));
+        SubCommand addCoordinate(boolean absolute, boolean actual, double x, double y) {
+            coordinates.add(new Coordinate(absolute, actual, x, y));
             return this;
         }
     }
@@ -63,8 +91,8 @@ public class SVGPath extends SVGObject {
                 }
                 result.append(subCommand.command);
                 for (Coordinate coordinate : subCommand.coordinates) {
-                    double xValue = coordinate.x;
-                    double yValue = coordinate.y;
+                    double xValue = coordinate.xValue;
+                    double yValue = coordinate.yValue;
                     if (coordinate.absolute) {
                         xValue += x.getDouble();
                         yValue += y.getDouble();
@@ -109,19 +137,19 @@ public class SVGPath extends SVGObject {
     }
     
     public SVGPath moveAbsolute(double x, double y) {
-        path.addSubCommand(new SubCommand('M').addCoordinate(true, x, y));
+        path.addSubCommand(new SubCommand('M').addCoordinate(true, true, x, y));
         return this;
     }
 
     public SVGPath lineToRelative(double x, double y) {
-        path.addSubCommand(new SubCommand('l').addCoordinate(false, x, y));
+        path.addSubCommand(new SubCommand('l').addCoordinate(false, true, x, y));
         return this;
     }
 
     public SVGPath cubicBezier(double c1x, double c1y, double c2x,double c2y, double x, double y) {
-        path.addSubCommand(new SubCommand('c').addCoordinate(false, c1x, c1y)
-                                              .addCoordinate(false, c2x, c2y)
-                                              .addCoordinate(false, x, y));
+        path.addSubCommand(new SubCommand('c').addCoordinate(false, false, c1x, c1y)
+                                              .addCoordinate(false, false, c2x, c2y)
+                                              .addCoordinate(false, true, x, y));
         return this;
     }
 
@@ -147,18 +175,29 @@ public class SVGPath extends SVGObject {
 
     @Override
     double getMaxX() {
+        if (x.getDouble() + minX < 0) {
+            throw new RuntimeException("SVGPath X negative!");
+        }
         x = new SVGAddOffset(x, SVGDocument.marginX);
-        return x.getDouble();
+        return x.getDouble() + maxX;
     }
 
     @Override
     double getMaxY() {
+        if (y.getDouble() + minY < 0) {
+            throw new RuntimeException("SVGPath Y negative!");
+        }
         y = new SVGAddOffset(y, SVGDocument.marginY);
-        return y.getDouble();
+        return y.getDouble() + maxY;
     }
 
     public SVGPath setDashMode(double written, double empty) {
         addDashes(written, empty);
+        return this;
+    }
+
+    public SVGPath setRoundLineCap() {
+        _setRoundLineCap();
         return this;
     }
 }

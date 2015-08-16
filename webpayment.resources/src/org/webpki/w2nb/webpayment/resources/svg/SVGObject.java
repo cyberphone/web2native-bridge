@@ -95,7 +95,7 @@ public abstract class SVGObject {
     }
 
     void addDashes(double written, double empty) {
-        _addAttribute(SVGAttributes.DASHES, new SVGDashes(written, empty));
+        _addAttribute(SVGAttributes.STROKE_DASHES, new SVGDashes(written, empty));
     }
 
     public LinkedHashMap<SVGAttributes,SVGValue> getSVGAttributes() {
@@ -141,6 +141,10 @@ public abstract class SVGObject {
         linkReplace = replace;
         linkToolTip = toolTip;
         SVGDocument.linksUsed = true;
+    }
+    
+    void _setRoundLineCap() {
+        _attributes.put(SVGAttributes.STROKE_LINECAP, new SVGStringValue("round"));
     }
 
 }
