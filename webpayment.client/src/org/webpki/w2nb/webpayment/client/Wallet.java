@@ -20,6 +20,7 @@ import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -92,7 +93,6 @@ import org.webpki.sks.Extension;
 import org.webpki.sks.KeyProtectionInfo;
 import org.webpki.sks.SKSException;
 import org.webpki.sks.SecureKeyStore;
-
 import org.webpki.sks.test.SKSReferenceImplementation;
 
 import org.webpki.util.ArrayUtil;
@@ -389,6 +389,7 @@ public class Wallet {
                                       0,
                                       0);
                 JButton cardImage = createCardButton(card.cardIcon, TOOLTIP_CARD_SELECTION);
+                cardImage.setCursor(new Cursor(Cursor.HAND_CURSOR));
                 cardImage.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
@@ -448,6 +449,7 @@ public class Wallet {
             JButtonSlave cancelButton = new JButtonSlave(BUTTON_CANCEL, authorizationCancelButton);
             cancelButton.setFont(standardFont);
             cancelButton.setToolTipText(TOOLTIP_CANCEL);
+            cancelButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
             cancelButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -581,6 +583,7 @@ public class Wallet {
             authorizationCancelButton = new JButton(BUTTON_CANCEL);
             authorizationCancelButton.setFont(standardFont);
             authorizationCancelButton.setToolTipText(TOOLTIP_CANCEL);
+            authorizationCancelButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
             authorizationView.add(authorizationCancelButton, c);
             authorizationCancelButton.addActionListener(new ActionListener() {
                 @Override
@@ -597,6 +600,7 @@ public class Wallet {
             JButtonSlave authorizationOkButton = new JButtonSlave(BUTTON_OK, authorizationCancelButton);
             authorizationOkButton.setFont(standardFont);
             authorizationOkButton.setToolTipText(TOOLTIP_PAY_OK);
+            authorizationOkButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
             authorizationView.add(authorizationOkButton, c);
             authorizationOkButton.addActionListener(new ActionListener() {
                 @Override

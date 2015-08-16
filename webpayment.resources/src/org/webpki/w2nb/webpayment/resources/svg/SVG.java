@@ -58,7 +58,19 @@ public class SVG {
                 for (SVGObject dependencyElement : svgObject.beforeDependencyElements) {
                     writeSVGObject(dependencyElement);
                 }
-                writeSVGObject(svgObject);
+                if (svgObject.linkUrl == null) {
+                    writeSVGObject(svgObject);
+                } else {
+                    svgText.append("<a xlink:href=\"")
+                           .append(svgObject.linkUrl)
+                           .append("\" xlink:title=\"")
+                           .append(svgObject.linkToolTip)
+                           .append("\" xlink:show=\"")
+                           .append(svgObject.linkReplace ? "replace" : "new")
+                           .append("\">\n ");
+                    writeSVGObject(svgObject);
+                    svgText.append("</a>\n");
+                }
                 for (SVGObject dependencyElement : svgObject.afterDependencyElements) {
                     writeSVGObject(dependencyElement);
                 }
@@ -68,7 +80,9 @@ public class SVG {
                 .append((long)(doc.currentMaxX + SVGDocument.marginX))
                 .append("\" height=\"")
                 .append((long)(doc.currentMaxY +  + SVGDocument.marginY))
-                .append("\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:svg=\"http://www.w3.org/2000/svg\">\n")
+                .append("\" xmlns=\"http://www.w3.org/2000/svg\"")
+                .append(SVGDocument.linksUsed ? " xmlns:xlink=\"http://www.w3.org/1999/xlink\"" : "")
+                .append(">\n")
                 .append(filters)
                 .append("<g>\n")
                 .append(svgText);

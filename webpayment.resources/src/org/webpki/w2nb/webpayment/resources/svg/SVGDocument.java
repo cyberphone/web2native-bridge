@@ -28,6 +28,8 @@ public abstract class SVGDocument {
     static double marginX;
     static double marginY;
     
+    static boolean linksUsed;
+    
     protected SVGDocument(double marginX, double marginY) {
         SVGDocument.marginX = marginX;
         SVGDocument.marginY = marginY;

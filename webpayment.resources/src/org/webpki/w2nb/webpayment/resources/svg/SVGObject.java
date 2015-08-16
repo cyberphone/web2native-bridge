@@ -43,6 +43,12 @@ public abstract class SVGObject {
 
     Vector<SVGObject> afterDependencyElements = new Vector<SVGObject>();
     
+    String linkUrl;
+    
+    boolean linkReplace;
+    
+    String linkToolTip;
+    
     abstract String getTag();
     
     abstract double getMaxX();
@@ -128,6 +134,13 @@ public abstract class SVGObject {
         }
         addString(SVGAttributes.FILL_COLOR, fillColor == null ? 
                                    new SVGStringValue("none") : new SVGStringValue(fillColor));
+    }
+    
+    void _setLink(String url, String toolTip, boolean replace) {
+        linkUrl = url;
+        linkReplace = replace;
+        linkToolTip = toolTip;
+        SVGDocument.linksUsed = true;
     }
 
 }

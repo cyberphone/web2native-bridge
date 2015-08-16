@@ -138,4 +138,9 @@ public class SVGRect extends SVGObject {
         addDashes(written, empty);
         return this;
     }
+    
+    public SVGRect setLink(String url, String toolTip, boolean replace) {
+        _setLink(url, toolTip, replace);
+        return this;
+    }
 }
