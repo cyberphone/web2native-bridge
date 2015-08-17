@@ -27,6 +27,7 @@ import org.webpki.tools.svg.SVGEllipse;
 import org.webpki.tools.svg.SVGHorizontalLine;
 import org.webpki.tools.svg.SVGObject;
 import org.webpki.tools.svg.SVGPath;
+import org.webpki.tools.svg.SVGPathValues;
 import org.webpki.tools.svg.SVGPolygon;
 import org.webpki.tools.svg.SVGRect;
 import org.webpki.tools.svg.SVGShaderTemplate;
@@ -136,8 +137,7 @@ public class Test extends SVGDocument {
                                                         null,
                                                         "Sans-serif",
                                                         12,
-                                                        "#FFFFFF",
-                                                        "W2NB")));
+                                                         "W2NB").setFontColor("#ffffff")));
 
         add(new SVGHorizontalLine(vertLine1, 
                                   vertLine2,
@@ -157,7 +157,6 @@ public class Test extends SVGDocument {
                                       null,
                                       "Sans-serif",
                                       12,
-                                      "#000000",
                                       "HTTP")));
         add(new SVGHorizontalLine(vertLine1, 
                 vertLine2,
@@ -169,7 +168,6 @@ public class Test extends SVGDocument {
                     5.0,
                     "Sans-serif",
                     12,
-                    "#000000",
                     "Some text")));
         
 SVGObject someRect;        
@@ -211,20 +209,20 @@ SVGObject lo= add(new SVGCircle(new SVGDoubleValue(300), new SVGDoubleValue(250)
         "#FF0000",
         "#FFFFE8").setShader(new SVGShaderTemplate("url(#messageBlur)", "#7f7f7f", 2.5, 2.5)));
 
-    add(new SVGPath(new SVGDoubleValue(400), new SVGDoubleValue(220),1.2,
+    add(new SVGPath(new SVGDoubleValue(400), new SVGDoubleValue(220),
+        new SVGPathValues().moveAbsolute(0, 0)
+        .lineToRelative(100, 0)
+        .cubicBezier(25, 0, 25, 0, 25,-25)
+        .lineToRelative(0, -100)
+        .cubicBezier(0, -25, 0, -25, 25,-25)
+        .lineToRelative(50, 0)
+        .cubicBezier(25, 0, 25, 0, 25, 25)
+        .lineToRelative(0, 150)
+        .cubicBezier(0, 25, 0, 25, -25, 25)
+        .lineToRelative(-200, 0),
+        1.2,
         "#000000",
-        null).moveAbsolute(0, 0)
-             .lineToRelative(100, 0)
-             .setDashMode(1.2, 1)
-             .cubicBezier(25, 0, 25, 0, 25,-25)
-             .lineToRelative(0, -100)
-             .cubicBezier(0, -25, 0, -25, 25,-25)
-             .lineToRelative(50, 0)
-             .cubicBezier(25, 0, 25, 0, 25, 25)
-             .lineToRelative(0, 150)
-             .cubicBezier(0, 25, 0, 25, -25, 25)
-             .lineToRelative(-200, 0)
-            );
+        null).setDashMode(1.2, 1));
 
 
 add(new SVGEllipse(anchor.derive(new SVGDoubleValue(20), new SVGDoubleValue(9.35), SVGAnchor.ALIGNMENT.TOP_LEFT),

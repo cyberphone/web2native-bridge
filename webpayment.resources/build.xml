@@ -32,7 +32,7 @@
   </path>
   
   <target name="help">
-      <echo message="createcerts initwallet [-Dlocalhost=0] inittestpage svg-test svg-pushmode svg-pullmode svg-play"/>
+      <echo message="createcerts initwallet [-Dlocalhost=0] inittestpage svg-test svg-pushmode svg-pullmode svg-play -Dplayclass [-Dplayfilter]"/>
   </target>
  
   <target name="inittestpage">
@@ -118,13 +118,18 @@
     <fail unless="playclass" message="-&#10;
 ***************************************************************&#10;
  You must specify the &quot;playclass&quot; residing in the directory&#10;
- &quot;org.webpki.tools.svg.test.play&quot;&#10;
+ &quot;org/webpki/tools/svg/test/play&quot;&#10;
+ using the -D option&#10;
+ You may also specify a &quot;playfilter&quot; residing in the directory&#10;
+ &quot;svg-filters/play&quot;&#10;
  using the -D option&#10;
 ***************************************************************&#10;"/>
-     <antcall target="_svg">
+    <condition property="svgfilters" value="svg-filters/play/${playfilter}.xml">
+      <isset property="playfilter"/>
+    </condition>
+    <antcall target="_svg">
        <param name="svgfile" value="svg-gen/play/${playclass}.svg"/>
        <param name="svgclass" value="org.webpki.tools.svg.test.play.${playclass}"/>
-       <param name="svgfilters" value="svg-filters/play/${playclass}.xml"/>
     </antcall>
   </target>
   

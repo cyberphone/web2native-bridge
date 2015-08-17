@@ -75,17 +75,21 @@ public class SVGHorizontalLine extends SVGLine {
                     Double alignY,
                     String fontFamily,
                     double fontSize,
-                    String fillColor,
                     String text) {
             super(new SVGDoubleValue(0),
                   new SVGDoubleValue(0),
                   fontFamily,
                   fontSize,
                   TEXT_ANCHOR.MIDDLE,
-                  fillColor,
                   text);
             this.alignX = alignX;
             this.alignY = alignY;
+        }
+        
+        @Override
+        public Text setFontColor(String fontColor) {
+            super.setFontColor(fontColor);
+            return this;
         }
         
     }

@@ -42,6 +42,7 @@ public enum SVGAttributes {
     STROKE_COLOR   ("stroke"),
     FONT_FAMILY    ("font-family"),
     FONT_SIZE      ("font-size"),
+    FONT_WEIGHT    ("font-weight"),
     TEXT_ANCHOR    ("text-anchor");
 
     String svgNotation;

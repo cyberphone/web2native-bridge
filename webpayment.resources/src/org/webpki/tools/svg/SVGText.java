@@ -17,35 +17,44 @@
 package org.webpki.tools.svg;
 
 public class SVGText extends SVGObject {
-    //   <text text-anchor="middle" font-family="Sans-serif" font-size="12" y="254" x="277.5" fill="#000000">HTTP</text>
+
+    public enum FONT_WEIGHTS {
+        NORMAL ("normal"),
+        BOLD   ("bold");
+        
+        String value;
+        
+        FONT_WEIGHTS(String value) {
+            this.value = value;
+        }
+    };
     
     public enum TEXT_ANCHOR {START, MIDDLE, END};
     
     String text;
-
+    
     public SVGText(SVGValue x,
                    SVGValue y,
                    String fontFamily,
                    double fontSize,
                    TEXT_ANCHOR textAnchor,
-                   String fillColor,
                    String text) {
         addDouble(SVGAttributes.X, x);
         addDouble(SVGAttributes.Y, y);
         addString(SVGAttributes.FONT_FAMILY, new SVGStringValue(fontFamily));
         addDouble(SVGAttributes.FONT_SIZE, new SVGDoubleValue(fontSize));
         addString(SVGAttributes.TEXT_ANCHOR, new SVGStringValue(textAnchor.toString().toLowerCase()));
-        addString(SVGAttributes.FILL_COLOR, new SVGStringValue(fillColor));
         this.text = text;
     }
     
-    public SVGText(SVGValue x,
-                   SVGValue y,
-                   String fontFamily,
-                   double fontSize,
-                   TEXT_ANCHOR textAnchor,
-                   String text) {
-        this(x, y, fontFamily, fontSize, textAnchor, "#000000", text);
+    public SVGText setFontColor(String fontColor) {
+        addString(SVGAttributes.FILL_COLOR, new SVGStringValue(fontColor));
+        return this;
+    }
+
+    public SVGText setFontWeight(FONT_WEIGHTS fontWeight) {
+        addString(SVGAttributes.FONT_WEIGHT, new SVGStringValue(fontWeight.value));
+        return this;
     }
 
     @Override
