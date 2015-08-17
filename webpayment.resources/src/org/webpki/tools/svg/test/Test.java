@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
-package org.webpki.w2nb.webpayment.resources.svg.diagrams;
+package org.webpki.tools.svg.test;
 
 import org.webpki.tools.svg.SVGAddDouble;
 import org.webpki.tools.svg.SVGAddOffset;
@@ -34,8 +34,8 @@ import org.webpki.tools.svg.SVGText;
 import org.webpki.tools.svg.SVGValue;
 import org.webpki.tools.svg.SVGVerticalLine;
 
-public class PullMode extends SVGDocument {
-    public PullMode() {
+public class Test extends SVGDocument {
+    public Test() {
         super(15, 10);
     }
 
@@ -186,7 +186,10 @@ add(new SVGRect(new SVGAnchor(someRect, someRect, SVGAnchor.ALIGNMENT.TOP_LEFT)
         new SVGDoubleValue(44),
         null,
         null,
-        "#ffffff").setRadiusX(9).setRadiusY(9).setFilter("url(#actorsBlur)"));
+        "#ffffff").setRadiusX(9)
+                  .setRadiusY(9)
+                  .setFilter("url(#actorsBlur)")
+                  .setLink("http://google.com", "Search something", false));
 
 SVGAnchor anchor = new SVGAnchor(someRect, someRect, SVGAnchor.ALIGNMENT.BOTTOM_CENTER);
 add(new SVGRect(anchor.derive(new SVGDoubleValue(20), new SVGDoubleValue(10), SVGAnchor.ALIGNMENT.TOP_LEFT),
@@ -208,7 +211,7 @@ SVGObject lo= add(new SVGCircle(new SVGDoubleValue(300), new SVGDoubleValue(250)
         "#FF0000",
         "#FFFFE8").setShader(new SVGShaderTemplate("url(#messageBlur)", "#7f7f7f", 2.5, 2.5)));
 
-    add(new SVGPath(new SVGDoubleValue(400), new SVGDoubleValue(220),2.0,
+    add(new SVGPath(new SVGDoubleValue(400), new SVGDoubleValue(220),1.2,
         "#000000",
         null).moveAbsolute(0, 0)
              .lineToRelative(100, 0)

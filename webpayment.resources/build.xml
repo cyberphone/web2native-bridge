@@ -77,7 +77,7 @@
            includeAntRuntime="false">
     </javac>
     <java fork="yes"
-          classname="org.webpki.w2nb.webpayment.resources.svg.SVG"
+          classname="org.webpki.tools.svg.SVG"
           dir="."
           failonerror="true">
         <classpath>
@@ -109,7 +109,7 @@
   <target name="svg-test">
     <antcall target="_svg">
        <param name="svgfile" value="svg-gen/test.svg"/>
-       <param name="svgclass" value="org.webpki.w2nb.webpayment.resources.svg.test.Test"/>
+       <param name="svgclass" value="org.webpki.tools.svg.test.Test"/>
        <param name="svgfilters" value="svg-filters/test-filters.xml"/>
     </antcall>
   </target>
@@ -118,12 +118,12 @@
     <fail unless="playclass" message="-&#10;
 ***************************************************************&#10;
  You must specify the &quot;playclass&quot; residing in the directory&#10;
- &quot;org.webpki.w2nb.webpayment.resources.svg.play&quot;&#10;
+ &quot;org.webpki.tools.svg.test.play&quot;&#10;
  using the -D option&#10;
 ***************************************************************&#10;"/>
      <antcall target="_svg">
        <param name="svgfile" value="svg-gen/play/${playclass}.svg"/>
-       <param name="svgclass" value="org.webpki.w2nb.webpayment.resources.svg.play.${playclass}"/>
+       <param name="svgclass" value="org.webpki.tools.svg.test.play.${playclass}"/>
        <param name="svgfilters" value="svg-filters/play/${playclass}.xml"/>
     </antcall>
   </target>
