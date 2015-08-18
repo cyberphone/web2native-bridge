@@ -93,6 +93,7 @@ import org.webpki.sks.Extension;
 import org.webpki.sks.KeyProtectionInfo;
 import org.webpki.sks.SKSException;
 import org.webpki.sks.SecureKeyStore;
+
 import org.webpki.sks.test.SKSReferenceImplementation;
 
 import org.webpki.util.ArrayUtil;
@@ -911,6 +912,13 @@ public class Wallet {
                         logger.warning("Card " + card.cardNumber + " doesn't support \"pull\" payments");
                         break;
                     }
+
+                    // Minor "feature" to allow local testing without reconfiguration...
+                    if (domainName.equals("localhost")) {
+                        card.authUrl = "https://localhost:8442" + new URL(card.authUrl).getFile();
+                    }
+                
+                    // We found a useful card!
                     cardCollection.put(keyHandle, card);
                     break;
                 }
@@ -1105,8 +1113,7 @@ public class Wallet {
             height = extensionPositioning.targetRectangle.height;
         }
 
-        // Now, position it!
-        // 
+        // Position the Wallet on the screen according to the caller's preferences.
         double extWidth = extensionWindow.getWidth() / factor;
         if (extensionPositioning.horizontalAlignment == ExtensionPositioning.HORIZONTAL_ALIGNMENT.Center) {
             left += (width - extWidth) / 2;
