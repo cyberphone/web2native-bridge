@@ -82,6 +82,8 @@ installations also presume that **clang** respectively **g++** is available.
 
 Now you can try the sample application (see next section) since it is installed by default.
 
+Note: If you are using Oracle Java you must install the **Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy Files** as well.
+
 Please don't hesitate contacting me if you run into problems during installation or execution of the emulator!
 
 ### Sample Application
