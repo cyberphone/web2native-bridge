@@ -68,8 +68,8 @@ int main(int argc, char *argv[]) {
     // Reading an initial JSON message which can be of two kinds:
     // 1. Proxy verification which consists of an object {"proxyVersion":"n.nn"}
     // 2. Java application call which consists of an object ("application":"dotted-path",
-	//                                                       "url":"invocation-url",
-	//                                                       "windowB64":"base64url-encoded-json-object",
+    //                                                       "url":"invocation-url",
+    //                                                       "windowB64":"base64url-encoded-json-object",
     //                                                       "argumentsB64":"base64url-encoded-json-object"}
 
     // Chrome presumes message length in native order. Not very cool.
@@ -124,28 +124,28 @@ int main(int argc, char *argv[]) {
     strcat(cmd, application);
     strcat(cmd, ".jar\" ");
 
-	// Parameters to called Java program
+    // Parameters to called Java program
 
-	// args[0] => Log file path
+    // args[0] => Log file path
     strcat(cmd, path);
     strcat(cmd, "logs");
     strcat(cmd, fs);
     strcat(cmd, application);
     strcat(cmd, ".log\" ");
 
-	// args[1] => invoking URL
+    // args[1] => invoking URL
     strcat(cmd, getJSONProperty("\"url\":"));
-	strcat(cmd, " ");
+    strcat(cmd, " ");
 
-	// args[2] => Invoking window core data
-	strcat(cmd, getJSONProperty("\"windowB64\":"));
-	strcat(cmd, " ");
+    // args[2] => Invoking window core data
+    strcat(cmd, getJSONProperty("\"windowB64\":"));
+    strcat(cmd, " ");
 
-	// args[3] => Optional arguments to navigator.nativeConnect
-	strcat(cmd, getJSONProperty("\"argumentsB64\":"));
-	
-	// args[4..n] => Chrome standard arguments
-	for (int i = 1; i < argc; i++) {
+    // args[3] => Optional arguments to navigator.nativeConnect
+    strcat(cmd, getJSONProperty("\"argumentsB64\":"));
+    
+    // args[4..n] => Chrome standard arguments
+    for (int i = 1; i < argc; i++) {
         strcat(cmd," ");
         strcat(cmd, argv[i]);
     }
