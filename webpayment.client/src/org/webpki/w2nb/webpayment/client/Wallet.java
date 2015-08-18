@@ -122,6 +122,9 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 //  - Federation using credentials with embedded links                  //
 // and (of course...), the Web2Native Bridge.                           //
 //                                                                      //
+// The Wallet supports both "push" and "pull" Web Payments using a      //
+// common set of JSON-based message components.                         //                                     
+//                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
 public class Wallet {
@@ -185,18 +188,6 @@ public class Wallet {
     }
 
     static LinkedHashMap<Integer,Card> cardCollection = new LinkedHashMap<Integer,Card>();
-
-    static void initLogger(String logFile) {
-        // This block configure the logger with handler and formatter
-        try {
-            FileHandler fh = new FileHandler(logFile);
-            logger.addHandler(fh);
-            SimpleFormatter formatter = new SimpleFormatter();
-            fh.setFormatter(formatter);
-        } catch (Exception e) {
-            terminate();
-        }
-    }
 
     static class ScalingIcon extends ImageIcon {
  
@@ -333,10 +324,10 @@ public class Wallet {
                                       hiResImages ? Font.PLAIN : Font.BOLD,
                                       (fontSize * 4) / 5);
             logger.info("Display Data: Screen resolution=" + screenResolution +
-                         ", Screen size=" + screenDimension +
-                         ", Font size=" + font.getSize() +
-                         ", Adjusted font size=" + fontSize +
-                         ", Retina=" + retinaFlag);
+                        ", Screen size=" + screenDimension +
+                        ", Font size=" + font.getSize() +
+                        ", Adjusted font size=" + fontSize +
+                        ", Retina=" + retinaFlag);
             dummyCardIcon = getImageIcon("dummycard.png", false);
 
             // The initial card showing we are waiting
@@ -481,7 +472,7 @@ public class Wallet {
             GridBagConstraints c = new GridBagConstraints();
             Color fixedDataBackground = new Color(244, 253, 247);
             int spaceAfterLabel = macOS ? fontSize / 4 : fontSize / 2;
-            int maginBeforeLabel = fontSize;
+            int marginBeforeLabel = fontSize;
             c.gridx = 0;
             c.gridy = 0;
             c.gridwidth = 3;
@@ -496,7 +487,7 @@ public class Wallet {
             c.gridx = 0;
             c.gridy = 1;
             c.gridwidth = 1;
-            c.insets = new Insets(0, maginBeforeLabel, 0, spaceAfterLabel);
+            c.insets = new Insets(0, marginBeforeLabel, 0, spaceAfterLabel);
             c.fill = GridBagConstraints.NONE;
             c.anchor = GridBagConstraints.EAST;
             c.weighty = 0.0;
@@ -520,7 +511,7 @@ public class Wallet {
             c.gridx = 0;
             c.gridy = 2;
             c.gridwidth = 1;
-            c.insets = new Insets(fontSize, maginBeforeLabel, (fontSize * 3) / 2, spaceAfterLabel);
+            c.insets = new Insets(fontSize, marginBeforeLabel, (fontSize * 3) / 2, spaceAfterLabel);
             c.anchor = GridBagConstraints.EAST;
             c.fill = GridBagConstraints.NONE;
             JLabel amountLabel = new JLabel("Amount");
@@ -543,7 +534,7 @@ public class Wallet {
             c.gridx = 0;
             c.gridy = 3;
             c.gridwidth = 1;
-            c.insets = new Insets(0, maginBeforeLabel, 0, spaceAfterLabel);
+            c.insets = new Insets(0, marginBeforeLabel, 0, spaceAfterLabel);
             c.fill = GridBagConstraints.NONE;
             c.anchor = GridBagConstraints.EAST;
             JLabel pinLabel = new JLabel("PIN");
@@ -650,7 +641,7 @@ public class Wallet {
                         ", Number=" + selectedCard.cardNumber +
                         ", URL=" + selectedCard.authUrl +
                         ", KeyEncryptionKey=" + (selectedCard.keyEncryptionAlgorithm == null ?
-                           "N/A" : selectedCard.keyEncryptionKey));
+                        "N/A" : selectedCard.keyEncryptionKey));
             this.keyHandle = keyHandle;
             amountField.setText("\u200a" + amountString);
             payeeField.setText("\u200a" + payeeString);
@@ -1042,12 +1033,23 @@ public class Wallet {
     }
 
     public static void main(String[] args) {
-        initLogger(args[0]);
+        // Configure the logger with handler and formatter
+        try {
+            FileHandler fh = new FileHandler(args[0]);
+            logger.addHandler(fh);
+            SimpleFormatter formatter = new SimpleFormatter();
+            fh.setFormatter(formatter);
+        } catch (Exception e) {
+            terminate();
+        }
         for (int i = 0; i < args.length; i++) {
             logger.info("ARG[" + i + "]=" + args[i]);
         }
+
+        // To get the crypto support needed 
         Security.insertProviderAt(new BouncyCastleProvider(), 1);
         
+        // Read the calling window information provided by W2NB
         BrowserWindow browserWindow = null;
         ExtensionPositioning extensionPositioning = null;
         try {
@@ -1136,6 +1138,8 @@ public class Wallet {
             terminate();
         }
 
+        // In the absence of a genuine window handle (from Chrome) to the caller
+        // we put the wallet on top of everything...
         frame.setAlwaysOnTop(true);
 
         frame.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
@@ -1149,7 +1153,8 @@ public class Wallet {
         // Show the "Waiting" window
         frame.setVisible(true);
 
-        // Start reading and processing the payment request that should be waiting for us at this stage.
+        // Start reading and processing the payment request that should be
+        // waiting for us at this stage.
         md.start();
     }
 }

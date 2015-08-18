@@ -86,11 +86,11 @@ public class Test extends SVGDocument {
                                 "#00FF00"));
         
         add(new SVGText(new SVGCenter(lines1_X, lines2_X),
-                        lastY = new SVGDoubleValue(80),
+                        lastY = new SVGDoubleValue(230),
                         "Sans-serif",
                         10,
                         SVGText.TEXT_ANCHOR.MIDDLE,
-                        "Hi There!"));
+                        "Hi There!\nOtherline, yes\n\nempty"));
 
         add(new SVGHorizontalLine(vertLine1, 
                                   vertLine2,

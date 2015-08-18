@@ -29,9 +29,41 @@ public class SVGText extends SVGObject {
         }
     };
     
+    class SVGTspan extends SVGObject {
+
+        String subString;
+
+        @Override
+        String getTag() {
+            return "tspan";
+        }
+
+        @Override
+        double getMaxX() {
+             return getAttribute(SVGAttributes.X) == null ? 0 : updateMargin(SVGDocument.marginX,SVGAttributes.X);
+        }
+
+        @Override
+        double getMaxY() {
+            return getAttribute(SVGAttributes.Y) == null ? 0 : updateMargin(SVGDocument.marginY,SVGAttributes.Y);
+        }
+
+        @Override
+        boolean hasBody() {
+             return true;
+        }
+        
+        @Override
+        String getBody() {
+            return subString;
+        }
+    }
+    
     public enum TEXT_ANCHOR {START, MIDDLE, END};
     
     String text;
+    
+    String multiLineSpacing = "1.2em";
     
     public SVGText(SVGValue x,
                    SVGValue y,
@@ -44,7 +76,29 @@ public class SVGText extends SVGObject {
         addString(SVGAttributes.FONT_FAMILY, new SVGStringValue(fontFamily));
         addDouble(SVGAttributes.FONT_SIZE, new SVGDoubleValue(fontSize));
         addString(SVGAttributes.TEXT_ANCHOR, new SVGStringValue(textAnchor.toString().toLowerCase()));
-        this.text = text;
+        if (text.indexOf('\n') > 0) {
+            boolean next = false;
+            while (text.length() > 0) {
+                String subString = text;
+                int i = text.indexOf('\n');
+                if (i>= 0) {
+                    subString = text.substring(0, i);
+                    text = text.substring(i + 1);
+                } else {
+                    text = "";
+                }
+                SVGTspan tspan = new SVGTspan();
+                tspan.subString = subString.length() == 0 ? "&#160;" : subString;
+                afterDependencyElements.add(tspan);
+                if (next) {
+                    tspan.addDouble(SVGAttributes.X, x);
+                    tspan.addString(SVGAttributes.DY, new SVGStringValue(multiLineSpacing));
+                }
+                next = true;
+            }
+        } else {
+            this.text = text;
+        }
     }
     
     public SVGText setFontColor(String fontColor) {
@@ -54,6 +108,10 @@ public class SVGText extends SVGObject {
 
     public SVGText setFontWeight(FONT_WEIGHTS fontWeight) {
         addString(SVGAttributes.FONT_WEIGHT, new SVGStringValue(fontWeight.value));
+        return this;
+    }
+    public SVGText setMultiLineSpacing(String multiLineSpacing) {
+        this.multiLineSpacing = multiLineSpacing;
         return this;
     }
 
@@ -71,6 +129,8 @@ public class SVGText extends SVGObject {
     String getBody() {
         return text;
     }
+ 
+    
     public SVGText setDy(String dy) {
         addString(SVGAttributes.DY, new SVGStringValue(dy));
         return this;

@@ -35,7 +35,12 @@ public class SVG {
                    .append("\"");
         }
         if (svgObject.hasBody()) {
-            svgText.append(">").append(svgObject.getBody()).append("</").append(svgObject.getTag());
+            if (svgObject.getBody() != null) {
+                svgText.append(">")
+                       .append(svgObject.getBody())
+                       .append("</")
+                       .append(svgObject.getTag());
+            }
         } else {
             svgText.append("/");
         }
@@ -73,6 +78,11 @@ public class SVG {
                 }
                 for (SVGObject dependencyElement : svgObject.afterDependencyElements) {
                     writeSVGObject(dependencyElement);
+                }
+                if (svgObject.hasBody() && svgObject.getBody() == null) {
+                    svgText.append("</")
+                           .append(svgObject.getTag())
+                           .append(">\n");
                 }
             }
             svgText.append("</g>\n</svg>");
