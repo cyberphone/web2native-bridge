@@ -145,4 +145,9 @@ public class SVGText extends SVGObject {
     double getMaxY() {
         return updateMargin(SVGDocument.marginY,SVGAttributes.Y);
     }
+
+    public SVGText setLink(String url, String toolTip, boolean replace) {
+        _setLink(url, toolTip, replace);
+        return this;
+    }
 }

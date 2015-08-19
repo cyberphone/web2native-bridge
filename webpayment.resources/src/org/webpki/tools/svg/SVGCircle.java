@@ -112,4 +112,9 @@ public class SVGCircle extends SVGObject {
     double getMaxY() {
         return updateMargin(SVGDocument.marginY, SVGAttributes.CY) + getAttribute(SVGAttributes.R).getDouble();
     }
+
+    public SVGCircle setLink(String url, String toolTip, boolean replace) {
+        _setLink(url, toolTip, replace);
+        return this;
+    }
 }
