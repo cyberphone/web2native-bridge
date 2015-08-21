@@ -30,7 +30,7 @@ public class SVGRect extends SVGObject {
         addDouble(SVGAttributes.WIDTH, width);
         addDouble(SVGAttributes.HEIGHT, height);
         processColor(strokeWidth, strokeColor, fillColor);
-      }
+    }
 
     public SVGRect(SVGAnchor anchor,
                    SVGValue width,
@@ -141,6 +141,38 @@ public class SVGRect extends SVGObject {
     
     public SVGRect setLink(String url, String toolTip, boolean replace) {
         _setLink(url, toolTip, replace);
+        return this;
+    }
+
+    public SVGRect addLeftText(double leftMargin,
+                               double topMargin,
+                               String fontFamily,
+                               double fontSize,
+                               String text) {
+        afterDependencyElements.add(new SVGText(new SVGAddOffset(getAttribute(SVGAttributes.X),
+                                                leftMargin),
+                                    new SVGAddOffset(getAttribute(SVGAttributes.Y),
+                                                                  topMargin),
+                                    fontFamily,
+                                    fontSize,
+                                    SVGText.TEXT_ANCHOR.START,
+                                    text));
+        return this;
+    }
+
+    public SVGRect addCenterText(double topMargin,
+                                 String fontFamily,
+                                 double fontSize,
+                                 String text) {
+        afterDependencyElements.add(new SVGText(
+                new SVGAddDouble(getAttribute(SVGAttributes.X),
+                                 new SVGDivConstant(getAttribute(SVGAttributes.WIDTH), 2)),
+                new SVGAddOffset(new SVGAddDouble(getAttribute(SVGAttributes.Y),
+                                 new SVGDivConstant(getAttribute(SVGAttributes.HEIGHT), 2)), topMargin),
+                                                fontFamily,
+                                                fontSize,
+                                                SVGText.TEXT_ANCHOR.MIDDLE,
+                                                text).setDy("0.35em"));
         return this;
     }
 }

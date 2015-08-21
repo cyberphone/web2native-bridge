@@ -237,7 +237,20 @@ add(new SVGRect(createDocumentAnchor(600, 150, SVGAnchor.ALIGNMENT.BOTTOM_LEFT),
         new SVGDoubleValue(40),
         1.2,
         "#FF0000",
-        "#FFFFE8").setShader(new SVGShaderTemplate("url(#messageBlur)", "#7f7f7f", 3, 3)));
+        "#FFFFE8").setShader(new SVGShaderTemplate("url(#messageBlur)", "#7f7f7f", 3, 3))
+        .addCenterText(0, "Sans-serif", 10, "CTR"));
+
+add(new SVGRect(createDocumentAnchor(600, 250, SVGAnchor.ALIGNMENT.TOP_LEFT),
+        new SVGDoubleValue(200),
+        new SVGDoubleValue(400),
+        1.2,
+        "#FF0000",
+        "#FFFFE8").setShader(new SVGShaderTemplate("url(#messageBlur)", "#7f7f7f", 3, 3))
+        .addLeftText(5,
+                     10,
+                     "Sans-serif",
+                     10,
+                     "Hi, this is a few\nlines of text\nto be showed in a square"));
 
 linesLength.setDouble(lo.getPrimaryY().getDouble() + lo.getPrimaryHeight().getDouble() - linesY.getDouble() + 15);
 }

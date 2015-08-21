@@ -25,8 +25,8 @@ public class SVGEllipse extends SVGObject {
                       Double strokeWidth,
                       String strokeColor,
                       String fillColor) {
-        SVGValue rx = new SVGDivOffset(width, 2);
-        SVGValue ry = new SVGDivOffset(height, 2);
+        SVGValue rx = new SVGDivConstant(width, 2);
+        SVGValue ry = new SVGDivConstant(height, 2);
         addDouble(SVGAttributes.CX, new SVGAddDouble(x, rx));
         addDouble(SVGAttributes.CY, new SVGAddDouble(y, ry));
         addDouble(SVGAttributes.RX, rx);

@@ -26,6 +26,18 @@ public class SVG {
     
     static void writeSVGObject(SVGObject svgObject) {
         doc.findLargestSize(svgObject);
+        for (SVGObject dependencyElement : svgObject.beforeDependencyElements) {
+            writeSVGObject(dependencyElement);
+        }
+        if (svgObject.linkUrl != null) {
+            svgText.append("<a xlink:href=\"")
+                   .append(svgObject.linkUrl)
+                   .append("\" xlink:title=\"")
+                   .append(svgObject.linkToolTip)
+                   .append("\" xlink:show=\"")
+                   .append(svgObject.linkReplace ? "replace" : "new")
+                   .append("\">\n ");
+        }
         svgText.append("<").append(svgObject.getTag());
         for (SVGAttributes svgAttribute : svgObject.getSVGAttributes().keySet()) {
             svgText.append(" ")
@@ -45,6 +57,17 @@ public class SVG {
             svgText.append("/");
         }
         svgText.append(">\n");
+        for (SVGObject dependencyElement : svgObject.afterDependencyElements) {
+            writeSVGObject(dependencyElement);
+        }
+        if (svgObject.hasBody() && svgObject.getBody() == null) {
+            svgText.append("</")
+                   .append(svgObject.getTag())
+                   .append(">\n");
+        }
+        if (svgObject.linkUrl != null) {
+            svgText.append("</a>\n");
+        }
     }
 
     public static void main(String[] args) {
@@ -60,30 +83,7 @@ public class SVG {
             }
             doc.generate();
             for (SVGObject svgObject : SVGDocument.svgObjects) {
-                for (SVGObject dependencyElement : svgObject.beforeDependencyElements) {
-                    writeSVGObject(dependencyElement);
-                }
-                if (svgObject.linkUrl == null) {
-                    writeSVGObject(svgObject);
-                } else {
-                    svgText.append("<a xlink:href=\"")
-                           .append(svgObject.linkUrl)
-                           .append("\" xlink:title=\"")
-                           .append(svgObject.linkToolTip)
-                           .append("\" xlink:show=\"")
-                           .append(svgObject.linkReplace ? "replace" : "new")
-                           .append("\">\n ");
-                    writeSVGObject(svgObject);
-                    svgText.append("</a>\n");
-                }
-                for (SVGObject dependencyElement : svgObject.afterDependencyElements) {
-                    writeSVGObject(dependencyElement);
-                }
-                if (svgObject.hasBody() && svgObject.getBody() == null) {
-                    svgText.append("</")
-                           .append(svgObject.getTag())
-                           .append(">\n");
-                }
+                writeSVGObject(svgObject);
             }
             svgText.append("</g>\n</svg>");
             svgText = new StringBuffer("<svg width=\"")

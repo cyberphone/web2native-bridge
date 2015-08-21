@@ -146,5 +146,9 @@ public abstract class SVGObject {
     void _setRoundLineCap() {
         _attributes.put(SVGAttributes.STROKE_LINECAP, new SVGStringValue("round"));
     }
+    
+    public void addAfterObject(SVGObject svgObject) {
+        afterDependencyElements.add(svgObject);
+    }
 
 }

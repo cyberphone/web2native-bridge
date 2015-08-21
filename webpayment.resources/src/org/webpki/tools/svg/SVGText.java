@@ -27,7 +27,7 @@ public class SVGText extends SVGObject {
         FONT_WEIGHTS(String value) {
             this.value = value;
         }
-    };
+    }
     
     class SVGTspan extends SVGObject {
 

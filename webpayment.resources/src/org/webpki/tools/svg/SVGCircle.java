@@ -24,7 +24,7 @@ public class SVGCircle extends SVGObject {
                      Double strokeWidth,
                      String strokeColor,
                      String fillColor) {
-        SVGValue radius = new SVGDivOffset(width, 2);
+        SVGValue radius = new SVGDivConstant(width, 2);
         addDouble(SVGAttributes.CX, new SVGAddDouble(x, radius));
         addDouble(SVGAttributes.CY, new SVGAddDouble(y, radius));
         addDouble(SVGAttributes.R, radius);
