@@ -42,7 +42,7 @@ public class Test extends SVGDocument {
 
     SVGDoubleValue linesLength = new SVGDoubleValue(500);
     double verticalLineWidth = 2;
-    String verticalLineColor = "#0000FF";
+    String verticalLineColor = "#4a73bb";
     SVGVerticalLine vertLine1;
     SVGVerticalLine vertLine2;
     
@@ -55,9 +55,35 @@ public class Test extends SVGDocument {
     SVGValue boxOneWidth;
     SVGValue boxOneHeight;
 
+    static final int POINT_INDICATOR_FONT_SIZE        = 10;
+    static final double POINT_INDICATOR_BORDER__WIDTH = 0.5;
+    static final double POINT_INDICATOR_DIAMETER      = 11;
+    
+    void createPointIndicator(SVGValue x,
+                              SVGValue y,
+                              int q,
+                              String optionalLink,
+                              String optionalToolTip) {
+        SVGCircle circ = new SVGCircle(x, y,
+                                       new SVGDoubleValue(POINT_INDICATOR_DIAMETER),
+                                       POINT_INDICATOR_BORDER__WIDTH,
+                                       "#000000",
+                                       "#ffffff");
+        if (optionalLink != null) {
+            circ.setLink(optionalLink, optionalToolTip, false);
+        }
+        add(circ);
+        circ.addAfterObject(new SVGText(new SVGAddOffset(x,  POINT_INDICATOR_DIAMETER / 2),
+                                        new SVGAddOffset(y, POINT_INDICATOR_DIAMETER / 2),
+                                        "Sans-serif",
+                                        POINT_INDICATOR_FONT_SIZE,
+                                        SVGText.TEXT_ANCHOR.MIDDLE,
+                                        Integer.toString(q)).setDy("0.35em"));
+    }
+        
     @Override
     public void generate() {
-        add(vertLine1 = new SVGVerticalLine(lines1_X = new SVGDoubleValue(0), 
+        add(vertLine1 = new SVGVerticalLine(lines1_X = new SVGDoubleValue(50), 
                                 linesY = new SVGDoubleValue(30),
                                 linesLength,
                                 verticalLineWidth,
@@ -90,7 +116,7 @@ public class Test extends SVGDocument {
                         "Sans-serif",
                         10,
                         SVGText.TEXT_ANCHOR.MIDDLE,
-                        "Hi There!\nOtherline, yes\n\nempty"));
+                        "Hi There!\nOtherline, yes\n\nempty").setFontColor("#0000FF"));
 
         add(new SVGHorizontalLine(vertLine1, 
                                   vertLine2,
@@ -170,8 +196,15 @@ public class Test extends SVGDocument {
                     12,
                     "Some text")));
         
+ createPointIndicator(new SVGDoubleValue(30),
+         new SVGDoubleValue(195),
+                1,
+                null,
+                null);
+
+        
 SVGObject someRect;        
-add(someRect = new SVGRect(createDocumentAnchor(300, 150, SVGAnchor.ALIGNMENT.BOTTOM_RIGHT),
+add(someRect = new SVGRect(createDocumentAnchor(370, 150, SVGAnchor.ALIGNMENT.BOTTOM_RIGHT),
                         new SVGDoubleValue(156),
                         new SVGDoubleValue(48),
                         0.5,

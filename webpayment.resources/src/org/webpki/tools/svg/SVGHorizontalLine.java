@@ -85,13 +85,18 @@ public class SVGHorizontalLine extends SVGLine {
             this.alignX = alignX;
             this.alignY = alignY;
         }
-        
+
         @Override
         public Text setFontColor(String fontColor) {
             super.setFontColor(fontColor);
             return this;
         }
-        
+
+        @Override
+        public Text setLink(String url, String toolTip, boolean replace) {
+            super.setLink(url, toolTip, replace);
+            return this;
+        }
     }
 
     double leftGutter;
