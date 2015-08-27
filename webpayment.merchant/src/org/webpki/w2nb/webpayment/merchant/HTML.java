@@ -91,19 +91,13 @@ public class HTML {
                 "<tr><td width=\"100%\" align=\"center\" valign=\"middle\">" +
                 "<table style=\"max-width:600px;\" cellpadding=\"4\">" +
                    "<tr><td style=\"text-align:center;font-weight:bolder;font-size:10pt;font-family:" + FONT_ARIAL + "\">Web2Native Bridge Payment Demo<br>&nbsp;</td></tr>" +
-                   "<tr><td style=\"text-align:left\">This application is a demo of what a true WebCrypto++ implementation " +
+                   "<tr><td style=\"text-align:left\">This application is a demo of what a &quot;Wallet&quot; based on Web2Native " +
                    "could offer for <span style=\"color:red\">decentralized payment systems</span>.</td></tr>" +
                    "<tr><td style=\"text-align:left\">In particular note the <span style=\"color:red\">automatic payment card discovery</span> process " +
                    "and that <span style=\"color:red\">payment card logotypes are personalized</span> since they "+
                    "are read from the user's local credential-store.</td></tr>" +
-                   "<tr><td>By applying <span style=\"color:red\">3D Secure</span> like methods and <span style=\"color:red\">EMV tokenization</span>, there is no need for " +
-                   "handing over static credit-card information to merchants.</td></tr>" +
-                   "<tr><td style=\"text-align:left\">For protecting the user's privacy, <span style=\"color:red\">user-related data is encrypted</span> and only readable " +
-                   "by the payment-provider who issued the specific payment card.</td></tr>" +
-                   "<tr><td style=\"text-align:left\">Although the demo is <i>partially</i> a mockup (no &quot;polyfill&quot; in the world can replace WebCrypto++), " +
-                   "the IFRAME solution and cross-domain communication using <code>postMessage()</code> should be pretty close to that of a real system.</td></tr>" +
-                   "<tr><td style=\"text-align:left\"><i>In case you are testing with a WebCrypto-enabled browser, the user-authorization will be signed and encrypted " +
-                   "which can viewed in a browser debugger window.</i></td></tr>" +
+                   "<tr><td>By applying <span style=\"color:red\">3D Secure</span> like methods using <span style=\"color:red\">two-factor authentication</span> as well as <span style=\"color:red\">encrypting user-data</span> " +
+                   "both security and privacy is catered for.</td></tr>" +
                    "<tr><td align=\"center\"><table cellspacing=\"0\">" +
 //TODO
 //                   "<tr style=\"text-align:left\"><td><a href=\"" + "hh" + "/cards\">Initialize Payment Cards&nbsp;&nbsp;</a></td><td><i>Mandatory</i> First Step</td></tr>" +
@@ -118,13 +112,13 @@ public class HTML {
                    (debugMode ? " checked" : "") +
                    "></td><td>Debug Option</td></form></tr>" +
                    "<tr><td style=\"text-align:center;padding-top:15pt;padding-bottom:5pt\" colspan=\"2\"><b>Documentation</b></td></tr>" +
-                   "<tr style=\"text-align:left\"><td><a target=\"_blank\" href=\"http://webpki.org/papers/PKI/pki-webcrypto.pdf\">WebCrypto++</a></td><td><i>Conceptual</i> Specification</td></tr>" +
-                   "<tr style=\"text-align:left\"><td><a target=\"_blank\" href=\"http://webpki.org/papers/PKI/EMV-Tokenization-SET-3DSecure-WebCryptoPlusPlus-combo.pdf#page=4\">Demo Payment System</a></td><td>State Diagram Etc.</td></tr>" +
-                   "<tr style=\"text-align:left\"><td><a target=\"_blank\" href=\"https://code.google.com/p/openkeystore/source/browse/#svn/wcpp-payment-demo\">Demo Source Code</a></td><td>For Nerds...</td></tr>" +
+                   "<tr style=\"text-align:left\"><td><a target=\"_blank\" href=\"https://cyberphone.github.io/openkeystore/resources/docs/web2native-bridge.pdf\">Web2Native Bridge</a></td><td>&quot;Executive Level&quot; Description</td></tr>" +
+                   "<tr style=\"text-align:left\"><td><a target=\"_blank\" href=\"http://webpki.org/papers/decentralized-payments.pdf\">Demo Payment System</a>&nbsp;&nbsp;</td><td>State Diagram</td></tr>" +
+                   "<tr style=\"text-align:left\"><td><a target=\"_blank\" href=\"https://github.com/cyberphone/web2native-bridge\">Demo Source Code</a></td><td>For Nerds...</td></tr>" +
                    "<tr><td style=\"text-align:center;padding-top:15pt;padding-bottom:5pt\" colspan=\"2\"><b>Related Applications</b></td></tr>" +
                    "<tr style=\"text-align:left\"><td><a target=\"_blank\" href=\"https://mobilepki.org/jcs\">JCS</a></td><td>JSON Cleartext Signature</td></tr>" +
+                   "<tr style=\"text-align:left\"><td><a target=\"_blank\" href=\"https://cyberphone.github.io/openkeystore/resources/docs/sks-api-arch.pdf\">SKS</a></td><td>Secure Key Store</td></tr>" +
                    "<tr style=\"text-align:left\"><td><a target=\"_blank\" href=\"https://play.google.com/store/apps/details?id=org.webpki.mobile.android\">SKS/KeyGen2</a></td><td>Android PoC</td></tr>" +
-                   "<tr style=\"text-align:left\"><td><a target=\"_blank\" href=\"https://mobilepki.org/WCPPSignatureDemo\">User Signatures</a></td><td>WebCrypto++ Signature Demo</td></tr>" +
                  "</table></td></tr></table></td></tr>"));
     }
 
