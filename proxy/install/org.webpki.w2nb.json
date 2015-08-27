@@ -7,5 +7,5 @@
   "description": "Web2Native Bridge emulator",
   "path": "w2nb-proxy.exe",
   "type": "stdio",
-  "allowed_origins": ["chrome-extension://efdhhckhjnbipcdphijachdilmmpgflg/"]
+  "allowed_origins": ["chrome-extension://jphfmfbdedghfhhjijaogeloiehomfni/"]
 }
