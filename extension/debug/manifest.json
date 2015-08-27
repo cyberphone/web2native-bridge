@@ -15,5 +15,6 @@
       "scripts": ["extension.js"]
   },
   "web_accessible_resources": ["inject.js"],
-  "permissions": ["nativeMessaging"]
+  "permissions": ["nativeMessaging"],
+  "short_name": "w2nb"
 }
