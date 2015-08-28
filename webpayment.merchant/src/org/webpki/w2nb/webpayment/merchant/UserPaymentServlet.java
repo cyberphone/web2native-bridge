@@ -87,7 +87,7 @@ public class UserPaymentServlet extends HttpServlet implements BaseProperties {
         // Then we round up to the nearest 25 centimes, cents, or pennies
         savedShoppingCart.roundedPaymentAmount = ((savedShoppingCart.tax + total + 24) / 25) * 25;
         HttpSession session = request.getSession(true);
-        boolean pullPaymentMode = getOption(session, HomeServlet.PULL_SESSION_ATTR);
+        boolean indirectPaymentMode = getOption(session, HomeServlet.INDIRECT_SESSION_ATTR);
         boolean debugMode = getOption(session, HomeServlet.DEBUG_SESSION_ATTR);
         DebugData debugData = null;
         if (debugMode) {
@@ -105,7 +105,7 @@ public class UserPaymentServlet extends HttpServlet implements BaseProperties {
 
         session.setAttribute(REQUEST_HASH_SESSION_ATTR, PaymentRequest.getRequestHash(paymentRequest));
 
-        // Only used in pull mode
+        // Only used in indirect mode
         session.setAttribute(REQUEST_REFID_SESSION_ATTR, referenceID);
 
         Vector<String> acceptedCards = new Vector<String>();
@@ -115,7 +115,7 @@ public class UserPaymentServlet extends HttpServlet implements BaseProperties {
         acceptedCards.add("NoSuchCard");
         JSONObjectWriter invokeRequest = Messages.createBaseMessage(Messages.INVOKE_WALLET)
             .setStringArray(ACCEPTED_CARD_TYPES_JSON, acceptedCards.toArray(new String[0]))
-            .setBoolean(PULL_PAYMENT_JSON, pullPaymentMode)
+            .setBoolean(INDIRECT_MODE_JSON, indirectPaymentMode)
             .setObject(PAYMENT_REQUEST_JSON, paymentRequest);
    
         if (debugMode) {
@@ -124,7 +124,7 @@ public class UserPaymentServlet extends HttpServlet implements BaseProperties {
         
         HTML.userPayPage(response,
                          savedShoppingCart,
-                         pullPaymentMode,
+                         indirectPaymentMode,
                          debugMode,
                          new String(invokeRequest.serializeJSONObject(JSONOutputFormats.JS_NATIVE), "UTF-8"));
     }

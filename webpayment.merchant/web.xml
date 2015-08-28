@@ -72,13 +72,13 @@
     </servlet>
 
     <servlet>
-        <servlet-name>PushPaymentServlet</servlet-name>
-        <servlet-class>org.webpki.w2nb.webpayment.merchant.PushPaymentServlet</servlet-class>
+        <servlet-name>DirectModePaymentServlet</servlet-name>
+        <servlet-class>org.webpki.w2nb.webpayment.merchant.DirectModePaymentServlet</servlet-class>
     </servlet>
 
     <servlet>
-        <servlet-name>PullPaymentServlet</servlet-name>
-        <servlet-class>org.webpki.w2nb.webpayment.merchant.PullPaymentServlet</servlet-class>
+        <servlet-name>IndirectModePaymentServlet</servlet-name>
+        <servlet-class>org.webpki.w2nb.webpayment.merchant.IndirectModePaymentServlet</servlet-class>
     </servlet>
 
     <servlet>
@@ -102,13 +102,13 @@
     </servlet-mapping>
 
     <servlet-mapping>
-        <servlet-name>PushPaymentServlet</servlet-name>
-        <url-pattern>/pushpay</url-pattern>
+        <servlet-name>DirectModePaymentServlet</servlet-name>
+        <url-pattern>/directpay</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
-        <servlet-name>PullPaymentServlet</servlet-name>
-        <url-pattern>/pullpay</url-pattern>
+        <servlet-name>IndirectModePaymentServlet</servlet-name>
+        <url-pattern>/indirectpay</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>

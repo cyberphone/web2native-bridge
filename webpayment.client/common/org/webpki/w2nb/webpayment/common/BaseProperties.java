@@ -21,7 +21,7 @@ public interface BaseProperties {
     String HEIGHT_JSON                = "height";
     String WIDTH_JSON                 = "width";
     String PAYMENT_REQUEST_JSON       = "paymentRequest";
-    String PULL_PAYMENT_JSON          = "pullPayment";       // false or absent => "push" payment        
+    String INDIRECT_MODE_JSON         = "indirectMode";      // false or absent => "direct mode" payment        
     String AMOUNT_JSON                = "amount";
     String ERROR_JSON                 = "error";
     String CURRENCY_JSON              = "currency";
@@ -30,7 +30,7 @@ public interface BaseProperties {
     String CLIENT_IP_ADDRESS_JSON     = "clientIpAddress";
     String REFERENCE_ID_JSON          = "referenceId";
     String PAYEE_JSON                 = "payee";             // Common name of payee to be used in UIs
-    String AUTH_DATA_JSON             = "authData";          // Payer authorization request in "pull" mode
+    String AUTH_DATA_JSON             = "authData";          // Payer authorization request in the "indirect" mode
     String AUTH_URL_JSON              = "authUrl";           // URL to payment provider
     String ACCEPTED_CARD_TYPES_JSON   = "acceptedCardTypes"; // List of CARD_TYPE_JSON
     String CARD_TYPE_JSON             = "cardType";          // Card type

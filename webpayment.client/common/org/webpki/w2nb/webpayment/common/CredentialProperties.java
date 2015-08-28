@@ -26,7 +26,7 @@ public interface CredentialProperties {
     String AUTH_URL_JSON              = "authUrl";              // URL to payment provider
     String SIGNATURE_ALGORITHM_JSON   = "signatureAlgorithm";   // MUST match the key material
 
-    // Optional: For the "pull" mode
+    // Optional: For the "indirect" mode
     String CONTENT_ENCRYPTION_ALGORITHM_JSON = "contentEncryptionAlgorithm";  // JOSE algorithm ID (A256CBC-HS512)
     String KEY_ENCRYPTION_ALGORITHM_JSON     = "keyEncryptionAlgorithm";      // JOSE algorithm ID (ECDH-ES or RSA-OAEP-256)
     String KEY_ENCRYPTION_KEY_JSON           = "keyEncryptionKey";            // PublicKey in JCS format using JOSE algorithm IDs

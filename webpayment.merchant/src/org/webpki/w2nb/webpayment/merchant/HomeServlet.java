@@ -29,8 +29,8 @@ public class HomeServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
     
-    static final String PULL_SESSION_ATTR = "pull";
-    static final String DEBUG_SESSION_ATTR = "debug";
+    static final String INDIRECT_SESSION_ATTR = "indirect";
+    static final String DEBUG_SESSION_ATTR    = "debug";
     
     boolean checkBoxGet(HttpSession session, String name) {
         boolean argument = false;
@@ -49,13 +49,13 @@ public class HomeServlet extends HttpServlet {
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         HttpSession session = request.getSession(true);
         HTML.homePage(response,
-                      checkBoxGet(session, PULL_SESSION_ATTR),
+                      checkBoxGet(session, INDIRECT_SESSION_ATTR),
                       checkBoxGet(session, DEBUG_SESSION_ATTR));
     }
 
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         HttpSession session = request.getSession(true);
-        checkBoxSet(session, request, PULL_SESSION_ATTR);
+        checkBoxSet(session, request, INDIRECT_SESSION_ATTR);
         checkBoxSet(session, request, DEBUG_SESSION_ATTR);
         response.sendRedirect("home");
     }

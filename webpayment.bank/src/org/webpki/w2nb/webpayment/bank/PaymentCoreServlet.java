@@ -34,7 +34,7 @@ import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONParser;
 
 import org.webpki.w2nb.webpayment.common.BaseProperties;
-import org.webpki.w2nb.webpayment.common.PayeePullAuthorizationRequest;
+import org.webpki.w2nb.webpayment.common.PayeeIndirectModeAuthorizationRequest;
 import org.webpki.w2nb.webpayment.common.GenericAuthorizationRequest;
 import org.webpki.w2nb.webpayment.common.GenericAuthorizationResponse;
 import org.webpki.w2nb.webpayment.common.Messages;
@@ -61,32 +61,32 @@ public class PaymentCoreServlet extends HttpServlet implements BaseProperties {
             JSONObjectReader authorizationRequest = JSONParser.parse(ServletUtil.getData(request));
             logger.info("Received:\n" + authorizationRequest);
 
-            ////////////////////////////////////////////////////////////////////////////
-            // We rationalize here by using a single end-point for both push and pull //
-            ////////////////////////////////////////////////////////////////////////////
+            ////////////////////////////////////////////////////////////////////////////////////////
+            // We rationalize here by using a single end-point for both direct and indirect modes //
+            ////////////////////////////////////////////////////////////////////////////////////////
 
-            // Pull and push technically end-up as a generic request
+            // Direct and indirect modes technically end-up as a generic request
             GenericAuthorizationRequest genericAuthorizationRequest = null;
 
             // A minor test is though needed for dispatching the proper message decoder...
             if (authorizationRequest.getString(JSONDecoderCache.QUALIFIER_JSON)
-                    .equals(Messages.PAYEE_PULL_AUTH_REQ.toString())) {
+                    .equals(Messages.PAYEE_INDIRECT_AUTH_REQ.toString())) {
 
                 // Read the attested and encrypted request. Validate attestation signature
-                PayeePullAuthorizationRequest attestedEncryptedRequest =
-                        new PayeePullAuthorizationRequest(authorizationRequest);
+                PayeeIndirectModeAuthorizationRequest attestedEncryptedRequest =
+                        new PayeeIndirectModeAuthorizationRequest(authorizationRequest);
 
                 // Decrypt encrypted request and validate the embedded signatures
                 genericAuthorizationRequest =
                         attestedEncryptedRequest.getDecryptedAuthorizationRequest(BankService.decryptionKeys);
 
-                // In the pull mode the merchant is the only one who can provide the client's IP address
+                // In the indirect mode the merchant is the only one who can provide the client's IP address
                 clientIpAddress = attestedEncryptedRequest.getClientIpAddress();
             } else {
-                // In push mode the request is fine "as is"
+                // In the direct mode the request is fine "as is"
                 genericAuthorizationRequest = new GenericAuthorizationRequest(authorizationRequest);
 
-                // In the push mode the payment provider can derive the client's IP address from the request
+                // In the direct mode the payment provider can derive the client's IP address from the request
                 clientIpAddress = request.getRemoteAddr();
             }
 

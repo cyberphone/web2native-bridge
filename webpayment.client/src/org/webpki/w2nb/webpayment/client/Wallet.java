@@ -100,7 +100,7 @@ import org.webpki.util.ArrayUtil;
 
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.CredentialProperties;
-import org.webpki.w2nb.webpayment.common.PayerPullAuthorizationRequest;
+import org.webpki.w2nb.webpayment.common.PayerIndirectModeAuthorizationRequest;
 import org.webpki.w2nb.webpayment.common.GenericAuthorizationRequest;
 import org.webpki.w2nb.webpayment.common.Messages;
 import org.webpki.w2nb.webpayment.common.PaymentRequest;
@@ -305,7 +305,7 @@ public class Wallet {
         
         JSONObjectWriter resultMessage;
         
-        boolean pullPayment;
+        boolean indirectMode;
         
         ApplicationWindow() {
             // First we measure all the panes to be used to get the size of the holding window
@@ -806,7 +806,7 @@ public class Wallet {
                 logger.info("Received from browser:\n" + invokeMessage);
                 Messages.parseBaseMessage(Messages.INVOKE_WALLET, invokeMessage);
                 final String[] cardTypes = invokeMessage.getStringArray(BaseProperties.ACCEPTED_CARD_TYPES_JSON);
-                pullPayment = invokeMessage.getBoolean(BaseProperties.PULL_PAYMENT_JSON);
+                indirectMode = invokeMessage.getBoolean(BaseProperties.INDIRECT_MODE_JSON);
                 paymentRequest = new PaymentRequest(invokeMessage.getObject(BaseProperties.PAYMENT_REQUEST_JSON));
                 timer.cancel();
                 if (running) {
@@ -908,8 +908,8 @@ public class Wallet {
                                            card.contentEncryptionAlgorithm);
                             break;
                         }
-                    } else if (pullPayment) {
-                        logger.warning("Card " + card.cardNumber + " doesn't support \"pull\" payments");
+                    } else if (indirectMode) {
+                        logger.warning("Card " + card.cardNumber + " doesn't support \"indirect mode\" payments");
                         break;
                     }
 
@@ -962,18 +962,18 @@ public class Wallet {
                                                           algorithm.getDigestAlgorithm().digest(data));
                             }
                         });
-                    if (pullPayment) {
-                        logger.info("Authorization before \"pull\" encryption:\n" + resultMessage);
+                    if (indirectMode) {
+                        logger.info("Authorization before \"indirect mode\" encryption:\n" + resultMessage);
 
-                        // "Pull" payments must be encrypted in order to not leak user information to Payees.
-                        // Only the proper Payment Provider can decrypt and process "pull" user authorizations.
-                        resultMessage = PayerPullAuthorizationRequest.encode(resultMessage,
-                                                                             selectedCard.authUrl,
-                                                                             selectedCard.contentEncryptionAlgorithm,
-                                                                             selectedCard.keyEncryptionKey,
-                                                                             selectedCard.keyEncryptionAlgorithm);
+                        // "Indirect mode" payments must be encrypted in order to not leak user information to Payees.
+                        // Only the proper Payment Provider can decrypt and process "indirect" user authorizations.
+                        resultMessage = PayerIndirectModeAuthorizationRequest.encode(resultMessage,
+                                                                                 selectedCard.authUrl,
+                                                                                 selectedCard.contentEncryptionAlgorithm,
+                                                                                 selectedCard.keyEncryptionKey,
+                                                                                 selectedCard.keyEncryptionAlgorithm);
                     }
-                    logger.info((pullPayment || testMode ?
+                    logger.info((indirectMode || testMode ?
                                      "About to send to the browser:\n" 
                                                          :
                                      "About to send to \"" + selectedCard.authUrl + "\":\n")
@@ -1004,8 +1004,8 @@ public class Wallet {
             @Override
             public void run() {
                 try {
-                    if (!testMode && !pullPayment) {
-                        // In the "push" payment model the Wallet sends the user-authorized request
+                    if (!testMode && !indirectMode) {
+                        // In the "direct" mode payment model the Wallet sends the user-authorized request
                         // to the Payment Provider (bank) for final authorization and funds checking.
                         // The resulting message is what is finally handed over to the Merchant (Payee).
                         // The URL to the Payment Provider is a part of the user's payment credential (card).
@@ -1024,7 +1024,7 @@ public class Wallet {
                                     + resultMessage);
                     }
 
-                    // In both the "push" and "pull" modes the Wallet finishes by sending the specific
+                    // In both the "direct" and "indirect" modes the Wallet finishes by sending the specific
                     // authorization message through the Web2Native Bridge interface to the invoking
                     // Merchant (Payee) web page which in turn posts it to the Merchant server.  The
                     // latter should return a new web-page which causes the Wallet to unload (disappear).

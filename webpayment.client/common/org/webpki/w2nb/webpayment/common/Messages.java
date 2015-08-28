@@ -26,10 +26,10 @@ public enum Messages {
 
     WALLET_INITIALIZED        ("WalletInitialized"),          // Wallet to payee web page message
     INVOKE_WALLET             ("InvokeWallet"),               // Payee payment request + other data
-    PAYER_GENERIC_AUTH_REQ    ("PayerGenericAuthReq"),        // Used as is for "push" and wrapped in
-    PAYER_PULL_AUTH_REQ       ("PayerPullAuthReq"),           // this one for "pull"
-    PAYEE_PULL_AUTH_REQ       ("PayeePullAuthReq"),           // Payee "pull"
-    PROVIDER_GENERIC_AUTH_RES ("ProviderGenericAuthRes");     // Provider response for "push" and "pull"
+    PAYER_GENERIC_AUTH_REQ    ("PayerGenericAuthReq"),        // Used as is for all modes but wrapped
+    PAYER_INDIRECT_AUTH_REQ   ("PayerIndirectAuthReq"),       // in this one for "indirect" mode
+    PAYEE_INDIRECT_AUTH_REQ   ("PayeeIndirectAuthReq"),       // Payee "indirect" mode
+    PROVIDER_GENERIC_AUTH_RES ("ProviderGenericAuthRes");     // Provider response for all modes
 
     String qualifier;
 

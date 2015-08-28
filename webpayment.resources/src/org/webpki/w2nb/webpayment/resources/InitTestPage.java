@@ -122,7 +122,7 @@ public class InitTestPage implements BaseProperties {
                             new String[]{"NoSuchCard",
                                           CardTypes.SuperCard.toString(),
                                           CardTypes.CoolCard.toString()})
-            .setBoolean(PULL_PAYMENT_JSON, false)
+            .setBoolean(INDIRECT_MODE_JSON, false)
             .setObject(PAYMENT_REQUEST_JSON, standardRequest));
 
         // The normal request is cloned and modified for testing error handling
@@ -156,7 +156,7 @@ public class InitTestPage implements BaseProperties {
 
               "function sendMessageConditional(message) {\n" +
               "    if (nativePort) {\n" +
-              "        message." + PULL_PAYMENT_JSON + " = document.getElementById(\"pullPayment\").checked;\n" +
+              "        message." + INDIRECT_MODE_JSON + " = document.getElementById(\"indirectMode\").checked;\n" +
               "        nativePort.postMessage(message);\n" +
               "    }\n" +
               "}\n\n" +
@@ -193,7 +193,7 @@ public class InitTestPage implements BaseProperties {
               "            var qualifier = message[\"@qualifier\"];\n" +
               "            if ((initMode && qualifier != \"" + Messages.WALLET_INITIALIZED.toString() + "\" ) ||\n" +
               "                (!initMode && qualifier != \"" + Messages.PAYER_GENERIC_AUTH_REQ.toString()
-              +                "\" && qualifier != \"" + Messages.PAYER_PULL_AUTH_REQ.toString() + "\")) {\n" +  
+              +                "\" && qualifier != \"" + Messages.PAYER_INDIRECT_AUTH_REQ.toString() + "\")) {\n" +  
               "                setString(\"Wrong or missing \\\"@qualifier\\\"\");\n" +
               "                closeExtension();\n" +
               "                return;\n" +
@@ -278,7 +278,7 @@ public class InitTestPage implements BaseProperties {
             write("<br>\n");
         }
         write("</form>\n" +
-              "<input type=\"checkbox\" id=\"pullPayment\" style=\"margin-top:10pt\">&quot;Pull&quot; payment flow (default is &quot;push&quot;)<br>\n" +
+              "<input type=\"checkbox\" id=\"indirectMode\" style=\"margin-top:10pt\">&quot;Indirect&quot; mode payment flow (default is &quot;direct&quot; mode)<br>\n" +
               "<input type=\"checkbox\" id=\"positionWallet\" style=\"margin-top:10pt\" onchange=\"setTargetState()\">Position/update target element (default is centered)\n" +
               "<div style=\"margin-top:10pt;margin-bottom:10pt\">Result:</div>\n" +
               "<div id=\"response\" style=\"font-family:courier;font-size:10pt;word-wrap:break-word;width:800pt\"></div>\n" +
