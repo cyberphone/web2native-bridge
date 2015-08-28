@@ -16,7 +16,7 @@ an improperly designed native message extension could enable web access to *any*
 
 ### API
 The Web2Native Bridge emulator extends the **navigator** object by a *single* method **nativeConnect**(*NameOfTargetApplication* [, *OptionalArgument*]) which
-returns a JavaScript promise to a **port** object.  *OptionalArgument* must be a valid JSON object.
+returns a JavaScript promise to a **port** object.  *OptionalArgument* must be a valid JSON-serializable JavaScript object.
 
 The **port** object supports the following methods and events:
 * **postMessage**(*JSONObject*)
@@ -37,7 +37,7 @@ navigator.nativeConnect('com.example.w2nb.sample').then(function(port) {
     });
 
     port.postMessage({greeting:'Native app, how are you doing?'});
-    // Note: JS serialization makes the above a genuine JSON object
+    // Note: JavaScript serialization makes the above a genuine JSON object
 
     port.disonnect();  // Not much of a conversation going on here...
 
