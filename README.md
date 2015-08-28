@@ -16,7 +16,7 @@ an improperly designed native message extension could enable web access to *any*
 
 ### API
 The Web2Native Bridge emulator extends the **navigator** object by a *single* method **nativeConnect**(*NameOfTargetApplication* [, *OptionalArgument*]) which
-returns a JS promise to a **port** object.
+returns a JavaScript promise to a **port** object.  *OptionalArgument* must be a valid JSON object.
 
 The **port** object supports the following methods and events:
 * **postMessage**(*JSONObject*)
