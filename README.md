@@ -94,7 +94,7 @@ http://www.cnet.com/news/google-paves-over-hole-left-by-chrome-plug-in-ban/
 albeit with a few significant enhancements:
 * The sample application runs in an ordinary web page
 * The Web2Native Bridge browser extension is fully generic and can support any number of very different applications
-* The Web2Native Bridge adds positioning support enabling integration UI-wise with the web  
+* The Web2Native Bridge adds positioning support enabling alignment UI-wise with the web  
 
 The native part of the sample application resides in <code>proxy/install/apps/org.webpki.w2nb.sample1/org.webpki.w2nb.sample1.jar</code>.
 
