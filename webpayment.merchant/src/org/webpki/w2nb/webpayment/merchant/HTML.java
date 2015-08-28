@@ -396,6 +396,8 @@ public class HTML {
                     "            }\n"+
                     "        });\n" +
                     "        port.addDisconnectListener(function() {\n" +
+                    "            if (initMode) alert('Wallet application \"" + 
+                                      MerchantService.w2nbName + ".jar\" appears to be missing!');\n" +
                     "            nativePort = null;\n" +
                     "            document.forms.restore.submit();\n" +
                     "        });\n" +
