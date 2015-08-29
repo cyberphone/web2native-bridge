@@ -92,7 +92,7 @@ The HTML file <code>sample1/demo/sample1.html</code> does approximately
 the same thing as the application depicted in
 http://www.cnet.com/news/google-paves-over-hole-left-by-chrome-plug-in-ban/
 albeit with a few significant enhancements:
-* The sample application runs in an ordinary web page
+* The sample application is invoked by an ordinary web page
 * The Web2Native Bridge browser extension is fully generic and can support any number of very different applications
 * The Web2Native Bridge adds positioning support enabling alignment UI-wise with the web  
 
