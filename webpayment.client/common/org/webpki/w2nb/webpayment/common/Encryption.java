@@ -32,32 +32,69 @@ import java.security.spec.ECGenParameterSpec;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyAgreement;
+import javax.crypto.Mac;
 
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.webpki.crypto.KeyAlgorithms;
 
+import org.webpki.util.ArrayUtil;
+
 // Core encryption class
 
 public abstract class Encryption {
     
-    public static byte[] contentEncryption(boolean encrypt,
-                                           String algorithm,
-                                           byte[] aesKey,
-                                           byte[] data,
+    private static byte[] getTag(byte[] key,
+                                 byte[] cipherText,
+                                 byte[] iv,
+                                 byte[] authenticatedData) throws GeneralSecurityException {
+        byte[] al = new byte[8];
+        int value = authenticatedData.length * 8;
+        for (int q = 24, i = 4; q >= 0; q -= 8, i++) {
+            al[i] = (byte)(value >>> q);
+        }
+        Mac mac = Mac.getInstance("HmacSHA256", "BC");
+        mac.init (new SecretKeySpec (key, 0, 16, "RAW"));
+        mac.update(authenticatedData);
+        mac.update(iv);
+        mac.update(cipherText);
+        mac.update(al);
+        return mac.doFinal();
+    }
+    
+    public static byte[] contentEncryption(String algorithm,
+                                           byte[] key,
+                                           byte[] plainText,
                                            byte[] iv,
-                                           byte[] tag,
-                                           byte[] authenticatedData) throws GeneralSecurityException, IOException {
+                                           byte[] authenticatedData,
+                                           byte[] tagOutput) throws GeneralSecurityException, IOException {
         if (!permittedContentEncryptionAlgorithm(algorithm)) {
             throw new IOException("Unsupported content encryption algorithm: " + algorithm);
         }
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding", "BC");
-        cipher.init(encrypt ? Cipher.ENCRYPT_MODE : Cipher.DECRYPT_MODE,
-                    new SecretKeySpec(aesKey, "AES"),
-                    new IvParameterSpec(iv));
-        return cipher.doFinal(data);
+        cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(key, 16, 16, "AES"), new IvParameterSpec(iv));
+        byte[] cipherText = cipher.doFinal(plainText);
+        System.arraycopy(getTag(key, cipherText, iv, authenticatedData), 0, tagOutput, 0, 16);
+        return cipherText;
     }
+
+    public static byte[] contentDecryption(String algorithm,
+                                           byte[] key,
+                                           byte[] cipherText,
+                                           byte[] iv,
+                                           byte[] authenticatedData,
+                                           byte[] tagInput) throws GeneralSecurityException, IOException {
+        if (!permittedContentEncryptionAlgorithm(algorithm)) {
+            throw new IOException("Unsupported content encryption algorithm: " + algorithm);
+        }
+        if (!ArrayUtil.compare(tagInput, getTag(key, cipherText, iv, authenticatedData), 0, 16)) {
+            throw new GeneralSecurityException("Authentication error on algorithm: " + algorithm);
+        }
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding", "BC");
+        cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(key, 16, 16, "AES"), new IvParameterSpec(iv));
+        return cipher.doFinal(cipherText);
+     }
 
     public static byte[] rsaEncryptKey(String keyEncryptionAlgorithm,
                                        byte[] rawKey,

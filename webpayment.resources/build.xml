@@ -32,7 +32,7 @@
   </path>
   
   <target name="help">
-      <echo message="createcerts initwallet [-Dlocalhost=0] inittestpage svg-test svg-pushmode svg-pullmode svg-play -Dplayclass [-Dplayfilter]"/>
+      <echo message="cryptotest createcerts initwallet [-Dlocalhost=0] inittestpage svg-test svg-pushmode svg-pullmode svg-play -Dplayclass [-Dplayfilter]"/>
   </target>
  
   <target name="inittestpage">
@@ -200,6 +200,29 @@
        <param name="sks.image" value="unusualcard.png"/>
        <param name="sks.encryption" value="@"/>
      </antcall>
+  </target>
+  
+  <target name="cryptotest">
+    <delete dir="${temp.dir}"/>
+    <mkdir dir="${temp.dir}"/>
+    <javac debug="${debug}"
+           source="${javaversion}"
+           target="${javaversion}"
+           srcdir="${src.dir}:${common.src.dir}"
+           destdir="${temp.dir}" 
+           classpathref="compile.classpath"
+           includeAntRuntime="false">
+    </javac>
+    <java fork="yes"
+          classname="org.webpki.w2nb.webpayment.resources.CryptoTesting"
+          failonerror="true">
+        <classpath>
+             <fileset dir="${common.lib.dir}">
+                <include name="*.jar"/>
+             </fileset>
+             <pathelement location="${temp.dir}"/>
+        </classpath>
+    </java>
   </target>
   
   <target name="_createcert">

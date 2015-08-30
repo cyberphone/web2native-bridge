@@ -95,8 +95,7 @@ public class EncryptedData implements BaseProperties {
                 notFound = false;
                 if (decryptionKey.keyEncryptionAlgorithm.equals(keyEncryptionAlgorithm)) {
                     return JSONParser.parse(
-                        Encryption.contentEncryption(false,
-                                                     contentEncryptionAlgorithm,
+                        Encryption.contentDecryption(contentEncryptionAlgorithm,
                                                      isRsaKey(keyEncryptionAlgorithm) ?
                                  Encryption.rsaDecryptKey(keyEncryptionAlgorithm,
                                                           encryptedKeyData,
@@ -108,8 +107,8 @@ public class EncryptedData implements BaseProperties {
                                                                  decryptionKey.privateKey),
                                                      encryptedData,
                                                      iv,
-                                                     tag,
-                                                     authenticatedData));
+                                                     authenticatedData,
+                                                     tag));
                 }
             }
         }
@@ -148,18 +147,16 @@ public class EncryptedData implements BaseProperties {
         byte[] iv = new byte[16];
         new SecureRandom().nextBytes (iv);
         byte[] tag = new byte[16];
-        new SecureRandom().nextBytes (tag);
+        byte[] content = Encryption.contentEncryption(contentEncryptionAlgorithm,
+                                                      contentEncryptionKey,
+                                                      unencryptedData.serializeJSONObject(JSONOutputFormats.NORMALIZED),
+                                                      iv,
+                                                      encryptedKey.serializeJSONObject(JSONOutputFormats.NORMALIZED),
+                                                      tag);
         encryptedData.setString(ALGORITHM_JSON, contentEncryptionAlgorithm)
                      .setBinary(IV_JSON, iv)
                      .setBinary(TAG_JSON, tag)
-                     .setBinary(CIPHER_TEXT_JSON,
-            Encryption.contentEncryption(true,
-                                         contentEncryptionAlgorithm,
-                                         contentEncryptionKey,
-                                         unencryptedData.serializeJSONObject(JSONOutputFormats.NORMALIZED),
-                                         iv,
-                                         tag,
-                                         encryptedKey.serializeJSONObject(JSONOutputFormats.NORMALIZED)));
+                     .setBinary(CIPHER_TEXT_JSON, content);
         return encryptedContent;
     }
 }
