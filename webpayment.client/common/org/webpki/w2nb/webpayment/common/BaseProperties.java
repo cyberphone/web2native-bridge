@@ -43,7 +43,7 @@ public interface BaseProperties {
     String ENCRYPTED_DATA_JSON        = "encryptedData";
     String ENCRYPTED_KEY_JSON         = "encryptedKey";
     String STATIC_PROVIDER_KEY_JSON   = "staticProviderKey";
-    String EPHEMERAL_KEY_JSON         = "ephemeralKey";
+    String EPHEMERAL_SENDER_KEY_JSON  = "ephemeralSenderKey";
     String ALGORITHM_JSON             = "algorithm";
     String IV_JSON                    = "iv";                // For symmetric encryption
     String TAG_JSON                   = "tag";               // Authenticated data for symmetric encryption

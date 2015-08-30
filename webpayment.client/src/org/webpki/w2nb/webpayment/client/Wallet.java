@@ -104,7 +104,7 @@ import org.webpki.w2nb.webpayment.common.PayerIndirectModeAuthorizationRequest;
 import org.webpki.w2nb.webpayment.common.GenericAuthorizationRequest;
 import org.webpki.w2nb.webpayment.common.Messages;
 import org.webpki.w2nb.webpayment.common.PaymentRequest;
-import org.webpki.w2nb.webpayment.common.CryptoSupport;
+import org.webpki.w2nb.webpayment.common.Encryption;
 
 import org.webpki.w2nbproxy.BrowserWindow;
 import org.webpki.w2nbproxy.ExtensionPositioning;
@@ -892,7 +892,7 @@ public class Wallet {
                     if (cardProperties.hasProperty(CredentialProperties.KEY_ENCRYPTION_KEY_JSON)) {
                         card.keyEncryptionAlgorithm =
                                 cardProperties.getString(CredentialProperties.KEY_ENCRYPTION_ALGORITHM_JSON);
-                        if (!CryptoSupport.permittedKeyEncryptionAlgorithm(card.keyEncryptionAlgorithm)) {
+                        if (!Encryption.permittedKeyEncryptionAlgorithm(card.keyEncryptionAlgorithm)) {
                             logger.warning("Card " + card.cardNumber + " contained an unknown \"" +
                                            CredentialProperties.KEY_ENCRYPTION_ALGORITHM_JSON + "\": " +
                                            card.keyEncryptionAlgorithm);
@@ -902,7 +902,7 @@ public class Wallet {
                                                       .getPublicKey(JSONAlgorithmPreferences.JOSE);
                         card.contentEncryptionAlgorithm =
                                 cardProperties.getString(CredentialProperties.CONTENT_ENCRYPTION_ALGORITHM_JSON);
-                        if (!CryptoSupport.permittedContentEncryptionAlgorithm(card.contentEncryptionAlgorithm)) {
+                        if (!Encryption.permittedContentEncryptionAlgorithm(card.contentEncryptionAlgorithm)) {
                             logger.warning("Card " + card.cardNumber + " contained an unknown \"" +
                                            CredentialProperties.CONTENT_ENCRYPTION_ALGORITHM_JSON + "\": " +
                                            card.contentEncryptionAlgorithm);
