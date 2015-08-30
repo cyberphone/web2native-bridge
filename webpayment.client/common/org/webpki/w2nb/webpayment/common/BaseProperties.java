@@ -42,8 +42,8 @@ public interface BaseProperties {
     String DOMAIN_NAME_JSON           = "domainName";
     String ENCRYPTED_DATA_JSON        = "encryptedData";
     String ENCRYPTED_KEY_JSON         = "encryptedKey";
-    String PAYMENT_PROVIDER_KEY_JSON  = "paymentProviderKey";
-    String EPHEMERAL_CLIENT_KEY_JSON  = "ephemeralClientKey";
+    String STATIC_PROVIDER_KEY_JSON   = "staticProviderKey";
+    String EPHEMERAL_KEY_JSON         = "ephemeralKey";
     String ALGORITHM_JSON             = "algorithm";
     String IV_JSON                    = "iv";                // For symmetric encryption
     String TAG_JSON                   = "tag";               // Authenticated data for symmetric encryption
@@ -56,7 +56,7 @@ public interface BaseProperties {
 
     String JOSE_RSA_OAEP_256_ALG_ID   = "RSA-OAEP-256";
     String JOSE_ECDH_ES_ALG_ID        = "ECDH-ES";
-    String JOSE_A256CBC_HS512_ALG_ID  = "A256CBC-HS512";
+    String JOSE_A128CBC_HS256_ALG_ID  = "A128CBC-HS256";
     String JOSE_SHA_256_ALG_ID        = "S256";              // Well, not really JOSE but "similar" :-)
 
     String JSON_CONTENT_TYPE          = "application/json";

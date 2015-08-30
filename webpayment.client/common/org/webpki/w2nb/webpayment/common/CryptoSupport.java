@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.MessageDigest;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
@@ -35,13 +36,7 @@ import javax.crypto.KeyAgreement;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
-import org.webpki.crypto.HashAlgorithms;
 import org.webpki.crypto.KeyAlgorithms;
-
-// TODO
-// This is a preliminary implementation which IS NOT compliant with the JOSE algorithm
-// specifications, but that doesn't matter (much) at this early stage...IMHO.
-// TODO
 
 public abstract class CryptoSupport {
     
@@ -50,7 +45,8 @@ public abstract class CryptoSupport {
                                            byte[] aesKey,
                                            byte[] data,
                                            byte[] iv,
-                                           byte[] tag) throws GeneralSecurityException, IOException {
+                                           byte[] tag,
+                                           byte[] authenticatedData) throws GeneralSecurityException, IOException {
         if (!permittedContentEncryptionAlgorithm(algorithm)) {
             throw new IOException("Unsupported content encryption algorithm: " + algorithm);
         }
@@ -85,20 +81,45 @@ public abstract class CryptoSupport {
         }
     }
 
+    static void addInt4(MessageDigest messageDigest, int value) {
+        for (int i = 24; i >= 0; i -= 8) {
+            messageDigest.update((byte)(value >>> i));
+        }
+    }
+
     public static byte[] serverKeyAgreement(String keyEncryptionAlgorithm,
+                                            String contentEncryptionAlgorithm,
                                             ECPublicKey receivedPublicKey,
                                             PrivateKey privateKey) throws GeneralSecurityException, IOException {
         if (!keyEncryptionAlgorithm.equals(BaseProperties.JOSE_ECDH_ES_ALG_ID)) {
             throw new IOException("Unsupported ECDH algorithm: " + keyEncryptionAlgorithm);
         }
+        if (!contentEncryptionAlgorithm.equals(BaseProperties.JOSE_A128CBC_HS256_ALG_ID)) {
+            throw new IOException("Unsupported content encryption algorithm: " + contentEncryptionAlgorithm);
+        }
         KeyAgreement keyAgreement = KeyAgreement.getInstance("ECDH", "BC");
         keyAgreement.init(privateKey);
         keyAgreement.doPhase(receivedPublicKey, true);
-        byte[] z = keyAgreement.generateSecret();
-        return HashAlgorithms.SHA256.digest(z);
+        // NIST Concat KDF
+        MessageDigest messageDigest = MessageDigest.getInstance("SHA-256", "BC");
+        // Round 1 indicator
+        addInt4(messageDigest, 1);
+        // Z
+        messageDigest.update(keyAgreement.generateSecret());
+        // AlgorithmID = Content encryption algorithm
+        addInt4(messageDigest, contentEncryptionAlgorithm.length());
+        messageDigest.update(contentEncryptionAlgorithm.getBytes("UTF-8"));
+        // PartyUInfo = Empty
+        addInt4(messageDigest, 0);
+        // PartyVInfo = Empty
+        addInt4(messageDigest, 0);
+        // SuppPubInfo = Key length in bits
+        addInt4(messageDigest, 256);
+        return messageDigest.digest();
     }
 
     public static byte[] clientKeyAgreement(String keyEncryptionAlgorithm,
+                                            String contentEncryptionAlgorithm,
                                             ECPublicKey[] generatedEphemeralKey,
                                             PublicKey staticKey) throws IOException, GeneralSecurityException {
         KeyPairGenerator generator = KeyPairGenerator.getInstance("EC", "BC");
@@ -106,7 +127,10 @@ public abstract class CryptoSupport {
         generator.initialize (eccgen, new SecureRandom());
         KeyPair keyPair = generator.generateKeyPair();
         generatedEphemeralKey[0] = (ECPublicKey) keyPair.getPublic();
-        return serverKeyAgreement(keyEncryptionAlgorithm, (ECPublicKey)staticKey, keyPair.getPrivate());
+        return serverKeyAgreement(keyEncryptionAlgorithm,
+                                  contentEncryptionAlgorithm,
+                                  (ECPublicKey)staticKey,
+                                  keyPair.getPrivate());
     }
 
     public static boolean permittedKeyEncryptionAlgorithm(String algorithm) {
@@ -115,6 +139,6 @@ public abstract class CryptoSupport {
     }
 
     public static boolean permittedContentEncryptionAlgorithm(String algorithm) {
-        return algorithm.equals(BaseProperties.JOSE_A256CBC_HS512_ALG_ID);
+        return algorithm.equals(BaseProperties.JOSE_A128CBC_HS256_ALG_ID);
     }
 }

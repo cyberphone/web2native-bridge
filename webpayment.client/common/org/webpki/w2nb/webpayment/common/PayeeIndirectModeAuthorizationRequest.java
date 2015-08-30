@@ -33,7 +33,7 @@ import org.webpki.json.JSONParser;
 
 import org.webpki.util.ArrayUtil;
 
-public class PayeeIndirectModeAuthorizationRequest extends EncryptedAuthorizationRequest {
+public class PayeeIndirectModeAuthorizationRequest implements BaseProperties {
 
     byte[] requestHash;
     
@@ -46,9 +46,11 @@ public class PayeeIndirectModeAuthorizationRequest extends EncryptedAuthorizatio
     Software software;
     
     X509Certificate[] outerCertificatePath;
+    
+    EncryptedData encryptedData;
 
     public PayeeIndirectModeAuthorizationRequest(JSONObjectReader rd) throws IOException {
-        super(Messages.parseBaseMessage(Messages.PAYEE_INDIRECT_AUTH_REQ, rd).getObject(AUTH_DATA_JSON));
+        encryptedData = EncryptedData.parse(Messages.parseBaseMessage(Messages.PAYEE_INDIRECT_AUTH_REQ, rd).getObject(AUTH_DATA_JSON));
         if (!rd.getObject(REQUEST_HASH_JSON).getString(ALGORITHM_JSON).equals(JOSE_SHA_256_ALG_ID)) {
             throw new IOException("Expected algorithm: " + JOSE_SHA_256_ALG_ID);
         }
@@ -92,41 +94,19 @@ public class PayeeIndirectModeAuthorizationRequest extends EncryptedAuthorizatio
 
     public GenericAuthorizationRequest getDecryptedAuthorizationRequest(Vector<DecryptionKeyHolder> decryptionKeys)
     throws IOException, GeneralSecurityException {
-        boolean notFound = true;
-        for (DecryptionKeyHolder dkh : decryptionKeys) {
-            if (dkh.publicKey.equals(publicKey)) {
-                if (dkh.keyEncryptionAlgorithm.equals(keyEncryptionAlgorithm)) {
-                    GenericAuthorizationRequest genericAuthorizationRequest =
-                        new GenericAuthorizationRequest(JSONParser.parse(
-                            CryptoSupport.contentEncryption(false,
-                                                            contentEncryptionAlgorithm,
-                                                            isRsaKey(keyEncryptionAlgorithm) ?
-                                     CryptoSupport.rsaDecryptKey(keyEncryptionAlgorithm,
-                                                                 encryptedKeyData,
-                                                                 dkh.privateKey)
-                                        :
-                                     CryptoSupport.serverKeyAgreement(keyEncryptionAlgorithm,
-                                                                      ephemeralPublicKey,
-                                                                      dkh.privateKey),
-                                                            encryptedData,
-                                                            iv,
-                                                            tag)));
-                    X509Certificate[] certificatePath = genericAuthorizationRequest.paymentRequest.signatureDecoder.getCertificatePath();
-                    assertTrue(certificatePath.length == outerCertificatePath.length);
-                    for (int q = 0; q < certificatePath.length; q++) {
-                        assertTrue(certificatePath[q].equals(outerCertificatePath[q]));
-                    }
-                    if (!ArrayUtil.compare(requestHash, genericAuthorizationRequest.paymentRequest.getRequestHash())) {
-                        throw new IOException("Non-matching \"" + REQUEST_HASH_JSON + "\" value");
-                    }
-                    if (!referenceId.equals(genericAuthorizationRequest.paymentRequest.getReferenceId())) {
-                        throw new IOException("Non-matching \"" + REFERENCE_ID_JSON + "\" value");
-                    }
-                    return genericAuthorizationRequest;
-                }
-                notFound = false;
-            }
+        GenericAuthorizationRequest genericAuthorizationRequest =
+            new GenericAuthorizationRequest(encryptedData.getDecryptedData(decryptionKeys));
+        X509Certificate[] certificatePath = genericAuthorizationRequest.paymentRequest.signatureDecoder.getCertificatePath();
+        assertTrue(certificatePath.length == outerCertificatePath.length);
+        for (int q = 0; q < certificatePath.length; q++) {
+            assertTrue(certificatePath[q].equals(outerCertificatePath[q]));
         }
-        throw new IOException(notFound ? "No matching key found" : "No matching key+algorithm found");
+        if (!ArrayUtil.compare(requestHash, genericAuthorizationRequest.paymentRequest.getRequestHash())) {
+            throw new IOException("Non-matching \"" + REQUEST_HASH_JSON + "\" value");
+        }
+        if (!referenceId.equals(genericAuthorizationRequest.paymentRequest.getReferenceId())) {
+            throw new IOException("Non-matching \"" + REFERENCE_ID_JSON + "\" value");
+        }
+        return genericAuthorizationRequest;
     }
 }

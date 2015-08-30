@@ -29,12 +29,12 @@ import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONOutputFormats;
 
-public class PayerIndirectModeAuthorizationRequest extends EncryptedAuthorizationRequest {
+public class PayerIndirectModeAuthorizationRequest implements BaseProperties {
     
     String authUrl;
 
     public PayerIndirectModeAuthorizationRequest(JSONObjectReader rd) throws IOException {
-        super(Messages.parseBaseMessage(Messages.PAYER_INDIRECT_AUTH_REQ, rd).getObject(AUTH_DATA_JSON));
+        EncryptedData.parse(Messages.parseBaseMessage(Messages.PAYER_INDIRECT_AUTH_REQ, rd).getObject(AUTH_DATA_JSON));
         authUrl = rd.getString(AUTH_URL_JSON);
         rd.checkForUnread();
     }
@@ -50,44 +50,11 @@ public class PayerIndirectModeAuthorizationRequest extends EncryptedAuthorizatio
                                           String keyEncryptionAlgorithm) throws IOException, GeneralSecurityException {
         JSONObjectWriter encryptedRequest = Messages.createBaseMessage(Messages.PAYER_INDIRECT_AUTH_REQ)
             .setString(AUTH_URL_JSON, authUrl);
-        byte[] content = unencryptedRequest.serializeJSONObject(JSONOutputFormats.NORMALIZED);
-        byte[] iv = new byte[16];
-        new SecureRandom().nextBytes (iv);
-        byte[] tag = new byte[16];
-        new SecureRandom().nextBytes (tag);
-        JSONObjectWriter encryptedContent = encryptedRequest.setObject(AUTH_DATA_JSON)
-            .setObject(ENCRYPTED_DATA_JSON)
-                .setString(ALGORITHM_JSON, contentEncryptionAlgorithm)
-                .setBinary(IV_JSON, iv)
-                .setBinary(TAG_JSON, tag);
-        JSONObjectWriter keyEncryption = encryptedContent.setObject(ENCRYPTED_KEY_JSON)
-            .setString(ALGORITHM_JSON, keyEncryptionAlgorithm);
-        byte[] contentEncryptionKey = null;
-        if (isRsaKey(keyEncryptionAlgorithm)) {
-            keyEncryption.setPublicKey(keyEncryptionKey, JSONAlgorithmPreferences.JOSE);
-            contentEncryptionKey = new byte[32];
-            new SecureRandom().nextBytes (contentEncryptionKey);
-            keyEncryption.setBinary(CIPHER_TEXT_JSON,
-                                    CryptoSupport.rsaEncryptKey(keyEncryptionAlgorithm,
-                                                                contentEncryptionKey,
-                                                                keyEncryptionKey));
-        } else {
-            ECPublicKey[] ephemeralKey = new ECPublicKey[1];
-            contentEncryptionKey = CryptoSupport.clientKeyAgreement(keyEncryptionAlgorithm,
-                                                                    ephemeralKey,
-                                                                    keyEncryptionKey);
-            keyEncryption.setObject(PAYMENT_PROVIDER_KEY_JSON)
-                .setPublicKey(keyEncryptionKey, JSONAlgorithmPreferences.JOSE);
-            keyEncryption.setObject(EPHEMERAL_CLIENT_KEY_JSON)
-                .setPublicKey(ephemeralKey[0], JSONAlgorithmPreferences.JOSE);
-        }
-        encryptedContent.setBinary(CIPHER_TEXT_JSON,
-                                   CryptoSupport.contentEncryption(true,
-                                                                   contentEncryptionAlgorithm,
-                                                                   contentEncryptionKey,
-                                                                   content,
-                                                                   iv,
-                                                                   tag));
+        encryptedRequest.setObject(AUTH_DATA_JSON,
+                                   EncryptedData.encode(unencryptedRequest,
+                                                        contentEncryptionAlgorithm,
+                                                        keyEncryptionKey,
+                                                        keyEncryptionAlgorithm));
         return encryptedRequest;
     }
 }
