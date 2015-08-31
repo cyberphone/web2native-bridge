@@ -29,11 +29,12 @@ import java.util.Vector;
 import org.webpki.json.JSONAlgorithmPreferences;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
-import org.webpki.json.JSONParser;
 
 import org.webpki.util.ArrayUtil;
 
 public class PayeeIndirectModeAuthorizationRequest implements BaseProperties {
+    
+    public static final String JOSE_SHA_256_ALG_ID = "S256";              // Well, not really JOSE but "similar" :-)
 
     byte[] requestHash;
     

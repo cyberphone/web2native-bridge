@@ -54,10 +54,5 @@ public interface BaseProperties {
     
     String W2NB_WEB_PAY_CONTEXT_URI   = "http://xmlns.webpki.org/webpay/v1";
 
-    String JOSE_RSA_OAEP_256_ALG_ID   = "RSA-OAEP-256";
-    String JOSE_ECDH_ES_ALG_ID        = "ECDH-ES";
-    String JOSE_A128CBC_HS256_ALG_ID  = "A128CBC-HS256";
-    String JOSE_SHA_256_ALG_ID        = "S256";              // Well, not really JOSE but "similar" :-)
-
     String JSON_CONTENT_TYPE          = "application/json";
 }

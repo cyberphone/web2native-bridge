@@ -143,7 +143,7 @@ public class EncryptedData implements BaseProperties {
                 .setPublicKey(ephemeralKey[0], JSONAlgorithmPreferences.JOSE);
         }
         byte[] iv = Encryption.generateIV(contentEncryptionAlgorithm);
-        byte[] tag = new byte[16];
+        byte[] tag = Encryption.createEmptyTag(contentEncryptionAlgorithm);
         byte[] cipherText = Encryption.contentEncryption(contentEncryptionAlgorithm,
                                                          contentEncryptionKey,
                                                          unencryptedData.serializeJSONObject(JSONOutputFormats.NORMALIZED),

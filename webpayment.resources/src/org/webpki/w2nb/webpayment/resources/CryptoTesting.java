@@ -27,7 +27,6 @@ import org.webpki.util.ArrayUtil;
 import org.webpki.util.Base64URL;
 import org.webpki.util.DebugFormatter;
 
-import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.Encryption;
 
 public class CryptoTesting {
@@ -103,7 +102,7 @@ public class CryptoTesting {
         byte[] t = DebugFormatter.getByteArrayFromHex("652c3fa36b0a7c5b3219fab3a30bc1c4");
 
         byte[] tout = new byte[16];
-        byte[] eout = Encryption.contentEncryption(BaseProperties.JOSE_A128CBC_HS256_ALG_ID,
+        byte[] eout = Encryption.contentEncryption(Encryption.JOSE_A128CBC_HS256_ALG_ID,
                                                    k,
                                                    p,
                                                    iv,
@@ -115,7 +114,7 @@ public class CryptoTesting {
         if (!ArrayUtil.compare(e, eout)) {
             throw new IOException ("eout");
         }
-        byte[] pout = Encryption.contentDecryption(BaseProperties.JOSE_A128CBC_HS256_ALG_ID,
+        byte[] pout = Encryption.contentDecryption(Encryption.JOSE_A128CBC_HS256_ALG_ID,
                                                    k,
                                                    e,
                                                    iv,
@@ -127,8 +126,8 @@ public class CryptoTesting {
         System.out.println("ECDH");
         KeyPair bob = getKeyPair(bobKey);
         KeyPair alice = getKeyPair(aliceKey);
-        if (!Base64URL.encode(Encryption.receiverKeyAgreement(BaseProperties.JOSE_ECDH_ES_ALG_ID,
-                BaseProperties.JOSE_A128CBC_HS256_ALG_ID,
+        if (!Base64URL.encode(Encryption.receiverKeyAgreement(Encryption.JOSE_ECDH_ES_ALG_ID,
+                Encryption.JOSE_A128CBC_HS256_ALG_ID,
                 (ECPublicKey) bob.getPublic(),
                 alice.getPrivate())).equals("hzHdlfQIAEehb8Hrd_mFRhKsKLEzPfshfXs9l6areCc")) {
             throw new IOException("Bad ECDH");

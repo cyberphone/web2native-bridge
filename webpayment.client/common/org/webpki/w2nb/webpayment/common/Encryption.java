@@ -48,6 +48,10 @@ public final class Encryption {
     
     private Encryption() {} // Static and final class
 
+    public static final String JOSE_RSA_OAEP_256_ALG_ID   = "RSA-OAEP-256";
+    public static final String JOSE_ECDH_ES_ALG_ID        = "ECDH-ES";
+    public static final String JOSE_A128CBC_HS256_ALG_ID  = "A128CBC-HS256";
+
     private static byte[] getTag(byte[] key,
                                  byte[] cipherText,
                                  byte[] iv,
@@ -78,7 +82,7 @@ public final class Encryption {
 
     private static byte[] rsaCore(int mode, Key key, byte[] data, String keyEncryptionAlgorithm)
     throws GeneralSecurityException {
-        if (!keyEncryptionAlgorithm.equals(BaseProperties.JOSE_RSA_OAEP_256_ALG_ID)) {
+        if (!keyEncryptionAlgorithm.equals(JOSE_RSA_OAEP_256_ALG_ID)) {
             throw new GeneralSecurityException("Unsupported RSA algorithm: " + keyEncryptionAlgorithm);
         }
         Cipher cipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA256AndMGF1Padding", "BC");
@@ -147,10 +151,10 @@ public final class Encryption {
                                               String contentEncryptionAlgorithm,
                                               ECPublicKey receivedPublicKey,
                                               PrivateKey privateKey) throws GeneralSecurityException, IOException {
-        if (!keyEncryptionAlgorithm.equals(BaseProperties.JOSE_ECDH_ES_ALG_ID)) {
+        if (!keyEncryptionAlgorithm.equals(JOSE_ECDH_ES_ALG_ID)) {
             throw new GeneralSecurityException("Unsupported ECDH algorithm: " + keyEncryptionAlgorithm);
         }
-        if (!contentEncryptionAlgorithm.equals(BaseProperties.JOSE_A128CBC_HS256_ALG_ID)) {
+        if (!contentEncryptionAlgorithm.equals(JOSE_A128CBC_HS256_ALG_ID)) {
             throw new GeneralSecurityException("Unsupported content encryption algorithm: " + contentEncryptionAlgorithm);
         }
         KeyAgreement keyAgreement = KeyAgreement.getInstance("ECDH", "BC");
@@ -190,11 +194,11 @@ public final class Encryption {
     }
 
     public static boolean permittedKeyEncryptionAlgorithm(String algorithm) {
-        return algorithm.equals(BaseProperties.JOSE_ECDH_ES_ALG_ID) ||
-               algorithm.equals(BaseProperties.JOSE_RSA_OAEP_256_ALG_ID);
+        return algorithm.equals(JOSE_ECDH_ES_ALG_ID) ||
+               algorithm.equals(JOSE_RSA_OAEP_256_ALG_ID);
     }
 
     public static boolean permittedContentEncryptionAlgorithm(String algorithm) {
-        return algorithm.equals(BaseProperties.JOSE_A128CBC_HS256_ALG_ID);
+        return algorithm.equals(JOSE_A128CBC_HS256_ALG_ID);
     }
 }

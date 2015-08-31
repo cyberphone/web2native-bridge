@@ -64,6 +64,7 @@ import org.webpki.util.ArrayUtil;
 
 import org.webpki.w2nb.webpayment.common.CredentialProperties;
 import org.webpki.w2nb.webpayment.common.BaseProperties;
+import org.webpki.w2nb.webpayment.common.Encryption;
 import org.webpki.w2nb.webpayment.common.KeyStoreEnumerator;
 
 public class InitWallet {
@@ -145,12 +146,12 @@ public class InitWallet {
                     AsymSignatureAlgorithms.ECDSA_SHA256.getJOSEName());
             if (!args[8].contains("@")) {
                 PublicKey publicKey = CertificateUtil.getCertificateFromBlob(ArrayUtil.readFile(args[8])).getPublicKey();
-                ow.setString(CredentialProperties.CONTENT_ENCRYPTION_ALGORITHM_JSON, BaseProperties.JOSE_A128CBC_HS256_ALG_ID)
+                ow.setString(CredentialProperties.CONTENT_ENCRYPTION_ALGORITHM_JSON, Encryption.JOSE_A128CBC_HS256_ALG_ID)
                   .setString(CredentialProperties.KEY_ENCRYPTION_ALGORITHM_JSON,
                              publicKey instanceof RSAPublicKey ?
-                                     BaseProperties.JOSE_RSA_OAEP_256_ALG_ID 
+                                     Encryption.JOSE_RSA_OAEP_256_ALG_ID 
                                                                : 
-                                     BaseProperties.JOSE_ECDH_ES_ALG_ID)
+                                     Encryption.JOSE_ECDH_ES_ALG_ID)
                   .setObject(CredentialProperties.KEY_ENCRYPTION_KEY_JSON)
                   .setPublicKey(publicKey, JSONAlgorithmPreferences.JOSE);
             }

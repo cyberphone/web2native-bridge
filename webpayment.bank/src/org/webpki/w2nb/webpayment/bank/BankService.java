@@ -42,6 +42,7 @@ import org.webpki.util.ArrayUtil;
 
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.DecryptionKeyHolder;
+import org.webpki.w2nb.webpayment.common.Encryption;
 import org.webpki.w2nb.webpayment.common.KeyStoreEnumerator;
 import org.webpki.w2nb.webpayment.common.ServerSigner;
 
@@ -83,7 +84,7 @@ public class BankService extends InitPropertyReader implements ServletContextLis
         decryptionKeys.add(new DecryptionKeyHolder(keyStoreEnumerator.getPublicKey(),
                                                    keyStoreEnumerator.getPrivateKey(),
                                                    keyStoreEnumerator.getPublicKey() instanceof RSAPublicKey ?
-                BaseProperties.JOSE_RSA_OAEP_256_ALG_ID : BaseProperties.JOSE_ECDH_ES_ALG_ID));
+                                          Encryption.JOSE_RSA_OAEP_256_ALG_ID : Encryption.JOSE_ECDH_ES_ALG_ID));
     }
 
     JSONX509Verifier getRoot(String name) throws IOException, GeneralSecurityException {
