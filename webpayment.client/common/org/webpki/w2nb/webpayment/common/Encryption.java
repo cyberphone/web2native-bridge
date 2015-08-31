@@ -72,7 +72,9 @@ public abstract class Encryption {
 
     private static byte[] rsaCore(int mode, Key key, byte[] data, String keyEncryptionAlgorithm)
     throws GeneralSecurityException {
-        checkRsa(keyEncryptionAlgorithm);
+        if (!keyEncryptionAlgorithm.equals(BaseProperties.JOSE_RSA_OAEP_256_ALG_ID)) {
+            throw new GeneralSecurityException("Unsupported RSA algorithm: " + keyEncryptionAlgorithm);
+        }
         Cipher cipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA256AndMGF1Padding", "BC");
         cipher.init(mode, key);
         return cipher.doFinal(data);
@@ -119,13 +121,7 @@ public abstract class Encryption {
         return rsaCore(Cipher.DECRYPT_MODE, privateKey, encryptedKey, keyEncryptionAlgorithm);
     }
 
-    private static void checkRsa(String keyEncryptionAlgorithm) throws GeneralSecurityException {
-        if (!keyEncryptionAlgorithm.equals(BaseProperties.JOSE_RSA_OAEP_256_ALG_ID)) {
-            throw new GeneralSecurityException("Unsupported RSA algorithm: " + keyEncryptionAlgorithm);
-        }
-    }
-
-    static void addInt4(MessageDigest messageDigest, int value) {
+    private static void addInt4(MessageDigest messageDigest, int value) {
         for (int i = 24; i >= 0; i -= 8) {
             messageDigest.update((byte)(value >>> i));
         }
