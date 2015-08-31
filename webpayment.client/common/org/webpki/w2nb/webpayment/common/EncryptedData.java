@@ -147,16 +147,16 @@ public class EncryptedData implements BaseProperties {
         byte[] iv = new byte[16];
         new SecureRandom().nextBytes (iv);
         byte[] tag = new byte[16];
-        byte[] content = Encryption.contentEncryption(contentEncryptionAlgorithm,
-                                                      contentEncryptionKey,
-                                                      unencryptedData.serializeJSONObject(JSONOutputFormats.NORMALIZED),
-                                                      iv,
-                                                      encryptedKey.serializeJSONObject(JSONOutputFormats.NORMALIZED),
-                                                      tag);
+        byte[] cipherText = Encryption.contentEncryption(contentEncryptionAlgorithm,
+                                                         contentEncryptionKey,
+                                                         unencryptedData.serializeJSONObject(JSONOutputFormats.NORMALIZED),
+                                                         iv,
+                                                         encryptedKey.serializeJSONObject(JSONOutputFormats.NORMALIZED),
+                                                         tag);
         encryptedData.setString(ALGORITHM_JSON, contentEncryptionAlgorithm)
                      .setBinary(IV_JSON, iv)
                      .setBinary(TAG_JSON, tag)
-                     .setBinary(CIPHER_TEXT_JSON, content);
+                     .setBinary(CIPHER_TEXT_JSON, cipherText);
         return encryptedContent;
     }
 }
