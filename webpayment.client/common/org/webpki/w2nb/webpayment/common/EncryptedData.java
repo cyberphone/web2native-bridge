@@ -20,7 +20,6 @@ import java.io.IOException;
 
 import java.security.GeneralSecurityException;
 import java.security.PublicKey;
-import java.security.SecureRandom;
 
 import java.security.interfaces.ECPublicKey;
 
@@ -127,8 +126,7 @@ public class EncryptedData implements BaseProperties {
         byte[] contentEncryptionKey = null;
         if (EncryptedData.isRsaKey(keyEncryptionAlgorithm)) {
             encryptedKey.setPublicKey(keyEncryptionKey, JSONAlgorithmPreferences.JOSE);
-            contentEncryptionKey = new byte[32];
-            new SecureRandom().nextBytes (contentEncryptionKey);
+            contentEncryptionKey = Encryption.generateContentEncryptionKey(contentEncryptionAlgorithm);
             encryptedKey.setBinary(CIPHER_TEXT_JSON,
             Encryption.rsaEncryptKey(keyEncryptionAlgorithm,
                                      contentEncryptionKey,
@@ -144,8 +142,7 @@ public class EncryptedData implements BaseProperties {
             encryptedKey.setObject(EPHEMERAL_SENDER_KEY_JSON)
                 .setPublicKey(ephemeralKey[0], JSONAlgorithmPreferences.JOSE);
         }
-        byte[] iv = new byte[16];
-        new SecureRandom().nextBytes (iv);
+        byte[] iv = Encryption.generateIV(contentEncryptionAlgorithm);
         byte[] tag = new byte[16];
         byte[] cipherText = Encryption.contentEncryption(contentEncryptionAlgorithm,
                                                          contentEncryptionKey,

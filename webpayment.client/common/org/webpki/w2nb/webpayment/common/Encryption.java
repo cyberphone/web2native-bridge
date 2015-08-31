@@ -44,8 +44,10 @@ import org.webpki.util.ArrayUtil;
 
 // Core encryption class
 
-public abstract class Encryption {
+public final class Encryption {
     
+    private Encryption() {} // Static and final class
+
     private static byte[] getTag(byte[] key,
                                  byte[] cipherText,
                                  byte[] iv,
@@ -93,6 +95,22 @@ public abstract class Encryption {
         byte[] cipherText = aesCore(Cipher.ENCRYPT_MODE, key, iv, plainText, contentEncryptionAlgorithm);
         System.arraycopy(getTag(key, cipherText, iv, authenticatedData), 0, tagOutput, 0, 16);
         return cipherText;
+    }
+
+    public static byte[] generateContentEncryptionKey(String contentEncryptionAlgorithm) {
+        byte[] contentEncryptionKey = new byte[32];
+        new SecureRandom().nextBytes (contentEncryptionKey);
+        return contentEncryptionKey;
+    }
+
+    public static byte[] generateIV(String contentEncryptionAlgorithm) {
+        byte[] iv = new byte[16];
+        new SecureRandom().nextBytes (iv);
+        return iv;
+    }
+
+    public static byte[] createEmptyTag(String contentEncryptionAlgorithm) {
+        return new byte[16];
     }
 
     public static byte[] contentDecryption(String contentEncryptionAlgorithm,
