@@ -70,38 +70,39 @@ public abstract class Encryption {
         return cipher.doFinal(data);
     }
 
-    private static byte[] rsaCore(int mode, Key key, byte[] data, String algorithm) throws GeneralSecurityException {
-        checkRsa(algorithm);
+    private static byte[] rsaCore(int mode, Key key, byte[] data, String keyEncryptionAlgorithm)
+    throws GeneralSecurityException {
+        checkRsa(keyEncryptionAlgorithm);
         Cipher cipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA256AndMGF1Padding", "BC");
         cipher.init(mode, key);
         return cipher.doFinal(data);
     }
 
-    public static byte[] contentEncryption(String algorithm,
+    public static byte[] contentEncryption(String contentEncryptionAlgorithm,
                                            byte[] key,
                                            byte[] plainText,
                                            byte[] iv,
                                            byte[] authenticatedData,
                                            byte[] tagOutput) throws GeneralSecurityException {
-        if (!permittedContentEncryptionAlgorithm(algorithm)) {
-            throw new GeneralSecurityException("Unsupported content encryption algorithm: " + algorithm);
+        if (!permittedContentEncryptionAlgorithm(contentEncryptionAlgorithm)) {
+            throw new GeneralSecurityException("Unsupported content encryption algorithm: " + contentEncryptionAlgorithm);
         }
         byte[] cipherText = aesCore(Cipher.ENCRYPT_MODE, key, iv, plainText);
         System.arraycopy(getTag(key, cipherText, iv, authenticatedData), 0, tagOutput, 0, 16);
         return cipherText;
     }
 
-    public static byte[] contentDecryption(String algorithm,
+    public static byte[] contentDecryption(String contentEncryptionAlgorithm,
                                            byte[] key,
                                            byte[] cipherText,
                                            byte[] iv,
                                            byte[] authenticatedData,
                                            byte[] tagInput) throws GeneralSecurityException {
-        if (!permittedContentEncryptionAlgorithm(algorithm)) {
-            throw new GeneralSecurityException("Unsupported content encryption algorithm: " + algorithm);
+        if (!permittedContentEncryptionAlgorithm(contentEncryptionAlgorithm)) {
+            throw new GeneralSecurityException("Unsupported content encryption algorithm: " + contentEncryptionAlgorithm);
         }
         if (!ArrayUtil.compare(tagInput, getTag(key, cipherText, iv, authenticatedData), 0, 16)) {
-            throw new GeneralSecurityException("Authentication error on algorithm: " + algorithm);
+            throw new GeneralSecurityException("Authentication error on algorithm: " + contentEncryptionAlgorithm);
         }
         return aesCore(Cipher.DECRYPT_MODE, key, iv, cipherText);
      }
@@ -118,7 +119,7 @@ public abstract class Encryption {
         return rsaCore(Cipher.DECRYPT_MODE, privateKey, encryptedKey, keyEncryptionAlgorithm);
     }
 
-    static void checkRsa(String keyEncryptionAlgorithm) throws GeneralSecurityException {
+    private static void checkRsa(String keyEncryptionAlgorithm) throws GeneralSecurityException {
         if (!keyEncryptionAlgorithm.equals(BaseProperties.JOSE_RSA_OAEP_256_ALG_ID)) {
             throw new GeneralSecurityException("Unsupported RSA algorithm: " + keyEncryptionAlgorithm);
         }
