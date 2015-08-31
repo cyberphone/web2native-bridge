@@ -19,6 +19,7 @@ package org.webpki.w2nb.webpayment.common;
 import java.io.IOException;
 
 import java.security.GeneralSecurityException;
+import java.security.Key;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.MessageDigest;
@@ -62,19 +63,30 @@ public abstract class Encryption {
         mac.update(al);
         return mac.doFinal();
     }
-    
+
+    private static byte[] aesCore(int mode, byte[] key, byte[] iv, byte[] data) throws GeneralSecurityException {
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding", "BC");
+        cipher.init(mode, new SecretKeySpec(key, 16, 16, "AES"), new IvParameterSpec(iv));
+        return cipher.doFinal(data);
+    }
+
+    private static byte[] rsaCore(int mode, Key key, byte[] data, String algorithm) throws GeneralSecurityException {
+        checkRsa(algorithm);
+        Cipher cipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA256AndMGF1Padding", "BC");
+        cipher.init(mode, key);
+        return cipher.doFinal(data);
+    }
+
     public static byte[] contentEncryption(String algorithm,
                                            byte[] key,
                                            byte[] plainText,
                                            byte[] iv,
                                            byte[] authenticatedData,
-                                           byte[] tagOutput) throws GeneralSecurityException, IOException {
+                                           byte[] tagOutput) throws GeneralSecurityException {
         if (!permittedContentEncryptionAlgorithm(algorithm)) {
-            throw new IOException("Unsupported content encryption algorithm: " + algorithm);
+            throw new GeneralSecurityException("Unsupported content encryption algorithm: " + algorithm);
         }
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding", "BC");
-        cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(key, 16, 16, "AES"), new IvParameterSpec(iv));
-        byte[] cipherText = cipher.doFinal(plainText);
+        byte[] cipherText = aesCore(Cipher.ENCRYPT_MODE, key, iv, plainText);
         System.arraycopy(getTag(key, cipherText, iv, authenticatedData), 0, tagOutput, 0, 16);
         return cipherText;
     }
@@ -84,39 +96,31 @@ public abstract class Encryption {
                                            byte[] cipherText,
                                            byte[] iv,
                                            byte[] authenticatedData,
-                                           byte[] tagInput) throws GeneralSecurityException, IOException {
+                                           byte[] tagInput) throws GeneralSecurityException {
         if (!permittedContentEncryptionAlgorithm(algorithm)) {
-            throw new IOException("Unsupported content encryption algorithm: " + algorithm);
+            throw new GeneralSecurityException("Unsupported content encryption algorithm: " + algorithm);
         }
         if (!ArrayUtil.compare(tagInput, getTag(key, cipherText, iv, authenticatedData), 0, 16)) {
             throw new GeneralSecurityException("Authentication error on algorithm: " + algorithm);
         }
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding", "BC");
-        cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(key, 16, 16, "AES"), new IvParameterSpec(iv));
-        return cipher.doFinal(cipherText);
+        return aesCore(Cipher.DECRYPT_MODE, key, iv, cipherText);
      }
 
     public static byte[] rsaEncryptKey(String keyEncryptionAlgorithm,
                                        byte[] rawKey,
-                                       PublicKey publicKey) throws GeneralSecurityException, IOException {
-        checkRsa(keyEncryptionAlgorithm);
-        Cipher cipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA256AndMGF1Padding", "BC");
-        cipher.init(Cipher.ENCRYPT_MODE, publicKey);
-        return cipher.doFinal(rawKey);
+                                       PublicKey publicKey) throws GeneralSecurityException {
+        return rsaCore(Cipher.ENCRYPT_MODE, publicKey, rawKey, keyEncryptionAlgorithm);
     }
 
     public static byte[] rsaDecryptKey(String keyEncryptionAlgorithm,
                                        byte[] encryptedKey,
-                                       PrivateKey privateKey) throws GeneralSecurityException, IOException {
-        checkRsa(keyEncryptionAlgorithm);
-        Cipher cipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA256AndMGF1Padding", "BC");
-        cipher.init(Cipher.DECRYPT_MODE, privateKey);
-        return cipher.doFinal(encryptedKey);
+                                       PrivateKey privateKey) throws GeneralSecurityException {
+        return rsaCore(Cipher.DECRYPT_MODE, privateKey, encryptedKey, keyEncryptionAlgorithm);
     }
 
-    static void checkRsa(String keyEncryptionAlgorithm) throws IOException {
+    static void checkRsa(String keyEncryptionAlgorithm) throws GeneralSecurityException {
         if (!keyEncryptionAlgorithm.equals(BaseProperties.JOSE_RSA_OAEP_256_ALG_ID)) {
-            throw new IOException("Unsupported RSA algorithm: " + keyEncryptionAlgorithm);
+            throw new GeneralSecurityException("Unsupported RSA algorithm: " + keyEncryptionAlgorithm);
         }
     }
 
@@ -131,10 +135,10 @@ public abstract class Encryption {
                                               ECPublicKey receivedPublicKey,
                                               PrivateKey privateKey) throws GeneralSecurityException, IOException {
         if (!keyEncryptionAlgorithm.equals(BaseProperties.JOSE_ECDH_ES_ALG_ID)) {
-            throw new IOException("Unsupported ECDH algorithm: " + keyEncryptionAlgorithm);
+            throw new GeneralSecurityException("Unsupported ECDH algorithm: " + keyEncryptionAlgorithm);
         }
         if (!contentEncryptionAlgorithm.equals(BaseProperties.JOSE_A128CBC_HS256_ALG_ID)) {
-            throw new IOException("Unsupported content encryption algorithm: " + contentEncryptionAlgorithm);
+            throw new GeneralSecurityException("Unsupported content encryption algorithm: " + contentEncryptionAlgorithm);
         }
         KeyAgreement keyAgreement = KeyAgreement.getInstance("ECDH", "BC");
         keyAgreement.init(privateKey);
@@ -160,7 +164,7 @@ public abstract class Encryption {
     public static byte[] senderKeyAgreement(String keyEncryptionAlgorithm,
                                             String contentEncryptionAlgorithm,
                                             ECPublicKey[] generatedEphemeralKey,
-                                            PublicKey staticKey) throws IOException, GeneralSecurityException {
+                                            PublicKey staticKey) throws GeneralSecurityException, IOException {
         KeyPairGenerator generator = KeyPairGenerator.getInstance("EC", "BC");
         ECGenParameterSpec eccgen = new ECGenParameterSpec(KeyAlgorithms.getKeyAlgorithm(staticKey).getJCEName());
         generator.initialize (eccgen, new SecureRandom());
