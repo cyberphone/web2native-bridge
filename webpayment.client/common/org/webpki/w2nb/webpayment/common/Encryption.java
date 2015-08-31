@@ -64,7 +64,11 @@ public abstract class Encryption {
         return mac.doFinal();
     }
 
-    private static byte[] aesCore(int mode, byte[] key, byte[] iv, byte[] data) throws GeneralSecurityException {
+    private static byte[] aesCore(int mode, byte[] key, byte[] iv, byte[] data, String contentEncryptionAlgorithm)
+    throws GeneralSecurityException {
+        if (!permittedContentEncryptionAlgorithm(contentEncryptionAlgorithm)) {
+            throw new GeneralSecurityException("Unsupported AES algorithm: " + contentEncryptionAlgorithm);
+        }
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding", "BC");
         cipher.init(mode, new SecretKeySpec(key, 16, 16, "AES"), new IvParameterSpec(iv));
         return cipher.doFinal(data);
@@ -86,10 +90,7 @@ public abstract class Encryption {
                                            byte[] iv,
                                            byte[] authenticatedData,
                                            byte[] tagOutput) throws GeneralSecurityException {
-        if (!permittedContentEncryptionAlgorithm(contentEncryptionAlgorithm)) {
-            throw new GeneralSecurityException("Unsupported content encryption algorithm: " + contentEncryptionAlgorithm);
-        }
-        byte[] cipherText = aesCore(Cipher.ENCRYPT_MODE, key, iv, plainText);
+        byte[] cipherText = aesCore(Cipher.ENCRYPT_MODE, key, iv, plainText, contentEncryptionAlgorithm);
         System.arraycopy(getTag(key, cipherText, iv, authenticatedData), 0, tagOutput, 0, 16);
         return cipherText;
     }
@@ -100,13 +101,10 @@ public abstract class Encryption {
                                            byte[] iv,
                                            byte[] authenticatedData,
                                            byte[] tagInput) throws GeneralSecurityException {
-        if (!permittedContentEncryptionAlgorithm(contentEncryptionAlgorithm)) {
-            throw new GeneralSecurityException("Unsupported content encryption algorithm: " + contentEncryptionAlgorithm);
-        }
         if (!ArrayUtil.compare(tagInput, getTag(key, cipherText, iv, authenticatedData), 0, 16)) {
             throw new GeneralSecurityException("Authentication error on algorithm: " + contentEncryptionAlgorithm);
         }
-        return aesCore(Cipher.DECRYPT_MODE, key, iv, cipherText);
+        return aesCore(Cipher.DECRYPT_MODE, key, iv, cipherText, contentEncryptionAlgorithm);
      }
 
     public static byte[] rsaEncryptKey(String keyEncryptionAlgorithm,
