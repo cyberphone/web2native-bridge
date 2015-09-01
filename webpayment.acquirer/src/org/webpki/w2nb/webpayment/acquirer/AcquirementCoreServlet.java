@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
-package org.webpki.w2nb.webpayment.bank;
+package org.webpki.w2nb.webpayment.acquirer;
 
 import java.io.IOException;
 
@@ -42,11 +42,11 @@ import org.webpki.w2nb.webpayment.common.PaymentRequest;
 
 import org.webpki.webutil.ServletUtil;
 
-public class PaymentCoreServlet extends HttpServlet implements BaseProperties {
+public class AcquirementCoreServlet extends HttpServlet implements BaseProperties {
 
     private static final long serialVersionUID = 1L;
     
-    static Logger logger = Logger.getLogger(PaymentCoreServlet.class.getCanonicalName());
+    static Logger logger = Logger.getLogger(AcquirementCoreServlet.class.getCanonicalName());
     
     static int referenceId = 164006;
     

@@ -36,12 +36,14 @@ import org.webpki.crypto.CertificateUtil;
 import org.webpki.crypto.CustomCryptoProvider;
 import org.webpki.crypto.KeyStoreVerifier;
 
+import org.webpki.json.JSONObjectWriter;
+import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONX509Verifier;
 
 import org.webpki.util.ArrayUtil;
 
-import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.DecryptionKeyHolder;
+import org.webpki.w2nb.webpayment.common.Encryption;
 import org.webpki.w2nb.webpayment.common.KeyStoreEnumerator;
 import org.webpki.w2nb.webpayment.common.ServerSigner;
 
@@ -53,26 +55,27 @@ public class AcquirerService extends InitPropertyReader implements ServletContex
     
     static final String KEYSTORE_PASSWORD     = "key_password";
 
-    static final String DECRYPTION_KEY1       = "bank_decryptionkey1";
-    static final String DECRYPTION_KEY2       = "bank_decryptionkey2";
-    
+    static final String ACQUIRER_EECERT       = "acquirer_eecert";
+    static final String DECRYPTION_KEY1       = "acquirer_decryptionkey1";  // PUBLISHED
+    static final String DECRYPTION_KEY2       = "acquirer_decryptionkey2";
+
     static final String MERCHANT_ROOT         = "merchant_root";
-    static final String CLIENT_ROOT           = "bank_client_root";
-    
-    static final String BANK_EECERT           = "bank_eecert";
-    
-    static final String ERR_MEDIA             = "err_media_type";
+    static final String MERCHANT_DN           = "merchant_dn";  // The acquirer's only customer...
+
+    static final String PAYMENT_ROOT          = "payment_root";
     
     static Vector<DecryptionKeyHolder> decryptionKeys = new Vector<DecryptionKeyHolder>();
-    
-    static JSONX509Verifier merchantRoot;
-    
-    static JSONX509Verifier clientRoot;
-    
-    static ServerSigner bankKey;
-    
-    static String jsonMediaType = BaseProperties.JSON_CONTENT_TYPE;
 
+    static JSONX509Verifier merchantRoot;
+
+    static JSONX509Verifier paymentRoot;
+
+    static ServerSigner acquirerKey;
+    
+    static String merchantDN;
+    
+    static byte[] publishedEncryptionKey;
+    
     InputStream getResource(String name) throws IOException {
         return this.getClass().getResourceAsStream(getPropertyString(name));
     }
@@ -83,7 +86,7 @@ public class AcquirerService extends InitPropertyReader implements ServletContex
         decryptionKeys.add(new DecryptionKeyHolder(keyStoreEnumerator.getPublicKey(),
                                                    keyStoreEnumerator.getPrivateKey(),
                                                    keyStoreEnumerator.getPublicKey() instanceof RSAPublicKey ?
-                BaseProperties.JOSE_RSA_OAEP_256_ALG_ID : BaseProperties.JOSE_ECDH_ES_ALG_ID));
+                Encryption.JOSE_RSA_OAEP_256_ALG_ID : Encryption.JOSE_ECDH_ES_ALG_ID));
     }
 
     JSONX509Verifier getRoot(String name) throws IOException, GeneralSecurityException {
@@ -105,20 +108,24 @@ public class AcquirerService extends InitPropertyReader implements ServletContex
          try {
             CustomCryptoProvider.forcedLoad (false);
 
-            bankKey = new ServerSigner(new KeyStoreEnumerator(getResource(BANK_EECERT),
-                                                              getPropertyString(KEYSTORE_PASSWORD)));
+            acquirerKey = new ServerSigner(new KeyStoreEnumerator(getResource(ACQUIRER_EECERT),
+                                                                  getPropertyString(KEYSTORE_PASSWORD)));
             
             merchantRoot = getRoot(MERCHANT_ROOT);
-            clientRoot = getRoot(CLIENT_ROOT);
+            paymentRoot = getRoot(PAYMENT_ROOT);
+
+            merchantDN = getPropertyString(MERCHANT_DN);
 
             addDecryptionKey(DECRYPTION_KEY1);
             addDecryptionKey(DECRYPTION_KEY2);
-            
-            if (getPropertyBoolean(ERR_MEDIA)) {
-                jsonMediaType = "text/html";
-            }
 
-            logger.info("Web2Native Bridge Bank-server initiated");
+            publishedEncryptionKey =
+                new JSONObjectWriter().setCertificatePath(
+                    new KeyStoreEnumerator(getResource(DECRYPTION_KEY1),
+                                           getPropertyString(KEYSTORE_PASSWORD)).getCertificatePath()
+                                                         ).serializeJSONObject(JSONOutputFormats.PRETTY_PRINT);
+
+            logger.info("Web2Native Bridge Acquirer-server initiated");
         } catch (Exception e) {
             logger.log(Level.SEVERE, "********\n" + e.getMessage() + "\n********", e);
         }
