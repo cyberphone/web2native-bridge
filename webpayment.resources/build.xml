@@ -253,14 +253,35 @@
        <param name="rootfile" value="${paymentroot}"/>
     </antcall>
     <antcall target="_createcert">
-       <param name="cmd" value="-ca/keypass ${keypassword} -ca/storetype ${storetype} -ca/storepass ${keypassword} -ca/keystore payment-network-rootca${keyfilext} -entity/ca -subject &quot;CN=Payment Network Sub CA3, C=EU&quot; -validity/start 2012-07-10T10:00:00 -validity/end 2025-07-10T09:59:59 -out/storetype ${storetype} -out/keystore temp-subca${keyfilext} -out/storepass ${keypassword} -out/keypass ${keypassword} -ecccurve NIST_P_256 -sigalg RSA_SHA512 -serial 3"/>
+       <param name="cmd" value="-ca/keypass ${keypassword} -ca/storetype ${storetype} -ca/storepass ${keypassword} -ca/keystore ${paymentroot}${keyfilext} -entity/ca -subject &quot;CN=Payment Network Sub CA3, C=EU&quot; -validity/start 2012-07-10T10:00:00 -validity/end 2025-07-10T09:59:59 -out/storetype ${storetype} -out/keystore temp-subca${keyfilext} -out/storepass ${keypassword} -out/keypass ${keypassword} -ecccurve NIST_P_256 -sigalg RSA_SHA512 -serial 3"/>
     </antcall>
     <antcall target="_createcert">
-       <param name="cmd" value=" -ca/addpath all -ca/keypass ${keypassword} -ca/storetype ${storetype} -ca/storepass ${keypassword} -ca/keystore temp-subca${keyfilext} -entity/ee -subject &quot;CN=mybank.com, serialNumber=4501, C=FR&quot; -validity/start 2014-01-01T00:00:00 -validity/end 2020-07-10T09:59:59 -out/storetype ${storetype} -out/keystore ${bankkey}${keyfilext} -out/storepass ${keypassword} -out/keypass ${keypassword} -ecccurve NIST_P_256 -sigalg ECDSA_SHA256"/>
+       <param name="cmd" value=" -ca/addpath all -ca/keypass ${keypassword} -ca/storetype ${storetype} -ca/storepass ${keypassword} -ca/keystore temp-subca${keyfilext} -entity/ee -extension/ku digitalSignature -subject &quot;CN=mybank.com, serialNumber=4501, C=FR&quot; -validity/start 2014-01-01T00:00:00 -validity/end 2020-07-10T09:59:59 -out/storetype ${storetype} -out/keystore ${bankkey}${keyfilext} -out/storepass ${keypassword} -out/keypass ${keypassword} -ecccurve NIST_P_256 -sigalg ECDSA_SHA256"/>
     </antcall>
   </target>
 
- <target name="_certmerchants">
+  <target name="_certacquirernetwork">
+    <antcall target="_createcert">
+       <param name="cmd" value="-selfsigned -entity/ca -subject &quot;CN=Acquirer Network Root CA1, C=US&quot; -validity/start 2010-07-10T10:00:00 -validity/end 2030-07-10T09:59:59 -out/storetype ${storetype} -out/keystore ${acquirerroot}${keyfilext} -out/storepass ${keypassword} -out/keypass ${keypassword} -keysize 4096 -sigalg RSA_SHA512 -serial 1"/>
+    </antcall>
+    <antcall target="_getroot">
+       <param name="rootfile" value="${acquirerroot}"/>
+    </antcall>
+    <antcall target="_createcert">
+       <param name="cmd" value="-ca/keypass ${keypassword} -ca/storetype ${storetype} -ca/storepass ${keypassword} -ca/keystore ${acquirerroot}${keyfilext} -entity/ca -subject &quot;CN=Acquirer Network Sub CA5, C=US&quot; -validity/start 2012-07-10T10:00:00 -validity/end 2025-07-10T09:59:59 -out/storetype ${storetype} -out/keystore temp-subca${keyfilext} -out/storepass ${keypassword} -out/keypass ${keypassword} -ecccurve NIST_P_256 -sigalg RSA_SHA512 -serial 3"/>
+    </antcall>
+    <antcall target="_createcert">
+       <param name="cmd" value=" -ca/addpath all -ca/keypass ${keypassword} -ca/storetype ${storetype} -ca/storepass ${keypassword} -ca/keystore temp-subca${keyfilext} -entity/ee -extension/ku digitalSignature -subject &quot;CN=moneyprocessor.com, serialNumber=809956, OU=Signature, C=US&quot; -validity/start 2014-01-01T00:00:00 -validity/end 2020-07-10T09:59:59 -out/storetype ${storetype} -out/keystore ${acquirersignaturekey}${keyfilext} -out/storepass ${keypassword} -out/keypass ${keypassword} -ecccurve NIST_P_256 -sigalg ECDSA_SHA256"/>
+    </antcall>
+    <antcall target="_createcert">
+       <param name="cmd" value=" -ca/addpath all -ca/keypass ${keypassword} -ca/storetype ${storetype} -ca/storepass ${keypassword} -ca/keystore temp-subca${keyfilext} -entity/ee -extension/ku keyAgreement -subject &quot;CN=moneyprocessor.com, serialNumber=809956, OU=Encryption, C=US&quot; -validity/start 2014-01-01T00:00:00 -validity/end 2020-07-10T09:59:59 -out/storetype ${storetype} -out/keystore ${acquirerencryptionkey_ec}${keyfilext} -out/storepass ${keypassword} -out/keypass ${keypassword} -ecccurve NIST_P_256 -sigalg ECDSA_SHA256"/>
+    </antcall>
+    <antcall target="_createcert">
+       <param name="cmd" value=" -ca/addpath all -ca/keypass ${keypassword} -ca/storetype ${storetype} -ca/storepass ${keypassword} -ca/keystore temp-subca${keyfilext} -entity/ee -extension/ku keyEncipherment -subject &quot;CN=moneyprocessor.com, serialNumber=809956, OU=Encryption, C=US&quot; -validity/start 2014-01-01T00:00:00 -validity/end 2020-07-10T09:59:59 -out/storetype ${storetype} -out/keystore ${acquirerencryptionkey_rsa}${keyfilext} -out/storepass ${keypassword} -out/keypass ${keypassword} -keysize 2048 -sigalg ECDSA_SHA256"/>
+    </antcall>
+  </target>
+
+  <target name="_certmerchants">
     <antcall target="_createcert">
        <param name="cmd" value="-selfsigned -entity/ca -subject &quot;CN=Merchant Network Root CA1, C=US&quot; -validity/start 2010-07-10T10:00:00 -validity/end 2030-07-10T09:59:59 -out/storetype ${storetype} -out/keystore ${merchantroot}${keyfilext} -out/storepass ${keypassword} -out/keypass ${keypassword} -keysize 4096 -sigalg RSA_SHA512 -serial 1"/>
     </antcall>
@@ -271,7 +292,7 @@
        <param name="cmd" value="-ca/keypass ${keypassword} -ca/storetype ${storetype} -ca/storepass ${keypassword} -ca/keystore ${merchantroot}${keyfilext} -entity/ca -subject &quot;CN=Merchant Network Sub CA5, C=DE&quot; -validity/start 2012-07-10T10:00:00 -validity/end 2025-07-10T09:59:59 -out/storetype ${storetype} -out/keystore temp-subca${keyfilext} -out/storepass ${keypassword} -out/keypass ${keypassword} -keysize 2048 -sigalg RSA_SHA512 -serial 5"/>
     </antcall>
     <antcall target="_createcert">
-       <param name="cmd" value=" -ca/addpath all -ca/keypass ${keypassword} -ca/storetype ${storetype} -ca/storepass ${keypassword} -ca/keystore temp-subca${keyfilext} -entity/ee -subject &quot;CN=Demo Merchant, serialNumber=896325, C=DE&quot; -validity/start 2014-01-01T00:00:00 -validity/end 2020-07-10T09:59:59 -out/storetype ${storetype} -out/keystore ${merchantkey}${keyfilext} -out/storepass ${keypassword} -out/keypass ${keypassword}  -sigalg RSA_SHA256 -keysize 2048"/>
+       <param name="cmd" value=" -ca/addpath all -ca/keypass ${keypassword} -ca/storetype ${storetype} -ca/storepass ${keypassword} -ca/keystore temp-subca${keyfilext} -entity/ee -extension/ku digitalSignature -subject &quot;CN=Demo Merchant, serialNumber=896325, C=DE&quot; -validity/start 2014-01-01T00:00:00 -validity/end 2020-07-10T09:59:59 -out/storetype ${storetype} -out/keystore ${merchantkey}${keyfilext} -out/storepass ${keypassword} -out/keypass ${keypassword}  -sigalg RSA_SHA256 -keysize 2048"/>
     </antcall>
   </target>
 
@@ -283,16 +304,16 @@
        <param name="rootfile" value="${clientroot}"/>
     </antcall>
     <antcall target="_createcert">
-       <param name="cmd" value="-ca/keypass ${keypassword} -ca/storetype ${storetype} -ca/storepass ${keypassword} -ca/keystore ${clientroot}${keyfilext} -entity/ee -subject &quot;CN=Luke Skywalker, serialNumber=95673522&quot; -validity/start 2012-07-10T10:00:00 -validity/end 2025-07-10T09:59:59 -out/storetype ${storetype} -out/keystore ${clientkey_rsa}${keyfilext} -out/storepass ${keypassword} -out/keypass ${keypassword} -keysize 2048 -sigalg RSA_SHA512"/>
+       <param name="cmd" value="-ca/keypass ${keypassword} -ca/storetype ${storetype} -ca/storepass ${keypassword} -ca/keystore ${clientroot}${keyfilext} -entity/ee -extension/ku digitalSignature -subject &quot;CN=Luke Skywalker, serialNumber=95673522&quot; -validity/start 2012-07-10T10:00:00 -validity/end 2025-07-10T09:59:59 -out/storetype ${storetype} -out/keystore ${clientkey_rsa}${keyfilext} -out/storepass ${keypassword} -out/keypass ${keypassword} -keysize 2048 -sigalg RSA_SHA512"/>
     </antcall>
     <antcall target="_createcert">
-       <param name="cmd" value="-ca/keypass ${keypassword} -ca/storetype ${storetype} -ca/storepass ${keypassword} -ca/keystore ${clientroot}${keyfilext} -entity/ee -subject &quot;CN=Luke Skywalker, serialNumber=95673522&quot; -validity/start 2012-07-10T10:00:00 -validity/end 2025-07-10T09:59:59 -out/storetype ${storetype} -out/keystore ${clientkey_ec}${keyfilext} -out/storepass ${keypassword} -out/keypass ${keypassword} -ecccurve NIST_P_256 -sigalg RSA_SHA512"/>
+       <param name="cmd" value="-ca/keypass ${keypassword} -ca/storetype ${storetype} -ca/storepass ${keypassword} -ca/keystore ${clientroot}${keyfilext} -entity/ee -extension/ku digitalSignature -subject &quot;CN=Luke Skywalker, serialNumber=95673522&quot; -validity/start 2012-07-10T10:00:00 -validity/end 2025-07-10T09:59:59 -out/storetype ${storetype} -out/keystore ${clientkey_ec}${keyfilext} -out/storepass ${keypassword} -out/keypass ${keypassword} -ecccurve NIST_P_256 -sigalg RSA_SHA512"/>
     </antcall>
     <antcall target="_createcert">
-       <param name="cmd" value="-ca/keypass ${keypassword} -ca/storetype ${storetype} -ca/storepass ${keypassword} -ca/keystore ${clientroot}${keyfilext} -entity/ee -subject &quot;CN=Luke Skywalker, serialNumber=95673522&quot; -validity/start 2012-07-10T10:00:00 -validity/end 2025-07-10T09:59:59 -out/storetype ${storetype} -out/keystore ${clientkey_ec2}${keyfilext} -out/storepass ${keypassword} -out/keypass ${keypassword} -ecccurve NIST_P_521 -sigalg RSA_SHA512"/>
+       <param name="cmd" value="-ca/keypass ${keypassword} -ca/storetype ${storetype} -ca/storepass ${keypassword} -ca/keystore ${clientroot}${keyfilext} -entity/ee -extension/ku digitalSignature -subject &quot;CN=Luke Skywalker, serialNumber=95673522&quot; -validity/start 2012-07-10T10:00:00 -validity/end 2025-07-10T09:59:59 -out/storetype ${storetype} -out/keystore ${clientkey_ec2}${keyfilext} -out/storepass ${keypassword} -out/keypass ${keypassword} -ecccurve NIST_P_521 -sigalg RSA_SHA512"/>
     </antcall>
     <antcall target="_createcert">
-       <param name="cmd" value="-ca/keypass ${keypassword} -ca/storetype ${storetype} -ca/storepass ${keypassword} -ca/keystore ${clientroot}${keyfilext} -entity/ee -subject &quot;CN=Luke Skywalker, serialNumber=95673522&quot; -validity/start 2012-07-10T10:00:00 -validity/end 2025-07-10T09:59:59 -out/storetype ${storetype} -out/keystore ${clientkey_ec_other}${keyfilext} -out/storepass ${keypassword} -out/keypass ${keypassword} -ecccurve NIST_P_256 -sigalg RSA_SHA512"/>
+       <param name="cmd" value="-ca/keypass ${keypassword} -ca/storetype ${storetype} -ca/storepass ${keypassword} -ca/keystore ${clientroot}${keyfilext} -entity/ee -extension/ku digitalSignature -subject &quot;CN=Luke Skywalker, serialNumber=95673522&quot; -validity/start 2012-07-10T10:00:00 -validity/end 2025-07-10T09:59:59 -out/storetype ${storetype} -out/keystore ${clientkey_ec_other}${keyfilext} -out/storepass ${keypassword} -out/keypass ${keypassword} -ecccurve NIST_P_256 -sigalg RSA_SHA512"/>
     </antcall>
   </target>
 
@@ -313,6 +334,7 @@
   
   <target name="createcerts">
     <antcall target="_certpaymentnetwork"/>
+    <antcall target="_certacquirernetwork"/>
     <antcall target="_certmerchants"/>
     <antcall target="_clientcert"/>
     <antcall target="_authencryption"/>
