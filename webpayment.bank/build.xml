@@ -105,7 +105,8 @@
          <include name="${bankkey}${keyfilext}"/>
          <include name="${clientroot}.cer"/>
          <include name="${merchant.var.root}.cer"/>
-       </zipfileset>
+      </zipfileset>
+      <fileset dir="web"/>
     </war>
   </target>
 
