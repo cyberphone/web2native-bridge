@@ -26,8 +26,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-
-
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 
 public class EncryptionKeyPublisherServlet extends HttpServlet {
@@ -41,5 +39,5 @@ public class EncryptionKeyPublisherServlet extends HttpServlet {
         response.setHeader("Pragma", "No-Cache");
         response.setDateHeader("EXPIRES", 0);
         response.getOutputStream().write(AcquirerService.publishedEncryptionKey);
-      }
-  }
+    }
+}
