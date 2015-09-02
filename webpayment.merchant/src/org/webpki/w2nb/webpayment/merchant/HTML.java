@@ -88,7 +88,8 @@ public class HTML {
 
     public static void homePage(HttpServletResponse response,
                                 boolean indirectPaymentMode,
-                                boolean debugMode) throws IOException, ServletException {
+                                boolean debugMode,
+                                boolean acquirerMode) throws IOException, ServletException {
         HTML.output(response, HTML.getHTML(null, null,
                 "<tr><td width=\"100%\" align=\"center\" valign=\"middle\">" +
                 "<table style=\"max-width:600px;\" cellpadding=\"4\">" +
@@ -104,16 +105,20 @@ public class HTML {
 //TODO
 //                   "<tr style=\"text-align:left\"><td><a href=\"" + "hh" + "/cards\">Initialize Payment Cards&nbsp;&nbsp;</a></td><td><i>Mandatory</i> First Step</td></tr>" +
                    "<tr style=\"text-align:left\"><td><a href=\"" + "shop" + "\">Go To Merchant</a></td><td>Shop Til You Drop!</td></tr>" +
-                   "<tr style=\"text-align:left\"><form name=\"options\" method=\"POST\"><td>" +
-                   "<input type=\"checkbox\" name=\"" + 
-                   HomeServlet.INDIRECT_SESSION_ATTR + "\" onclick=\"document.forms.options.submit()\"" +
+                   "<tr style=\"text-align:left\"><form name=\"options\" method=\"POST\">" +
+                   "<td><input type=\"checkbox\" name=\"" + 
+                   HomeServlet.INDIRECT_SESSION_ATTR + "\" onchange=\"document.forms.options.submit()\"" +
                    (indirectPaymentMode ? " checked" : "") +
                    "></td><td>&quot;Indirect&quot; Mode Payment Option</td></tr>" +
+                   "<tr style=\"text-align:left\"><td><input type=\"checkbox\" name=\"" + 
+                   HomeServlet.ACQUIRER_SESSION_ATTR + "\" onchange=\"document.forms.options.submit()\"" +
+                   (acquirerMode ? " checked" : "") +
+                   "></td><td>&quot;Acquirer&quot; Mode Payment Option</td></tr>" +
                    "<tr style=\"text-align:left\"><td><input type=\"checkbox\" name=\"" +
-                   HomeServlet.DEBUG_SESSION_ATTR + "\" onclick=\"document.forms.options.submit()\"" +
+                   HomeServlet.DEBUG_SESSION_ATTR + "\" onchange=\"document.forms.options.submit()\"" +
                    (debugMode ? " checked" : "") +
                    "></td><td>Debug Option</td></form></tr>" +
-                   "<tr><td style=\"text-align:center;padding-top:15pt;padding-bottom:5pt\" colspan=\"2\"><b>Documentation</b></td></tr>" +
+                    "<tr><td style=\"text-align:center;padding-top:15pt;padding-bottom:5pt\" colspan=\"2\"><b>Documentation</b></td></tr>" +
                    "<tr style=\"text-align:left\"><td><a target=\"_blank\" href=\"https://cyberphone.github.io/openkeystore/resources/docs/web2native-bridge.pdf\">Web2Native Bridge</a></td><td>&quot;Executive Level&quot; Description</td></tr>" +
                    "<tr style=\"text-align:left\"><td><a target=\"_blank\" href=\"http://webpki.org/papers/decentralized-payments.pdf\">Demo Payment System</a>&nbsp;&nbsp;</td><td>State Diagram</td></tr>" +
                    "<tr style=\"text-align:left\"><td><a target=\"_blank\" href=\"https://github.com/cyberphone/web2native-bridge\">Demo Source Code</a></td><td>For Nerds...</td></tr>" +

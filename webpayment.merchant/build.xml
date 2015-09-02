@@ -93,7 +93,7 @@
       <replacefilter token="@add-unusual-card@" value="${unusualcard}"/>
       <replacefilter token="@err-media-type@" value="${errormedia}"/>
       <replacefilter token="@w2nb-name@" value="${w2nb.name}"/>
-      </replace>
+    </replace>
     <war destfile="${dist.dir}/${application}" webxml="${temp.dir}/web.xml">
       <classes dir="${temp.dir}">
          <exclude name="web.xml"/>
@@ -176,7 +176,7 @@
   
   <!-- mobilepki using EJBCA plugin mode -->
   <target name="mobilepki-ejbca">
-     <echo message="Web2Native Bridge &quot;mobilepki.org&quot; Bank Plugin"/>
+     <echo message="Web2Native Bridge &quot;mobilepki.org&quot; Merchant Plugin"/>
      <property name="bank_port_map" value="8442"/>
      <property file="common.properties"/>
      <property name="temp.dir" value="${ejbca.tmp.path}"/>
@@ -213,7 +213,7 @@
   </target>
   
   <target name="localhost-ejbca">
-     <echo message="Web2Native Bridge &quot;localhost&quot; Bank Plugin"/>
+     <echo message="Web2Native Bridge &quot;localhost&quot; Merchant Plugin"/>
      <property name="bank_port_map" value=""/>
      <antcall target="mobilepki-ejbca"/>
   </target>

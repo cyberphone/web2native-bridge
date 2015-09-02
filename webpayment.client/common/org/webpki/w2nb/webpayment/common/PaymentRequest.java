@@ -38,12 +38,13 @@ public class PaymentRequest implements BaseProperties {
     public static final String SOFTWARE_ID      = "WebPKI.org - Merchant";
     public static final String SOFTWARE_VERSION = "1.00";
 
-    public static JSONObjectWriter encode(String payee,
+    public static JSONObjectWriter encode(JSONObjectWriter paymentTypeDescriptor,
+                                          String payee,
                                           BigDecimal amount,
                                           Currencies currency,
                                           String referenceId,
                                           JSONX509Signer x509Signer) throws IOException {
-        return new JSONObjectWriter()
+        return paymentTypeDescriptor
             .setString(PAYEE_JSON, payee)
             .setBigDecimal(AMOUNT_JSON, amount)
             .setString(CURRENCY_JSON, currency.toString())
@@ -66,11 +67,14 @@ public class PaymentRequest implements BaseProperties {
     Software software;
     
     JSONSignatureDecoder signatureDecoder;
+
+     PaymentTypeDescriptor paymentTypeDescriptor;
     
     JSONObjectReader root;
     
     public PaymentRequest(JSONObjectReader rd) throws IOException {
         root = rd;
+        paymentTypeDescriptor = new PaymentTypeDescriptor(rd);
         payee = rd.getString(PAYEE_JSON);
         amount = rd.getBigDecimal(AMOUNT_JSON);
         try {

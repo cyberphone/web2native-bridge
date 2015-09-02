@@ -21,7 +21,10 @@ public interface BaseProperties {
     String HEIGHT_JSON                = "height";
     String WIDTH_JSON                 = "width";
     String PAYMENT_REQUEST_JSON       = "paymentRequest";
-    String INDIRECT_MODE_JSON         = "indirectMode";      // false or absent => "direct mode" payment        
+    String INDIRECT_MODE_JSON         = "indirectMode";      // false or absent => "direct mode" payment 
+    String PAYMENT_TYPE_JSON          = "paymentType";       // CreditCard or Account2Account
+    String ACQUIRER_ENC_KEY_URL_JSON  = "acquirerEncryptionKeyUrl";  // For CreditCard payments
+    String PAYEE_ACCOUNT_TYPES_JSON   = "payeeAccountTypes";         // For Account2Account payments
     String AMOUNT_JSON                = "amount";
     String ERROR_JSON                 = "error";
     String CURRENCY_JSON              = "currency";

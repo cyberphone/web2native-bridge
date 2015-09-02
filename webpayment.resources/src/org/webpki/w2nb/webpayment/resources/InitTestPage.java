@@ -21,23 +21,20 @@ package org.webpki.w2nb.webpayment.resources;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-
 import java.math.BigDecimal;
 
 import org.webpki.crypto.CustomCryptoProvider;
-
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONX509Signer;
-
 import org.webpki.w2nb.webpayment.common.CardTypes;
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.Currencies;
 import org.webpki.w2nb.webpayment.common.KeyStoreEnumerator;
 import org.webpki.w2nb.webpayment.common.Messages;
 import org.webpki.w2nb.webpayment.common.PaymentRequest;
+import org.webpki.w2nb.webpayment.common.PaymentTypeDescriptor;
 import org.webpki.w2nb.webpayment.common.ServerSigner;
-
 import org.webpki.w2nbproxy.ExtensionPositioning;
 
 public class InitTestPage implements BaseProperties {
@@ -86,11 +83,13 @@ public class InitTestPage implements BaseProperties {
         JSONX509Signer signer = new ServerSigner(new KeyStoreEnumerator (new FileInputStream(args[1]), args[2]));
 
         // Create signed payment request
-        JSONObjectWriter standardRequest = PaymentRequest.encode("Demo Merchant",
-                                                                 new BigDecimal("306.25"),
-                                                                 Currencies.USD,
-                                                                 "#6100004",
-                                                                 signer);
+        JSONObjectWriter standardRequest = 
+            PaymentRequest.encode(PaymentTypeDescriptor.createCreditCardPaymentType("https://acquirer.com/encryptionkey"),
+                                  "Demo Merchant",
+                                  new BigDecimal("306.25"),
+                                  Currencies.USD,
+                                  "#6100004",
+                                  signer);
         // Header
         write("<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><title>Payment Agent (Wallet) Tester</title>"
               + "</head><body onload=\"getTargetDimensions()\"><script>\n\n" +
