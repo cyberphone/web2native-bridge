@@ -75,6 +75,7 @@ public abstract class PaymentCoreServlet extends HttpServlet implements BaseProp
             GenericAuthorizationResponse authorization = processInput(session,
                                                                       input,
                                                                       requestHash,
+                    // The payment provider want IP for logging and in indirect mode only the payee have that
                                                                       request.getRemoteAddr());
             if (!ArrayUtil.compare(authorization.getPaymentRequest().getRequestHash(), requestHash)) {
                 throw new IOException("Non-matching \"" + REQUEST_HASH_JSON + "\"");

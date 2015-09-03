@@ -35,7 +35,7 @@ public class PaymentTypeDescriptor implements BaseProperties {
         for (PAYMENT_TYPES paymentType : PAYMENT_TYPES.values()) {
             if (paymentType.argument.equals(argument)) {
                 if (paymentType == PAYMENT_TYPES.CREDIT_CARD) {
-                    aquirerEncryptionKeyUrl = rd.getString(ACQUIRER_ENC_KEY_URL_JSON);
+                    aquirerEncryptionKeyUrl = rd.getString(ACQUIRER_ENCRYPTION_KEY_URL_JSON);
                 } else {
                     payeeAccountTypeUris = checkAccounts(rd.getStringArray(PAYEE_ACCOUNT_TYPES_JSON));
                 }
@@ -79,7 +79,7 @@ public class PaymentTypeDescriptor implements BaseProperties {
    public static JSONObjectWriter createCreditCardPaymentType(String aquirerEncryptionKeyUrl) throws IOException {
         return new JSONObjectWriter()
             .setString(PAYMENT_TYPE_JSON, PAYMENT_TYPES.CREDIT_CARD.argument)
-            .setString(ACQUIRER_ENC_KEY_URL_JSON, aquirerEncryptionKeyUrl);
+            .setString(ACQUIRER_ENCRYPTION_KEY_URL_JSON, aquirerEncryptionKeyUrl);
     }
 
     public static JSONObjectWriter createAccount2AccountPaymentType(String[] payeeAccountTypeUris) throws IOException {

@@ -59,6 +59,8 @@ public class MerchantService extends InitPropertyReader implements ServletContex
     
     static final String MERCHANT_EECERT       = "merchant_eecert";
     
+    static final String ACQUIRER_HOST         = "acquirer_host";
+
     static final String BANK_PORT_MAP         = "bank_port_map";
     
     static final String CURRENCY              = "currency";
@@ -80,6 +82,8 @@ public class MerchantService extends InitPropertyReader implements ServletContex
     static String jsonMediaType = BaseProperties.JSON_CONTENT_TYPE;
 
     static Object w2nbName;
+    
+    static String acquirerHost;
 
     InputStream getResource(String name) throws IOException {
         return this.getClass().getResourceAsStream(getPropertyString(name));
@@ -122,6 +126,8 @@ public class MerchantService extends InitPropertyReader implements ServletContex
             currency = Currencies.valueOf(getPropertyString(CURRENCY));
 
             w2nbName = getPropertyString(W2NB_NAME);
+
+            acquirerHost = getPropertyString(ACQUIRER_HOST);
 
             if (getPropertyBoolean(ERR_MEDIA)) {
                 jsonMediaType = "text/html";

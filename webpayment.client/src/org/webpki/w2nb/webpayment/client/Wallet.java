@@ -889,7 +889,7 @@ public class Wallet {
                                     cardProperties.getString(CredentialProperties.SIGNATURE_ALGORITHM_JSON),
                                     JSONAlgorithmPreferences.JOSE)),
                             cardProperties.getString(CredentialProperties.AUTH_URL_JSON));
-                    if (cardProperties.hasProperty(CredentialProperties.KEY_ENCRYPTION_KEY_JSON)) {
+                    if (cardProperties.hasProperty(CredentialProperties.ENCRYPTION_KEY_JSON)) {
                         card.keyEncryptionAlgorithm =
                                 cardProperties.getString(CredentialProperties.KEY_ENCRYPTION_ALGORITHM_JSON);
                         if (!Encryption.permittedKeyEncryptionAlgorithm(card.keyEncryptionAlgorithm)) {
@@ -898,7 +898,7 @@ public class Wallet {
                                            card.keyEncryptionAlgorithm);
                             break;
                         }
-                        card.keyEncryptionKey = cardProperties.getObject(CredentialProperties.KEY_ENCRYPTION_KEY_JSON)
+                        card.keyEncryptionKey = cardProperties.getObject(CredentialProperties.ENCRYPTION_KEY_JSON)
                                                       .getPublicKey(JSONAlgorithmPreferences.JOSE);
                         card.contentEncryptionAlgorithm =
                                 cardProperties.getString(CredentialProperties.CONTENT_ENCRYPTION_ALGORITHM_JSON);

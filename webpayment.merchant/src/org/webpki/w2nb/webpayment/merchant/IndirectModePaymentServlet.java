@@ -40,6 +40,18 @@ public class IndirectModePaymentServlet extends PaymentCoreServlet {
     private static final long serialVersionUID = 1L;
     
     static final int TIMEOUT_FOR_REQUEST = 5000;
+
+    static String portFilter(String url) throws IOException {
+        // Our JBoss installation has some port mapping issues...
+        if (MerchantService.bankPortMapping == null) {
+            return url;
+        }
+        URL url2 = new URL(url);
+        return new URL(url2.getProtocol(),
+                       url2.getHost(),
+                       MerchantService.bankPortMapping,
+                       url2.getFile()).toExternalForm(); 
+    }
     
     @Override
     protected GenericAuthorizationResponse processInput(HttpSession session,
@@ -51,25 +63,16 @@ public class IndirectModePaymentServlet extends PaymentCoreServlet {
         // Decode the user's indirect mode authorization request
         PayerIndirectModeAuthorizationRequest request = new PayerIndirectModeAuthorizationRequest(input);
 
-        // The payment provider want this for logging and in indirect mode the payee
-        // is the only party that has a direct contact with the client
-        String authUrl = request.getAuthUrl();
+        // Where to send the request
+        String authUrl = portFilter(request.getAuthUrl());
 
-        // Attest the user's encrypted authorization 
+        // Attest the user's encrypted authorization to show "intent"
         JSONObjectWriter providerRequest =
             PayeeIndirectModeAuthorizationRequest.encode(input.getObject(AUTH_DATA_JSON),
                                                          requestHash,
                                                          clientIpAddress,
                                                          (String)session.getAttribute(UserPaymentServlet.REQUEST_REFID_SESSION_ATTR),
                                                          MerchantService.merchantKey);
-        // Our JBoss installation has some port mapping issues...
-        if (MerchantService.bankPortMapping != null) {
-            URL url = new URL(authUrl);
-            authUrl = new URL(url.getProtocol(),
-                              url.getHost(),
-                              MerchantService.bankPortMapping,
-                              url.getFile()).toExternalForm(); 
-        }
 
         logger.info("About to send to \"" + authUrl + "\":\n" + providerRequest);
 

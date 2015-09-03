@@ -39,12 +39,14 @@ public class PaymentRequest implements BaseProperties {
     public static final String SOFTWARE_VERSION = "1.00";
 
     public static JSONObjectWriter encode(JSONObjectWriter paymentTypeDescriptor,
+                                          Date expires,
                                           String payee,
                                           BigDecimal amount,
                                           Currencies currency,
                                           String referenceId,
                                           JSONX509Signer x509Signer) throws IOException {
         return paymentTypeDescriptor
+            .setDateTime(EXPIRES_JSON, expires, true)
             .setString(PAYEE_JSON, payee)
             .setBigDecimal(AMOUNT_JSON, amount)
             .setString(CURRENCY_JSON, currency.toString())
@@ -54,6 +56,10 @@ public class PaymentRequest implements BaseProperties {
             .setSignature(x509Signer);
     }
 
+    PaymentTypeDescriptor paymentTypeDescriptor;
+
+    GregorianCalendar expires;
+    
     String payee;
 
     BigDecimal amount;
@@ -68,13 +74,12 @@ public class PaymentRequest implements BaseProperties {
     
     JSONSignatureDecoder signatureDecoder;
 
-     PaymentTypeDescriptor paymentTypeDescriptor;
-    
     JSONObjectReader root;
     
     public PaymentRequest(JSONObjectReader rd) throws IOException {
         root = rd;
         paymentTypeDescriptor = new PaymentTypeDescriptor(rd);
+        expires = rd.getDateTime(EXPIRES_JSON);
         payee = rd.getString(PAYEE_JSON);
         amount = rd.getBigDecimal(AMOUNT_JSON);
         try {
@@ -88,6 +93,14 @@ public class PaymentRequest implements BaseProperties {
         signatureDecoder = rd.getSignature(JSONAlgorithmPreferences.JOSE);
         signatureDecoder.verify(JSONSignatureTypes.X509_CERTIFICATE);
         rd.checkForUnread();
+    }
+
+    public PaymentTypeDescriptor getPaymentTypeDescriptor() {
+        return paymentTypeDescriptor;
+    }
+
+    public GregorianCalendar getExpires() {
+        return expires;
     }
 
     public String getPayee() {
@@ -104,6 +117,10 @@ public class PaymentRequest implements BaseProperties {
 
     public String getReferenceId() {
         return referenceId;
+    }
+
+    public GregorianCalendar getDateTime() {
+        return dateTime;
     }
 
     public Software getSoftware() {

@@ -59,6 +59,7 @@
   </target>
 
   <target name="_build">
+    <property name="acquirer.host" value="https://localhost:8442"/>
     <property name="errormedia" value="false"/>
     <property name="unusualcard" value="false"/>
     <property name="currency" value="USD"/>
@@ -89,6 +90,7 @@
       <replacefilter token="@key-password@" value="${keypassword}"/>
 	  <replacefilter token="@merchant-eecert@" value="${merchantkey}${keyfilext}"/>
       <replacefilter token="@payment-root@" value="${payment.var.root}.cer"/>
+      <replacefilter token="@acquirer-host@" value="${acquirer.host}/webpay-acquirer"/>
       <replacefilter token="@currency@" value="${currency}"/>
       <replacefilter token="@add-unusual-card@" value="${unusualcard}"/>
       <replacefilter token="@err-media-type@" value="${errormedia}"/>
@@ -177,6 +179,7 @@
   <!-- mobilepki using EJBCA plugin mode -->
   <target name="mobilepki-ejbca">
      <echo message="Web2Native Bridge &quot;mobilepki.org&quot; Merchant Plugin"/>
+     <property name="acquirer.host" value="https://mobilepki.org"/>
      <property name="bank_port_map" value="8442"/>
      <property file="common.properties"/>
      <property name="temp.dir" value="${ejbca.tmp.path}"/>
@@ -214,6 +217,7 @@
   
   <target name="localhost-ejbca">
      <echo message="Web2Native Bridge &quot;localhost&quot; Merchant Plugin"/>
+     <property name="acquirer.host" value="https://localhost:8442"/>
      <property name="bank_port_map" value=""/>
      <antcall target="mobilepki-ejbca"/>
   </target>

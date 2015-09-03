@@ -152,8 +152,8 @@ public class InitWallet {
                                      Encryption.JOSE_RSA_OAEP_256_ALG_ID 
                                                                : 
                                      Encryption.JOSE_ECDH_ES_ALG_ID)
-                  .setObject(CredentialProperties.KEY_ENCRYPTION_KEY_JSON)
-                  .setPublicKey(publicKey, JSONAlgorithmPreferences.JOSE);
+                  .setObject(CredentialProperties.ENCRYPTION_KEY_JSON)
+                      .setPublicKey(publicKey, JSONAlgorithmPreferences.JOSE);
             }
             surrogateKey.addExtension(BaseProperties.W2NB_WEB_PAY_CONTEXT_URI,
                                       SecureKeyStore.SUB_TYPE_EXTENSION,

@@ -17,16 +17,12 @@
 package org.webpki.w2nb.webpayment.merchant;
 
 import java.io.IOException;
-
 import java.math.BigDecimal;
 import java.math.BigInteger;
-
 import java.util.Vector;
-
 import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
-
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -37,11 +33,12 @@ import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONParser;
-
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.CardTypes;
+import org.webpki.w2nb.webpayment.common.Expires;
 import org.webpki.w2nb.webpayment.common.Messages;
 import org.webpki.w2nb.webpayment.common.PaymentRequest;
+import org.webpki.w2nb.webpayment.common.PaymentTypeDescriptor;
 
 public class UserPaymentServlet extends HttpServlet implements BaseProperties {
 
@@ -88,6 +85,7 @@ public class UserPaymentServlet extends HttpServlet implements BaseProperties {
         savedShoppingCart.roundedPaymentAmount = ((savedShoppingCart.tax + total + 24) / 25) * 25;
         HttpSession session = request.getSession(true);
         boolean indirectPaymentMode = getOption(session, HomeServlet.INDIRECT_SESSION_ATTR);
+        boolean acquirerMode = getOption(session, HomeServlet.ACQUIRER_SESSION_ATTR);
         boolean debugMode = getOption(session, HomeServlet.DEBUG_SESSION_ATTR);
         DebugData debugData = null;
         if (debugMode) {
@@ -97,11 +95,17 @@ public class UserPaymentServlet extends HttpServlet implements BaseProperties {
 
         String referenceID = "#" + (nextReferenceId++);
         JSONObjectWriter paymentRequest =
-                PaymentRequest.encode("Demo Merchant",
-                                      new BigDecimal(BigInteger.valueOf(savedShoppingCart.roundedPaymentAmount), 2),
-                                      MerchantService.currency,
-                                      referenceID,
-                                      MerchantService.merchantKey);
+            PaymentRequest.encode(acquirerMode ?
+                PaymentTypeDescriptor.createCreditCardPaymentType(MerchantService.acquirerHost + "/encryptionkey") 
+                                               :
+                PaymentTypeDescriptor.createAccount2AccountPaymentType(new String[]{"http://ultra-giro.com",
+                                                                                    "http://swift.com"}),
+                                  Expires.inMinutes(30),
+                                  "Demo Merchant",
+                                  new BigDecimal(BigInteger.valueOf(savedShoppingCart.roundedPaymentAmount), 2),
+                                  MerchantService.currency,
+                                  referenceID,
+                                  MerchantService.merchantKey);
 
         session.setAttribute(REQUEST_HASH_SESSION_ATTR, PaymentRequest.getRequestHash(paymentRequest));
 

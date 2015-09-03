@@ -21,15 +21,15 @@ package org.webpki.w2nb.webpayment.common;
 // holding a Base64URL encoded JSON object as described below:
 
 public interface CredentialProperties {
-    String CARD_NUMBER_JSON           = "cardNumber";           // Card number (PAN)
-    String CARD_TYPE_JSON             = "cardType";             // Card type.  See CardTypes.java
-    String AUTH_URL_JSON              = "authUrl";              // URL to payment provider
-    String SIGNATURE_ALGORITHM_JSON   = "signatureAlgorithm";   // MUST match the key material
+    String CARD_NUMBER_JSON           = BaseProperties.CARD_NUMBER_JSON;  // Card number (PAN)
+    String CARD_TYPE_JSON             = BaseProperties.CARD_TYPE_JSON;    // Card type.  See CardTypes.java
+    String AUTH_URL_JSON              = BaseProperties.AUTH_URL_JSON;     // URL to payment provider
+    String SIGNATURE_ALGORITHM_JSON   = "signatureAlgorithm";             // MUST match the key material
 
     // Optional: For the "indirect" mode
-    String CONTENT_ENCRYPTION_ALGORITHM_JSON = "contentEncryptionAlgorithm";  // JOSE algorithm ID (A256CBC-HS512)
-    String KEY_ENCRYPTION_ALGORITHM_JSON     = "keyEncryptionAlgorithm";      // JOSE algorithm ID (ECDH-ES or RSA-OAEP-256)
-    String KEY_ENCRYPTION_KEY_JSON           = "keyEncryptionKey";            // PublicKey in JCS format using JOSE algorithm IDs
+    String CONTENT_ENCRYPTION_ALGORITHM_JSON = BaseProperties.CONTENT_ENCRYPTION_ALGORITHM_JSON;  // JOSE algorithm ID
+    String KEY_ENCRYPTION_ALGORITHM_JSON     = BaseProperties.KEY_ENCRYPTION_ALGORITHM_JSON;      // JOSE algorithm ID
+    String ENCRYPTION_KEY_JSON               = "encryptionKey";           // PublicKey in JCS format using JOSE algorithm IDs
 }
 
 // Note: Card images MUST be using the KeyGen2

@@ -21,6 +21,7 @@ import java.io.InputStream;
 
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
+import java.security.cert.X509Certificate;
 
 import java.security.interfaces.RSAPublicKey;
 
@@ -42,6 +43,7 @@ import org.webpki.json.JSONX509Verifier;
 
 import org.webpki.util.ArrayUtil;
 
+import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.DecryptionKeyHolder;
 import org.webpki.w2nb.webpayment.common.Encryption;
 import org.webpki.w2nb.webpayment.common.KeyStoreEnumerator;
@@ -119,11 +121,16 @@ public class AcquirerService extends InitPropertyReader implements ServletContex
             addDecryptionKey(DECRYPTION_KEY1);
             addDecryptionKey(DECRYPTION_KEY2);
 
+            X509Certificate[] certificatePath =
+                new KeyStoreEnumerator(getResource(DECRYPTION_KEY1),
+                                       getPropertyString(KEYSTORE_PASSWORD)).getCertificatePath();
             publishedEncryptionKey =
-                new JSONObjectWriter().setCertificatePath(
-                    new KeyStoreEnumerator(getResource(DECRYPTION_KEY1),
-                                           getPropertyString(KEYSTORE_PASSWORD)).getCertificatePath()
-                                                         ).serializeJSONObject(JSONOutputFormats.PRETTY_PRINT);
+                new JSONObjectWriter()
+                    .setString(BaseProperties.CONTENT_ENCRYPTION_ALGORITHM_JSON, Encryption.JOSE_A128CBC_HS256_ALG_ID)
+                    .setString(BaseProperties.KEY_ENCRYPTION_ALGORITHM_JSON,
+                                   certificatePath[0].getPublicKey() instanceof RSAPublicKey ?
+                               Encryption.JOSE_RSA_OAEP_256_ALG_ID : Encryption.JOSE_ECDH_ES_ALG_ID)
+                    .setCertificatePath(certificatePath).serializeJSONObject(JSONOutputFormats.PRETTY_PRINT);
 
             logger.info("Web2Native Bridge Acquirer-server initiated");
         } catch (Exception e) {
