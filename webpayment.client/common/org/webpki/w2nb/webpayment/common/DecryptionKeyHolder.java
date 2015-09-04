@@ -26,7 +26,15 @@ public class DecryptionKeyHolder {
     PrivateKey privateKey;
     
     String keyEncryptionAlgorithm;
-    
+
+    public PublicKey getPublicKey() {
+        return publicKey;
+    }
+
+    public String getKeyEncryptionAlgorithm() {
+        return keyEncryptionAlgorithm;
+    }
+
     public DecryptionKeyHolder(PublicKey publicKey, PrivateKey privateKey, String keyEncryptionAlgorithm) {
         this.publicKey = publicKey;
         this.privateKey = privateKey;
