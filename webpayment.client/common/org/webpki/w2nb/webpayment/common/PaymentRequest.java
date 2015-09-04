@@ -51,7 +51,7 @@ public class PaymentRequest implements BaseProperties {
             .setBigDecimal(AMOUNT_JSON, amount)
             .setString(CURRENCY_JSON, currency.toString())
             .setString(REFERENCE_ID_JSON, referenceId)
-            .setDateTime(DATE_TIME_JSON, new Date(), true)
+            .setDateTime(TIME_STAMP_JSON, new Date(), true)
             .setObject(SOFTWARE_JSON, Software.encode (SOFTWARE_ID, SOFTWARE_VERSION))
             .setSignature(x509Signer);
     }
@@ -88,7 +88,7 @@ public class PaymentRequest implements BaseProperties {
             throw new IOException(e);
         }
         referenceId = rd.getString(REFERENCE_ID_JSON);
-        dateTime = rd.getDateTime(DATE_TIME_JSON);
+        dateTime = rd.getDateTime(TIME_STAMP_JSON);
         software = new Software(rd);
         signatureDecoder = rd.getSignature(JSONAlgorithmPreferences.JOSE);
         signatureDecoder.verify(JSONSignatureTypes.X509_CERTIFICATE);

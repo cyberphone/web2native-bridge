@@ -51,7 +51,7 @@ public class GenericAuthorizationResponse implements BaseProperties {
             rd.setObject(ACQUIRER_CARD_DATA_JSON, encryptedCardData);
         }
         return rd.setString(REFERENCE_ID_JSON, referenceId)
-                 .setDateTime(DATE_TIME_JSON, new Date(), true)
+                 .setDateTime(TIME_STAMP_JSON, new Date(), true)
                  .setObject(SOFTWARE_JSON, Software.encode(SOFTWARE_ID, SOFTWARE_VERSION))
                  .setSignature (signer);
     }
@@ -83,7 +83,7 @@ public class GenericAuthorizationResponse implements BaseProperties {
             encryptedData = EncryptedData.parse(rd.getObject(ACQUIRER_CARD_DATA_JSON));
         }
         referenceId = rd.getString(REFERENCE_ID_JSON);
-        dateTime = rd.getDateTime(DATE_TIME_JSON);
+        dateTime = rd.getDateTime(TIME_STAMP_JSON);
         software = new Software(rd);
         signatureDecoder = rd.getSignature(JSONAlgorithmPreferences.JOSE);
         rd.checkForUnread();

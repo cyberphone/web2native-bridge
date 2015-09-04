@@ -29,7 +29,7 @@ public interface BaseProperties {
     String AMOUNT_JSON                       = "amount";
     String ERROR_JSON                        = "error";
     String CURRENCY_JSON                     = "currency";
-    String DATE_TIME_JSON                    = "dateTime";
+    String TIME_STAMP_JSON                   = "timeStamp";
     String TRANSACTION_ID_JSON               = "transactionId";
     String CLIENT_IP_ADDRESS_JSON            = "clientIpAddress";
     String REFERENCE_ID_JSON                 = "referenceId";

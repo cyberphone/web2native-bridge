@@ -122,7 +122,7 @@ public class AcquirerService extends InitPropertyReader implements ServletContex
                         .setString(BaseProperties.CONTENT_ENCRYPTION_ALGORITHM_JSON, Encryption.JOSE_A128CBC_HS256_ALG_ID)
                         .setString(BaseProperties.KEY_ENCRYPTION_ALGORITHM_JSON, decryptionKeys.get(0).getKeyEncryptionAlgorithm())
                         .setPublicKey(decryptionKeys.get(0).getPublicKey(), JSONAlgorithmPreferences.JOSE))
-                    .setDateTime(BaseProperties.DATE_TIME_JSON, new Date(), true)
+                    .setDateTime(BaseProperties.TIME_STAMP_JSON, new Date(), true)
                     .setDateTime(BaseProperties.EXPIRES_JSON, Expires.inDays(365), true)
                     .setSignature(acquirerKey).serializeJSONObject(JSONOutputFormats.PRETTY_PRINT);
 

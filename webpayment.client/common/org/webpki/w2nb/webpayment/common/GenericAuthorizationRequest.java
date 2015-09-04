@@ -46,7 +46,7 @@ public class GenericAuthorizationRequest implements BaseProperties {
             .setString(DOMAIN_NAME_JSON, domainName)
             .setString(CARD_TYPE_JSON, cardType)
             .setString(CARD_NUMBER_JSON, cardNumber)
-            .setDateTime(DATE_TIME_JSON, dateTime, false)
+            .setDateTime(TIME_STAMP_JSON, dateTime, false)
             .setObject(SOFTWARE_JSON, Software.encode(SOFTWARE_ID, SOFTWARE_VERSION))
             .setSignature (signer);
     }
@@ -102,7 +102,7 @@ public class GenericAuthorizationRequest implements BaseProperties {
         domainName = rd.getString(DOMAIN_NAME_JSON);
         cardType = rd.getString(CARD_TYPE_JSON);
         cardNumber = rd.getString(CARD_NUMBER_JSON);
-        dateTime = rd.getDateTime(DATE_TIME_JSON);
+        dateTime = rd.getDateTime(TIME_STAMP_JSON);
         software = new Software(rd);
         signatureDecoder = rd.getSignature(JSONAlgorithmPreferences.JOSE);
         rd.checkForUnread();

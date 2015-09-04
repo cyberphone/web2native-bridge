@@ -123,7 +123,7 @@ public class PaymentCoreServlet extends HttpServlet implements BaseProperties {
                 String keyEncryptionAlgorithm = encryptionParameters.getString(KEY_ENCRYPTION_ALGORITHM_JSON);
                 PublicKey publicKey = encryptionParameters.getPublicKey(JSONAlgorithmPreferences.JOSE);
                 rd.getSignature(JSONAlgorithmPreferences.JOSE);
-                rd.getDateTime(DATE_TIME_JSON);
+                rd.getDateTime(TIME_STAMP_JSON);
                 rd.getDateTime(EXPIRES_JSON);
                 rd.checkForUnread();
                 JSONObjectWriter cardData = new JSONObjectWriter();

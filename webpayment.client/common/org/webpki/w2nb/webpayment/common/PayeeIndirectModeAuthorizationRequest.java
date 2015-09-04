@@ -58,7 +58,7 @@ public class PayeeIndirectModeAuthorizationRequest implements BaseProperties {
         requestHash = rd.getObject(REQUEST_HASH_JSON).getBinary(VALUE_JSON);
         clientIpAddress = rd.getString(CLIENT_IP_ADDRESS_JSON);
         referenceId = rd.getString(REFERENCE_ID_JSON);
-        dateTime = rd.getDateTime(DATE_TIME_JSON);
+        dateTime = rd.getDateTime(TIME_STAMP_JSON);
         software = new Software(rd);
         outerCertificatePath = rd.getSignature(JSONAlgorithmPreferences.JOSE).getCertificatePath();
         rd.checkForUnread();
@@ -81,7 +81,7 @@ public class PayeeIndirectModeAuthorizationRequest implements BaseProperties {
                                               .setBinary(VALUE_JSON, requestHash))
             .setString(CLIENT_IP_ADDRESS_JSON, clientIpAddress)
             .setString(REFERENCE_ID_JSON, referenceId)
-            .setDateTime(DATE_TIME_JSON, new Date(), true)
+            .setDateTime(TIME_STAMP_JSON, new Date(), true)
             .setObject(SOFTWARE_JSON, Software.encode (PaymentRequest.SOFTWARE_ID,
                                                        PaymentRequest.SOFTWARE_VERSION))
             .setSignature(signer);
