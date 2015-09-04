@@ -40,7 +40,7 @@ public interface BaseProperties {
     String CARD_TYPE_JSON                    = "cardType";          // Card type
     String CARD_NUMBER_JSON                  = "cardNumber";        // Card number (a.k.a. PAN)
     String CARD_REFERENCE_JSON               = "cardReference";     // Card number for payee (like ************5678)
-    String PAYMENT_TOKEN_JSON                = "paymentToken";      // Tokenization result
+    String ACQUIRER_CARD_DATA_JSON           = "acquirerCardData";  // The card data an acquirer needs
     String REQUEST_HASH_JSON                 = "requestHash";
     String VALUE_JSON                        = "value";
     String DOMAIN_NAME_JSON                  = "domainName";

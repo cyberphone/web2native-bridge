@@ -17,12 +17,11 @@
 package org.webpki.w2nb.webpayment.bank;
 
 import java.io.IOException;
-
+import java.security.cert.X509Certificate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
-
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -32,14 +31,15 @@ import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONParser;
-
+import org.webpki.net.HTTPSWrapper;
 import org.webpki.w2nb.webpayment.common.BaseProperties;
+import org.webpki.w2nb.webpayment.common.EncryptedData;
 import org.webpki.w2nb.webpayment.common.PayeeIndirectModeAuthorizationRequest;
 import org.webpki.w2nb.webpayment.common.GenericAuthorizationRequest;
 import org.webpki.w2nb.webpayment.common.GenericAuthorizationResponse;
 import org.webpki.w2nb.webpayment.common.Messages;
 import org.webpki.w2nb.webpayment.common.PaymentRequest;
-
+import org.webpki.w2nb.webpayment.common.PaymentTypeDescriptor;
 import org.webpki.webutil.ServletUtil;
 
 public class PaymentCoreServlet extends HttpServlet implements BaseProperties {
@@ -48,6 +48,8 @@ public class PaymentCoreServlet extends HttpServlet implements BaseProperties {
     
     static Logger logger = Logger.getLogger(PaymentCoreServlet.class.getCanonicalName());
     
+    static final int TIMEOUT_FOR_REQUEST = 5000;
+
     static int referenceId = 164006;
     
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
@@ -102,6 +104,30 @@ public class PaymentCoreServlet extends HttpServlet implements BaseProperties {
             // Verify that the merchant's signature belongs to a valid merchant trust network
             paymentRequest.getSignatureDecoder().verify(BankService.merchantRoot);
 
+            // Separate credit-card and account2account payments
+            JSONObjectWriter encryptedCardData = null;
+            if (paymentRequest.getPaymentTypeDescriptor().getPaymentType() == PaymentTypeDescriptor.PAYMENT_TYPES.CREDIT_CARD) {
+                HTTPSWrapper wrap = new HTTPSWrapper();
+                wrap.setTimeout(TIMEOUT_FOR_REQUEST);
+                wrap.setHeader("Content-Type", JSON_CONTENT_TYPE);
+                wrap.setRequireSuccess(true);
+                wrap.makeGetRequest(paymentRequest.getPaymentTypeDescriptor().getAquirerEncryptionKeyUrl());
+                if (!wrap.getContentType().equals(JSON_CONTENT_TYPE)) {
+                    throw new IOException("Content-Type must be \"" + JSON_CONTENT_TYPE + "\" , found: " + wrap.getContentType());
+                }
+                JSONObjectReader rd = JSONParser.parse(wrap.getData());
+                String contentEncryptionAlgorithm = rd.getString(CONTENT_ENCRYPTION_ALGORITHM_JSON);
+                String keyEncryptionAlgorithm = rd.getString(KEY_ENCRYPTION_ALGORITHM_JSON);
+                X509Certificate[] certificatePath = rd.getCertificatePath();
+                rd.checkForUnread();
+                JSONObjectWriter cardData = new JSONObjectWriter();
+                cardData.setString(CARD_NUMBER_JSON, genericAuthorizationRequest.getCardNumber());
+                encryptedCardData = EncryptedData.encode(cardData,
+                                                         contentEncryptionAlgorithm,
+                                                         certificatePath[0].getPublicKey(),
+                                                         keyEncryptionAlgorithm);
+             }
+
             ////////////////////////////////////////////////////////////////////////////
             // We got an authentic request.  Now we need to check available funds etc.//
             // However, since we haven't a real bank we simply accept :-)             //
@@ -111,6 +137,7 @@ public class PaymentCoreServlet extends HttpServlet implements BaseProperties {
             authorizationResponse = GenericAuthorizationResponse.encode(paymentRequest,
                                                                         genericAuthorizationRequest.getCardType(),
                                                                         genericAuthorizationRequest.getCardNumber(),
+                                                                        encryptedCardData,
                                                                         "#" + (referenceId ++),
                                                                         BankService.bankKey);
 

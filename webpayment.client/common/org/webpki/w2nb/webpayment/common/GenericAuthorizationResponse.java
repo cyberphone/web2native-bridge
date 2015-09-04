@@ -35,6 +35,7 @@ public class GenericAuthorizationResponse implements BaseProperties {
     public static JSONObjectWriter encode(PaymentRequest paymentRequest,
                                           String cardType,
                                           String cardNumber,
+                                          JSONObjectWriter encryptedCardData,
                                           String referenceId,
                                           JSONX509Signer signer) throws IOException {
         StringBuffer cardReference = new StringBuffer();
@@ -42,14 +43,17 @@ public class GenericAuthorizationResponse implements BaseProperties {
         for (char c : cardNumber.toCharArray()) {
             cardReference.append((--q < 0) ? c : '*');
         }
-        return Messages.createBaseMessage(Messages.PROVIDER_GENERIC_AUTH_RES)
+        JSONObjectWriter rd = Messages.createBaseMessage(Messages.PROVIDER_GENERIC_AUTH_RES)
             .setObject(PAYMENT_REQUEST_JSON, paymentRequest.root)
             .setString(CARD_TYPE_JSON, cardType)
-            .setString(CARD_REFERENCE_JSON, cardReference.toString())
-            .setString(REFERENCE_ID_JSON, referenceId)
-            .setDateTime(DATE_TIME_JSON, new Date(), true)
-            .setObject(SOFTWARE_JSON, Software.encode(SOFTWARE_ID, SOFTWARE_VERSION))
-            .setSignature (signer);
+            .setString(CARD_REFERENCE_JSON, cardReference.toString());
+        if (encryptedCardData != null) {
+            rd.setObject(ACQUIRER_CARD_DATA_JSON, encryptedCardData);
+        }
+        return rd.setString(REFERENCE_ID_JSON, referenceId)
+                 .setDateTime(DATE_TIME_JSON, new Date(), true)
+                 .setObject(SOFTWARE_JSON, Software.encode(SOFTWARE_ID, SOFTWARE_VERSION))
+                 .setSignature (signer);
     }
 
     PaymentRequest paymentRequest;
@@ -59,7 +63,9 @@ public class GenericAuthorizationResponse implements BaseProperties {
     String cardReference;
     
     String referenceId;
-    
+
+    EncryptedData encryptedData;
+
     GregorianCalendar dateTime;
     
     Software software;
@@ -73,6 +79,9 @@ public class GenericAuthorizationResponse implements BaseProperties {
         paymentRequest = new PaymentRequest(rd.getObject(PAYMENT_REQUEST_JSON));
         cardType = rd.getString(CARD_TYPE_JSON);
         cardReference = rd.getString(CARD_REFERENCE_JSON);
+        if (paymentRequest.getPaymentTypeDescriptor().getPaymentType() == PaymentTypeDescriptor.PAYMENT_TYPES.CREDIT_CARD) {
+            encryptedData = EncryptedData.parse(rd.getObject(ACQUIRER_CARD_DATA_JSON));
+        }
         referenceId = rd.getString(REFERENCE_ID_JSON);
         dateTime = rd.getDateTime(DATE_TIME_JSON);
         software = new Software(rd);
