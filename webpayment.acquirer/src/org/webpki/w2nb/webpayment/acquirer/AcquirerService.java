@@ -38,6 +38,7 @@ import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONX509Verifier;
 import org.webpki.util.ArrayUtil;
+import org.webpki.w2nb.webpayment.common.AuthorityObject;
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.DecryptionKeyHolder;
 import org.webpki.w2nb.webpayment.common.Encryption;
@@ -117,14 +118,11 @@ public class AcquirerService extends InitPropertyReader implements ServletContex
             addDecryptionKey(DECRYPTION_KEY2);
 
             publishedEncryptionKey =
-                new JSONObjectWriter()
-                    .setObject(BaseProperties.ENCRYPTION_PARAMETERS_JSON, new JSONObjectWriter()
-                        .setString(BaseProperties.CONTENT_ENCRYPTION_ALGORITHM_JSON, Encryption.JOSE_A128CBC_HS256_ALG_ID)
-                        .setString(BaseProperties.KEY_ENCRYPTION_ALGORITHM_JSON, decryptionKeys.get(0).getKeyEncryptionAlgorithm())
-                        .setPublicKey(decryptionKeys.get(0).getPublicKey(), JSONAlgorithmPreferences.JOSE))
-                    .setDateTime(BaseProperties.TIME_STAMP_JSON, new Date(), true)
-                    .setDateTime(BaseProperties.EXPIRES_JSON, Expires.inDays(365), true)
-                    .setSignature(acquirerKey).serializeJSONObject(JSONOutputFormats.PRETTY_PRINT);
+                AuthorityObject.encode("https://acqurier.com/authority",
+                                       "https://acqurier.com/transaction",
+                                       decryptionKeys.get(0).getPublicKey(),
+                                       Expires.inDays(365),
+                                       acquirerKey).serializeJSONObject(JSONOutputFormats.PRETTY_PRINT);
 
             logger.info("Web2Native Bridge Acquirer-server initiated");
         } catch (Exception e) {

@@ -45,7 +45,7 @@ public class EncryptedData implements BaseProperties {
 
     private ECPublicKey ephemeralPublicKey;  // For ECHD only
 
-    private String contentEncryptionAlgorithm;
+    private String dataEncryptionAlgorithm;
 
     private byte[] iv;
 
@@ -67,9 +67,9 @@ public class EncryptedData implements BaseProperties {
         return new EncryptedData(rd);
     }
 
-    private EncryptedData(JSONObjectReader rd) throws IOException {
-        rd = rd.getObject(ENCRYPTED_DATA_JSON);
-        contentEncryptionAlgorithm = rd.getString(ALGORITHM_JSON);
+    private EncryptedData(JSONObjectReader encryptionObject) throws IOException {
+        JSONObjectReader rd = encryptionObject.getObject(ENCRYPTED_DATA_JSON);
+        dataEncryptionAlgorithm = rd.getString(ALGORITHM_JSON);
         iv = rd.getBinary(IV_JSON);
         tag = rd.getBinary(TAG_JSON);
         JSONObjectReader encryptedKey = rd.getObject(ENCRYPTED_KEY_JSON);
@@ -94,14 +94,14 @@ public class EncryptedData implements BaseProperties {
                 notFound = false;
                 if (decryptionKey.keyEncryptionAlgorithm.equals(keyEncryptionAlgorithm)) {
                     return JSONParser.parse(
-                        Encryption.contentDecryption(contentEncryptionAlgorithm,
+                        Encryption.contentDecryption(dataEncryptionAlgorithm,
                                                      isRsaKey(keyEncryptionAlgorithm) ?
                                  Encryption.rsaDecryptKey(keyEncryptionAlgorithm,
                                                           encryptedKeyData,
                                                           decryptionKey.privateKey)
                                                      :
                                  Encryption.receiverKeyAgreement(keyEncryptionAlgorithm,
-                                                                 contentEncryptionAlgorithm,
+                                                                 dataEncryptionAlgorithm,
                                                                  ephemeralPublicKey,
                                                                  decryptionKey.privateKey),
                                                      encryptedData,
@@ -115,45 +115,45 @@ public class EncryptedData implements BaseProperties {
     }
 
     public static JSONObjectWriter encode(JSONObjectWriter unencryptedData,
-                                          String contentEncryptionAlgorithm,
+                                          String dataEncryptionAlgorithm,
                                           PublicKey keyEncryptionKey,
                                           String keyEncryptionAlgorithm)
     throws IOException, GeneralSecurityException {
-        JSONObjectWriter encryptedContent = new JSONObjectWriter();
-        JSONObjectWriter encryptedData = encryptedContent.setObject(ENCRYPTED_DATA_JSON);
+        JSONObjectWriter encryptionObject = new JSONObjectWriter();
+        JSONObjectWriter encryptedData = encryptionObject.setObject(ENCRYPTED_DATA_JSON);
         JSONObjectWriter encryptedKey = encryptedData.setObject(ENCRYPTED_KEY_JSON)
             .setString(ALGORITHM_JSON, keyEncryptionAlgorithm);
-        byte[] contentEncryptionKey = null;
+        byte[] dataEncryptionKey = null;
         if (EncryptedData.isRsaKey(keyEncryptionAlgorithm)) {
             encryptedKey.setPublicKey(keyEncryptionKey, JSONAlgorithmPreferences.JOSE);
-            contentEncryptionKey = Encryption.generateContentEncryptionKey(contentEncryptionAlgorithm);
+            dataEncryptionKey = Encryption.generateDataEncryptionKey(dataEncryptionAlgorithm);
             encryptedKey.setBinary(CIPHER_TEXT_JSON,
             Encryption.rsaEncryptKey(keyEncryptionAlgorithm,
-                                     contentEncryptionKey,
+                                     dataEncryptionKey,
                                      keyEncryptionKey));
         } else {
             ECPublicKey[] ephemeralKey = new ECPublicKey[1];
-            contentEncryptionKey = Encryption.senderKeyAgreement(keyEncryptionAlgorithm,
-                                                                 contentEncryptionAlgorithm,
-                                                                 ephemeralKey,
-                                                                 keyEncryptionKey);
+            dataEncryptionKey = Encryption.senderKeyAgreement(keyEncryptionAlgorithm,
+                                                              dataEncryptionAlgorithm,
+                                                              ephemeralKey,
+                                                              keyEncryptionKey);
             encryptedKey.setObject(STATIC_PROVIDER_KEY_JSON)
                 .setPublicKey(keyEncryptionKey, JSONAlgorithmPreferences.JOSE);
             encryptedKey.setObject(EPHEMERAL_SENDER_KEY_JSON)
                 .setPublicKey(ephemeralKey[0], JSONAlgorithmPreferences.JOSE);
         }
-        byte[] iv = Encryption.generateIV(contentEncryptionAlgorithm);
-        byte[] tag = Encryption.createEmptyTag(contentEncryptionAlgorithm);
-        byte[] cipherText = Encryption.contentEncryption(contentEncryptionAlgorithm,
-                                                         contentEncryptionKey,
+        byte[] iv = Encryption.generateIV(dataEncryptionAlgorithm);
+        byte[] tag = Encryption.createEmptyTag(dataEncryptionAlgorithm);
+        byte[] cipherText = Encryption.contentEncryption(dataEncryptionAlgorithm,
+                                                         dataEncryptionKey,
                                                          unencryptedData.serializeJSONObject(JSONOutputFormats.NORMALIZED),
                                                          iv,
                                                          encryptedKey.serializeJSONObject(JSONOutputFormats.NORMALIZED),
                                                          tag);
-        encryptedData.setString(ALGORITHM_JSON, contentEncryptionAlgorithm)
+        encryptedData.setString(ALGORITHM_JSON, dataEncryptionAlgorithm)
                      .setBinary(IV_JSON, iv)
                      .setBinary(TAG_JSON, tag)
                      .setBinary(CIPHER_TEXT_JSON, cipherText);
-        return encryptedContent;
+        return encryptionObject;
     }
 }

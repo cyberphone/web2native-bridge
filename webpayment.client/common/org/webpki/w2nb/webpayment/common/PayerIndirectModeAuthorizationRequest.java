@@ -45,14 +45,14 @@ public class PayerIndirectModeAuthorizationRequest implements BaseProperties {
 
     public static JSONObjectWriter encode(JSONObjectWriter unencryptedRequest,
                                           String authUrl,
-                                          String contentEncryptionAlgorithm,
+                                          String dataEncryptionAlgorithm,
                                           PublicKey keyEncryptionKey,
                                           String keyEncryptionAlgorithm) throws IOException, GeneralSecurityException {
         JSONObjectWriter encryptedRequest = Messages.createBaseMessage(Messages.PAYER_INDIRECT_AUTH_REQ)
             .setString(AUTH_URL_JSON, authUrl);
         encryptedRequest.setObject(AUTH_DATA_JSON,
                                    EncryptedData.encode(unencryptedRequest,
-                                                        contentEncryptionAlgorithm,
+                                                        dataEncryptionAlgorithm,
                                                         keyEncryptionKey,
                                                         keyEncryptionAlgorithm));
         return encryptedRequest;

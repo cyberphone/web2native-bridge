@@ -70,10 +70,10 @@ public final class Encryption {
         return mac.doFinal();
     }
 
-    private static byte[] aesCore(int mode, byte[] key, byte[] iv, byte[] data, String contentEncryptionAlgorithm)
+    private static byte[] aesCore(int mode, byte[] key, byte[] iv, byte[] data, String dataEncryptionAlgorithm)
     throws GeneralSecurityException {
-        if (!permittedContentEncryptionAlgorithm(contentEncryptionAlgorithm)) {
-            throw new GeneralSecurityException("Unsupported AES algorithm: " + contentEncryptionAlgorithm);
+        if (!permittedDataEncryptionAlgorithm(dataEncryptionAlgorithm)) {
+            throw new GeneralSecurityException("Unsupported AES algorithm: " + dataEncryptionAlgorithm);
         }
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding", "BC");
         cipher.init(mode, new SecretKeySpec(key, 16, 16, "AES"), new IvParameterSpec(iv));
@@ -90,43 +90,43 @@ public final class Encryption {
         return cipher.doFinal(data);
     }
 
-    public static byte[] contentEncryption(String contentEncryptionAlgorithm,
+    public static byte[] contentEncryption(String dataEncryptionAlgorithm,
                                            byte[] key,
                                            byte[] plainText,
                                            byte[] iv,
                                            byte[] authenticatedData,
                                            byte[] tagOutput) throws GeneralSecurityException {
-        byte[] cipherText = aesCore(Cipher.ENCRYPT_MODE, key, iv, plainText, contentEncryptionAlgorithm);
+        byte[] cipherText = aesCore(Cipher.ENCRYPT_MODE, key, iv, plainText, dataEncryptionAlgorithm);
         System.arraycopy(getTag(key, cipherText, iv, authenticatedData), 0, tagOutput, 0, 16);
         return cipherText;
     }
 
-    public static byte[] generateContentEncryptionKey(String contentEncryptionAlgorithm) {
-        byte[] contentEncryptionKey = new byte[32];
-        new SecureRandom().nextBytes (contentEncryptionKey);
-        return contentEncryptionKey;
+    public static byte[] generateDataEncryptionKey(String dataEncryptionAlgorithm) {
+        byte[] dataEncryptionKey = new byte[32];
+        new SecureRandom().nextBytes (dataEncryptionKey);
+        return dataEncryptionKey;
     }
 
-    public static byte[] generateIV(String contentEncryptionAlgorithm) {
+    public static byte[] generateIV(String dataEncryptionAlgorithm) {
         byte[] iv = new byte[16];
         new SecureRandom().nextBytes (iv);
         return iv;
     }
 
-    public static byte[] createEmptyTag(String contentEncryptionAlgorithm) {
+    public static byte[] createEmptyTag(String dataEncryptionAlgorithm) {
         return new byte[16];
     }
 
-    public static byte[] contentDecryption(String contentEncryptionAlgorithm,
+    public static byte[] contentDecryption(String dataEncryptionAlgorithm,
                                            byte[] key,
                                            byte[] cipherText,
                                            byte[] iv,
                                            byte[] authenticatedData,
                                            byte[] tagInput) throws GeneralSecurityException {
         if (!ArrayUtil.compare(tagInput, getTag(key, cipherText, iv, authenticatedData), 0, 16)) {
-            throw new GeneralSecurityException("Authentication error on algorithm: " + contentEncryptionAlgorithm);
+            throw new GeneralSecurityException("Authentication error on algorithm: " + dataEncryptionAlgorithm);
         }
-        return aesCore(Cipher.DECRYPT_MODE, key, iv, cipherText, contentEncryptionAlgorithm);
+        return aesCore(Cipher.DECRYPT_MODE, key, iv, cipherText, dataEncryptionAlgorithm);
      }
 
     public static byte[] rsaEncryptKey(String keyEncryptionAlgorithm,
@@ -148,14 +148,14 @@ public final class Encryption {
     }
 
     public static byte[] receiverKeyAgreement(String keyEncryptionAlgorithm,
-                                              String contentEncryptionAlgorithm,
+                                              String dataEncryptionAlgorithm,
                                               ECPublicKey receivedPublicKey,
                                               PrivateKey privateKey) throws GeneralSecurityException, IOException {
         if (!keyEncryptionAlgorithm.equals(JOSE_ECDH_ES_ALG_ID)) {
             throw new GeneralSecurityException("Unsupported ECDH algorithm: " + keyEncryptionAlgorithm);
         }
-        if (!contentEncryptionAlgorithm.equals(JOSE_A128CBC_HS256_ALG_ID)) {
-            throw new GeneralSecurityException("Unsupported content encryption algorithm: " + contentEncryptionAlgorithm);
+        if (!dataEncryptionAlgorithm.equals(JOSE_A128CBC_HS256_ALG_ID)) {
+            throw new GeneralSecurityException("Unsupported dats encryption algorithm: " + dataEncryptionAlgorithm);
         }
         KeyAgreement keyAgreement = KeyAgreement.getInstance("ECDH", "BC");
         keyAgreement.init(privateKey);
@@ -167,8 +167,8 @@ public final class Encryption {
         // Z
         messageDigest.update(keyAgreement.generateSecret());
         // AlgorithmID = Content encryption algorithm
-        addInt4(messageDigest, contentEncryptionAlgorithm.length());
-        messageDigest.update(contentEncryptionAlgorithm.getBytes("UTF-8"));
+        addInt4(messageDigest, dataEncryptionAlgorithm.length());
+        messageDigest.update(dataEncryptionAlgorithm.getBytes("UTF-8"));
         // PartyUInfo = Empty
         addInt4(messageDigest, 0);
         // PartyVInfo = Empty
@@ -179,7 +179,7 @@ public final class Encryption {
     }
 
     public static byte[] senderKeyAgreement(String keyEncryptionAlgorithm,
-                                            String contentEncryptionAlgorithm,
+                                            String dataEncryptionAlgorithm,
                                             ECPublicKey[] generatedEphemeralKey,
                                             PublicKey staticKey) throws GeneralSecurityException, IOException {
         KeyPairGenerator generator = KeyPairGenerator.getInstance("EC", "BC");
@@ -188,7 +188,7 @@ public final class Encryption {
         KeyPair keyPair = generator.generateKeyPair();
         generatedEphemeralKey[0] = (ECPublicKey) keyPair.getPublic();
         return receiverKeyAgreement(keyEncryptionAlgorithm,
-                                    contentEncryptionAlgorithm,
+                                    dataEncryptionAlgorithm,
                                     (ECPublicKey)staticKey,
                                     keyPair.getPrivate());
     }
@@ -198,7 +198,7 @@ public final class Encryption {
                algorithm.equals(JOSE_RSA_OAEP_256_ALG_ID);
     }
 
-    public static boolean permittedContentEncryptionAlgorithm(String algorithm) {
+    public static boolean permittedDataEncryptionAlgorithm(String algorithm) {
         return algorithm.equals(JOSE_A128CBC_HS256_ALG_ID);
     }
 }

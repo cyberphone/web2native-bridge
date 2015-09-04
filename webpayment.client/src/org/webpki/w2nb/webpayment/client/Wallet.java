@@ -170,7 +170,7 @@ public class Wallet {
         String authUrl;
         
         // Optional (as a triple)
-        String contentEncryptionAlgorithm;
+        String dataEncryptionAlgorithm;
         String keyEncryptionAlgorithm;
         PublicKey keyEncryptionKey;
         
@@ -898,12 +898,12 @@ public class Wallet {
                                            card.keyEncryptionAlgorithm);
                             break;
                         }
-                        card.contentEncryptionAlgorithm =
-                                encryptionParameters.getString(BaseProperties.CONTENT_ENCRYPTION_ALGORITHM_JSON);
-                        if (!Encryption.permittedContentEncryptionAlgorithm(card.contentEncryptionAlgorithm)) {
+                        card.dataEncryptionAlgorithm =
+                                encryptionParameters.getString(BaseProperties.DATA_ENCRYPTION_ALGORITHM_JSON);
+                        if (!Encryption.permittedDataEncryptionAlgorithm(card.dataEncryptionAlgorithm)) {
                             logger.warning("Card " + card.cardNumber + " contained an unknown \"" +
-                                           BaseProperties.CONTENT_ENCRYPTION_ALGORITHM_JSON + "\": " +
-                                           card.contentEncryptionAlgorithm);
+                                           BaseProperties.DATA_ENCRYPTION_ALGORITHM_JSON + "\": " +
+                                           card.dataEncryptionAlgorithm);
                             break;
                         }
                         card.keyEncryptionKey = encryptionParameters.getPublicKey(JSONAlgorithmPreferences.JOSE);
@@ -968,7 +968,7 @@ public class Wallet {
                         // Only the proper Payment Provider can decrypt and process "indirect" user authorizations.
                         resultMessage = PayerIndirectModeAuthorizationRequest.encode(resultMessage,
                                                                                  selectedCard.authUrl,
-                                                                                 selectedCard.contentEncryptionAlgorithm,
+                                                                                 selectedCard.dataEncryptionAlgorithm,
                                                                                  selectedCard.keyEncryptionKey,
                                                                                  selectedCard.keyEncryptionAlgorithm);
                     }

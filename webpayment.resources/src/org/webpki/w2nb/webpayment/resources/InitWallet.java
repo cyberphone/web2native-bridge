@@ -146,13 +146,12 @@ public class InitWallet {
             if (!args[8].contains("@")) {
                 PublicKey publicKey = CertificateUtil.getCertificateFromBlob(ArrayUtil.readFile(args[8])).getPublicKey();
                 ow.setObject(BaseProperties.ENCRYPTION_PARAMETERS_JSON)
-                      .setString(BaseProperties.CONTENT_ENCRYPTION_ALGORITHM_JSON,
-                                                Encryption.JOSE_A128CBC_HS256_ALG_ID)
+                      .setString(BaseProperties.DATA_ENCRYPTION_ALGORITHM_JSON, Encryption.JOSE_A128CBC_HS256_ALG_ID)
                       .setString(BaseProperties.KEY_ENCRYPTION_ALGORITHM_JSON,
                              publicKey instanceof RSAPublicKey ?
-                                     Encryption.JOSE_RSA_OAEP_256_ALG_ID 
+                                 Encryption.JOSE_RSA_OAEP_256_ALG_ID 
                                                                : 
-                                     Encryption.JOSE_ECDH_ES_ALG_ID)
+                                 Encryption.JOSE_ECDH_ES_ALG_ID)
                       .setPublicKey(publicKey, JSONAlgorithmPreferences.JOSE);
             }
             surrogateKey.addExtension(BaseProperties.W2NB_WEB_PAY_CONTEXT_URI,

@@ -29,7 +29,8 @@ public enum Messages {
     PAYER_GENERIC_AUTH_REQ    ("PayerGenericAuthReq"),        // Used as is for all modes but wrapped
     PAYER_INDIRECT_AUTH_REQ   ("PayerIndirectAuthReq"),       // in this one for "indirect" mode
     PAYEE_INDIRECT_AUTH_REQ   ("PayeeIndirectAuthReq"),       // Payee "indirect" mode
-    PROVIDER_GENERIC_AUTH_RES ("ProviderGenericAuthRes");     // Provider response for all modes
+    PROVIDER_GENERIC_AUTH_RES ("ProviderGenericAuthRes"),     // Provider response for all modes
+    AUTHORITY_OBJECT          ("AuthorityObject");            // Published data
 
     String qualifier;
 

@@ -26,6 +26,8 @@ public interface BaseProperties {
     String ACQUIRER_ENCRYPTION_KEY_URL_JSON  = "acquirerEncryptionKeyUrl";  // For CreditCard payments
     String PAYEE_ACCOUNT_TYPES_JSON          = "payeeAccountTypes";         // For Account2Account payments
     String EXPIRES_JSON                      = "expires";           // Payment requests perform a "reservation"
+    String AUTHORITY_URL_JSON                = "authorityUrl";
+    String TRANSACTION_URL_JSON              = "transactionUrl";
     String AMOUNT_JSON                       = "amount";
     String ERROR_JSON                        = "error";
     String CURRENCY_JSON                     = "currency";
@@ -50,7 +52,7 @@ public interface BaseProperties {
     String EPHEMERAL_SENDER_KEY_JSON         = "ephemeralSenderKey";
     String SIGNATURE_ALGORITHM_JSON          = "signatureAlgorithm";
     String KEY_ENCRYPTION_ALGORITHM_JSON     = "keyEncryptionAlgorithm";     // For acquirer encryption key
-    String CONTENT_ENCRYPTION_ALGORITHM_JSON = "contentEncryptionAlgorithm"; //    -"-
+    String DATA_ENCRYPTION_ALGORITHM_JSON    = "dataEncryptionAlgorithm"; //    -"-
     String ENCRYPTION_PARAMETERS_JSON        = "encryptionParameters";       //    -"-
     String ALGORITHM_JSON                    = "algorithm";
     String IV_JSON                           = "iv";                // For symmetric encryption
