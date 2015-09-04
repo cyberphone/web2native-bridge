@@ -99,7 +99,6 @@ import org.webpki.sks.test.SKSReferenceImplementation;
 import org.webpki.util.ArrayUtil;
 
 import org.webpki.w2nb.webpayment.common.BaseProperties;
-import org.webpki.w2nb.webpayment.common.CredentialProperties;
 import org.webpki.w2nb.webpayment.common.PayerIndirectModeAuthorizationRequest;
 import org.webpki.w2nb.webpayment.common.GenericAuthorizationRequest;
 import org.webpki.w2nb.webpayment.common.Messages;
@@ -878,36 +877,36 @@ public class Wallet {
                                   JSONObjectReader cardProperties,
                                   String[] cardTypes) throws IOException {
             for (String cardType : cardTypes) {
-                if (cardProperties.getString(CredentialProperties.CARD_TYPE_JSON).equals(cardType)) {
-                    Card card = new Card(cardProperties.getString(CredentialProperties.CARD_NUMBER_JSON),
+                if (cardProperties.getString(BaseProperties.CARD_TYPE_JSON).equals(cardType)) {
+                    Card card = new Card(cardProperties.getString(BaseProperties.CARD_NUMBER_JSON),
                             getImageIcon(sks.getExtension(keyHandle, 
                                   KeyGen2URIs.LOGOTYPES.CARD).getExtensionData(SecureKeyStore.SUB_TYPE_LOGOTYPE),
                                   false),
                             cardType,
                             AsymSignatureAlgorithms.getAlgorithmFromID(
                                 JSONSignatureDecoder.algorithmCheck(
-                                    cardProperties.getString(CredentialProperties.SIGNATURE_ALGORITHM_JSON),
+                                    cardProperties.getString(BaseProperties.SIGNATURE_ALGORITHM_JSON),
                                     JSONAlgorithmPreferences.JOSE)),
-                            cardProperties.getString(CredentialProperties.AUTH_URL_JSON));
-                    if (cardProperties.hasProperty(CredentialProperties.ENCRYPTION_KEY_JSON)) {
+                            cardProperties.getString(BaseProperties.AUTH_URL_JSON));
+                    if (cardProperties.hasProperty(BaseProperties.ENCRYPTION_PARAMETERS_JSON)) {
+                        JSONObjectReader encryptionParameters = cardProperties.getObject(BaseProperties.ENCRYPTION_PARAMETERS_JSON);
                         card.keyEncryptionAlgorithm =
-                                cardProperties.getString(CredentialProperties.KEY_ENCRYPTION_ALGORITHM_JSON);
+                                encryptionParameters.getString(BaseProperties.KEY_ENCRYPTION_ALGORITHM_JSON);
                         if (!Encryption.permittedKeyEncryptionAlgorithm(card.keyEncryptionAlgorithm)) {
                             logger.warning("Card " + card.cardNumber + " contained an unknown \"" +
-                                           CredentialProperties.KEY_ENCRYPTION_ALGORITHM_JSON + "\": " +
+                                           BaseProperties.KEY_ENCRYPTION_ALGORITHM_JSON + "\": " +
                                            card.keyEncryptionAlgorithm);
                             break;
                         }
-                        card.keyEncryptionKey = cardProperties.getObject(CredentialProperties.ENCRYPTION_KEY_JSON)
-                                                      .getPublicKey(JSONAlgorithmPreferences.JOSE);
                         card.contentEncryptionAlgorithm =
-                                cardProperties.getString(CredentialProperties.CONTENT_ENCRYPTION_ALGORITHM_JSON);
+                                encryptionParameters.getString(BaseProperties.CONTENT_ENCRYPTION_ALGORITHM_JSON);
                         if (!Encryption.permittedContentEncryptionAlgorithm(card.contentEncryptionAlgorithm)) {
                             logger.warning("Card " + card.cardNumber + " contained an unknown \"" +
-                                           CredentialProperties.CONTENT_ENCRYPTION_ALGORITHM_JSON + "\": " +
+                                           BaseProperties.CONTENT_ENCRYPTION_ALGORITHM_JSON + "\": " +
                                            card.contentEncryptionAlgorithm);
                             break;
                         }
+                        card.keyEncryptionKey = encryptionParameters.getPublicKey(JSONAlgorithmPreferences.JOSE);
                     } else if (indirectMode) {
                         logger.warning("Card " + card.cardNumber + " doesn't support \"indirect mode\" payments");
                         break;

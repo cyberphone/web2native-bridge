@@ -17,6 +17,7 @@
 package org.webpki.w2nb.webpayment.bank;
 
 import java.io.IOException;
+import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -26,6 +27,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.webpki.json.JSONAlgorithmPreferences;
 import org.webpki.json.JSONDecoderCache;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
@@ -116,15 +118,19 @@ public class PaymentCoreServlet extends HttpServlet implements BaseProperties {
                     throw new IOException("Content-Type must be \"" + JSON_CONTENT_TYPE + "\" , found: " + wrap.getContentType());
                 }
                 JSONObjectReader rd = JSONParser.parse(wrap.getData());
-                String contentEncryptionAlgorithm = rd.getString(CONTENT_ENCRYPTION_ALGORITHM_JSON);
-                String keyEncryptionAlgorithm = rd.getString(KEY_ENCRYPTION_ALGORITHM_JSON);
-                X509Certificate[] certificatePath = rd.getCertificatePath();
+                JSONObjectReader encryptionParameters = rd.getObject(ENCRYPTION_PARAMETERS_JSON);
+                String contentEncryptionAlgorithm = encryptionParameters.getString(CONTENT_ENCRYPTION_ALGORITHM_JSON);
+                String keyEncryptionAlgorithm = encryptionParameters.getString(KEY_ENCRYPTION_ALGORITHM_JSON);
+                PublicKey publicKey = encryptionParameters.getPublicKey(JSONAlgorithmPreferences.JOSE);
+                rd.getSignature(JSONAlgorithmPreferences.JOSE);
+                rd.getDateTime(DATE_TIME_JSON);
+                rd.getDateTime(EXPIRES_JSON);
                 rd.checkForUnread();
                 JSONObjectWriter cardData = new JSONObjectWriter();
                 cardData.setString(CARD_NUMBER_JSON, genericAuthorizationRequest.getCardNumber());
                 encryptedCardData = EncryptedData.encode(cardData,
                                                          contentEncryptionAlgorithm,
-                                                         certificatePath[0].getPublicKey(),
+                                                         publicKey,
                                                          keyEncryptionAlgorithm);
              }
 

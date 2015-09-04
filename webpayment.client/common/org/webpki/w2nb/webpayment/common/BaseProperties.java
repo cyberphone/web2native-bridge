@@ -48,6 +48,7 @@ public interface BaseProperties {
     String ENCRYPTED_KEY_JSON                = "encryptedKey";
     String STATIC_PROVIDER_KEY_JSON          = "staticProviderKey";
     String EPHEMERAL_SENDER_KEY_JSON         = "ephemeralSenderKey";
+    String SIGNATURE_ALGORITHM_JSON          = "signatureAlgorithm";
     String KEY_ENCRYPTION_ALGORITHM_JSON     = "keyEncryptionAlgorithm";     // For acquirer encryption key
     String CONTENT_ENCRYPTION_ALGORITHM_JSON = "contentEncryptionAlgorithm"; //    -"-
     String ENCRYPTION_PARAMETERS_JSON        = "encryptionParameters";       //    -"-
