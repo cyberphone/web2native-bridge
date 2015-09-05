@@ -51,8 +51,8 @@
     </listener>
 
     <servlet>
-        <servlet-name>EncryptionKeyPublisherServlet</servlet-name>
-        <servlet-class>org.webpki.w2nb.webpayment.acquirer.EncryptionKeyPublisherServlet</servlet-class>
+        <servlet-name>AuthorityPublisherServlet</servlet-name>
+        <servlet-class>org.webpki.w2nb.webpayment.acquirer.AuthorityPublisherServlet</servlet-class>
     </servlet>
 
     <servlet>
@@ -61,8 +61,8 @@
     </servlet>
 
     <servlet-mapping>
-        <servlet-name>EncryptionKeyPublisherServlet</servlet-name>
-        <url-pattern>/encryptionkey</url-pattern>
+        <servlet-name>AuthorityPublisherServlet</servlet-name>
+        <url-pattern>/authority</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>

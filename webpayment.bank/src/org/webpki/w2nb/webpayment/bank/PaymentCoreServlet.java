@@ -34,7 +34,7 @@ import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONParser;
 import org.webpki.net.HTTPSWrapper;
-import org.webpki.w2nb.webpayment.common.AuthorityObject;
+import org.webpki.w2nb.webpayment.common.Authority;
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.EncryptedData;
 import org.webpki.w2nb.webpayment.common.PayeeIndirectModeAuthorizationRequest;
@@ -118,13 +118,13 @@ public class PaymentCoreServlet extends HttpServlet implements BaseProperties {
                 if (!wrap.getContentType().equals(JSON_CONTENT_TYPE)) {
                     throw new IOException("Content-Type must be \"" + JSON_CONTENT_TYPE + "\" , found: " + wrap.getContentType());
                 }
-                AuthorityObject authorityObject = new AuthorityObject(JSONParser.parse(wrap.getData()));
+                Authority authority = new Authority(JSONParser.parse(wrap.getData()));
                 JSONObjectWriter cardData = new JSONObjectWriter();
                 cardData.setString(CARD_NUMBER_JSON, genericAuthorizationRequest.getCardNumber());
                 encryptedCardData = EncryptedData.encode(cardData,
-                                                         authorityObject.getDataEncryptionAlgorithm(),
-                                                         authorityObject.getPublicKey(),
-                                                         authorityObject.getKeyEncryptionAlgorithm());
+                                                         authority.getDataEncryptionAlgorithm(),
+                                                         authority.getPublicKey(),
+                                                         authority.getKeyEncryptionAlgorithm());
              }
 
             ////////////////////////////////////////////////////////////////////////////

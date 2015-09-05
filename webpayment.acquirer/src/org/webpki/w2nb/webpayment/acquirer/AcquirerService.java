@@ -20,9 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
-import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
-import java.util.Date;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -33,12 +31,10 @@ import javax.servlet.ServletContextListener;
 import org.webpki.crypto.CertificateUtil;
 import org.webpki.crypto.CustomCryptoProvider;
 import org.webpki.crypto.KeyStoreVerifier;
-import org.webpki.json.JSONAlgorithmPreferences;
-import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONX509Verifier;
 import org.webpki.util.ArrayUtil;
-import org.webpki.w2nb.webpayment.common.AuthorityObject;
+import org.webpki.w2nb.webpayment.common.Authority;
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.DecryptionKeyHolder;
 import org.webpki.w2nb.webpayment.common.Encryption;
@@ -118,11 +114,11 @@ public class AcquirerService extends InitPropertyReader implements ServletContex
             addDecryptionKey(DECRYPTION_KEY2);
 
             publishedEncryptionKey =
-                AuthorityObject.encode("https://acqurier.com/authority",
-                                       "https://acqurier.com/transaction",
-                                       decryptionKeys.get(0).getPublicKey(),
-                                       Expires.inDays(365),
-                                       acquirerKey).serializeJSONObject(JSONOutputFormats.PRETTY_PRINT);
+                Authority.encode("https://acqurier.com/authority",
+                                 "https://acqurier.com/transaction",
+                                 decryptionKeys.get(0).getPublicKey(),
+                                 Expires.inDays(365),
+                                 acquirerKey).serializeJSONObject(JSONOutputFormats.PRETTY_PRINT);
 
             logger.info("Web2Native Bridge Acquirer-server initiated");
         } catch (Exception e) {
