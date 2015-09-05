@@ -155,7 +155,7 @@ public final class Encryption {
             throw new GeneralSecurityException("Unsupported ECDH algorithm: " + keyEncryptionAlgorithm);
         }
         if (!dataEncryptionAlgorithm.equals(JOSE_A128CBC_HS256_ALG_ID)) {
-            throw new GeneralSecurityException("Unsupported dats encryption algorithm: " + dataEncryptionAlgorithm);
+            throw new GeneralSecurityException("Unsupported data encryption algorithm: " + dataEncryptionAlgorithm);
         }
         KeyAgreement keyAgreement = KeyAgreement.getInstance("ECDH", "BC");
         keyAgreement.init(privateKey);

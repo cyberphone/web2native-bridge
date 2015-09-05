@@ -23,8 +23,8 @@ public interface BaseProperties {
     String PAYMENT_REQUEST_JSON              = "paymentRequest";
     String INDIRECT_MODE_JSON                = "indirectMode";      // false or absent => "direct mode" payment 
     String PAYMENT_TYPE_JSON                 = "paymentType";       // CreditCard or Account2Account
-    String ACQUIRER_ENCRYPTION_KEY_URL_JSON  = "acquirerEncryptionKeyUrl";  // For CreditCard payments
-    String PAYEE_ACCOUNT_TYPES_JSON          = "payeeAccountTypes";         // For Account2Account payments
+    String ACQUIRER_AUTHORITY_URL_JSON       = "acquirerAuthorityUrl";  // For CreditCard payments
+    String PAYEE_ACCOUNT_TYPES_JSON          = "payeeAccountTypes";     // For Account2Account payments
     String EXPIRES_JSON                      = "expires";           // Payment requests perform a "reservation"
     String AUTHORITY_URL_JSON                = "authorityUrl";
     String TRANSACTION_URL_JSON              = "transactionUrl";
@@ -48,7 +48,7 @@ public interface BaseProperties {
     String DOMAIN_NAME_JSON                  = "domainName";
     String ENCRYPTED_DATA_JSON               = "encryptedData";
     String ENCRYPTED_KEY_JSON                = "encryptedKey";
-    String STATIC_PROVIDER_KEY_JSON          = "staticProviderKey";
+    String STATIC_RECEIVER_KEY_JSON          = "staticReceiverKey";
     String EPHEMERAL_SENDER_KEY_JSON         = "ephemeralSenderKey";
     String SIGNATURE_ALGORITHM_JSON          = "signatureAlgorithm";
     String KEY_ENCRYPTION_ALGORITHM_JSON     = "keyEncryptionAlgorithm";     // For acquirer encryption key
