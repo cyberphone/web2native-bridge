@@ -12,20 +12,6 @@
 
   <property name="catalina.home" value="${env.CATALINA_HOME}"/>
 
-  <resources id="security_constraint">
-<string><![CDATA[
-    <security-constraint>
-      <web-resource-collection>
-        <web-resource-name>The app</web-resource-name>
-        <url-pattern>/*</url-pattern>
-      </web-resource-collection>
-      <user-data-constraint>
-        <transport-guarantee>CONFIDENTIAL</transport-guarantee>
-      </user-data-constraint>
-    </security-constraint>
-]]></string>
-  </resources>
-
   <resources id="w2nb_application.xml">
 <string><![CDATA[    <!-- Web2 Payment Demo -->
     <module>
@@ -44,7 +30,7 @@
   </condition>
 
   <target name="help">
-    <echo message="tomcat [-Dhttps=0] [-Derr.payment.ca=0] [-Dunusual.card=0] [-Dcurrency=XYZ] [-Derr.media=0] mobilepki-ejbca localhost-ejbca zip-distribution"/>
+    <echo message="tomcat [-Derr.payment.ca=0] [-Dunusual.card=0] [-Dcurrency=XYZ] [-Derr.media=0] mobilepki-ejbca localhost-ejbca zip-distribution"/>
   </target>
 
   <target name="_init" unless="app_path">
@@ -85,12 +71,11 @@
            classpath="${compile.classpath}"
            includeAntRuntime="false"/>
     <replace file="${temp.dir}/web.xml">
-      <replacefilter token="@security-constraints@" value="${security.constraints}"/>
       <replacefilter token="@bank-port-map@" value="${bank.port.map}"/>
       <replacefilter token="@key-password@" value="${keypassword}"/>
 	  <replacefilter token="@merchant-eecert@" value="${merchantkey}${keyfilext}"/>
       <replacefilter token="@payment-root@" value="${payment.var.root}.cer"/>
-      <replacefilter token="@acquirer-host@" value="${acquirer.host}/webpay-acquirer"/>
+      <replacefilter token="@acquirer-authority-url@" value="${acquirer.host}/webpay-acquirer/authority"/>
       <replacefilter token="@currency@" value="${currency}"/>
       <replacefilter token="@add-unusual-card@" value="${unusualcard}"/>
       <replacefilter token="@err-media-type@" value="${errormedia}"/>
@@ -130,10 +115,6 @@
      <property name="testfiledir" value="../webpayment.client/test"/>
      <property name="temp.dir" value=".tmp"/>
      <delete dir="${temp.dir}"/>
-     <property name="local_sc" refid="security_constraint"/>
-     <condition property="security_constraints" value="${local_sc}" else="">
-       <isset property="https"/>
-     </condition>
      <condition property="payment_root" value="${merchantroot}" else="${paymentroot}">
        <isset property="err.payment.root"/>
      </condition>
@@ -155,7 +136,6 @@
        </fileset>
      </path>
      <antcall target="_build">
-       <param name="security.constraints" value="${security_constraints}"/>
        <param name="card.font" value="Arial Unicode MS"/>
        <param name="javaversion" value="1.7"/>
 
@@ -191,7 +171,6 @@
         <pathelement path="${ejbca.classpath}"/>
 	 </path>
      <antcall target="_build">
-       <param name="security.constraints" refid="security_constraint"/>
        <param name="card.font" value="Arial Unicode MS"/>
        <param name="javaversion" value="1.6"/>
 

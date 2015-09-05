@@ -53,23 +53,23 @@ public class MerchantService extends InitPropertyReader implements ServletContex
     
     static Set<CardTypes> acceptedCards = EnumSet.noneOf(CardTypes.class);
   
-    static final String KEYSTORE_PASSWORD     = "key_password";
+    static final String KEYSTORE_PASSWORD      = "key_password";
 
-    static final String PAYMENT_ROOT          = "payment_root";
+    static final String PAYMENT_ROOT           = "payment_root";
     
-    static final String MERCHANT_EECERT       = "merchant_eecert";
+    static final String MERCHANT_EECERT        = "merchant_eecert";
     
-    static final String ACQUIRER_HOST         = "acquirer_host";
+    static final String ACQUIRER_AUTHORITY_URL = "acquirer_authority_url";
 
-    static final String BANK_PORT_MAP         = "bank_port_map";
+    static final String BANK_PORT_MAP          = "bank_port_map";
     
-    static final String CURRENCY              = "currency";
+    static final String CURRENCY               = "currency";
 
-    static final String ADD_UNUSUAL_CARD      = "add_unusual_card";
+    static final String ADD_UNUSUAL_CARD       = "add_unusual_card";
 
-    static final String ERR_MEDIA             = "err_media_type";
+    static final String ERR_MEDIA              = "err_media_type";
     
-    static final String W2NB_NAME             = "w2nb_name";
+    static final String W2NB_NAME              = "w2nb_name";
 
     static JSONX509Verifier paymentRoot;
     
@@ -83,7 +83,7 @@ public class MerchantService extends InitPropertyReader implements ServletContex
 
     static Object w2nbName;
     
-    static String acquirerHost;
+    static String acquirerAuthorityUrl;
 
     InputStream getResource(String name) throws IOException {
         return this.getClass().getResourceAsStream(getPropertyString(name));
@@ -127,7 +127,7 @@ public class MerchantService extends InitPropertyReader implements ServletContex
 
             w2nbName = getPropertyString(W2NB_NAME);
 
-            acquirerHost = getPropertyString(ACQUIRER_HOST);
+            acquirerAuthorityUrl = getPropertyString(ACQUIRER_AUTHORITY_URL);
 
             if (getPropertyBoolean(ERR_MEDIA)) {
                 jsonMediaType = "text/html";

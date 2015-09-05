@@ -13,20 +13,6 @@
 
   <property name="catalina.home" value="${env.CATALINA_HOME}"/>
 
-  <resources id="security_constraint">
-<string><![CDATA[
-    <security-constraint>
-      <web-resource-collection>
-        <web-resource-name>The app</web-resource-name>
-        <url-pattern>/*</url-pattern>
-      </web-resource-collection>
-      <user-data-constraint>
-        <transport-guarantee>CONFIDENTIAL</transport-guarantee>
-      </user-data-constraint>
-    </security-constraint>
-]]></string>
-  </resources>
-
   <resources id="w2nb_application.xml">
 <string><![CDATA[    <!-- Web2 Payment Demo -->
     <module>
@@ -45,7 +31,7 @@
   </condition>
 
   <target name="help">
-      <echo message="tomcat [-Dhttps=0] [-Derr.merchant.ca=0] [-Derr.media=0] mobilepki-ejbca localhost-ejbca zip-distribution"/>
+      <echo message="tomcat [-Derr.merchant.ca=0] [-Derr.media=0] mobilepki-ejbca localhost-ejbca zip-distribution"/>
   </target>
 
   <target name="_init" unless="app_path">
@@ -76,8 +62,7 @@
            classpath="${compile.classpath}"
            includeAntRuntime="false"/>
     <replace file="${temp.dir}/web.xml">
-      <replacefilter token="@security-constraints@" value="${security.constraints}"/>
-	  <replacefilter token="@card-font@" value="${card.font}"/>
+ 	  <replacefilter token="@card-font@" value="${card.font}"/>
 	  <replacefilter token="@key-password@" value="${keypassword}"/>
 	  <replacefilter token="@bank-eecert@" value="${bankkey}${keyfilext}"/>
       <replacefilter token="@bank-decryptionkey1@" value="${encryptionkey_ec}${keyfilext}"/>
@@ -114,10 +99,6 @@
      <property file="../webpayment.resources/common.properties"/>
      <property name="temp.dir" value=".tmp"/>
      <delete dir="${temp.dir}"/>
-     <property name="local_sc" refid="security_constraint"/>
-     <condition property="security_constraints" value="${local_sc}" else="">
-       <isset property="https"/>
-     </condition>
      <condition property="merchant_root" value="${paymentroot}" else="${merchantroot}">
        <isset property="err.merchant.root"/>
      </condition>
@@ -136,7 +117,6 @@
        </fileset>
      </path>
      <antcall target="_build">
-       <param name="security.constraints" value="${security_constraints}"/>
        <param name="card.font" value="Arial Unicode MS"/>
        <param name="javaversion" value="1.7"/>
 
@@ -168,7 +148,6 @@
         <pathelement path="${ejbca.classpath}"/>
 	 </path>
      <antcall target="_build">
-       <param name="security.constraints" refid="security_constraint"/>
        <param name="card.font" value="Arial Unicode MS"/>
        <param name="javaversion" value="1.6"/>
 

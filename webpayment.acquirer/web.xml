@@ -75,5 +75,15 @@
         <servlet-name>AcquirementServlet</servlet-name>
         <url-pattern>/acquire</url-pattern>
     </servlet-mapping>
-    @security-constraints@    
+
+    <security-constraint>
+      <web-resource-collection>
+        <web-resource-name>The app</web-resource-name>
+        <url-pattern>/*</url-pattern>
+      </web-resource-collection>
+      <user-data-constraint>
+        <transport-guarantee>CONFIDENTIAL</transport-guarantee>
+      </user-data-constraint>
+    </security-constraint>
+
 </web-app>

@@ -96,7 +96,7 @@ public class UserPaymentServlet extends HttpServlet implements BaseProperties {
         String referenceID = "#" + (nextReferenceId++);
         JSONObjectWriter paymentRequest =
             PaymentRequest.encode(acquirerMode ?
-                PaymentTypeDescriptor.createCreditCardPaymentType(MerchantService.acquirerHost + "/encryptionkey") 
+                PaymentTypeDescriptor.createCreditCardPaymentType(MerchantService.acquirerAuthorityUrl + "/encryptionkey") 
                                                :
                 PaymentTypeDescriptor.createAccount2AccountPaymentType(new String[]{"http://ultra-giro.com",
                                                                                     "http://swift.com"}),
