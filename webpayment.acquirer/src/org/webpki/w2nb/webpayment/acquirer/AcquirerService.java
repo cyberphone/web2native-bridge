@@ -50,6 +50,7 @@ public class AcquirerService extends InitPropertyReader implements ServletContex
     static final String KEYSTORE_PASSWORD     = "key_password";
 
     static final String ACQUIRER_EECERT       = "acquirer_eecert";
+    static final String ACQUIRER_HOST         = "acquirer_host";
     static final String DECRYPTION_KEY1       = "acquirer_decryptionkey1";  // PUBLISHED
     static final String DECRYPTION_KEY2       = "acquirer_decryptionkey2";
 
@@ -112,10 +113,11 @@ public class AcquirerService extends InitPropertyReader implements ServletContex
 
             addDecryptionKey(DECRYPTION_KEY1);
             addDecryptionKey(DECRYPTION_KEY2);
-
+            
+            String aquirerHost = getPropertyString(ACQUIRER_HOST);
             publishedEncryptionKey =
-                Authority.encode("https://acqurier.com/authority",
-                                 "https://acqurier.com/transaction",
+                Authority.encode(aquirerHost + "/authority",
+                                 aquirerHost + "/acquire",
                                  decryptionKeys.get(0).getPublicKey(),
                                  Expires.inDays(365),
                                  acquirerKey).serializeJSONObject(JSONOutputFormats.PRETTY_PRINT);

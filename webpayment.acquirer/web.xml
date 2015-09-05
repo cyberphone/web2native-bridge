@@ -27,7 +27,13 @@
         <param-name>acquirer_decryptionkey2</param-name>
         <param-value>@acquirer-decryptionkey2@</param-value>
     </context-param>
-
+ 
+    <context-param>
+        <description>Acquirer Host</description>
+        <param-name>acquirer_host</param-name>
+        <param-value>@acquirer-host@</param-value>
+    </context-param>
+    
     <context-param>
         <description>Merchant DN (we just have one...)</description>
         <param-name>merchant_dn</param-name>
@@ -56,8 +62,8 @@
     </servlet>
 
     <servlet>
-        <servlet-name>AcquirementCoreServlet</servlet-name>
-        <servlet-class>org.webpki.w2nb.webpayment.acquirer.AcquirementCoreServlet</servlet-class>
+        <servlet-name>AcquirementServlet</servlet-name>
+        <servlet-class>org.webpki.w2nb.webpayment.acquirer.AcquirementServlet</servlet-class>
     </servlet>
 
     <servlet-mapping>
@@ -66,7 +72,7 @@
     </servlet-mapping>
 
     <servlet-mapping>
-        <servlet-name>AcquirementCoreServlet</servlet-name>
+        <servlet-name>AcquirementServlet</servlet-name>
         <url-pattern>/acquire</url-pattern>
     </servlet-mapping>
     @security-constraints@    

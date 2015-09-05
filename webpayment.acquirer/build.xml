@@ -59,6 +59,7 @@
   </target>
 
   <target name="_build">
+    <property name="acquirer.host" value="https://localhost:8442/webpay-acquirer"/>
     <fixcrlf srcdir="${src.dir}"
        tab="remove"
        tablength="4"
@@ -85,7 +86,8 @@
 	  <replacefilter token="@acquirer-eecert@" value="${acquirersignaturekey}${keyfilext}"/>
       <replacefilter token="@acquirer-decryptionkey1@" value="${acquirerencryptionkey_ec}${keyfilext}"/>
       <replacefilter token="@acquirer-decryptionkey2@" value="${acquirerencryptionkey_rsa}${keyfilext}"/>
-	  <replacefilter token="@merchant-dn@" value="cn=me"/>
+      <replacefilter token="@acquirer-host@" value="${acquirer.host}"/>
+      <replacefilter token="@merchant-dn@" value="cn=me"/>
       <replacefilter token="@merchant-root@" value="${merchant.var.root}.cer"/>
 	  <replacefilter token="@payment-root@" value="${payment.var.root}.cer"/>
     </replace>
@@ -159,6 +161,7 @@
   <!-- mobilepki using EJBCA plugin mode -->
   <target name="mobilepki-ejbca">
      <echo message="Web2Native Bridge &quot;mobilepki.org&quot; Acquirer Plugin"/>
+     <property name="acquirer.host" value="https://mobilepki.org/webpay-acquirer"/>
      <property file="common.properties"/>
      <property name="temp.dir" value="${ejbca.tmp.path}"/>
      <property name="dist.dir" value="${ejbca.gen.path}"/>
@@ -193,6 +196,7 @@
   
   <target name="localhost-ejbca">
      <echo message="Web2Native Bridge &quot;localhost&quot; Acquirer Plugin"/>
+     <property name="acquirer.host" value="https://localhost:8442/webpay-acquirer"/>
      <antcall target="mobilepki-ejbca"/>
   </target>
   
