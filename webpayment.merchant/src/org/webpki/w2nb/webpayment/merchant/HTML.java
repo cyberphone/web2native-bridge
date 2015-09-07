@@ -19,13 +19,12 @@ package org.webpki.w2nb.webpayment.merchant;
 import java.io.IOException;
 
 import javax.servlet.ServletException;
-
 import javax.servlet.http.HttpServletResponse;
 
+import org.webpki.w2nb.webpayment.common.AccountTypes;
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.Messages;
 import org.webpki.w2nb.webpayment.common.PaymentRequest;
-
 import org.webpki.w2nbproxy.ExtensionPositioning;
 
 public class HTML {
@@ -427,7 +426,7 @@ public class HTML {
                                   boolean debugMode,
                                   String error_message,
                                   PaymentRequest paymentRequest, 
-                                  String cardType,
+                                  AccountTypes accountType,
                                   String cardReference) throws IOException, ServletException {
         StringBuffer s = new StringBuffer("<tr><td width=\"100%\" align=\"center\" valign=\"middle\">");
         if (error_message == null) {
@@ -440,7 +439,7 @@ public class HTML {
             .append("</td><td style=\"text-align:center\">")
             .append(paymentRequest.getCurrency().convertAmountToString(paymentRequest.getAmount()))
             .append("</td><td style=\"text-align:center\">")
-            .append(cardType)
+            .append(accountType.getCommonName())
             .append("</td><td style=\"text-align:center\">")
             .append(cardReference)
             .append("</td></tr></table></td></tr>");

@@ -37,15 +37,15 @@ public class GenericAuthorizationRequest implements BaseProperties {
 
     public static JSONObjectWriter encode(PaymentRequest paymentRequest,
                                           String domainName,
-                                          String cardType,
-                                          String cardNumber,
+                                          String accountType,
+                                          String accountId,
                                           Date dateTime,
                                           JSONX509Signer signer) throws IOException {
         return Messages.createBaseMessage(Messages.PAYER_GENERIC_AUTH_REQ)
             .setObject(PAYMENT_REQUEST_JSON, paymentRequest.root)
             .setString(DOMAIN_NAME_JSON, domainName)
-            .setString(ACCOUNT_TYPE_JSON, cardType)
-            .setString(ACCOUNT_ID_JSON, cardNumber)
+            .setString(ACCOUNT_TYPE_JSON, accountType)
+            .setString(ACCOUNT_ID_JSON, accountId)
             .setDateTime(TIME_STAMP_JSON, dateTime, false)
             .setObject(SOFTWARE_JSON, Software.encode(SOFTWARE_ID, SOFTWARE_VERSION))
             .setSignature (signer);
@@ -53,24 +53,24 @@ public class GenericAuthorizationRequest implements BaseProperties {
 
     public static JSONObjectWriter encode(PaymentRequest paymentRequest,
                                           String domainName,
-                                          String cardType,
-                                          String cardNumber,
+                                          String accountType,
+                                          String accountId,
                                           AsymSignatureAlgorithms signatureAlgorithm,
                                           SignerInterface signer) throws IOException {
         return encode(paymentRequest,
                       domainName,
-                      cardType,
-                      cardNumber,
+                      accountType,
+                      accountId,
                       new Date(),
                       new JSONX509Signer(signer).setSignatureAlgorithm(signatureAlgorithm)
                                                 .setSignatureCertificateAttributes(true)
                                                 .setAlgorithmPreferences(JSONAlgorithmPreferences.JOSE));
     }
 
-    public static String formatCardNumber(String cardNumber) {
+    public static String formatCardNumber(String accountId) {
         StringBuffer s = new StringBuffer();
         int q = 0;
-        for (char c : cardNumber.toCharArray()) {
+        for (char c : accountId.toCharArray()) {
             if (q != 0 && q % 4 == 0) {
                 s.append(' ');
             }
@@ -84,9 +84,9 @@ public class GenericAuthorizationRequest implements BaseProperties {
     
     String domainName;
     
-    String cardType;
+    String accountType;
     
-    String cardNumber;
+    String accountId;
     
     GregorianCalendar dateTime;
     
@@ -100,8 +100,8 @@ public class GenericAuthorizationRequest implements BaseProperties {
         root = Messages.parseBaseMessage(Messages.PAYER_GENERIC_AUTH_REQ, rd);
         paymentRequest = new PaymentRequest(rd.getObject(PAYMENT_REQUEST_JSON));
         domainName = rd.getString(DOMAIN_NAME_JSON);
-        cardType = rd.getString(ACCOUNT_TYPE_JSON);
-        cardNumber = rd.getString(ACCOUNT_ID_JSON);
+        accountType = rd.getString(ACCOUNT_TYPE_JSON);
+        accountId = rd.getString(ACCOUNT_ID_JSON);
         dateTime = rd.getDateTime(TIME_STAMP_JSON);
         software = new Software(rd);
         signatureDecoder = rd.getSignature(JSONAlgorithmPreferences.JOSE);
@@ -116,12 +116,12 @@ public class GenericAuthorizationRequest implements BaseProperties {
         return domainName;
     }
 
-    public String getCardType() {
-        return cardType;
+    public String getAccountType() {
+        return accountType;
     }
 
-    public String getCardNumber() {
-        return cardNumber;
+    public String getAccountId() {
+        return accountId;
     }
 
     public GregorianCalendar getDateTime() {

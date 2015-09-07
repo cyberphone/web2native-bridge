@@ -119,7 +119,7 @@ public class PaymentCoreServlet extends HttpServlet implements BaseProperties {
                 if (!wrap.getContentType().equals(JSON_CONTENT_TYPE)) {
                     throw new IOException("Content-Type must be \"" + JSON_CONTENT_TYPE + "\" , found: " + wrap.getContentType());
                 }
-                Authority authority = new Authority(JSONParser.parse(wrap.getData()));
+                Authority authority = new Authority(JSONParser.parse(wrap.getData()),"");
                 JSONObjectWriter cardData = new JSONObjectWriter();
  //               cardData.setString(CARD_NUMBER_JSON, genericAuthorizationRequest.getCardNumber());
                 encryptedCardData = EncryptedData.encode(cardData,

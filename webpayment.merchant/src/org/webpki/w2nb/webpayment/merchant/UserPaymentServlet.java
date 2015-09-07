@@ -17,12 +17,16 @@
 package org.webpki.w2nb.webpayment.merchant;
 
 import java.io.IOException;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
+
 import java.util.Vector;
+
 import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
+
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -33,12 +37,12 @@ import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONParser;
+
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.AccountTypes;
 import org.webpki.w2nb.webpayment.common.Expires;
 import org.webpki.w2nb.webpayment.common.Messages;
 import org.webpki.w2nb.webpayment.common.PaymentRequest;
-import org.webpki.w2nb.webpayment.common.PaymentTypeDescriptor;
 
 public class UserPaymentServlet extends HttpServlet implements BaseProperties {
 
@@ -121,7 +125,7 @@ public class UserPaymentServlet extends HttpServlet implements BaseProperties {
         
         HTML.userPayPage(response,
                          savedShoppingCart,
-                         indirectPaymentMode,
+                         true,
                          debugMode,
                          new String(invokeRequest.serializeJSONObject(JSONOutputFormats.JS_NATIVE), "UTF-8"));
     }

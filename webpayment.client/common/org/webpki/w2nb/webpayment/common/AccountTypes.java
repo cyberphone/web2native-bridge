@@ -18,20 +18,24 @@ package org.webpki.w2nb.webpayment.common;
 
 import java.awt.Color;
 
+import java.io.IOException;
+
 public enum AccountTypes {
 
-    SUPER_CARD   (false, "https://supercard.com", "supercard.png",   Color.BLUE), 
-    COOL_CARD    (true,  "https://coolcard.com",  "coolcard.png",    Color.BLACK),
-    UNUSUAL_CARD (false, "https://usualcard.com", "unusualcard.png", Color.GRAY);
-    
+    SUPER_CARD   (false, "https://supercard.com", "SuperCard",   "supercard.png",   Color.BLUE), 
+    COOL_CARD    (true,  "https://coolcard.com",  "CoolCard",    "coolcard.png",    Color.BLACK),
+    UNUSUAL_CARD (false, "https://usualcard.com", "UnusualCard", "unusualcard.png", Color.GRAY);
+
     boolean acquirerBased;  // True => 4 corner model, false = > 3 corner model
     String type;            // A brand URI
+    String commonName;      // What it is usually called
     String imageName;
     Color fontColor;
     
-    AccountTypes (boolean acquirerBased, String type, String imageName, Color fontColor) {
+    AccountTypes (boolean acquirerBased, String type, String commonName, String imageName, Color fontColor) {
         this.acquirerBased = acquirerBased;
         this.type = type;
+        this.commonName = commonName;
         this.imageName = imageName;
         this.fontColor = fontColor;
     }
@@ -47,8 +51,19 @@ public enum AccountTypes {
     public String getImageName() {
         return imageName;
     }
+    public String getCommonName() {
+        return commonName;
+    }
 
     public Color getFontColor() {
         return fontColor;
+    }
+    public static AccountTypes fromType(String type) throws IOException {
+        for (AccountTypes accountType : AccountTypes.values()) {
+            if (accountType.type.equals(type)) {
+                return accountType;
+            }
+        }
+        throw new IOException("No such account type: " + type);
     }
 }

@@ -20,38 +20,38 @@ import java.io.IOException;
 
 import java.security.GeneralSecurityException;
 import java.security.PublicKey;
-import java.security.SecureRandom;
 
-import java.security.interfaces.ECPublicKey;
-
-import org.webpki.json.JSONAlgorithmPreferences;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
-import org.webpki.json.JSONOutputFormats;
 
 public class PayerIndirectModeAuthorizationRequest implements BaseProperties {
     
-    String authorityUrl;
-
     public PayerIndirectModeAuthorizationRequest(JSONObjectReader rd) throws IOException {
-        EncryptedData.parse(Messages.parseBaseMessage(Messages.PAYER_INDIRECT_AUTH_REQ, rd).getObject(PROVIDER_AUTHORITY_URL_JSON));
+        EncryptedData.parse(Messages.parseBaseMessage(Messages.PAYER_INDIRECT_AUTH_REQ, rd).getObject(AUTHORIZATION_DATA_JSON));
         authorityUrl = rd.getString(PROVIDER_AUTHORITY_URL_JSON);
+        accountType = AccountTypes.fromType(rd.getString(ACCOUNT_TYPE_JSON));
         rd.checkForUnread();
     }
     
+    String authorityUrl;
     public String getAuthorityUrl() {
         return authorityUrl;
     }
 
+    AccountTypes accountType;
+    public AccountTypes getAccountType() {
+        return accountType;
+    }
+
     public static JSONObjectWriter encode(JSONObjectWriter unencryptedRequest,
                                           String authorityUrl,
-                                          String cardType,
+                                          String accountType,
                                           String dataEncryptionAlgorithm,
                                           PublicKey keyEncryptionKey,
                                           String keyEncryptionAlgorithm) throws IOException, GeneralSecurityException {
         JSONObjectWriter encryptedRequest = Messages.createBaseMessage(Messages.PAYER_INDIRECT_AUTH_REQ)
             .setString(PROVIDER_AUTHORITY_URL_JSON, authorityUrl)
-            .setString(ACCOUNT_TYPE_JSON, cardType);
+            .setString(ACCOUNT_TYPE_JSON, accountType);
         encryptedRequest.setObject(AUTHORIZATION_DATA_JSON,
                                    EncryptedData.encode(unencryptedRequest,
                                                         dataEncryptionAlgorithm,

@@ -17,11 +17,8 @@
 package org.webpki.w2nb.webpayment.common;
 
 import java.io.IOException;
-
 import java.security.PublicKey;
-
 import java.security.interfaces.RSAPublicKey;
-
 import java.util.Date;
 import java.util.GregorianCalendar;
 
@@ -52,9 +49,13 @@ public class Authority implements BaseProperties {
             .setSignature(signer);
     }
 
-    public Authority(JSONObjectReader rd) throws IOException {
+    public Authority(JSONObjectReader rd, String expectedAuthorityUrl) throws IOException {
         Messages.parseBaseMessage(Messages.AUTHORITY, rd);
         authorityUrl = rd.getString(AUTHORITY_URL_JSON);
+        if (!authorityUrl.equals(expectedAuthorityUrl)) {
+            throw new IOException("\"" + AUTHORITY_URL_JSON + "\" mismatch, read=" + authorityUrl +
+                                  " expected=" + expectedAuthorityUrl);
+        }
         transactionUrl = rd.getString(TRANSACTION_URL_JSON);
         JSONObjectReader encryptionParameters = rd.getObject(ENCRYPTION_PARAMETERS_JSON);
         dataEncryptionAlgorithm = encryptionParameters.getString(DATA_ENCRYPTION_ALGORITHM_JSON);

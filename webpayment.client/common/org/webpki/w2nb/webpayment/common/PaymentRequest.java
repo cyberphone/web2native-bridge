@@ -55,24 +55,6 @@ public class PaymentRequest implements BaseProperties {
             .setSignature(x509Signer);
     }
 
-    GregorianCalendar expires;
-    
-    String payee;
-
-    BigDecimal amount;
-
-    Currencies currency;
-
-    String referenceId;
-    
-    GregorianCalendar dateTime;
-
-    Software software;
-    
-    JSONSignatureDecoder signatureDecoder;
-
-    JSONObjectReader root;
-    
     public PaymentRequest(JSONObjectReader rd) throws IOException {
         root = rd;
         payee = rd.getString(PAYEE_JSON);
@@ -91,41 +73,54 @@ public class PaymentRequest implements BaseProperties {
         rd.checkForUnread();
     }
 
+    GregorianCalendar expires;
     public GregorianCalendar getExpires() {
         return expires;
     }
 
+    
+    String payee;
     public String getPayee() {
         return payee;
     }
 
+
+    BigDecimal amount;
     public BigDecimal getAmount() {
         return amount;
     }
 
+
+    Currencies currency;
     public Currencies getCurrency() {
         return currency;
     }
 
+
+    String referenceId;
     public String getReferenceId() {
         return referenceId;
     }
 
+    
+    GregorianCalendar dateTime;
     public GregorianCalendar getDateTime() {
         return dateTime;
     }
 
+
+    Software software;
     public Software getSoftware() {
         return software;
     }
 
+    
+    JSONSignatureDecoder signatureDecoder;
     public JSONSignatureDecoder getSignatureDecoder() {
         return signatureDecoder;
     }
 
-    public JSONObjectReader getRoot() {
-        return root;
-    }
+    JSONObjectReader root;
 
     public byte[] getRequestHash() throws IOException {
         return getRequestHash(new JSONObjectWriter(root));

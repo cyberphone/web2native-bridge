@@ -70,8 +70,10 @@ public class PayeeIndirectModeAuthorizationRequest implements BaseProperties {
 
     public static JSONObjectWriter encode(JSONObjectReader encryptedRequest,
                                           byte[] requestHash,
-                                          String clientIpAddress,
+                                          AccountTypes accountType,
                                           String referenceId,
+                                          String acquirerAuthorityUrl,
+                                          String clientIpAddress,
                                           ServerSigner signer)
         throws IOException, GeneralSecurityException {
         return Messages.createBaseMessage(Messages.PAYEE_INDIRECT_AUTH_REQ)
@@ -79,8 +81,10 @@ public class PayeeIndirectModeAuthorizationRequest implements BaseProperties {
             .setObject(REQUEST_HASH_JSON, new JSONObjectWriter()
                                               .setString(ALGORITHM_JSON, JOSE_SHA_256_ALG_ID)
                                               .setBinary(VALUE_JSON, requestHash))
-            .setString(CLIENT_IP_ADDRESS_JSON, clientIpAddress)
+            .setString(ACCOUNT_TYPE_JSON, accountType.getType())
             .setString(REFERENCE_ID_JSON, referenceId)
+            .setString(ACQUIRER_AUTHORITY_URL_JSON, acquirerAuthorityUrl)
+            .setString(CLIENT_IP_ADDRESS_JSON, clientIpAddress)
             .setDateTime(TIME_STAMP_JSON, new Date(), true)
             .setObject(SOFTWARE_JSON, Software.encode (PaymentRequest.SOFTWARE_ID,
                                                        PaymentRequest.SOFTWARE_VERSION))

@@ -17,9 +17,7 @@
 package org.webpki.w2nb.webpayment.merchant;
 
 import java.io.IOException;
-
 import java.net.URL;
-
 import java.security.GeneralSecurityException;
 
 import javax.servlet.http.HttpSession;
@@ -28,10 +26,11 @@ import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONParser;
-
 import org.webpki.net.HTTPSWrapper;
-
+import org.webpki.w2nb.webpayment.common.AccountTypes;
+import org.webpki.w2nb.webpayment.common.Authority;
 import org.webpki.w2nb.webpayment.common.GenericAuthorizationResponse;
+import org.webpki.w2nb.webpayment.common.Messages;
 import org.webpki.w2nb.webpayment.common.PayeeIndirectModeAuthorizationRequest;
 import org.webpki.w2nb.webpayment.common.PayerIndirectModeAuthorizationRequest;
 
@@ -52,7 +51,7 @@ public class IndirectModePaymentServlet extends PaymentCoreServlet {
                        MerchantService.bankPortMapping,
                        url2.getFile()).toExternalForm(); 
     }
-    
+
     @Override
     protected GenericAuthorizationResponse processInput(HttpSession session,
                                                         JSONObjectReader input,
@@ -64,26 +63,37 @@ public class IndirectModePaymentServlet extends PaymentCoreServlet {
         PayerIndirectModeAuthorizationRequest request = new PayerIndirectModeAuthorizationRequest(input);
 
         // Lookup indicated authority
-        String authUrl = portFilter(request.getAuthorityUrl());
+        String authorityUrl = request.getAuthorityUrl();
+        HTTPSWrapper wrap = new HTTPSWrapper();
+        wrap.setTimeout(TIMEOUT_FOR_REQUEST);
+        wrap.setHeader("Content-Type", MerchantService.jsonMediaType);
+        wrap.setRequireSuccess(true);
+        wrap.makeGetRequest(portFilter(authorityUrl));
+        if (!wrap.getContentType().equals(JSON_CONTENT_TYPE)) {
+            throw new IOException("Content-Type must be \"" + JSON_CONTENT_TYPE + "\" , found: " + wrap.getContentType());
+        }
+        Authority authority = new Authority(JSONParser.parse(wrap.getData()), authorityUrl);
 
         // Attest the user's encrypted authorization to show "intent"
         JSONObjectWriter providerRequest =
             PayeeIndirectModeAuthorizationRequest.encode(input.getObject(AUTHORIZATION_DATA_JSON),
                                                          requestHash,
-                                                         clientIpAddress,
+                                                         request.getAccountType(),
                                                          (String)session.getAttribute(UserPaymentServlet.REQUEST_REFID_SESSION_ATTR),
+                                                         MerchantService.acquirerAuthorityUrl,
+                                                         clientIpAddress,
                                                          MerchantService.merchantKey);
+        String transactionUrl = portFilter(authority.getTransactionUrl());
 
-        logger.info("About to send to \"" + authUrl + "\":\n" + providerRequest);
+        logger.info("About to send to \"" + transactionUrl + "\":\n" + providerRequest);
 
         // Call the payment provider (which is the only party that can deal with
         // encrypted user authorizations)
         byte[] bankRequest = providerRequest.serializeJSONObject(JSONOutputFormats.NORMALIZED);
-        HTTPSWrapper wrap = new HTTPSWrapper();
         wrap.setTimeout(TIMEOUT_FOR_REQUEST);
         wrap.setHeader("Content-Type", MerchantService.jsonMediaType);
         wrap.setRequireSuccess(true);
-        wrap.makePostRequest(authUrl, bankRequest);
+        wrap.makePostRequest(transactionUrl, bankRequest);
         if (!wrap.getContentType().equals(JSON_CONTENT_TYPE)) {
             throw new IOException("Content-Type must be \"" + JSON_CONTENT_TYPE + "\" , found: " + wrap.getContentType());
         }
