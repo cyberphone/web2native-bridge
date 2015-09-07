@@ -32,11 +32,11 @@ import org.webpki.json.JSONObjectWriter;
 
 import org.webpki.util.ArrayUtil;
 
-public class PayeeIndirectModeAuthorizationRequest implements BaseProperties {
+public class PayeeFinalizeRequest implements BaseProperties {
     
     public static final String JOSE_SHA_256_ALG_ID = "S256";              // Well, not really JOSE but "similar" :-)
 
-    public PayeeIndirectModeAuthorizationRequest(JSONObjectReader rd) throws IOException {
+    public PayeeFinalizeRequest(JSONObjectReader rd) throws IOException {
         encryptedData = EncryptedData.parse(Messages.parseBaseMessage(Messages.PAYEE_INDIRECT_AUTH_REQ, rd).getObject(AUTHORIZATION_DATA_JSON));
         if (!rd.getObject(REQUEST_HASH_JSON).getString(ALGORITHM_JSON).equals(JOSE_SHA_256_ALG_ID)) {
             throw new IOException("Expected algorithm: " + JOSE_SHA_256_ALG_ID);

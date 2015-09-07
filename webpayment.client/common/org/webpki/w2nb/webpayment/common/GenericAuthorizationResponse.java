@@ -33,20 +33,20 @@ public class GenericAuthorizationResponse implements BaseProperties {
     public static final String SOFTWARE_VERSION = "1.00";
     
     public static JSONObjectWriter encode(PaymentRequest paymentRequest,
-                                          String cardType,
-                                          String cardNumber,
+                                          String accountType,
+                                          String accountId,
                                           JSONObjectWriter encryptedCardData,
                                           String referenceId,
                                           JSONX509Signer signer) throws IOException {
-        StringBuffer cardReference = new StringBuffer();
-        int q = cardNumber.length() - 4;
-        for (char c : cardNumber.toCharArray()) {
-            cardReference.append((--q < 0) ? c : '*');
+        StringBuffer accountReference = new StringBuffer();
+        int q = accountId.length() - 4;
+        for (char c : accountId.toCharArray()) {
+            accountReference.append((--q < 0) ? c : '*');
         }
         JSONObjectWriter rd = Messages.createBaseMessage(Messages.PROVIDER_GENERIC_AUTH_RES)
             .setObject(PAYMENT_REQUEST_JSON, paymentRequest.root)
-            .setString(ACCOUNT_TYPE_JSON, cardType)
-            .setString(ACCOUNT_REFERENCE_JSON, cardReference.toString());
+            .setString(ACCOUNT_TYPE_JSON, accountType)
+            .setString(ACCOUNT_REFERENCE_JSON, accountReference.toString());
         if (encryptedCardData != null) {
             rd.setObject(PROTECTED_ACCOUNT_DATA_JSON, encryptedCardData);
         }
@@ -55,31 +55,17 @@ public class GenericAuthorizationResponse implements BaseProperties {
                  .setObject(SOFTWARE_JSON, Software.encode(SOFTWARE_ID, SOFTWARE_VERSION))
                  .setSignature (signer);
     }
-
-    PaymentRequest paymentRequest;
     
-    AccountTypes cardType;
-    
-    String cardReference;
-    
-    String referenceId;
-
     EncryptedData encryptedData;
-
-    GregorianCalendar dateTime;
-    
-    Software software;
-    
-    JSONSignatureDecoder signatureDecoder;
     
     JSONObjectReader root;
     
     public GenericAuthorizationResponse(JSONObjectReader rd) throws IOException {
         root = Messages.parseBaseMessage(Messages.PROVIDER_GENERIC_AUTH_RES, rd);
         paymentRequest = new PaymentRequest(rd.getObject(PAYMENT_REQUEST_JSON));
-        cardType = AccountTypes.valueOf(rd.getString(ACCOUNT_TYPE_JSON));
-        cardReference = rd.getString(ACCOUNT_REFERENCE_JSON);
-        if (cardType.isAcquirerBased()) {
+        accountType = AccountTypes.fromType(rd.getString(ACCOUNT_TYPE_JSON));
+        accountReference = rd.getString(ACCOUNT_REFERENCE_JSON);
+        if (accountType.isAcquirerBased()) {
             encryptedData = EncryptedData.parse(rd.getObject(PROTECTED_ACCOUNT_DATA_JSON));
         }
         referenceId = rd.getString(REFERENCE_ID_JSON);
@@ -89,30 +75,37 @@ public class GenericAuthorizationResponse implements BaseProperties {
         rd.checkForUnread();
     }
 
+    PaymentRequest paymentRequest;
     public PaymentRequest getPaymentRequest() {
         return paymentRequest;
     }
 
-    public AccountTypes getCardType() {
-        return cardType;
+    AccountTypes accountType;
+    public AccountTypes getAccountType() {
+        return accountType;
     }
 
-    public String getCardReference() {
-        return cardReference;
+    String accountReference;
+    public String getAccountReference() {
+        return accountReference;
     }
 
+    String referenceId;
     public String getReferenceId() {
         return referenceId;
     }
 
+    GregorianCalendar dateTime;
     public GregorianCalendar getDateTime() {
         return dateTime;
     }
 
+    Software software;
     public Software getSoftware() {
         return software;
     }
 
+    JSONSignatureDecoder signatureDecoder;
     public JSONSignatureDecoder getSignatureDecoder() {
         return signatureDecoder;
     }

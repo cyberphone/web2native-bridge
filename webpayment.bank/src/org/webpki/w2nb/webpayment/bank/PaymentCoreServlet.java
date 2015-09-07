@@ -34,6 +34,7 @@ import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONParser;
 import org.webpki.net.HTTPSWrapper;
+import org.webpki.w2nb.webpayment.common.AccountTypes;
 import org.webpki.w2nb.webpayment.common.Authority;
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.EncryptedData;
@@ -67,33 +68,19 @@ public class PaymentCoreServlet extends HttpServlet implements BaseProperties {
             logger.info("Received:\n" + authorizationRequest);
 
             ////////////////////////////////////////////////////////////////////////////////////////
-            // We rationalize here by using a single end-point for both direct and indirect modes //
+            // We rationalize here by using a single end-point for both pull and push modes       //
             ////////////////////////////////////////////////////////////////////////////////////////
 
-            // Direct and indirect modes technically end-up as a generic request
-            GenericAuthorizationRequest genericAuthorizationRequest = null;
+            // Read the attested and encrypted request. Validate attestation signature
+            PayeeIndirectModeAuthorizationRequest attestedEncryptedRequest =
+                    new PayeeIndirectModeAuthorizationRequest(authorizationRequest);
 
-            // A minor test is though needed for dispatching the proper message decoder...
-            if (authorizationRequest.getString(JSONDecoderCache.QUALIFIER_JSON)
-                    .equals(Messages.PAYEE_INDIRECT_AUTH_REQ.toString())) {
+            // Decrypt the encrypted request and validate the embedded signatures
+            GenericAuthorizationRequest genericAuthorizationRequest =
+                    attestedEncryptedRequest.getDecryptedAuthorizationRequest(BankService.decryptionKeys);
 
-                // Read the attested and encrypted request. Validate attestation signature
-                PayeeIndirectModeAuthorizationRequest attestedEncryptedRequest =
-                        new PayeeIndirectModeAuthorizationRequest(authorizationRequest);
-
-                // Decrypt encrypted request and validate the embedded signatures
-                genericAuthorizationRequest =
-                        attestedEncryptedRequest.getDecryptedAuthorizationRequest(BankService.decryptionKeys);
-
-                // In the indirect mode the merchant is the only one who can provide the client's IP address
-                clientIpAddress = attestedEncryptedRequest.getClientIpAddress();
-            } else {
-                // In the direct mode the request is fine "as is"
-                genericAuthorizationRequest = new GenericAuthorizationRequest(authorizationRequest);
-
-                // In the direct mode the payment provider can derive the client's IP address from the request
-                clientIpAddress = request.getRemoteAddr();
-            }
+            // In the indirect mode the merchant is the only one who can provide the client's IP address
+            clientIpAddress = attestedEncryptedRequest.getClientIpAddress();
 
             // Client IP could be used for risk-based authentication, here it is only logged
             logger.info("Client address: " + clientIpAddress);
@@ -109,23 +96,26 @@ public class PaymentCoreServlet extends HttpServlet implements BaseProperties {
 
             // Separate credit-card and account2account payments
             JSONObjectWriter encryptedCardData = null;
-//            if (paymentRequest.getPaymentTypeDescriptor().getPaymentType() == PaymentTypeDescriptor.PAYMENT_TYPES.CREDIT_CARD) {
-            if (false) {
+            if (AccountTypes.fromType(genericAuthorizationRequest.getAccountType()).isAcquirerBased()) {
+                logger.info("card");
+                String authorityUrl = attestedEncryptedRequest.getAcquirerAuthorityUrl();
                 HTTPSWrapper wrap = new HTTPSWrapper();
                 wrap.setTimeout(TIMEOUT_FOR_REQUEST);
                 wrap.setHeader("Content-Type", JSON_CONTENT_TYPE);
                 wrap.setRequireSuccess(true);
-   //             wrap.makeGetRequest(paymentRequest.getPaymentTypeDescriptor().getAquirerEncryptionKeyUrl());
+                wrap.makeGetRequest(authorityUrl);
                 if (!wrap.getContentType().equals(JSON_CONTENT_TYPE)) {
                     throw new IOException("Content-Type must be \"" + JSON_CONTENT_TYPE + "\" , found: " + wrap.getContentType());
                 }
-                Authority authority = new Authority(JSONParser.parse(wrap.getData()),"");
+                Authority authority = new Authority(JSONParser.parse(wrap.getData()),authorityUrl);
                 JSONObjectWriter cardData = new JSONObjectWriter();
- //               cardData.setString(CARD_NUMBER_JSON, genericAuthorizationRequest.getCardNumber());
+                cardData.setString(ACCOUNT_ID_JSON, genericAuthorizationRequest.getAccountId());
                 encryptedCardData = EncryptedData.encode(cardData,
                                                          authority.getDataEncryptionAlgorithm(),
                                                          authority.getPublicKey(),
                                                          authority.getKeyEncryptionAlgorithm());
+             } else {
+                 logger.info("account");
              }
 
             ////////////////////////////////////////////////////////////////////////////
@@ -135,8 +125,8 @@ public class PaymentCoreServlet extends HttpServlet implements BaseProperties {
 
             // Return the authorized request
             authorizationResponse = GenericAuthorizationResponse.encode(paymentRequest,
-                                                                        genericAuthorizationRequest.getCardType(),
-                                                                        genericAuthorizationRequest.getCardNumber(),
+                                                                        genericAuthorizationRequest.getAccountType(),
+                                                                        genericAuthorizationRequest.getAccountId(),
                                                                         encryptedCardData,
                                                                         "#" + (referenceId ++),
                                                                         BankService.bankKey);

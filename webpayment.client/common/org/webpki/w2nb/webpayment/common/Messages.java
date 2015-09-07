@@ -30,6 +30,7 @@ public enum Messages {
     PAYER_INDIRECT_AUTH_REQ   ("PayerIndirectAuthReq"),       // in this one for "indirect" mode
     PAYEE_INDIRECT_AUTH_REQ   ("PayeeIndirectAuthReq"),       // Payee "indirect" mode
     PROVIDER_GENERIC_AUTH_RES ("ProviderGenericAuthRes"),     // Provider response for all modes
+    PAYEE_FINALIZE_REQUEST    ("PayeeFinalizeRequest"),       // Perform the actual payment operation
     AUTHORITY                 ("Authority");                  // Published entity data
 
     String qualifier;

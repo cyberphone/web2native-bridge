@@ -22,8 +22,8 @@ import java.io.IOException;
 
 public enum AccountTypes {
 
-    SUPER_CARD   (false, "https://supercard.com", "SuperCard",   "supercard.png",   Color.BLUE), 
-    COOL_CARD    (true,  "https://coolcard.com",  "CoolCard",    "coolcard.png",    Color.BLACK),
+    SUPER_CARD   (true,  "https://supercard.com", "SuperCard",   "supercard.png",   Color.BLUE), 
+    COOL_CARD    (false, "https://coolcard.com",  "CoolCard",    "coolcard.png",    Color.BLACK),
     UNUSUAL_CARD (false, "https://usualcard.com", "UnusualCard", "unusualcard.png", Color.GRAY);
 
     boolean acquirerBased;  // True => 4 corner model, false = > 3 corner model
