@@ -148,7 +148,7 @@ public class Wallet {
     static final String TOOLTIP_AMOUNT         = "How much you are requested to pay";
     static final String TOOLTIP_PIN            = "PIN, if you are running the demo try 1234 :-)";
     static final String TOOLTIP_CARD_SELECTION = "Click on a card to select it!";
-    static final String TOOLTIP_SELECTED_CARD  = "This card will be used in the transaction";
+    static final String TOOLTIP_SELECTED_CARD  = "This card (account) will be used in the transaction";
     
     static final String VIEW_WAITING           = "WAIT";
     static final String VIEW_SELECTION         = "SELECT";
@@ -160,34 +160,37 @@ public class Wallet {
 
     static final int TIMEOUT_FOR_REQUEST       = 10000;
     
-    static final String DUMMY_CARD_NUMBER      = "12341234123412341234";
+    static final String DUMMY_ACCOUNT_ID       = "12341234123412341234";
 
-    static class Card {
-        String cardNumber;
+    static class Account {
+        String accountId;
+        boolean cardFormatAccountId;
         ImageIcon cardIcon;
-        String cardType;
+        String accountType;
         AsymSignatureAlgorithms signatureAlgorithm;
-        String authUrl;
+        String authorityUrl;
         
         // Optional (as a triple)
         String dataEncryptionAlgorithm;
         String keyEncryptionAlgorithm;
         PublicKey keyEncryptionKey;
         
-        Card(String cardNumber, 
+        Account(String accountId,
+            boolean cardFormatAccountId,
             ImageIcon cardIcon,
-            String cardType,
+            String accountType,
             AsymSignatureAlgorithms signatureAlgorithm,
-            String authUrl) {
-            this.cardNumber = cardNumber;
+            String authorityUrl) {
+            this.accountId = accountId;
+            this.cardFormatAccountId = cardFormatAccountId;
             this.cardIcon = cardIcon;
-            this.cardType = cardType;
+            this.accountType = accountType;
             this.signatureAlgorithm = signatureAlgorithm;
-            this.authUrl = authUrl;
+            this.authorityUrl = authorityUrl;
         }
     }
 
-    static LinkedHashMap<Integer,Card> cardCollection = new LinkedHashMap<Integer,Card>();
+    static LinkedHashMap<Integer,Account> cardCollection = new LinkedHashMap<Integer,Account>();
 
     static class ScalingIcon extends ImageIcon {
  
@@ -298,7 +301,7 @@ public class Wallet {
 
         SecureKeyStore sks;
         int keyHandle;
-        Card selectedCard;
+        Account selectedCard;
  
         PaymentRequest paymentRequest;
         
@@ -363,14 +366,18 @@ public class Wallet {
             cardSelectionViewCore.add(new JLabel(), c);
         }
 
-        JPanel initCardSelectionViewCore(LinkedHashMap<Integer,Card> cards) {
+        String formatAccountId(Account card) {
+            return card.cardFormatAccountId ? GenericAuthorizationRequest.formatCardNumber(card.accountId) : card.accountId;
+        }
+
+        JPanel initCardSelectionViewCore(LinkedHashMap<Integer,Account> cards) {
             JPanel cardSelectionViewCore = new JPanel();
             cardSelectionViewCore.setBackground(Color.WHITE);
             cardSelectionViewCore.setLayout(new GridBagLayout());
             GridBagConstraints c = new GridBagConstraints();
             int itemNumber = 0;
             for (final Integer keyHandle : cards.keySet()) {
-                Card card = cards.get(keyHandle);
+                Account card = cards.get(keyHandle);
                 boolean even = itemNumber % 2 == 0;
                 c.gridx = even ? 1 : 3;
                 c.gridy = (itemNumber / 2) * 2;
@@ -394,10 +401,9 @@ public class Wallet {
                                       0,
                                       0,
                                       0);
-                JLabel cardNumber = new JLabel(GenericAuthorizationRequest.formatCardNumber(card.cardNumber),
-                                               JLabel.CENTER);
-                cardNumber.setFont(cardNumberFont);
-                cardSelectionViewCore.add(cardNumber, c);
+                JLabel accountId = new JLabel(formatAccountId(card), JLabel.CENTER);
+                accountId.setFont(cardNumberFont);
+                cardSelectionViewCore.add(accountId, c);
                 if (!even) {
                     insertSpacer(cardSelectionViewCore, c.gridx + 1, c.gridy - 1);
                 }
@@ -430,9 +436,9 @@ public class Wallet {
                 scrollPane.setBorder(new EmptyBorder(0, 0, 0, 0));
                 cardSelectionView.add(scrollPane, c);
             } else {
-                LinkedHashMap<Integer,Card> cards = new LinkedHashMap<Integer,Card>();
+                LinkedHashMap<Integer,Account> cards = new LinkedHashMap<Integer,Account>();
                 for (int i = 0; i < 2; i++) {
-                    cards.put(i, new Card(DUMMY_CARD_NUMBER, dummyCardIcon, null, null, null));
+                    cards.put(i, new Account(DUMMY_ACCOUNT_ID, true, dummyCardIcon, null, null, null));
                 }
                 cardSelectionView.add(initCardSelectionViewCore(cards), c);
             }
@@ -625,7 +631,7 @@ public class Wallet {
             GridBagConstraints c2 = new GridBagConstraints();
             selectedCardImage = createCardButton(dummyCardIcon, TOOLTIP_SELECTED_CARD);
             cardAndNumber.add(selectedCardImage, c2);
-            selectedCardNumber = new JLabel(DUMMY_CARD_NUMBER);
+            selectedCardNumber = new JLabel(DUMMY_ACCOUNT_ID);
             selectedCardNumber.setFont(cardNumberFont);
             c2.insets = new Insets(0, 0, 0, 0);
             c2.gridy = 1;
@@ -637,9 +643,9 @@ public class Wallet {
 
         void showAuthorizationView(int keyHandle) {
             selectedCard = cardCollection.get(keyHandle);
-            logger.info("Selected Card: Key=" + keyHandle +
-                        ", Number=" + selectedCard.cardNumber +
-                        ", URL=" + selectedCard.authUrl +
+            logger.info("Selected Account: Key=" + keyHandle +
+                        ", Number=" + selectedCard.accountId +
+                        ", URL=" + selectedCard.authorityUrl +
                         ", KeyEncryptionKey=" + (selectedCard.keyEncryptionAlgorithm == null ?
                         "N/A" : selectedCard.keyEncryptionKey));
             this.keyHandle = keyHandle;
@@ -647,7 +653,7 @@ public class Wallet {
             payeeField.setText("\u200a" + payeeString);
             selectedCardImage.setIcon(selectedCard.cardIcon);
             selectedCardImage.setPressedIcon(selectedCard.cardIcon);
-            selectedCardNumber.setText(GenericAuthorizationRequest.formatCardNumber(selectedCard.cardNumber));
+            selectedCardNumber.setText(formatAccountId(selectedCard));
             ((CardLayout)views.getLayout()).show(views, VIEW_AUTHORIZE);
             payeeField.setCaretPosition(0);
             pinText.requestFocusInWindow();
@@ -804,8 +810,8 @@ public class Wallet {
                 JSONObjectReader invokeMessage = stdin.readJSONObject();
                 logger.info("Received from browser:\n" + invokeMessage);
                 Messages.parseBaseMessage(Messages.INVOKE_WALLET, invokeMessage);
-                final String[] cardTypes = invokeMessage.getStringArray(BaseProperties.ACCEPTED_CARD_TYPES_JSON);
-                indirectMode = invokeMessage.getBoolean(BaseProperties.INDIRECT_MODE_JSON);
+                final String[] cardTypes = invokeMessage.getStringArray(BaseProperties.ACCEPTED_ACCOUNT_TYPES_JSON);
+                indirectMode = true;
                 paymentRequest = new PaymentRequest(invokeMessage.getObject(BaseProperties.PAYMENT_REQUEST_JSON));
                 timer.cancel();
                 if (running) {
@@ -876,45 +882,42 @@ public class Wallet {
         void collectPotentialCard(int keyHandle,
                                   JSONObjectReader cardProperties,
                                   String[] cardTypes) throws IOException {
-            for (String cardType : cardTypes) {
-                if (cardProperties.getString(BaseProperties.CARD_TYPE_JSON).equals(cardType)) {
-                    Card card = new Card(cardProperties.getString(BaseProperties.CARD_NUMBER_JSON),
-                            getImageIcon(sks.getExtension(keyHandle, 
-                                  KeyGen2URIs.LOGOTYPES.CARD).getExtensionData(SecureKeyStore.SUB_TYPE_LOGOTYPE),
-                                  false),
-                            cardType,
-                            AsymSignatureAlgorithms.getAlgorithmFromID(
-                                JSONSignatureDecoder.algorithmCheck(
-                                    cardProperties.getString(BaseProperties.SIGNATURE_ALGORITHM_JSON),
-                                    JSONAlgorithmPreferences.JOSE)),
-                            cardProperties.getString(BaseProperties.AUTH_URL_JSON));
-                    if (cardProperties.hasProperty(BaseProperties.ENCRYPTION_PARAMETERS_JSON)) {
-                        JSONObjectReader encryptionParameters = cardProperties.getObject(BaseProperties.ENCRYPTION_PARAMETERS_JSON);
-                        card.keyEncryptionAlgorithm =
-                                encryptionParameters.getString(BaseProperties.KEY_ENCRYPTION_ALGORITHM_JSON);
-                        if (!Encryption.permittedKeyEncryptionAlgorithm(card.keyEncryptionAlgorithm)) {
-                            logger.warning("Card " + card.cardNumber + " contained an unknown \"" +
-                                           BaseProperties.KEY_ENCRYPTION_ALGORITHM_JSON + "\": " +
-                                           card.keyEncryptionAlgorithm);
-                            break;
-                        }
-                        card.dataEncryptionAlgorithm =
-                                encryptionParameters.getString(BaseProperties.DATA_ENCRYPTION_ALGORITHM_JSON);
-                        if (!Encryption.permittedDataEncryptionAlgorithm(card.dataEncryptionAlgorithm)) {
-                            logger.warning("Card " + card.cardNumber + " contained an unknown \"" +
-                                           BaseProperties.DATA_ENCRYPTION_ALGORITHM_JSON + "\": " +
-                                           card.dataEncryptionAlgorithm);
-                            break;
-                        }
-                        card.keyEncryptionKey = encryptionParameters.getPublicKey(JSONAlgorithmPreferences.JOSE);
-                    } else if (indirectMode) {
-                        logger.warning("Card " + card.cardNumber + " doesn't support \"indirect mode\" payments");
+            for (String accountType : cardTypes) {
+                if (cardProperties.getString(BaseProperties.ACCOUNT_TYPE_JSON).equals(accountType)) {
+                    Account card =
+                        new Account(cardProperties.getString(BaseProperties.ACCOUNT_ID_JSON),
+                                 cardProperties.getBoolean(BaseProperties.CARD_FORMAT_ACCOUNT_ID_JSON),
+                                 getImageIcon(sks.getExtension(keyHandle, 
+                                              KeyGen2URIs.LOGOTYPES.CARD).getExtensionData(SecureKeyStore.SUB_TYPE_LOGOTYPE),
+                                              false),
+                                 accountType,
+                                 AsymSignatureAlgorithms.getAlgorithmFromID(
+                                     JSONSignatureDecoder.algorithmCheck(
+                                         cardProperties.getString(BaseProperties.SIGNATURE_ALGORITHM_JSON),
+                                         JSONAlgorithmPreferences.JOSE)),
+                                 cardProperties.getString(BaseProperties.PROVIDER_AUTHORITY_URL_JSON));
+                    JSONObjectReader encryptionParameters = cardProperties.getObject(BaseProperties.ENCRYPTION_PARAMETERS_JSON);
+                    card.keyEncryptionAlgorithm =
+                            encryptionParameters.getString(BaseProperties.KEY_ENCRYPTION_ALGORITHM_JSON);
+                    if (!Encryption.permittedKeyEncryptionAlgorithm(card.keyEncryptionAlgorithm)) {
+                        logger.warning("Account " + card.accountId + " contained an unknown \"" +
+                                       BaseProperties.KEY_ENCRYPTION_ALGORITHM_JSON + "\": " +
+                                       card.keyEncryptionAlgorithm);
                         break;
                     }
+                    card.dataEncryptionAlgorithm =
+                            encryptionParameters.getString(BaseProperties.DATA_ENCRYPTION_ALGORITHM_JSON);
+                    if (!Encryption.permittedDataEncryptionAlgorithm(card.dataEncryptionAlgorithm)) {
+                        logger.warning("Account " + card.accountId + " contained an unknown \"" +
+                                       BaseProperties.DATA_ENCRYPTION_ALGORITHM_JSON + "\": " +
+                                       card.dataEncryptionAlgorithm);
+                        break;
+                    }
+                    card.keyEncryptionKey = encryptionParameters.getPublicKey(JSONAlgorithmPreferences.JOSE);
 
                     // Minor "feature" to allow local testing without reconfiguration...
                     if (domainName.equals("localhost")) {
-                        card.authUrl = "https://localhost:8442" + new URL(card.authUrl).getFile();
+                        card.authorityUrl = "https://localhost:8442" + new URL(card.authorityUrl).getFile();
                     }
                 
                     // We found a useful card!
@@ -944,8 +947,8 @@ public class Wallet {
                     resultMessage = GenericAuthorizationRequest.encode(
                         paymentRequest,
                         domainName,
-                        selectedCard.cardType,
-                        selectedCard.cardNumber,
+                        selectedCard.accountType,
+                        selectedCard.accountId,
                         selectedCard.signatureAlgorithm,
                         new SignerInterface () {
                             @Override
@@ -967,7 +970,8 @@ public class Wallet {
                         // "Indirect mode" payments must be encrypted in order to not leak user information to Payees.
                         // Only the proper Payment Provider can decrypt and process "indirect" user authorizations.
                         resultMessage = PayerIndirectModeAuthorizationRequest.encode(resultMessage,
-                                                                                 selectedCard.authUrl,
+                                                                                 selectedCard.authorityUrl,
+                                                                                 selectedCard.accountType,
                                                                                  selectedCard.dataEncryptionAlgorithm,
                                                                                  selectedCard.keyEncryptionKey,
                                                                                  selectedCard.keyEncryptionAlgorithm);
@@ -975,7 +979,7 @@ public class Wallet {
                     logger.info((indirectMode || testMode ?
                                      "About to send to the browser:\n" 
                                                          :
-                                     "About to send to \"" + selectedCard.authUrl + "\":\n")
+                                     "About to send to \"" + selectedCard.authorityUrl + "\":\n")
                                 + resultMessage);
                     return true;
                 } catch (SKSException e) {
@@ -1012,7 +1016,7 @@ public class Wallet {
                         httpClient.setTimeout(TIMEOUT_FOR_REQUEST);
                         httpClient.setHeader("Content-Type", BaseProperties.JSON_CONTENT_TYPE);
                         httpClient.setRequireSuccess(true);
-                        httpClient.makePostRequest(selectedCard.authUrl,
+                        httpClient.makePostRequest(selectedCard.authorityUrl,
                                                    resultMessage.serializeJSONObject(JSONOutputFormats.NORMALIZED));
                         String mimeType = httpClient.getContentType();
                         if (!mimeType.equals(BaseProperties.JSON_CONTENT_TYPE)) {

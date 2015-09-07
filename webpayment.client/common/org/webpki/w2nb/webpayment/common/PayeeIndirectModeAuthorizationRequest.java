@@ -51,7 +51,7 @@ public class PayeeIndirectModeAuthorizationRequest implements BaseProperties {
     EncryptedData encryptedData;
 
     public PayeeIndirectModeAuthorizationRequest(JSONObjectReader rd) throws IOException {
-        encryptedData = EncryptedData.parse(Messages.parseBaseMessage(Messages.PAYEE_INDIRECT_AUTH_REQ, rd).getObject(AUTH_DATA_JSON));
+        encryptedData = EncryptedData.parse(Messages.parseBaseMessage(Messages.PAYEE_INDIRECT_AUTH_REQ, rd).getObject(AUTHORIZATION_DATA_JSON));
         if (!rd.getObject(REQUEST_HASH_JSON).getString(ALGORITHM_JSON).equals(JOSE_SHA_256_ALG_ID)) {
             throw new IOException("Expected algorithm: " + JOSE_SHA_256_ALG_ID);
         }
@@ -75,7 +75,7 @@ public class PayeeIndirectModeAuthorizationRequest implements BaseProperties {
                                           ServerSigner signer)
         throws IOException, GeneralSecurityException {
         return Messages.createBaseMessage(Messages.PAYEE_INDIRECT_AUTH_REQ)
-            .setObject(AUTH_DATA_JSON, encryptedRequest)
+            .setObject(AUTHORIZATION_DATA_JSON, encryptedRequest)
             .setObject(REQUEST_HASH_JSON, new JSONObjectWriter()
                                               .setString(ALGORITHM_JSON, JOSE_SHA_256_ALG_ID)
                                               .setBinary(VALUE_JSON, requestHash))

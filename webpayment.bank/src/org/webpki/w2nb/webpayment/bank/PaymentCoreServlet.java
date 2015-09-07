@@ -109,18 +109,19 @@ public class PaymentCoreServlet extends HttpServlet implements BaseProperties {
 
             // Separate credit-card and account2account payments
             JSONObjectWriter encryptedCardData = null;
-            if (paymentRequest.getPaymentTypeDescriptor().getPaymentType() == PaymentTypeDescriptor.PAYMENT_TYPES.CREDIT_CARD) {
+//            if (paymentRequest.getPaymentTypeDescriptor().getPaymentType() == PaymentTypeDescriptor.PAYMENT_TYPES.CREDIT_CARD) {
+            if (false) {
                 HTTPSWrapper wrap = new HTTPSWrapper();
                 wrap.setTimeout(TIMEOUT_FOR_REQUEST);
                 wrap.setHeader("Content-Type", JSON_CONTENT_TYPE);
                 wrap.setRequireSuccess(true);
-                wrap.makeGetRequest(paymentRequest.getPaymentTypeDescriptor().getAquirerEncryptionKeyUrl());
+   //             wrap.makeGetRequest(paymentRequest.getPaymentTypeDescriptor().getAquirerEncryptionKeyUrl());
                 if (!wrap.getContentType().equals(JSON_CONTENT_TYPE)) {
                     throw new IOException("Content-Type must be \"" + JSON_CONTENT_TYPE + "\" , found: " + wrap.getContentType());
                 }
                 Authority authority = new Authority(JSONParser.parse(wrap.getData()));
                 JSONObjectWriter cardData = new JSONObjectWriter();
-                cardData.setString(CARD_NUMBER_JSON, genericAuthorizationRequest.getCardNumber());
+ //               cardData.setString(CARD_NUMBER_JSON, genericAuthorizationRequest.getCardNumber());
                 encryptedCardData = EncryptedData.encode(cardData,
                                                          authority.getDataEncryptionAlgorithm(),
                                                          authority.getPublicKey(),

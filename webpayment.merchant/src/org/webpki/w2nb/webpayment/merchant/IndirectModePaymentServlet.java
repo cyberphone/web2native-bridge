@@ -63,12 +63,12 @@ public class IndirectModePaymentServlet extends PaymentCoreServlet {
         // Decode the user's indirect mode authorization request
         PayerIndirectModeAuthorizationRequest request = new PayerIndirectModeAuthorizationRequest(input);
 
-        // Where to send the request
-        String authUrl = portFilter(request.getAuthUrl());
+        // Lookup indicated authority
+        String authUrl = portFilter(request.getAuthorityUrl());
 
         // Attest the user's encrypted authorization to show "intent"
         JSONObjectWriter providerRequest =
-            PayeeIndirectModeAuthorizationRequest.encode(input.getObject(AUTH_DATA_JSON),
+            PayeeIndirectModeAuthorizationRequest.encode(input.getObject(AUTHORIZATION_DATA_JSON),
                                                          requestHash,
                                                          clientIpAddress,
                                                          (String)session.getAttribute(UserPaymentServlet.REQUEST_REFID_SESSION_ATTR),

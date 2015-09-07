@@ -31,7 +31,7 @@ public class PaymentTypeDescriptor implements BaseProperties {
     }
 
     PaymentTypeDescriptor(JSONObjectReader rd) throws IOException {
-        String argument = rd.getString(PAYMENT_TYPE_JSON);
+        String argument = rd.getString("PAYMENT_TYPE_JSON");
         for (PAYMENT_TYPES paymentType : PAYMENT_TYPES.values()) {
             if (paymentType.argument.equals(argument)) {
                 if (paymentType == PAYMENT_TYPES.CREDIT_CARD) {
@@ -43,7 +43,7 @@ public class PaymentTypeDescriptor implements BaseProperties {
                 return;
             }
         }
-        throw new IOException("No such \"" + PAYMENT_TYPE_JSON + "\" :" + argument);
+        throw new IOException("No such \"" + "PAYMENT_TYPE_JSON" + "\" :" + argument);
     }
     
     private PAYMENT_TYPES paymentType;
@@ -78,13 +78,13 @@ public class PaymentTypeDescriptor implements BaseProperties {
     
    public static JSONObjectWriter createCreditCardPaymentType(String aquirerEncryptionKeyUrl) throws IOException {
         return new JSONObjectWriter()
-            .setString(PAYMENT_TYPE_JSON, PAYMENT_TYPES.CREDIT_CARD.argument)
+            .setString("PAYMENT_TYPE_JSON", PAYMENT_TYPES.CREDIT_CARD.argument)
             .setString(ACQUIRER_AUTHORITY_URL_JSON, aquirerEncryptionKeyUrl);
     }
 
     public static JSONObjectWriter createAccount2AccountPaymentType(String[] payeeAccountTypeUris) throws IOException {
         return new JSONObjectWriter()
-            .setString(PAYMENT_TYPE_JSON, PAYMENT_TYPES.ACCOUNT_TO_ACCOUNT.argument)
+            .setString("PAYMENT_TYPE_JSON", PAYMENT_TYPES.ACCOUNT_TO_ACCOUNT.argument)
             .setStringArray(PAYEE_ACCOUNT_TYPES_JSON, checkAccounts(payeeAccountTypeUris));
     }
 }

@@ -32,13 +32,12 @@ import org.webpki.json.JSONX509Signer;
 
 import org.webpki.util.ISODateTime;
 
-import org.webpki.w2nb.webpayment.common.CardTypes;
+import org.webpki.w2nb.webpayment.common.AccountTypes;
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.Currencies;
 import org.webpki.w2nb.webpayment.common.KeyStoreEnumerator;
 import org.webpki.w2nb.webpayment.common.Messages;
 import org.webpki.w2nb.webpayment.common.PaymentRequest;
-import org.webpki.w2nb.webpayment.common.PaymentTypeDescriptor;
 import org.webpki.w2nb.webpayment.common.ServerSigner;
 
 import org.webpki.w2nbproxy.ExtensionPositioning;
@@ -90,12 +89,11 @@ public class InitTestPage implements BaseProperties {
 
         // Create signed payment request
         JSONObjectWriter standardRequest = 
-            PaymentRequest.encode(PaymentTypeDescriptor.createCreditCardPaymentType("https://acquirer.com/encryptionkey"),
-                                  ISODateTime.parseDateTime("2030-09-14T00:00:00Z").getTime(),
-                                  "Demo Merchant",
+            PaymentRequest.encode("Demo Merchant",
                                   new BigDecimal("306.25"),
                                   Currencies.USD,
                                   "#6100004",
+                                  ISODateTime.parseDateTime("2030-09-14T00:00:00Z").getTime(),
                                   signer);
         // Header
         write("<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><title>Payment Agent (Wallet) Tester</title>"
@@ -124,28 +122,27 @@ public class InitTestPage implements BaseProperties {
 
         // The payment request is wrapped in an unsigned wallet invocation message
         write(Messages.createBaseMessage(Messages.INVOKE_WALLET)
-            .setStringArray(ACCEPTED_CARD_TYPES_JSON,
-                            new String[]{"NoSuchCard",
-                                          CardTypes.SuperCard.toString(),
-                                          CardTypes.CoolCard.toString()})
-            .setBoolean(INDIRECT_MODE_JSON, false)
+            .setStringArray(ACCEPTED_ACCOUNT_TYPES_JSON,
+                            new String[]{"https://nosuchcard.com",
+                                          AccountTypes.SUPER_CARD.getType(),
+                                          AccountTypes.COOL_CARD.getType()})
             .setObject(PAYMENT_REQUEST_JSON, standardRequest));
 
         // The normal request is cloned and modified for testing error handling
         write(";\n\n" +
-              "// All our cards should match during the discovery phase...\n" +
+              "// All our cards/accounts should match during the discovery phase...\n" +
               "var scrollMatchingRequest = JSON.parse(JSON.stringify(normalRequest)); // Deep clone\n" +
-              "scrollMatchingRequest." + ACCEPTED_CARD_TYPES_JSON + " = [\"NoSuchCard\"");
-        for (CardTypes card : CardTypes.values()) {
+              "scrollMatchingRequest." + ACCEPTED_ACCOUNT_TYPES_JSON + " = [\"https://nosuchcard.com\"");
+        for (AccountTypes accountType : AccountTypes.values()) {
             write(", \"");
-            write(card.toString());
+            write(accountType.getType());
             write("\"");
         }
 
         write("];\n\n" +
-                "// No cards should match during the discovery phase...\n" +
+                "// No card/account should match during the discovery phase...\n" +
                 "var nonMatchingRequest = JSON.parse(JSON.stringify(normalRequest)); // Deep clone\n" +
-                "nonMatchingRequest." + ACCEPTED_CARD_TYPES_JSON + " = [\"NoSuchCard\"];\n\n");
+                "nonMatchingRequest." + ACCEPTED_ACCOUNT_TYPES_JSON + " = [\"https://nosuchcard.com\"];\n\n");
 
         write("// Note the modified \"" + PAYEE_JSON + "\" property...\n" +
               "var badSignatureRequest = JSON.parse(JSON.stringify(normalRequest)); // Deep clone\n" +
@@ -162,7 +159,6 @@ public class InitTestPage implements BaseProperties {
 
               "function sendMessageConditional(message) {\n" +
               "    if (nativePort) {\n" +
-              "        message." + INDIRECT_MODE_JSON + " = document.getElementById(\"indirectMode\").checked;\n" +
               "        nativePort.postMessage(message);\n" +
               "    }\n" +
               "}\n\n" +
@@ -284,7 +280,6 @@ public class InitTestPage implements BaseProperties {
             write("<br>\n");
         }
         write("</form>\n" +
-              "<input type=\"checkbox\" id=\"indirectMode\" style=\"margin-top:10pt\">&quot;Indirect&quot; mode payment flow (default is &quot;direct&quot; mode)<br>\n" +
               "<input type=\"checkbox\" id=\"positionWallet\" style=\"margin-top:10pt\" onchange=\"setTargetState()\">Position/update target element (default is centered)\n" +
               "<div style=\"margin-top:10pt;margin-bottom:10pt\">Result:</div>\n" +
               "<div id=\"response\" style=\"font-family:courier;font-size:10pt;word-wrap:break-word;width:800pt\"></div>\n" +

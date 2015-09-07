@@ -63,6 +63,7 @@ import org.webpki.sks.test.SKSReferenceImplementation;
 import org.webpki.util.ArrayUtil;
 
 import org.webpki.w2nb.webpayment.common.BaseProperties;
+import org.webpki.w2nb.webpayment.common.AccountTypes;
 import org.webpki.w2nb.webpayment.common.Encryption;
 import org.webpki.w2nb.webpayment.common.KeyStoreEnumerator;
 
@@ -72,8 +73,8 @@ public class InitWallet {
         if (args.length != 9) {
             System.out.println("\nUsage: " +
                                InitWallet.class.getCanonicalName() +
-                               "sksFile clientCertFile certFilePassword cardPin cardType/@ cardNumber" +
-                               " authUrl image/image@ keyEncryptionKey/keyEncryptionKey@");
+                               "sksFile clientCertFile certFilePassword pin accountType/@ accountId" +
+                               " authorityUrl keyEncryptionKey imageDirectory");
             System.exit(-3);
         }
         CustomCryptoProvider.forcedLoad(true);
@@ -134,36 +135,40 @@ public class InitWallet {
         surrogateKey.setPrivateKey(importedKey.getPrivateKey());
         JSONObjectWriter ow = null;
         if (!args[4].equals("@")) {
+            AccountTypes accountType = AccountTypes.valueOf(args[4]);
+            String accountId = args[5];
+            boolean cardFormatted = true;
+            if (accountId.startsWith("!")) {
+                cardFormatted = false;
+                accountId = accountId.substring(1);
+            }
             ow = new JSONObjectWriter()
-                 .setString(BaseProperties.CARD_TYPE_JSON, args[4])
-                 .setString(BaseProperties.CARD_NUMBER_JSON, args[5])
-                 .setString(BaseProperties.AUTH_URL_JSON, args[6])
+                 .setString(BaseProperties.ACCOUNT_TYPE_JSON, accountType.getType())
+                 .setString(BaseProperties.ACCOUNT_ID_JSON, accountId)
+                 .setBoolean(BaseProperties.CARD_FORMAT_ACCOUNT_ID_JSON, cardFormatted)
+                 .setString(BaseProperties.PROVIDER_AUTHORITY_URL_JSON, args[6])
                  .setString(BaseProperties.SIGNATURE_ALGORITHM_JSON,
                          rsa_flag ?
                     AsymSignatureAlgorithms.RSA_SHA256.getJOSEName()
                                   :
                     AsymSignatureAlgorithms.ECDSA_SHA256.getJOSEName());
-            if (!args[8].contains("@")) {
-                PublicKey publicKey = CertificateUtil.getCertificateFromBlob(ArrayUtil.readFile(args[8])).getPublicKey();
-                ow.setObject(BaseProperties.ENCRYPTION_PARAMETERS_JSON)
-                      .setString(BaseProperties.DATA_ENCRYPTION_ALGORITHM_JSON, Encryption.JOSE_A128CBC_HS256_ALG_ID)
-                      .setString(BaseProperties.KEY_ENCRYPTION_ALGORITHM_JSON,
-                             publicKey instanceof RSAPublicKey ?
-                                 Encryption.JOSE_RSA_OAEP_256_ALG_ID 
-                                                               : 
-                                 Encryption.JOSE_ECDH_ES_ALG_ID)
-                      .setPublicKey(publicKey, JSONAlgorithmPreferences.JOSE);
-            }
+            PublicKey publicKey = CertificateUtil.getCertificateFromBlob(ArrayUtil.readFile(args[7])).getPublicKey();
+            ow.setObject(BaseProperties.ENCRYPTION_PARAMETERS_JSON)
+                  .setString(BaseProperties.DATA_ENCRYPTION_ALGORITHM_JSON, Encryption.JOSE_A128CBC_HS256_ALG_ID)
+                  .setString(BaseProperties.KEY_ENCRYPTION_ALGORITHM_JSON,
+                         publicKey instanceof RSAPublicKey ?
+                             Encryption.JOSE_RSA_OAEP_256_ALG_ID 
+                                                           : 
+                             Encryption.JOSE_ECDH_ES_ALG_ID)
+                  .setPublicKey(publicKey, JSONAlgorithmPreferences.JOSE);
             surrogateKey.addExtension(BaseProperties.W2NB_WEB_PAY_CONTEXT_URI,
                                       SecureKeyStore.SUB_TYPE_EXTENSION,
                                       "",
                                       ow.serializeJSONObject(JSONOutputFormats.NORMALIZED));
-        }
-        if (!args[7].endsWith("@")) {
             surrogateKey.addExtension(KeyGen2URIs.LOGOTYPES.CARD,
                                       SecureKeyStore.SUB_TYPE_LOGOTYPE,
                                       "image/png",
-                                      ArrayUtil.readFile(args[7]));
+                                      ArrayUtil.readFile(args[8] + accountType.getImageName()));
         }
         sess.closeSession();
         

@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
-package org.webpki.w2nb.webpayment.acquirer;
+package org.webpki.w2nb.webpayment.bank;
 
 import java.io.IOException;
 
@@ -38,6 +38,6 @@ public class AuthorityPublisherServlet extends HttpServlet {
         response.setContentType(BaseProperties.JSON_CONTENT_TYPE);
         response.setHeader("Pragma", "No-Cache");
         response.setDateHeader("EXPIRES", 0);
-        response.getOutputStream().write(AcquirerService.publishedAuthorityData);
+        response.getOutputStream().write(BankService.publishedAuthorityData);
     }
 }

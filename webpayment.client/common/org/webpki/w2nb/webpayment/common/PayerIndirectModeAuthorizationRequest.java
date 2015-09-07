@@ -31,26 +31,28 @@ import org.webpki.json.JSONOutputFormats;
 
 public class PayerIndirectModeAuthorizationRequest implements BaseProperties {
     
-    String authUrl;
+    String authorityUrl;
 
     public PayerIndirectModeAuthorizationRequest(JSONObjectReader rd) throws IOException {
-        EncryptedData.parse(Messages.parseBaseMessage(Messages.PAYER_INDIRECT_AUTH_REQ, rd).getObject(AUTH_DATA_JSON));
-        authUrl = rd.getString(AUTH_URL_JSON);
+        EncryptedData.parse(Messages.parseBaseMessage(Messages.PAYER_INDIRECT_AUTH_REQ, rd).getObject(PROVIDER_AUTHORITY_URL_JSON));
+        authorityUrl = rd.getString(PROVIDER_AUTHORITY_URL_JSON);
         rd.checkForUnread();
     }
     
-    public String getAuthUrl() {
-        return authUrl;
+    public String getAuthorityUrl() {
+        return authorityUrl;
     }
 
     public static JSONObjectWriter encode(JSONObjectWriter unencryptedRequest,
-                                          String authUrl,
+                                          String authorityUrl,
+                                          String cardType,
                                           String dataEncryptionAlgorithm,
                                           PublicKey keyEncryptionKey,
                                           String keyEncryptionAlgorithm) throws IOException, GeneralSecurityException {
         JSONObjectWriter encryptedRequest = Messages.createBaseMessage(Messages.PAYER_INDIRECT_AUTH_REQ)
-            .setString(AUTH_URL_JSON, authUrl);
-        encryptedRequest.setObject(AUTH_DATA_JSON,
+            .setString(PROVIDER_AUTHORITY_URL_JSON, authorityUrl)
+            .setString(ACCOUNT_TYPE_JSON, cardType);
+        encryptedRequest.setObject(AUTHORIZATION_DATA_JSON,
                                    EncryptedData.encode(unencryptedRequest,
                                                         dataEncryptionAlgorithm,
                                                         keyEncryptionKey,

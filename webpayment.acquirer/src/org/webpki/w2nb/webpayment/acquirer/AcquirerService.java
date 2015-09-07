@@ -69,7 +69,7 @@ public class AcquirerService extends InitPropertyReader implements ServletContex
     
     static String merchantDN;
     
-    static byte[] publishedEncryptionKey;
+    static byte[] publishedAuthorityData;
     
     InputStream getResource(String name) throws IOException {
         return this.getClass().getResourceAsStream(getPropertyString(name));
@@ -115,7 +115,7 @@ public class AcquirerService extends InitPropertyReader implements ServletContex
             addDecryptionKey(DECRYPTION_KEY2);
             
             String aquirerHost = getPropertyString(ACQUIRER_HOST);
-            publishedEncryptionKey =
+            publishedAuthorityData =
                 Authority.encode(aquirerHost + "/authority",
                                  aquirerHost + "/acquire",
                                  decryptionKeys.get(0).getPublicKey(),

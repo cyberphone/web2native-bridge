@@ -21,7 +21,6 @@ import java.io.InputStream;
 
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
-
 import java.security.interfaces.RSAPublicKey;
 
 import java.util.Vector;
@@ -36,13 +35,16 @@ import org.webpki.crypto.CertificateUtil;
 import org.webpki.crypto.CustomCryptoProvider;
 import org.webpki.crypto.KeyStoreVerifier;
 
+import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONX509Verifier;
 
 import org.webpki.util.ArrayUtil;
 
+import org.webpki.w2nb.webpayment.common.Authority;
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.DecryptionKeyHolder;
 import org.webpki.w2nb.webpayment.common.Encryption;
+import org.webpki.w2nb.webpayment.common.Expires;
 import org.webpki.w2nb.webpayment.common.KeyStoreEnumerator;
 import org.webpki.w2nb.webpayment.common.ServerSigner;
 
@@ -54,13 +56,14 @@ public class BankService extends InitPropertyReader implements ServletContextLis
     
     static final String KEYSTORE_PASSWORD     = "key_password";
 
+    static final String BANK_EECERT           = "bank_eecert";
+    static final String BANK_HOST             = "bank_host";
     static final String DECRYPTION_KEY1       = "bank_decryptionkey1";
     static final String DECRYPTION_KEY2       = "bank_decryptionkey2";
     
     static final String MERCHANT_ROOT         = "merchant_root";
+
     static final String CLIENT_ROOT           = "bank_client_root";
-    
-    static final String BANK_EECERT           = "bank_eecert";
     
     static final String ERR_MEDIA             = "err_media_type";
     
@@ -73,6 +76,8 @@ public class BankService extends InitPropertyReader implements ServletContextLis
     static ServerSigner bankKey;
     
     static String jsonMediaType = BaseProperties.JSON_CONTENT_TYPE;
+
+    static byte[] publishedAuthorityData;
 
     InputStream getResource(String name) throws IOException {
         return this.getClass().getResourceAsStream(getPropertyString(name));
@@ -115,6 +120,14 @@ public class BankService extends InitPropertyReader implements ServletContextLis
             addDecryptionKey(DECRYPTION_KEY1);
             addDecryptionKey(DECRYPTION_KEY2);
             
+            String bankHost = getPropertyString(BANK_HOST);
+            publishedAuthorityData =
+                Authority.encode(bankHost + "/authority",
+                                 bankHost + "/transact",
+                                 decryptionKeys.get(0).getPublicKey(),
+                                 Expires.inDays(365),
+                                 bankKey).serializeJSONObject(JSONOutputFormats.PRETTY_PRINT);
+
             if (getPropertyBoolean(ERR_MEDIA)) {
                 jsonMediaType = "text/html";
             }

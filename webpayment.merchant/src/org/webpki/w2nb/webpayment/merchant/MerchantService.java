@@ -40,7 +40,7 @@ import org.webpki.json.JSONX509Verifier;
 import org.webpki.util.ArrayUtil;
 
 import org.webpki.w2nb.webpayment.common.BaseProperties;
-import org.webpki.w2nb.webpayment.common.CardTypes;
+import org.webpki.w2nb.webpayment.common.AccountTypes;
 import org.webpki.w2nb.webpayment.common.Currencies;
 import org.webpki.w2nb.webpayment.common.KeyStoreEnumerator;
 import org.webpki.w2nb.webpayment.common.ServerSigner;
@@ -51,7 +51,7 @@ public class MerchantService extends InitPropertyReader implements ServletContex
 
     static Logger logger = Logger.getLogger(MerchantService.class.getCanonicalName());
     
-    static Set<CardTypes> acceptedCards = EnumSet.noneOf(CardTypes.class);
+    static Set<AccountTypes> acceptedAccountTypes = EnumSet.noneOf(AccountTypes.class);
   
     static final String KEYSTORE_PASSWORD      = "key_password";
 
@@ -117,9 +117,9 @@ public class MerchantService extends InitPropertyReader implements ServletContex
 
             paymentRoot = getRoot(PAYMENT_ROOT);
 
-            for (CardTypes card : CardTypes.values()) {
-                if (card != CardTypes.UnusualCard || getPropertyBoolean(ADD_UNUSUAL_CARD)) {
-                    acceptedCards.add(card);
+            for (AccountTypes card : AccountTypes.values()) {
+                if (card != AccountTypes.UNUSUAL_CARD || getPropertyBoolean(ADD_UNUSUAL_CARD)) {
+                    acceptedAccountTypes.add(card);
                 }
             }
          

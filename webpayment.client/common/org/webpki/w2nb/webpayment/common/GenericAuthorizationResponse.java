@@ -45,10 +45,10 @@ public class GenericAuthorizationResponse implements BaseProperties {
         }
         JSONObjectWriter rd = Messages.createBaseMessage(Messages.PROVIDER_GENERIC_AUTH_RES)
             .setObject(PAYMENT_REQUEST_JSON, paymentRequest.root)
-            .setString(CARD_TYPE_JSON, cardType)
-            .setString(CARD_REFERENCE_JSON, cardReference.toString());
+            .setString(ACCOUNT_TYPE_JSON, cardType)
+            .setString(ACCOUNT_REFERENCE_JSON, cardReference.toString());
         if (encryptedCardData != null) {
-            rd.setObject(ACQUIRER_CARD_DATA_JSON, encryptedCardData);
+            rd.setObject(PROTECTED_ACCOUNT_DATA_JSON, encryptedCardData);
         }
         return rd.setString(REFERENCE_ID_JSON, referenceId)
                  .setDateTime(TIME_STAMP_JSON, new Date(), true)
@@ -58,7 +58,7 @@ public class GenericAuthorizationResponse implements BaseProperties {
 
     PaymentRequest paymentRequest;
     
-    String cardType;
+    AccountTypes cardType;
     
     String cardReference;
     
@@ -77,10 +77,10 @@ public class GenericAuthorizationResponse implements BaseProperties {
     public GenericAuthorizationResponse(JSONObjectReader rd) throws IOException {
         root = Messages.parseBaseMessage(Messages.PROVIDER_GENERIC_AUTH_RES, rd);
         paymentRequest = new PaymentRequest(rd.getObject(PAYMENT_REQUEST_JSON));
-        cardType = rd.getString(CARD_TYPE_JSON);
-        cardReference = rd.getString(CARD_REFERENCE_JSON);
-        if (paymentRequest.getPaymentTypeDescriptor().getPaymentType() == PaymentTypeDescriptor.PAYMENT_TYPES.CREDIT_CARD) {
-            encryptedData = EncryptedData.parse(rd.getObject(ACQUIRER_CARD_DATA_JSON));
+        cardType = AccountTypes.valueOf(rd.getString(ACCOUNT_TYPE_JSON));
+        cardReference = rd.getString(ACCOUNT_REFERENCE_JSON);
+        if (cardType.isAcquirerBased()) {
+            encryptedData = EncryptedData.parse(rd.getObject(PROTECTED_ACCOUNT_DATA_JSON));
         }
         referenceId = rd.getString(REFERENCE_ID_JSON);
         dateTime = rd.getDateTime(TIME_STAMP_JSON);
@@ -93,7 +93,7 @@ public class GenericAuthorizationResponse implements BaseProperties {
         return paymentRequest;
     }
 
-    public String getCardType() {
+    public AccountTypes getCardType() {
         return cardType;
     }
 

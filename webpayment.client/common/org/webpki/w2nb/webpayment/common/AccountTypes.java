@@ -1,0 +1,54 @@
+/*
+ *  Copyright 2006-2015 WebPKI.org (http://webpki.org).
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ */
+package org.webpki.w2nb.webpayment.common;
+
+import java.awt.Color;
+
+public enum AccountTypes {
+
+    SUPER_CARD   (false, "https://supercard.com", "supercard.png",   Color.BLUE), 
+    COOL_CARD    (true,  "https://coolcard.com",  "coolcard.png",    Color.BLACK),
+    UNUSUAL_CARD (false, "https://usualcard.com", "unusualcard.png", Color.GRAY);
+    
+    boolean acquirerBased;  // True => 4 corner model, false = > 3 corner model
+    String type;            // A brand URI
+    String imageName;
+    Color fontColor;
+    
+    AccountTypes (boolean acquirerBased, String type, String imageName, Color fontColor) {
+        this.acquirerBased = acquirerBased;
+        this.type = type;
+        this.imageName = imageName;
+        this.fontColor = fontColor;
+    }
+
+    public boolean isAcquirerBased() {
+        return acquirerBased;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public String getImageName() {
+        return imageName;
+    }
+
+    public Color getFontColor() {
+        return fontColor;
+    }
+}

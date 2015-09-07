@@ -44,8 +44,8 @@ public class GenericAuthorizationRequest implements BaseProperties {
         return Messages.createBaseMessage(Messages.PAYER_GENERIC_AUTH_REQ)
             .setObject(PAYMENT_REQUEST_JSON, paymentRequest.root)
             .setString(DOMAIN_NAME_JSON, domainName)
-            .setString(CARD_TYPE_JSON, cardType)
-            .setString(CARD_NUMBER_JSON, cardNumber)
+            .setString(ACCOUNT_TYPE_JSON, cardType)
+            .setString(ACCOUNT_ID_JSON, cardNumber)
             .setDateTime(TIME_STAMP_JSON, dateTime, false)
             .setObject(SOFTWARE_JSON, Software.encode(SOFTWARE_ID, SOFTWARE_VERSION))
             .setSignature (signer);
@@ -100,8 +100,8 @@ public class GenericAuthorizationRequest implements BaseProperties {
         root = Messages.parseBaseMessage(Messages.PAYER_GENERIC_AUTH_REQ, rd);
         paymentRequest = new PaymentRequest(rd.getObject(PAYMENT_REQUEST_JSON));
         domainName = rd.getString(DOMAIN_NAME_JSON);
-        cardType = rd.getString(CARD_TYPE_JSON);
-        cardNumber = rd.getString(CARD_NUMBER_JSON);
+        cardType = rd.getString(ACCOUNT_TYPE_JSON);
+        cardNumber = rd.getString(ACCOUNT_ID_JSON);
         dateTime = rd.getDateTime(TIME_STAMP_JSON);
         software = new Software(rd);
         signatureDecoder = rd.getSignature(JSONAlgorithmPreferences.JOSE);

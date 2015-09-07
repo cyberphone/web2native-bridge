@@ -38,25 +38,22 @@ public class PaymentRequest implements BaseProperties {
     public static final String SOFTWARE_ID      = "WebPKI.org - Merchant";
     public static final String SOFTWARE_VERSION = "1.00";
 
-    public static JSONObjectWriter encode(JSONObjectWriter paymentTypeDescriptor,
-                                          Date expires,
-                                          String payee,
+    public static JSONObjectWriter encode(String payee,
                                           BigDecimal amount,
                                           Currencies currency,
                                           String referenceId,
+                                          Date expires,
                                           JSONX509Signer x509Signer) throws IOException {
-        return paymentTypeDescriptor
-            .setDateTime(EXPIRES_JSON, expires, true)
+        return new JSONObjectWriter()
             .setString(PAYEE_JSON, payee)
             .setBigDecimal(AMOUNT_JSON, amount)
             .setString(CURRENCY_JSON, currency.toString())
             .setString(REFERENCE_ID_JSON, referenceId)
             .setDateTime(TIME_STAMP_JSON, new Date(), true)
+            .setDateTime(EXPIRES_JSON, expires, true)
             .setObject(SOFTWARE_JSON, Software.encode (SOFTWARE_ID, SOFTWARE_VERSION))
             .setSignature(x509Signer);
     }
-
-    PaymentTypeDescriptor paymentTypeDescriptor;
 
     GregorianCalendar expires;
     
@@ -78,8 +75,6 @@ public class PaymentRequest implements BaseProperties {
     
     public PaymentRequest(JSONObjectReader rd) throws IOException {
         root = rd;
-        paymentTypeDescriptor = new PaymentTypeDescriptor(rd);
-        expires = rd.getDateTime(EXPIRES_JSON);
         payee = rd.getString(PAYEE_JSON);
         amount = rd.getBigDecimal(AMOUNT_JSON);
         try {
@@ -89,14 +84,11 @@ public class PaymentRequest implements BaseProperties {
         }
         referenceId = rd.getString(REFERENCE_ID_JSON);
         dateTime = rd.getDateTime(TIME_STAMP_JSON);
+        expires = rd.getDateTime(EXPIRES_JSON);
         software = new Software(rd);
         signatureDecoder = rd.getSignature(JSONAlgorithmPreferences.JOSE);
         signatureDecoder.verify(JSONSignatureTypes.X509_CERTIFICATE);
         rd.checkForUnread();
-    }
-
-    public PaymentTypeDescriptor getPaymentTypeDescriptor() {
-        return paymentTypeDescriptor;
     }
 
     public GregorianCalendar getExpires() {

@@ -23,6 +23,12 @@
     </context-param>
 
     <context-param>
+        <description>Bank Host</description>
+        <param-name>bank_host</param-name>
+        <param-value>@bank-host@</param-value>
+    </context-param>
+    
+    <context-param>
         <description>Bank Decryption Key #1</description>
         <param-name>bank_decryptionkey1</param-name>
         <param-value>@bank-decryptionkey1@</param-value>
@@ -61,9 +67,19 @@
         <servlet-class>org.webpki.w2nb.webpayment.bank.PaymentCoreServlet</servlet-class>
     </servlet>
 
+    <servlet>
+        <servlet-name>AuthorityPublisherServlet</servlet-name>
+        <servlet-class>org.webpki.w2nb.webpayment.bank.AuthorityPublisherServlet</servlet-class>
+    </servlet>
+
     <servlet-mapping>
         <servlet-name>PaymentCoreServlet</servlet-name>
         <url-pattern>/transact</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>AuthorityPublisherServlet</servlet-name>
+        <url-pattern>/authority</url-pattern>
     </servlet-mapping>
 
     <security-constraint>
