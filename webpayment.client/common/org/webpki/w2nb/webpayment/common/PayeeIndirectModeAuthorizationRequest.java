@@ -99,9 +99,17 @@ public class PayeeIndirectModeAuthorizationRequest implements BaseProperties {
             .setSignature(signer);
     }
 
-    void assertTrue(boolean assertion) throws IOException {
+    static void assertTrue(boolean assertion) throws IOException {
         if (!assertion) {
             throw new IOException("Outer and inner certificate paths differ");
+        }
+    }
+
+    public static void compareCertificatePaths(X509Certificate[] outer, PaymentRequest paymentRequest) throws IOException {
+        X509Certificate[] inner = paymentRequest.signatureDecoder.getCertificatePath();
+        assertTrue(inner.length == outer.length);
+        for (int q = 0; q < inner.length; q++) {
+            assertTrue(outer[q].equals(inner[q]));
         }
     }
 
@@ -109,11 +117,7 @@ public class PayeeIndirectModeAuthorizationRequest implements BaseProperties {
     throws IOException, GeneralSecurityException {
         GenericAuthorizationRequest genericAuthorizationRequest =
             new GenericAuthorizationRequest(encryptedData.getDecryptedData(decryptionKeys));
-        X509Certificate[] certificatePath = genericAuthorizationRequest.paymentRequest.signatureDecoder.getCertificatePath();
-        assertTrue(certificatePath.length == outerCertificatePath.length);
-        for (int q = 0; q < certificatePath.length; q++) {
-            assertTrue(certificatePath[q].equals(outerCertificatePath[q]));
-        }
+        compareCertificatePaths(outerCertificatePath, genericAuthorizationRequest.paymentRequest);
         if (!ArrayUtil.compare(requestHash, genericAuthorizationRequest.paymentRequest.getRequestHash())) {
             throw new IOException("Non-matching \"" + REQUEST_HASH_JSON + "\" value");
         }

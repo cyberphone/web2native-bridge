@@ -30,7 +30,9 @@ import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONParser;
 import org.webpki.w2nb.webpayment.common.BaseProperties;
+import org.webpki.w2nb.webpayment.common.GenericAuthorizationResponse;
 import org.webpki.w2nb.webpayment.common.PayeeFinalizeRequest;
+import org.webpki.w2nb.webpayment.common.PaymentRequest;
 import org.webpki.webutil.ServletUtil;
 
 public class AcquirementServlet extends HttpServlet implements BaseProperties {
@@ -50,15 +52,40 @@ public class AcquirementServlet extends HttpServlet implements BaseProperties {
             }
             JSONObjectReader authorizationRequest = JSONParser.parse(ServletUtil.getData(request));
             logger.info("Received:\n" + authorizationRequest);
-            
-            PayeeFinalizeRequest payeeFinalizationRequest = new PayeeFinalizeRequest(authorizationRequest);
-            logger.info("Protected Account Data:\n" + payeeFinalizationRequest.getGenericAuthorizationResponse().getProtectedAccountData(AcquirerService.decryptionKeys));
 
-            ////////////////////////////////////////////////////////////////////////////////////////
-            // We rationalize here by using a single end-point for both direct and indirect modes //
-            ////////////////////////////////////////////////////////////////////////////////////////
+            // Decode the finalize request message
+            PayeeFinalizeRequest payeeFinalizationRequest = new PayeeFinalizeRequest(authorizationRequest);
+
+            // Get the embedded authorization from the payer's payment provider (bank)
+            GenericAuthorizationResponse genericAuthorizationResponse =
+                payeeFinalizationRequest.getGenericAuthorizationResponse();
+
+            // Verify that the provider's signature belongs to a valid payment provider trust network
+            genericAuthorizationResponse.getSignatureDecoder().verify(AcquirerService.paymentRoot);
+
+            // Get the the account data we sent encrypted through the merchant 
+            logger.info("Protected Account Data:\n" +
+                genericAuthorizationResponse.getProtectedAccountData(AcquirerService.decryptionKeys));
+
+            // The original request contains some required data like currency
+            PaymentRequest paymentRequest = genericAuthorizationResponse.getPaymentRequest();
+
+            // Verify that the merchant's signature belongs to a valid merchant trust network
+            paymentRequest.getSignatureDecoder().verify(AcquirerService.merchantRoot);
+
+            // Verify that the merchant is one of our customers.  Simplistic "database": a single customer
+            String merchantDn = paymentRequest.getSignatureDecoder().getCertificatePath()[0].getSubjectX500Principal().getName();
+            if (!merchantDn.equals(AcquirerService.merchantDN)) {
+                throw new IOException ("Unknown merchant: " + merchantDn);
+            }
+
+            //////////////////////////////////////////////////////////////////////////////
+            // Now we have all data needed for talking to the payment network but since //
+            // we don't have such a connection we simply return success...              //
+            //////////////////////////////////////////////////////////////////////////////
+
         } catch (Exception e) {
-        
+            logger.log(Level.SEVERE, e.getMessage(), e);
         }
  
         response.setContentType(JSON_CONTENT_TYPE);

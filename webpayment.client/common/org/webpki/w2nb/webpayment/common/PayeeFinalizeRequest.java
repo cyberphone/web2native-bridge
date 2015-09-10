@@ -38,6 +38,11 @@ public class PayeeFinalizeRequest implements BaseProperties {
         timeStamp = rd.getDateTime(TIME_STAMP_JSON);
         software = new Software(rd);
         outerCertificatePath = rd.getSignature(JSONAlgorithmPreferences.JOSE).getCertificatePath();
+        PaymentRequest paymentRequest = genericAuthorizationResponse.getPaymentRequest();
+        PayeeIndirectModeAuthorizationRequest.compareCertificatePaths(outerCertificatePath, paymentRequest);
+        if (amount.compareTo(paymentRequest.getAmount()) > 0) {
+            throw new IOException("Final amount must be less or equal to reserved amount");
+        }
         rd.checkForUnread();
     }
 

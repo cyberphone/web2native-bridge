@@ -72,7 +72,7 @@
       <replacefilter token="@acquirer-decryptionkey1@" value="${acquirerencryptionkey_ec}${keyfilext}"/>
       <replacefilter token="@acquirer-decryptionkey2@" value="${acquirerencryptionkey_rsa}${keyfilext}"/>
       <replacefilter token="@acquirer-host@" value="${acquirer.host}"/>
-      <replacefilter token="@merchant-dn@" value="cn=me"/>
+      <replacefilter token="@merchant-dn@" value="CN=Demo Merchant,2.5.4.5=#1306383936333235,C=DE"/>
       <replacefilter token="@merchant-root@" value="${merchant.var.root}.cer"/>
 	  <replacefilter token="@payment-root@" value="${payment.var.root}.cer"/>
     </replace>
