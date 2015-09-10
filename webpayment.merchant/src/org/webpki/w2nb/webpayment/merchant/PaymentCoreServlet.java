@@ -17,14 +17,11 @@
 package org.webpki.w2nb.webpayment.merchant;
 
 import java.io.IOException;
-
 import java.security.GeneralSecurityException;
-
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
-
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -33,9 +30,8 @@ import javax.servlet.http.HttpSession;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONParser;
-
 import org.webpki.util.ArrayUtil;
-
+import org.webpki.w2nb.webpayment.common.AccountTypes;
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.GenericAuthorizationRequest;
 import org.webpki.w2nb.webpayment.common.GenericAuthorizationResponse;
@@ -82,12 +78,16 @@ public abstract class PaymentCoreServlet extends HttpServlet implements BaseProp
             }
 
             logger.info("Successful authorization of request: " + authorization.getPaymentRequest().getReferenceId());
+            AccountTypes accountType = AccountTypes.fromType(authorization.getAccountType());
             HTML.resultPage(response,
                             UserPaymentServlet.getOption(session, HomeServlet.DEBUG_SESSION_ATTR),
                             null,
-                            authorization.getPaymentRequest(), 
-                            authorization.getCardType(),
-                            GenericAuthorizationRequest.formatCardNumber(authorization.getCardReference()));   
+                            authorization.getPaymentRequest(),
+                            accountType,
+                            accountType.isAcquirerBased() ? // = Card
+                                GenericAuthorizationRequest.formatCardNumber(authorization.getAccountReference())
+                                                          :
+                                authorization.getAccountReference());  // Currently "unmoderated" account
 
         } catch (Exception e) {
             logger.log(Level.SEVERE, e.getMessage(), e);

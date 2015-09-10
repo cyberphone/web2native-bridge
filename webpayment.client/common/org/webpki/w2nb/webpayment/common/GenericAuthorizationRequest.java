@@ -39,14 +39,14 @@ public class GenericAuthorizationRequest implements BaseProperties {
                                           String domainName,
                                           String accountType,
                                           String accountId,
-                                          Date dateTime,
+                                          Date timeStamp,
                                           JSONX509Signer signer) throws IOException {
         return Messages.createBaseMessage(Messages.PAYER_GENERIC_AUTH_REQ)
             .setObject(PAYMENT_REQUEST_JSON, paymentRequest.root)
             .setString(DOMAIN_NAME_JSON, domainName)
             .setString(ACCOUNT_TYPE_JSON, accountType)
             .setString(ACCOUNT_ID_JSON, accountId)
-            .setDateTime(TIME_STAMP_JSON, dateTime, false)
+            .setDateTime(TIME_STAMP_JSON, timeStamp, false)
             .setObject(SOFTWARE_JSON, Software.encode(SOFTWARE_ID, SOFTWARE_VERSION))
             .setSignature (signer);
     }
@@ -88,7 +88,7 @@ public class GenericAuthorizationRequest implements BaseProperties {
     
     String accountId;
     
-    GregorianCalendar dateTime;
+    GregorianCalendar timeStamp;
     
     Software software;
     
@@ -102,7 +102,7 @@ public class GenericAuthorizationRequest implements BaseProperties {
         domainName = rd.getString(DOMAIN_NAME_JSON);
         accountType = rd.getString(ACCOUNT_TYPE_JSON);
         accountId = rd.getString(ACCOUNT_ID_JSON);
-        dateTime = rd.getDateTime(TIME_STAMP_JSON);
+        timeStamp = rd.getDateTime(TIME_STAMP_JSON);
         software = new Software(rd);
         signatureDecoder = rd.getSignature(JSONAlgorithmPreferences.JOSE);
         rd.checkForUnread();
@@ -124,8 +124,8 @@ public class GenericAuthorizationRequest implements BaseProperties {
         return accountId;
     }
 
-    public GregorianCalendar getDateTime() {
-        return dateTime;
+    public GregorianCalendar getTimeStamp() {
+        return timeStamp;
     }
 
     public Software getSoftware() {

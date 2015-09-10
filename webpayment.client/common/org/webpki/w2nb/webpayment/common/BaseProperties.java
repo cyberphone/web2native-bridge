@@ -26,6 +26,7 @@ public interface BaseProperties {
     String EXPIRES_JSON                      = "expires";               // Object expiration time
     String AUTHORITY_URL_JSON                = "authorityUrl";
     String TRANSACTION_URL_JSON              = "transactionUrl";
+    String PROVIDER_AUTHORIZATION_JSON       = "providerAuthorization";
     String AMOUNT_JSON                       = "amount";
     String ERROR_JSON                        = "error";
     String CURRENCY_JSON                     = "currency";

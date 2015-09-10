@@ -17,9 +17,10 @@
 package org.webpki.w2nb.webpayment.common;
 
 import java.io.IOException;
-
+import java.security.GeneralSecurityException;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Vector;
 
 import org.webpki.json.JSONAlgorithmPreferences;
 import org.webpki.json.JSONObjectReader;
@@ -63,16 +64,24 @@ public class GenericAuthorizationResponse implements BaseProperties {
     public GenericAuthorizationResponse(JSONObjectReader rd) throws IOException {
         root = Messages.parseBaseMessage(Messages.PROVIDER_GENERIC_AUTH_RES, rd);
         paymentRequest = new PaymentRequest(rd.getObject(PAYMENT_REQUEST_JSON));
-        accountType = AccountTypes.fromType(rd.getString(ACCOUNT_TYPE_JSON));
+        accountType = rd.getString(ACCOUNT_TYPE_JSON);
         accountReference = rd.getString(ACCOUNT_REFERENCE_JSON);
-        if (accountType.isAcquirerBased()) {
+        if (rd.hasProperty(PROTECTED_ACCOUNT_DATA_JSON)) {
             encryptedData = EncryptedData.parse(rd.getObject(PROTECTED_ACCOUNT_DATA_JSON));
         }
         referenceId = rd.getString(REFERENCE_ID_JSON);
-        dateTime = rd.getDateTime(TIME_STAMP_JSON);
+        timeStamp = rd.getDateTime(TIME_STAMP_JSON);
         software = new Software(rd);
         signatureDecoder = rd.getSignature(JSONAlgorithmPreferences.JOSE);
         rd.checkForUnread();
+    }
+
+    public boolean isAccount2Account() {
+        return encryptedData == null;
+    }
+    
+    public ProtectedAccountData getProtectedAccountData(Vector<DecryptionKeyHolder> decryptionKeys) throws IOException, GeneralSecurityException {
+        return new ProtectedAccountData(encryptedData.getDecryptedData(decryptionKeys));
     }
 
     PaymentRequest paymentRequest;
@@ -80,8 +89,8 @@ public class GenericAuthorizationResponse implements BaseProperties {
         return paymentRequest;
     }
 
-    AccountTypes accountType;
-    public AccountTypes getAccountType() {
+    String accountType;
+    public String getAccountType() {
         return accountType;
     }
 
@@ -95,9 +104,9 @@ public class GenericAuthorizationResponse implements BaseProperties {
         return referenceId;
     }
 
-    GregorianCalendar dateTime;
-    public GregorianCalendar getDateTime() {
-        return dateTime;
+    GregorianCalendar timeStamp;
+    public GregorianCalendar getTimeStamp() {
+        return timeStamp;
     }
 
     Software software;
@@ -108,9 +117,5 @@ public class GenericAuthorizationResponse implements BaseProperties {
     JSONSignatureDecoder signatureDecoder;
     public JSONSignatureDecoder getSignatureDecoder() {
         return signatureDecoder;
-    }
-
-    public JSONObjectReader getRoot() {
-        return root;
     }
 }

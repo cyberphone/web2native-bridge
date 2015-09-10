@@ -427,13 +427,17 @@ public class HTML {
                                   String error_message,
                                   PaymentRequest paymentRequest, 
                                   AccountTypes accountType,
-                                  String cardReference) throws IOException, ServletException {
+                                  String accountReference) throws IOException, ServletException {
         StringBuffer s = new StringBuffer("<tr><td width=\"100%\" align=\"center\" valign=\"middle\">");
         if (error_message == null) {
             s.append("<table>" +
              "<tr><td style=\"text-align:center;font-weight:bolder;font-size:10pt;font-family:" + FONT_ARIAL + "\">Order Status<br>&nbsp;</td></tr>" +
              "<tr><td style=\"text-align:center;padding-bottom:15pt;font-size:10pt\">Dear customer, your order has been successfully processed!</td></tr>" +
-             "<tr><td><table class=\"tftable\"><tr><th>Our Reference</th><th>Amount</th><th>Card Type</th><th>Card Number</th></tr>" +
+             "<tr><td><table class=\"tftable\"><tr><th>Our Reference</th><th>Amount</th><th>")
+            .append(accountType.isAcquirerBased() ? "Card" : "Account")
+            .append(" Type</th><th>")
+            .append(accountType.isAcquirerBased() ? "Card Reference" : "Account Number")
+            .append("</th></tr>" +
              "<tr><td style=\"text-align:center\">")
             .append(paymentRequest.getReferenceId())
             .append("</td><td style=\"text-align:center\">")
@@ -441,7 +445,7 @@ public class HTML {
             .append("</td><td style=\"text-align:center\">")
             .append(accountType.getCommonName())
             .append("</td><td style=\"text-align:center\">")
-            .append(cardReference)
+            .append(accountReference)
             .append("</td></tr></table></td></tr>");
             if (debugMode) {
                 s.append("<tr><td style=\"text-align:center;padding-top:20pt\"><a href=\"debug\">Show Debug Info</a></td></tr>");

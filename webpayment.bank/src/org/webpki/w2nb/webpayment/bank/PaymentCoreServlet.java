@@ -44,6 +44,7 @@ import org.webpki.w2nb.webpayment.common.GenericAuthorizationResponse;
 import org.webpki.w2nb.webpayment.common.Messages;
 import org.webpki.w2nb.webpayment.common.PaymentRequest;
 import org.webpki.w2nb.webpayment.common.PaymentTypeDescriptor;
+import org.webpki.w2nb.webpayment.common.ProtectedAccountData;
 import org.webpki.webutil.ServletUtil;
 
 public class PaymentCoreServlet extends HttpServlet implements BaseProperties {
@@ -108,9 +109,9 @@ public class PaymentCoreServlet extends HttpServlet implements BaseProperties {
                     throw new IOException("Content-Type must be \"" + JSON_CONTENT_TYPE + "\" , found: " + wrap.getContentType());
                 }
                 Authority authority = new Authority(JSONParser.parse(wrap.getData()),authorityUrl);
-                JSONObjectWriter cardData = new JSONObjectWriter();
-                cardData.setString(ACCOUNT_ID_JSON, genericAuthorizationRequest.getAccountId());
-                encryptedCardData = EncryptedData.encode(cardData,
+                JSONObjectWriter protectedAccountData =
+                     ProtectedAccountData.encode(genericAuthorizationRequest.getAccountId());
+                encryptedCardData = EncryptedData.encode(protectedAccountData,
                                                          authority.getDataEncryptionAlgorithm(),
                                                          authority.getPublicKey(),
                                                          authority.getKeyEncryptionAlgorithm());

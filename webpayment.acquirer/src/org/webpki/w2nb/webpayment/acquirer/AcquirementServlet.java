@@ -17,12 +17,10 @@
 package org.webpki.w2nb.webpayment.acquirer;
 
 import java.io.IOException;
-
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
-
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -31,9 +29,8 @@ import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONParser;
-
 import org.webpki.w2nb.webpayment.common.BaseProperties;
-
+import org.webpki.w2nb.webpayment.common.PayeeFinalizeRequest;
 import org.webpki.webutil.ServletUtil;
 
 public class AcquirementServlet extends HttpServlet implements BaseProperties {
@@ -46,20 +43,22 @@ public class AcquirementServlet extends HttpServlet implements BaseProperties {
     
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         JSONObjectWriter authorizationResponse = null;
-        String clientIpAddress = null;
-        try {
+         try {
             String contentType = request.getContentType();
             if (!contentType.equals(JSON_CONTENT_TYPE)) {
                 throw new IOException("Content-Type must be \"" + JSON_CONTENT_TYPE + "\" , found: " + contentType);
             }
             JSONObjectReader authorizationRequest = JSONParser.parse(ServletUtil.getData(request));
             logger.info("Received:\n" + authorizationRequest);
+            
+            PayeeFinalizeRequest payeeFinalizationRequest = new PayeeFinalizeRequest(authorizationRequest);
+            logger.info("Protected Account Data:\n" + payeeFinalizationRequest.getGenericAuthorizationResponse().getProtectedAccountData(AcquirerService.decryptionKeys));
 
             ////////////////////////////////////////////////////////////////////////////////////////
             // We rationalize here by using a single end-point for both direct and indirect modes //
             ////////////////////////////////////////////////////////////////////////////////////////
         } catch (Exception e) {
-            
+        
         }
  
         response.setContentType(JSON_CONTENT_TYPE);

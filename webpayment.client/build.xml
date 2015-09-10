@@ -44,9 +44,13 @@
            destdir="${temp.dir}" 
            classpathref="compile.classpath"
            includeAntRuntime="false">
+	       <include name="**/Wallet.java"/>
     </javac>
     <jar jarfile="${dist.dir}/${w2nb.name}/${w2nb.name}.jar">
-      <fileset dir="${temp.dir}"/>
+      <fileset dir="${temp.dir}">
+        <exclude name="**/AccountTypes.class"/>
+        <exclude name="**/DecryptionKeyHolder.class"/>
+      </fileset>
       <zipfileset dir="${image.dir}" prefix="${client.package.dir}"/>
       <zipfileset dir="${credentials.dir}" prefix="${client.package.dir}"/>
       <manifest>
