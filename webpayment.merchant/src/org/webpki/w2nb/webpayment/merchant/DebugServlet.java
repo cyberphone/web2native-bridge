@@ -73,30 +73,18 @@ public class DebugServlet extends HttpServlet {
                                  "with the payment request.</p>"));
             s.append(fancyBox(debugData.paymentRequest));
 
-            if (UserPaymentServlet.getOption(session, HomeServlet.INDIRECT_SESSION_ATTR)) {
             s.append(description("In the indirect mode encrypted."));
             s.append(fancyBox(debugData.walletResponse));
             s.append(description("In the indirect mode encrypted."));
-            s.append(fancyBox(debugData.indirectModeBankRequest));
+            s.append(fancyBox(debugData.bankReserveFundsRequest));
             s.append(description("The following message is <i>NOT</i> exchange between the " +
                         "Wallet and Merchant but is the response from the Payment Provider " +
                         "to the the indirect mode." +
                         "<p>As can been seen the authorization is <i>digitally signed</i> by the " +
                         "Payment Provider and contains both the original Merchant payment request " +
                         "as well as a minimal set of card data.</p>"));
-            s.append(fancyBox(debugData.indirectModeBankResponse));
-            } else {
-                s.append(description("In the direct mode the Wallet send the user's authorization " +
-                        "respons to the Payment Provider (Bank) for getting an authoritative response " +
-                        "to handover to the Merchant (shown below).  Note: <i>The exchange between the " +
-                        "Payment Provider and Wallet is not available for the Merchant but can be found " +
-                        "in the Wallet log file</i>." +
-                        "<p>As can been seen the authorization is <i>digitally signed</i> by the " +
-                        "Payment Provider and contains both the original Merchant payment request " +
-                        "as well as a minimal set of card data.</p>"));
-                s.append(fancyBox(debugData.walletResponse));
-            }
-            HTML.debugPage(response, s.toString(), UserPaymentServlet.getOption(session, HomeServlet.INDIRECT_SESSION_ATTR));
+            s.append(fancyBox(debugData.bankReserveFundsResponse));
+            HTML.debugPage(response, s.toString());
             
          } catch (Exception e) {
             logger.log(Level.SEVERE, e.getMessage(), e);

@@ -86,7 +86,6 @@ public class HTML {
     }
 
     public static void homePage(HttpServletResponse response,
-                                boolean indirectPaymentMode,
                                 boolean debugMode,
                                 boolean acquirerMode) throws IOException, ServletException {
         HTML.output(response, HTML.getHTML(null, null,
@@ -106,10 +105,6 @@ public class HTML {
                    "<tr style=\"text-align:left\"><td><a href=\"" + "shop" + "\">Go To Merchant</a></td><td>Shop Til You Drop!</td></tr>" +
                    "<tr style=\"text-align:left\"><form name=\"options\" method=\"POST\">" +
                    "<td><input type=\"checkbox\" name=\"" + 
-                   HomeServlet.INDIRECT_SESSION_ATTR + "\" onchange=\"document.forms.options.submit()\"" +
-                   (indirectPaymentMode ? " checked" : "") +
-                   "></td><td>&quot;Indirect&quot; Mode Payment Option</td></tr>" +
-                   "<tr style=\"text-align:left\"><td><input type=\"checkbox\" name=\"" + 
                    HomeServlet.ACQUIRER_SESSION_ATTR + "\" onchange=\"document.forms.options.submit()\"" +
                    (acquirerMode ? " checked" : "") +
                    "></td><td>&quot;Acquirer&quot; Mode Payment Option</td></tr>" +
@@ -292,7 +287,6 @@ public class HTML {
 
     public static void userPayPage(HttpServletResponse response,
                                    SavedShoppingCart savedShoppingCart, 
-                                   boolean indirectPaymentMode,
                                    boolean debugMode,
                                    String invoke_json) throws IOException, ServletException {
         StringBuffer s = new StringBuffer(
@@ -327,9 +321,8 @@ public class HTML {
          .append("</td></tr>" +
                  "</table></td></tr>" +
                  "<tr><td style=\"padding:20pt\" id=\"wallet\">&nbsp;</td></tr></table>" +
-                 "<form name=\"shoot\" method=\"POST\" action=\"")
-         .append(indirectPaymentMode ? "indirectpay" : "directpay")
-         .append("\"><input type=\"hidden\" name=\"" + UserPaymentServlet.AUTHREQ_FORM_ATTR + "\" id=\"" + UserPaymentServlet.AUTHREQ_FORM_ATTR + "\">");
+                 "<form name=\"shoot\" method=\"POST\" action=\"backendpay\">" +
+                 "<input type=\"hidden\" name=\"" + UserPaymentServlet.AUTHDATA_FORM_ATTR + "\" id=\"" + UserPaymentServlet.AUTHDATA_FORM_ATTR + "\">");
         if (debugMode) {
             s.append("<input type=\"hidden\" name=\"" + UserPaymentServlet.INITMSG_FORM_ATTR + "\" id=\"" + UserPaymentServlet.INITMSG_FORM_ATTR + "\">");
         }
@@ -377,12 +370,7 @@ public class HTML {
                     "            }\n" +
                     "            var qualifier = message[\"@qualifier\"];\n" +
                     "            if ((initMode && qualifier != \"" + Messages.WALLET_INITIALIZED.toString() + "\")  ||\n" +
-                    "                (!initMode && qualifier != \"")
-             .append(indirectPaymentMode ? 
-                     Messages.PAYER_INDIRECT_AUTH_REQ.toString() 
-                                     :
-                     Messages.PROVIDER_GENERIC_AUTH_RES.toString())
-             .append("\")) {\n" +  
+                    "                (!initMode && qualifier != \"" +  Messages.PAYER_AUTHORIZATION.toString() + "\")) {\n" +  
                     "                setString(\"Wrong or missing \\\"@qualifier\\\"\");\n" +
                     "                return;\n" +
                     "            }\n" +
@@ -397,7 +385,7 @@ public class HTML {
                     "                initMode = false;\n" +
                     "                nativePort.postMessage(invocationData);\n" +
                     "            } else {\n" +
-                    "                document.getElementById(\"" + UserPaymentServlet.AUTHREQ_FORM_ATTR + "\").value = JSON.stringify(message);\n" +
+                    "                document.getElementById(\"" + UserPaymentServlet.AUTHDATA_FORM_ATTR + "\").value = JSON.stringify(message);\n" +
                     "                document.forms.shoot.submit();\n" +
                     "            }\n"+
                     "        });\n" +
@@ -465,14 +453,11 @@ public class HTML {
     }
 
     public static void debugPage(HttpServletResponse response,
-                                 String string,
-                                 boolean indirectMode) throws IOException, ServletException {
+                                 String string) throws IOException, ServletException {
         StringBuffer s = new StringBuffer("<tr><td width=\"100%\" align=\"center\" valign=\"middle\">" + 
         "<table>" +
         "<tr><td style=\"padding-top:50pt;text-align:center;font-weight:bolder;font-size:10pt;font-family:" + FONT_ARIAL +
-        "\">Payment Session Debug Information - \"")
-        .append(indirectMode ? "Indirect" : "Direct")
-        .append("\" Mode&nbsp;<br></td></tr><tr><td style=\"text-align:left\">")
+        "\">Payment Session Debug Information&nbsp;<br></td></tr><tr><td style=\"text-align:left\">")
         .append(string)
         .append("</td></tr></table></td></tr>");
         HTML.output(response, HTML.getHTML(null, null,s.toString()));

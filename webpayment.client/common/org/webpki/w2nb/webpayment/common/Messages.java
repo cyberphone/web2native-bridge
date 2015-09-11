@@ -24,13 +24,16 @@ import org.webpki.json.JSONObjectWriter;
 
 public enum Messages {
 
-    WALLET_INITIALIZED        ("WalletInitialized"),          // Wallet to payee web page message
-    INVOKE_WALLET             ("InvokeWallet"),               // Payee payment request + other data
-    PAYER_AUTHORIZATION       ("PayerAuthorization"),         // Created by the Wallet
-    PAYEE_INDIRECT_AUTH_REQ   ("PayeeIndirectAuthReq"),       // Payee "indirect" mode
-    PROVIDER_GENERIC_AUTH_RES ("ProviderGenericAuthRes"),     // Provider response for all modes
-    PAYEE_FINALIZE_REQUEST    ("PayeeFinalizeRequest"),       // Perform the actual payment operation
-    AUTHORITY                 ("Authority");                  // Published entity data
+    WALLET_INITIALIZED        ("WalletInitialized"),       // Wallet to payee web page message
+    INVOKE_WALLET             ("InvokeWallet"),            // Payee payment request + other data
+    PAYER_AUTHORIZATION       ("PayerAuthorization"),      // Created by the Wallet
+    DIRECT_DEBIT_REQUEST      ("DirectDebitRequest"),      // Payee request to provider
+    DIRECT_DEBIT_RESPONSE     ("DirectDebitResponse"),     // Provider response to the above
+    RESERVE_FUNDS_REQUEST     ("ReserveFundsRequest"),     // Payee request to provider
+    RESERVE_FUNDS_RESPONSE    ("ReserveFundsResponse"),    // Provider response to the above
+    PAYEE_FINALIZE_REQUEST    ("PayeeFinalizeRequest"),    // Perform the actual payment operation
+    ERROR_RESPONSE            ("ErrorResponse"),           // Hard (but detected) error
+    AUTHORITY                 ("Authority");               // Published entity data
 
     String qualifier;
 

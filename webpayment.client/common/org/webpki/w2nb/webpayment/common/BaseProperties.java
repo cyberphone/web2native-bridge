@@ -28,8 +28,9 @@ public interface BaseProperties {
     String TRANSACTION_URL_JSON              = "transactionUrl";
     String PROVIDER_AUTHORIZATION_JSON       = "providerAuthorization";
     String AMOUNT_JSON                       = "amount";
-    String ERROR_JSON                        = "error";
+    String DESCRIPTION_JSON                  = "description";
     String CURRENCY_JSON                     = "currency";
+    String ERROR_CODE_JSON                   = "errorCode";
     String TIME_STAMP_JSON                   = "timeStamp";
     String TRANSACTION_ID_JSON               = "transactionId";
     String CLIENT_IP_ADDRESS_JSON            = "clientIpAddress";       // Security data for the payment provider

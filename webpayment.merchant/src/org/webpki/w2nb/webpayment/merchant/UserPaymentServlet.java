@@ -54,9 +54,9 @@ public class UserPaymentServlet extends HttpServlet implements BaseProperties {
     static final String SHOPPING_CART_SESSION_ATTR = "SHOPCART";
 
     
-    static final String AUTHREQ_FORM_ATTR          = "authreq";
+    static final String AUTHDATA_FORM_ATTR         = "authdata";
     static final String INITMSG_FORM_ATTR          = "initmsg";
-    static final String SHOPPING_CART_FORM_ATTR    = "shoppingCart";
+    static final String SHOPPING_CART_FORM_ATTR    = "shopcart";
     
     static Logger logger = Logger.getLogger(UserPaymentServlet.class.getName());
     
@@ -88,7 +88,6 @@ public class UserPaymentServlet extends HttpServlet implements BaseProperties {
         // Then we round up to the nearest 25 centimes, cents, or pennies
         savedShoppingCart.roundedPaymentAmount = ((savedShoppingCart.tax + total + 24) / 25) * 25;
         HttpSession session = request.getSession(true);
-        boolean indirectPaymentMode = getOption(session, HomeServlet.INDIRECT_SESSION_ATTR);
         boolean debugMode = getOption(session, HomeServlet.DEBUG_SESSION_ATTR);
         DebugData debugData = null;
         if (debugMode) {
@@ -125,7 +124,6 @@ public class UserPaymentServlet extends HttpServlet implements BaseProperties {
         
         HTML.userPayPage(response,
                          savedShoppingCart,
-                         true,
                          debugMode,
                          new String(invokeRequest.serializeJSONObject(JSONOutputFormats.JS_NATIVE), "UTF-8"));
     }

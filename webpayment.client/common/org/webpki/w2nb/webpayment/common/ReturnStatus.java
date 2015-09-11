@@ -14,21 +14,19 @@
  *  limitations under the License.
  *
  */
-package org.webpki.w2nb.webpayment.merchant;
+package org.webpki.w2nb.webpayment.common;
 
-import java.io.Serializable;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 
-public class DebugData implements Serializable {
+import org.webpki.json.JSONObjectWriter;
 
-    private static final long serialVersionUID = 1L;
-    
-    public byte[] initMessage;
+// For transferring status for which is related to the payer's account
 
-    public byte[] paymentRequest;
+public abstract class ReturnStatus {
+
+    public abstract boolean success();
     
-    public byte[] walletResponse;
-    
-    public byte[] bankReserveFundsRequest;
-    
-    public byte[] bankReserveFundsResponse;
+    abstract JSONObjectWriter write(JSONObjectWriter wr) throws IOException, GeneralSecurityException;
+
 }

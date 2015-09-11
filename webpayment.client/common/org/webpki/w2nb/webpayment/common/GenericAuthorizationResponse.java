@@ -44,7 +44,7 @@ public class GenericAuthorizationResponse implements BaseProperties {
         for (char c : accountId.toCharArray()) {
             accountReference.append((--q < 0) ? c : '*');
         }
-        JSONObjectWriter rd = Messages.createBaseMessage(Messages.PROVIDER_GENERIC_AUTH_RES)
+        JSONObjectWriter rd = Messages.createBaseMessage(Messages.RESERVE_FUNDS_RESPONSE)
             .setObject(PAYMENT_REQUEST_JSON, paymentRequest.root)
             .setString(ACCOUNT_TYPE_JSON, accountType)
             .setString(ACCOUNT_REFERENCE_JSON, accountReference.toString());
@@ -62,7 +62,7 @@ public class GenericAuthorizationResponse implements BaseProperties {
     JSONObjectReader root;
     
     public GenericAuthorizationResponse(JSONObjectReader rd) throws IOException {
-        root = Messages.parseBaseMessage(Messages.PROVIDER_GENERIC_AUTH_RES, rd);
+        root = Messages.parseBaseMessage(Messages.RESERVE_FUNDS_RESPONSE, rd);
         paymentRequest = new PaymentRequest(rd.getObject(PAYMENT_REQUEST_JSON));
         accountType = rd.getString(ACCOUNT_TYPE_JSON);
         accountReference = rd.getString(ACCOUNT_REFERENCE_JSON);

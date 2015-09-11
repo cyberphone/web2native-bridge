@@ -63,8 +63,8 @@
     </listener>
 
     <servlet>
-        <servlet-name>PaymentCoreServlet</servlet-name>
-        <servlet-class>org.webpki.w2nb.webpayment.bank.PaymentCoreServlet</servlet-class>
+        <servlet-name>PaymentServlet</servlet-name>
+        <servlet-class>org.webpki.w2nb.webpayment.bank.PaymentServlet</servlet-class>
     </servlet>
 
     <servlet>
@@ -73,7 +73,7 @@
     </servlet>
 
     <servlet-mapping>
-        <servlet-name>PaymentCoreServlet</servlet-name>
+        <servlet-name>PaymentServlet</servlet-name>
         <url-pattern>/transact</url-pattern>
     </servlet-mapping>
 
