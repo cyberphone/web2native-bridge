@@ -81,12 +81,9 @@ import org.webpki.json.JSONAlgorithmPreferences;
 import org.webpki.json.JSONSignatureDecoder;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
-import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONParser;
 
 import org.webpki.keygen2.KeyGen2URIs;
-
-import org.webpki.net.HTTPSWrapper;
 
 import org.webpki.sks.EnumeratedKey;
 import org.webpki.sks.Extension;
@@ -99,8 +96,8 @@ import org.webpki.sks.test.SKSReferenceImplementation;
 import org.webpki.util.ArrayUtil;
 
 import org.webpki.w2nb.webpayment.common.BaseProperties;
-import org.webpki.w2nb.webpayment.common.PayerIndirectModeAuthorizationRequest;
-import org.webpki.w2nb.webpayment.common.GenericAuthorizationRequest;
+import org.webpki.w2nb.webpayment.common.PayerAuthorization;
+import org.webpki.w2nb.webpayment.common.AuthorizationData;
 import org.webpki.w2nb.webpayment.common.Messages;
 import org.webpki.w2nb.webpayment.common.PaymentRequest;
 import org.webpki.w2nb.webpayment.common.Encryption;
@@ -129,19 +126,16 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 public class Wallet {
 
+    static Logger logger = Logger.getLogger("log");
+
     static StdinJSONPipe stdin = new StdinJSONPipe();
     static StdoutJSONPipe stdout = new StdoutJSONPipe();
 
     static JDialog frame;
-
     static Dimension screenDimension;
-
-    static boolean testMode;
 
     static String domainName;
 
-    static Logger logger = Logger.getLogger("log");
-    
     static final String TOOLTIP_CANCEL         = "Click if you want to abort this payment operation";
     static final String TOOLTIP_PAY_OK         = "Click if you agree to pay";
     static final String TOOLTIP_PAYEE          = "The party who requests payment";
@@ -169,8 +163,6 @@ public class Wallet {
         String accountType;
         AsymSignatureAlgorithms signatureAlgorithm;
         String authorityUrl;
-        
-        // Optional (as a triple)
         String dataEncryptionAlgorithm;
         String keyEncryptionAlgorithm;
         PublicKey keyEncryptionKey;
@@ -307,8 +299,6 @@ public class Wallet {
         
         JSONObjectWriter resultMessage;
         
-        boolean indirectMode;
-        
         ApplicationWindow() {
             // First we measure all the panes to be used to get the size of the holding window
             views = frame.getContentPane();
@@ -367,7 +357,7 @@ public class Wallet {
         }
 
         String formatAccountId(Account card) {
-            return card.cardFormatAccountId ? GenericAuthorizationRequest.formatCardNumber(card.accountId) : card.accountId;
+            return card.cardFormatAccountId ? AuthorizationData.formatCardNumber(card.accountId) : card.accountId;
         }
 
         JPanel initCardSelectionViewCore(LinkedHashMap<Integer,Account> cards) {
@@ -646,8 +636,7 @@ public class Wallet {
             logger.info("Selected Account: Key=" + keyHandle +
                         ", Number=" + selectedCard.accountId +
                         ", URL=" + selectedCard.authorityUrl +
-                        ", KeyEncryptionKey=" + (selectedCard.keyEncryptionAlgorithm == null ?
-                        "N/A" : selectedCard.keyEncryptionKey));
+                        ", KeyEncryptionKey=" + selectedCard.keyEncryptionKey);
             this.keyHandle = keyHandle;
             amountField.setText("\u200a" + amountString);
             payeeField.setText("\u200a" + payeeString);
@@ -810,8 +799,7 @@ public class Wallet {
                 JSONObjectReader invokeMessage = stdin.readJSONObject();
                 logger.info("Received from browser:\n" + invokeMessage);
                 Messages.parseBaseMessage(Messages.INVOKE_WALLET, invokeMessage);
-                final String[] cardTypes = invokeMessage.getStringArray(BaseProperties.ACCEPTED_ACCOUNT_TYPES_JSON);
-                indirectMode = true;
+                final String[] accountTypes = invokeMessage.getStringArray(BaseProperties.ACCEPTED_ACCOUNT_TYPES_JSON);
                 paymentRequest = new PaymentRequest(invokeMessage.getObject(BaseProperties.PAYMENT_REQUEST_JSON));
                 timer.cancel();
                 if (running) {
@@ -843,10 +831,10 @@ public class Wallet {
 
                                     // This key had the attribute signifying that it is a payment credential
                                     // for the fictitious payment scheme this system is supporting but it
-                                    // might still not match the Payee's list of supported sub-types (brands).
+                                    // might still not match the Payee's list of supported account types.
                                     collectPotentialCard(ek.getKeyHandle(),
                                                          JSONParser.parse(ext.getExtensionData(SecureKeyStore.SUB_TYPE_EXTENSION)),
-                                                         cardTypes);
+                                                         accountTypes);
                                }
                             } catch (Exception e) {
                                 sksProblem(e);
@@ -881,8 +869,8 @@ public class Wallet {
 
         void collectPotentialCard(int keyHandle,
                                   JSONObjectReader cardProperties,
-                                  String[] cardTypes) throws IOException {
-            for (String accountType : cardTypes) {
+                                  String[] accountTypes) throws IOException {
+            for (String accountType : accountTypes) {
                 if (cardProperties.getString(BaseProperties.ACCOUNT_TYPE_JSON).equals(accountType)) {
                     Account card =
                         new Account(cardProperties.getString(BaseProperties.ACCOUNT_ID_JSON),
@@ -942,9 +930,8 @@ public class Wallet {
                 }
                 try {
                     // User authorizations are always signed by a key that only needs to be
-                    // understood by the issuing Payment Provider (bank).  Tokenization and
-                    // user anonymization is also performed by the Payment Provider.
-                    resultMessage = GenericAuthorizationRequest.encode(
+                    // understood by the issuing Payment Provider (bank).
+                    resultMessage = AuthorizationData.encode(
                         paymentRequest,
                         domainName,
                         selectedCard.accountType,
@@ -964,23 +951,18 @@ public class Wallet {
                                                           algorithm.getDigestAlgorithm().digest(data));
                             }
                         });
-                    if (indirectMode) {
-                        logger.info("Authorization before \"indirect mode\" encryption:\n" + resultMessage);
+                    logger.info("Authorization before encryption:\n" + resultMessage);
 
-                        // "Indirect mode" payments must be encrypted in order to not leak user information to Payees.
-                        // Only the proper Payment Provider can decrypt and process "indirect" user authorizations.
-                        resultMessage = PayerIndirectModeAuthorizationRequest.encode(resultMessage,
-                                                                                 selectedCard.authorityUrl,
-                                                                                 selectedCard.accountType,
-                                                                                 selectedCard.dataEncryptionAlgorithm,
-                                                                                 selectedCard.keyEncryptionKey,
-                                                                                 selectedCard.keyEncryptionAlgorithm);
-                    }
-                    logger.info((indirectMode || testMode ?
-                                     "About to send to the browser:\n" 
-                                                         :
-                                     "About to send to \"" + selectedCard.authorityUrl + "\":\n")
-                                + resultMessage);
+                    // Since user authorizations are pushed through the Payees they must be encrypted in order
+                    // to not leak user information to Payees.  Only the proper Payment Provider can decrypt
+                    // and process user authorizations.
+                    resultMessage = PayerAuthorization.encode(resultMessage,
+                                                              selectedCard.authorityUrl,
+                                                              selectedCard.accountType,
+                                                              selectedCard.dataEncryptionAlgorithm,
+                                                              selectedCard.keyEncryptionKey,
+                                                              selectedCard.keyEncryptionAlgorithm);
+                    logger.info("About to send to the browser:\n" + resultMessage);
                     return true;
                 } catch (SKSException e) {
                     if (e.getError() != SKSException.ERROR_AUTHORIZATION) {
@@ -1007,34 +989,13 @@ public class Wallet {
             @Override
             public void run() {
                 try {
-                    if (!testMode && !indirectMode) {
-                        // In the "direct" mode payment model the Wallet sends the user-authorized request
-                        // to the Payment Provider (bank) for final authorization and funds checking.
-                        // The resulting message is what is finally handed over to the Merchant (Payee).
-                        // The URL to the Payment Provider is a part of the user's payment credential (card).
-                        HTTPSWrapper httpClient = new HTTPSWrapper();
-                        httpClient.setTimeout(TIMEOUT_FOR_REQUEST);
-                        httpClient.setHeader("Content-Type", BaseProperties.JSON_CONTENT_TYPE);
-                        httpClient.setRequireSuccess(true);
-                        httpClient.makePostRequest(selectedCard.authorityUrl,
-                                                   resultMessage.serializeJSONObject(JSONOutputFormats.NORMALIZED));
-                        String mimeType = httpClient.getContentType();
-                        if (!mimeType.equals(BaseProperties.JSON_CONTENT_TYPE)) {
-                            throw new IOException("Improper media type: " + mimeType);
-                        }
-                        resultMessage = new JSONObjectWriter(JSONParser.parse(httpClient.getData()));
-                        logger.info("Returned from payment provider for handover to payee via the browser:\n"
-                                    + resultMessage);
-                    }
-
-                    // In both the "direct" and "indirect" modes the Wallet finishes by sending the specific
-                    // authorization message through the Web2Native Bridge interface to the invoking
-                    // Merchant (Payee) web page which in turn posts it to the Merchant server.  The
-                    // latter should return a new web-page which causes the Wallet to unload (disappear).
+                    // The Wallet finishes by sending the encrypted authorization message through the
+                    // Web2Native Bridge interface to the invoking Merchant (Payee) web page which in
+                    // turn posts it to the Merchant server.  The latter should return a new web-page
+                    // which causes the Wallet to unload (disappear).
                     // Any further communication with the user (including "insufficient funds") is
                     // supposed to be performed using standard web technology.
                     stdout.writeJSONObject(resultMessage);
-
                 } catch (Exception e) {
                     logger.log(Level.SEVERE, "Communication error", e);
                     terminatingError("<html>*** Communication Error ***<br>Check log file for details.</html>");
@@ -1071,7 +1032,6 @@ public class Wallet {
             if (args[1].startsWith("http")) {
                 domainName = new URL(args[1]).getHost();
             } else {
-                testMode = true;
                 domainName = args[1];
             }
         } catch (Exception e) {

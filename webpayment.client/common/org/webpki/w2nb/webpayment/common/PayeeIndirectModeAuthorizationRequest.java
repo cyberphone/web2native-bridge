@@ -113,10 +113,10 @@ public class PayeeIndirectModeAuthorizationRequest implements BaseProperties {
         }
     }
 
-    public GenericAuthorizationRequest getDecryptedAuthorizationRequest(Vector<DecryptionKeyHolder> decryptionKeys)
+    public AuthorizationData getDecryptedAuthorizationRequest(Vector<DecryptionKeyHolder> decryptionKeys)
     throws IOException, GeneralSecurityException {
-        GenericAuthorizationRequest genericAuthorizationRequest =
-            new GenericAuthorizationRequest(encryptedData.getDecryptedData(decryptionKeys));
+        AuthorizationData genericAuthorizationRequest =
+            new AuthorizationData(encryptedData.getDecryptedData(decryptionKeys));
         compareCertificatePaths(outerCertificatePath, genericAuthorizationRequest.paymentRequest);
         if (!ArrayUtil.compare(requestHash, genericAuthorizationRequest.paymentRequest.getRequestHash())) {
             throw new IOException("Non-matching \"" + REQUEST_HASH_JSON + "\" value");

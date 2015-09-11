@@ -26,8 +26,7 @@ public enum Messages {
 
     WALLET_INITIALIZED        ("WalletInitialized"),          // Wallet to payee web page message
     INVOKE_WALLET             ("InvokeWallet"),               // Payee payment request + other data
-    PAYER_GENERIC_AUTH_REQ    ("PayerGenericAuthReq"),        // Used as is for all modes but wrapped
-    PAYER_INDIRECT_AUTH_REQ   ("PayerIndirectAuthReq"),       // in this one for "indirect" mode
+    PAYER_AUTHORIZATION       ("PayerAuthorization"),         // Created by the Wallet
     PAYEE_INDIRECT_AUTH_REQ   ("PayeeIndirectAuthReq"),       // Payee "indirect" mode
     PROVIDER_GENERIC_AUTH_RES ("ProviderGenericAuthRes"),     // Provider response for all modes
     PAYEE_FINALIZE_REQUEST    ("PayeeFinalizeRequest"),       // Perform the actual payment operation
