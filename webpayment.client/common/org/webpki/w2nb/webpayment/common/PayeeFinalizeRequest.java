@@ -34,12 +34,12 @@ public class PayeeFinalizeRequest implements BaseProperties {
     throws IOException, GeneralSecurityException {
         Messages.parseBaseMessage(Messages.PAYEE_FINALIZE_REQUEST, rd);
         amount = rd.getBigDecimal(AMOUNT_JSON);
-        genericAuthorizationResponse = new GenericAuthorizationResponse(rd.getObject(PROVIDER_AUTHORIZATION_JSON));
+        genericAuthorizationResponse = new ReserveOrDebitResponse(rd.getObject(PROVIDER_AUTHORIZATION_JSON));
         timeStamp = rd.getDateTime(TIME_STAMP_JSON);
         software = new Software(rd);
         outerCertificatePath = rd.getSignature(JSONAlgorithmPreferences.JOSE).getCertificatePath();
         PaymentRequest paymentRequest = genericAuthorizationResponse.getPaymentRequest();
-        ReserveFundsRequest.compareCertificatePaths(outerCertificatePath, paymentRequest);
+        ReserveOrDebitRequest.compareCertificatePaths(outerCertificatePath, paymentRequest);
         if (amount.compareTo(paymentRequest.getAmount()) > 0) {
             throw new IOException("Final amount must be less or equal to reserved amount");
         }
@@ -54,8 +54,8 @@ public class PayeeFinalizeRequest implements BaseProperties {
     
     X509Certificate[] outerCertificatePath;
     
-    GenericAuthorizationResponse genericAuthorizationResponse;
-    public GenericAuthorizationResponse getGenericAuthorizationResponse() {
+    ReserveOrDebitResponse genericAuthorizationResponse;
+    public ReserveOrDebitResponse getGenericAuthorizationResponse() {
         return genericAuthorizationResponse;
     }
 
@@ -69,7 +69,7 @@ public class PayeeFinalizeRequest implements BaseProperties {
         return clientIpAddress;
     }
 
-    public static JSONObjectWriter encode(GenericAuthorizationResponse providerResponse,
+    public static JSONObjectWriter encode(ReserveOrDebitResponse providerResponse,
                                           BigDecimal amount,  // Less or equal the reserved amount
                                           ServerSigner signer)
     throws IOException, GeneralSecurityException {

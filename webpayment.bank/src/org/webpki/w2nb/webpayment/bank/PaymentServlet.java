@@ -17,6 +17,7 @@
 package org.webpki.w2nb.webpayment.bank;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 import java.util.logging.Level;
@@ -38,9 +39,9 @@ import org.webpki.w2nb.webpayment.common.AccountTypes;
 import org.webpki.w2nb.webpayment.common.Authority;
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.EncryptedData;
-import org.webpki.w2nb.webpayment.common.ReserveFundsRequest;
+import org.webpki.w2nb.webpayment.common.ReserveOrDebitRequest;
 import org.webpki.w2nb.webpayment.common.AuthorizationData;
-import org.webpki.w2nb.webpayment.common.GenericAuthorizationResponse;
+import org.webpki.w2nb.webpayment.common.ReserveOrDebitResponse;
 import org.webpki.w2nb.webpayment.common.Messages;
 import org.webpki.w2nb.webpayment.common.PaymentRequest;
 import org.webpki.w2nb.webpayment.common.PaymentTypeDescriptor;
@@ -65,18 +66,17 @@ public class PaymentServlet extends HttpServlet implements BaseProperties {
             if (!contentType.equals(JSON_CONTENT_TYPE)) {
                 throw new IOException("Content-Type must be \"" + JSON_CONTENT_TYPE + "\" , found: " + contentType);
             }
-            JSONObjectReader authorizationRequest = JSONParser.parse(ServletUtil.getData(request));
-            logger.info("Received:\n" + authorizationRequest);
+            JSONObjectReader payeeRequest = JSONParser.parse(ServletUtil.getData(request));
+            logger.info("Received:\n" + payeeRequest);
 
             ////////////////////////////////////////////////////////////////////////////////////////
             // We rationalize here by using a single end-point for both pull and push modes       //
             ////////////////////////////////////////////////////////////////////////////////////////
 
-            // Read the attested and encrypted request. Validate attestation signature
-            ReserveFundsRequest attestedEncryptedRequest =
-                    new ReserveFundsRequest(authorizationRequest);
+            // Read the attested and encrypted request
+            ReserveOrDebitRequest attestedEncryptedRequest = new ReserveOrDebitRequest(payeeRequest);
 
-            // Decrypt the encrypted request and validate the embedded signatures
+            // Decrypt the encrypted request
             AuthorizationData authorizationData =
                     attestedEncryptedRequest.getDecryptedAuthorizationRequest(BankService.decryptionKeys);
 
@@ -94,6 +94,10 @@ public class PaymentServlet extends HttpServlet implements BaseProperties {
 
             // Verify that the merchant's signature belongs to a valid merchant trust network
             paymentRequest.getSignatureDecoder().verify(BankService.merchantRoot);
+            
+            if (paymentRequest.getAmount().compareTo(new BigDecimal("1000000.00")) > 0) {
+                throw new IOException("Toomuch");
+            }
 
             // Separate credit-card and account2account payments
             JSONObjectWriter encryptedCardData = null;
@@ -125,7 +129,8 @@ public class PaymentServlet extends HttpServlet implements BaseProperties {
             ////////////////////////////////////////////////////////////////////////////
 
             // Return the authorized request
-            authorizationResponse = GenericAuthorizationResponse.encode(paymentRequest,
+            authorizationResponse = ReserveOrDebitResponse.encode(false,
+                                                                  paymentRequest,
                                                                         authorizationData.getAccountType(),
                                                                         authorizationData.getAccountId(),
                                                                         encryptedCardData,

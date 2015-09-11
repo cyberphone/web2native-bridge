@@ -37,9 +37,9 @@ import org.webpki.w2nb.webpayment.common.AccountTypes;
 import org.webpki.w2nb.webpayment.common.Authority;
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.AuthorizationData;
-import org.webpki.w2nb.webpayment.common.GenericAuthorizationResponse;
+import org.webpki.w2nb.webpayment.common.ReserveOrDebitResponse;
+import org.webpki.w2nb.webpayment.common.ReserveOrDebitRequest;
 import org.webpki.w2nb.webpayment.common.PayeeFinalizeRequest;
-import org.webpki.w2nb.webpayment.common.ReserveFundsRequest;
 import org.webpki.w2nb.webpayment.common.PayerAuthorization;
 
 public class BackendPaymentServlet extends HttpServlet implements BaseProperties {
@@ -102,7 +102,7 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
 
             // Attest the user's encrypted authorization to show "intent"
             JSONObjectWriter providerRequest =
-                ReserveFundsRequest.encode(input.getObject(AUTHORIZATION_DATA_JSON),
+                ReserveOrDebitRequest.encode(input.getObject(AUTHORIZATION_DATA_JSON),
                                            requestHash,
                                            payerAuthorization.getAccountType(),
                                            (String)session.getAttribute(UserPaymentServlet.REQUEST_REFID_SESSION_ATTR),
@@ -133,7 +133,7 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
                 debugData.bankReserveFundsResponse = wrap.getData();
             }
 
-            GenericAuthorizationResponse bankResponse = new GenericAuthorizationResponse(resultMessage);
+            ReserveOrDebitResponse bankResponse = new ReserveOrDebitResponse(resultMessage);
 
             // Lookup indicated authority
             wrap = new HTTPSWrapper();
@@ -163,7 +163,7 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
             }
 
             // The result should be a provider-signed authorization
-            GenericAuthorizationResponse authorization =  new GenericAuthorizationResponse(resultMessage);
+            ReserveOrDebitResponse authorization =  new ReserveOrDebitResponse(resultMessage);
 
             
             if (!ArrayUtil.compare(authorization.getPaymentRequest().getRequestHash(), requestHash)) {
