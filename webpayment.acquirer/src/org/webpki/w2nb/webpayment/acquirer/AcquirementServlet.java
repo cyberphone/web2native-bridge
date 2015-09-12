@@ -30,8 +30,8 @@ import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONParser;
 import org.webpki.w2nb.webpayment.common.BaseProperties;
-import org.webpki.w2nb.webpayment.common.GenericAuthorizationResponse;
-import org.webpki.w2nb.webpayment.common.PayeeFinalizeRequest;
+import org.webpki.w2nb.webpayment.common.ReserveOrDebitResponse;
+import org.webpki.w2nb.webpayment.common.FinalizeRequest;
 import org.webpki.w2nb.webpayment.common.PaymentRequest;
 import org.webpki.webutil.ServletUtil;
 
@@ -54,10 +54,10 @@ public class AcquirementServlet extends HttpServlet implements BaseProperties {
             logger.info("Received:\n" + authorizationRequest);
 
             // Decode the finalize request message
-            PayeeFinalizeRequest payeeFinalizationRequest = new PayeeFinalizeRequest(authorizationRequest);
+            FinalizeRequest payeeFinalizationRequest = new FinalizeRequest(authorizationRequest);
 
             // Get the embedded authorization from the payer's payment provider (bank)
-            GenericAuthorizationResponse genericAuthorizationResponse =
+            ReserveOrDebitResponse genericAuthorizationResponse =
                 payeeFinalizationRequest.getGenericAuthorizationResponse();
 
             // Verify that the provider's signature belongs to a valid payment provider trust network

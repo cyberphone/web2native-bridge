@@ -39,7 +39,7 @@ import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.AuthorizationData;
 import org.webpki.w2nb.webpayment.common.ReserveOrDebitResponse;
 import org.webpki.w2nb.webpayment.common.ReserveOrDebitRequest;
-import org.webpki.w2nb.webpayment.common.PayeeFinalizeRequest;
+import org.webpki.w2nb.webpayment.common.FinalizeRequest;
 import org.webpki.w2nb.webpayment.common.PayerAuthorization;
 
 public class BackendPaymentServlet extends HttpServlet implements BaseProperties {
@@ -150,10 +150,9 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
             }
             Authority acquirerAuthority = new Authority(JSONParser.parse(wrap.getData()), MerchantService.acquirerAuthorityUrl);
 
-            JSONObjectWriter finalizationMessage =
-                    PayeeFinalizeRequest.encode(bankResponse,
-                                                bankResponse.getPaymentRequest().getAmount(),
-                                                MerchantService.merchantKey);
+            JSONObjectWriter finalizationMessage = FinalizeRequest.encode(bankResponse,
+                                                                          bankResponse.getPaymentRequest().getAmount(),
+                                                                          MerchantService.merchantKey);
 
             // Call the payment provider (which is the only party that can deal with
             // encrypted user authorizations)

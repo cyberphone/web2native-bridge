@@ -27,12 +27,27 @@ public enum Messages {
     WALLET_INITIALIZED        ("WalletInitialized"),       // Wallet to payee web page message
     INVOKE_WALLET             ("InvokeWallet"),            // Payee payment request + other data
     PAYER_AUTHORIZATION       ("PayerAuthorization"),      // Created by the Wallet
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    // One-step payment operation in Account2Account mode
     DIRECT_DEBIT_REQUEST      ("DirectDebitRequest"),      // Payee request to provider
     DIRECT_DEBIT_RESPONSE     ("DirectDebitResponse"),     // Provider response to the above
-    RESERVE_FUNDS_REQUEST     ("ReserveFundsRequest"),     // Payee request to provider
-    RESERVE_FUNDS_RESPONSE    ("ReserveFundsResponse"),    // Provider response to the above
-    PAYEE_FINALIZE_REQUEST    ("PayeeFinalizeRequest"),    // Perform the actual payment operation
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    // Two-step payment operation in Account2Account or Acquirer mode
+    //
+    // First step - Payee to Provider
+    RESERVE_FUNDS_REQUEST     ("ReserveFundsRequest"),     // Reserve funds at provider
+    RESERVE_FUNDS_RESPONSE    ("ReserveFundsResponse"),    // Provider response to request
+    //
+    // Second step - Payee to Provider (Account2Account mode) or Acquirer (Acquirer mode)
+    FINALIZE_REQUEST          ("FinalizeRequest"),         // Perform the actual payment operation
+    FINALIZE_RESPONSE         ("FinalizeResponse"),        // Provider or Acquirer response to request
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
     ERROR_RESPONSE            ("ErrorResponse"),           // Hard (but detected) error
+
     AUTHORITY                 ("Authority");               // Published entity data
 
     String qualifier;

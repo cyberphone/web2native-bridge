@@ -155,9 +155,8 @@ public class PaymentServlet extends HttpServlet implements BaseProperties {
             // We rationalize here by using a single end-point for both reserve/debit and finalize //
             /////////////////////////////////////////////////////////////////////////////////////////
             providerResponse = 
-                payeeRequest.getString(JSONDecoderCache.QUALIFIER_JSON)
-                   .equals(Messages.PAYEE_FINALIZE_REQUEST.toString()) ?
-                processFinalizeRequest(payeeRequest) : processReserveOrDebitRequest(payeeRequest);
+                payeeRequest.getString(JSONDecoderCache.QUALIFIER_JSON).equals(Messages.FINALIZE_REQUEST.toString()) ?
+                    processFinalizeRequest(payeeRequest) : processReserveOrDebitRequest(payeeRequest);
 
             logger.info("Returned to caller:\n" + providerResponse);
             
