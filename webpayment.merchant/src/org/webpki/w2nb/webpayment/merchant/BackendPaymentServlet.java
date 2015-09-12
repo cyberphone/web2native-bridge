@@ -33,10 +33,13 @@ import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONParser;
 import org.webpki.net.HTTPSWrapper;
 import org.webpki.util.ArrayUtil;
+
 import org.webpki.w2nb.webpayment.common.AccountTypes;
 import org.webpki.w2nb.webpayment.common.Authority;
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.AuthorizationData;
+import org.webpki.w2nb.webpayment.common.FinalizeResponse;
+import org.webpki.w2nb.webpayment.common.RequestHash;
 import org.webpki.w2nb.webpayment.common.ReserveOrDebitResponse;
 import org.webpki.w2nb.webpayment.common.ReserveOrDebitRequest;
 import org.webpki.w2nb.webpayment.common.FinalizeRequest;
@@ -73,8 +76,8 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
             byte[] requestHash = (byte[]) session.getAttribute(UserPaymentServlet.REQUEST_HASH_SESSION_ATTR);
 
             request.setCharacterEncoding("UTF-8");
-            JSONObjectReader input = JSONParser.parse(request.getParameter(UserPaymentServlet.AUTHDATA_FORM_ATTR));
-            logger.info("Received from wallet:\n" + input);
+            JSONObjectReader userAuthorization = JSONParser.parse(request.getParameter(UserPaymentServlet.AUTHDATA_FORM_ATTR));
+            logger.info("Received from wallet:\n" + userAuthorization);
 
             // Do we have web debug mode?
             boolean debug = UserPaymentServlet.getOption(session, HomeServlet.DEBUG_SESSION_ATTR);
@@ -82,11 +85,11 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
             if (debug) {
                 DebugData debugData = (DebugData) session.getAttribute(UserPaymentServlet.DEBUG_DATA_SESSION_ATTR);
                 debugData.initMessage = request.getParameter(UserPaymentServlet.INITMSG_FORM_ATTR).getBytes("UTF-8");
-                debugData.walletResponse = input.serializeJSONObject(JSONOutputFormats.NORMALIZED);
+                debugData.walletResponse = userAuthorization.serializeJSONObject(JSONOutputFormats.NORMALIZED);
             }
 
             // Decode the user's authorization.  The encrypted data is only parsed for correctness
-            PayerAuthorization payerAuthorization = new PayerAuthorization(input);
+            PayerAuthorization payerAuthorization = new PayerAuthorization(userAuthorization);
 
             // Lookup indicated authority (Payment Provider)
             String providerAuthorityUrl = payerAuthorization.getAuthorityUrl();
@@ -102,7 +105,7 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
 
             // Attest the user's encrypted authorization to show "intent"
             JSONObjectWriter providerRequest =
-                ReserveOrDebitRequest.encode(false, input.getObject(AUTHORIZATION_DATA_JSON),
+                ReserveOrDebitRequest.encode(false, userAuthorization.getObject(AUTHORIZATION_DATA_JSON),
                                            requestHash,
                                            payerAuthorization.getAccountType(),
                                            (String)session.getAttribute(UserPaymentServlet.REQUEST_REFID_SESSION_ATTR),
@@ -139,6 +142,10 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
                 return;
             }
 
+            if (!ArrayUtil.compare(bankResponse.getPaymentRequest().getRequestHash(), requestHash)) {
+                throw new IOException("Non-matching \"" + REQUEST_HASH_JSON + "\"");
+            }
+
             // Lookup indicated authority
             wrap = new HTTPSWrapper();
             wrap.setTimeout(TIMEOUT_FOR_REQUEST);
@@ -154,36 +161,37 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
                                                                           bankResponse.getPaymentRequest().getAmount(),
                                                                           MerchantService.merchantKey);
 
-            // Call the payment provider (which is the only party that can deal with
-            // encrypted user authorizations)
+            // Call the payment provider
+            byte[] sentFinalize = finalizationMessage.serializeJSONObject(JSONOutputFormats.NORMALIZED);
             wrap.setTimeout(TIMEOUT_FOR_REQUEST);
             wrap.setHeader("Content-Type", MerchantService.jsonMediaType);
             wrap.setRequireSuccess(true);
-            wrap.makePostRequest(portFilter(acquirerAuthority.getTransactionUrl()),
-                                            finalizationMessage.serializeJSONObject(JSONOutputFormats.NORMALIZED));
+            wrap.makePostRequest(portFilter(acquirerAuthority.getTransactionUrl()), sentFinalize);
             if (!wrap.getContentType().equals(JSON_CONTENT_TYPE)) {
                 throw new IOException("Content-Type must be \"" + JSON_CONTENT_TYPE + "\" , found: " + wrap.getContentType());
             }
+            byte[] finalizeRequestHash = RequestHash.getRequestHash(sentFinalize);
 
-            // The result should be a provider-signed authorization
-            ReserveOrDebitResponse authorization =  new ReserveOrDebitResponse(resultMessage);
-
+            JSONObjectReader finalizeMessage = JSONParser.parse(wrap.getData());
+            logger.info("Received from provider:\n" + finalizeMessage);
             
-            if (!ArrayUtil.compare(authorization.getPaymentRequest().getRequestHash(), requestHash)) {
+            FinalizeResponse finalizeResponse = new FinalizeResponse(finalizeMessage);
+
+            if (!ArrayUtil.compare(finalizeRequestHash, finalizeResponse.getRequestHash())) {
                 throw new IOException("Non-matching \"" + REQUEST_HASH_JSON + "\"");
             }
 
-            logger.info("Successful authorization of request: " + authorization.getPaymentRequest().getReferenceId());
-            AccountTypes accountType = AccountTypes.fromType(authorization.getAccountType());
+            logger.info("Successful authorization of request: " + bankResponse.getPaymentRequest().getReferenceId());
+            AccountTypes accountType = AccountTypes.fromType(bankResponse.getAccountType());
             HTML.resultPage(response,
                             UserPaymentServlet.getOption(session, HomeServlet.DEBUG_SESSION_ATTR),
                             null,
-                            authorization.getPaymentRequest(),
+                            bankResponse.getPaymentRequest(),
                             accountType,
                             accountType.isAcquirerBased() ? // = Card
-                                AuthorizationData.formatCardNumber(authorization.getAccountReference())
+                                AuthorizationData.formatCardNumber(bankResponse.getAccountReference())
                                                           :
-                                authorization.getAccountReference());  // Currently "unmoderated" account
+                                bankResponse.getAccountReference());  // Currently "unmoderated" account
 
         } catch (Exception e) {
             logger.log(Level.SEVERE, e.getMessage(), e);

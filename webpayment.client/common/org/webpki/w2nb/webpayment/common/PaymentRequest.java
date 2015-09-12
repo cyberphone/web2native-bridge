@@ -123,10 +123,6 @@ public class PaymentRequest implements BaseProperties {
     JSONObjectReader root;
 
     public byte[] getRequestHash() throws IOException {
-        return getRequestHash(new JSONObjectWriter(root));
-    }
-
-    public static byte[] getRequestHash(JSONObjectWriter paymentRequest) throws IOException {
-        return HashAlgorithms.SHA256.digest(paymentRequest.serializeJSONObject(JSONOutputFormats.NORMALIZED));
+        return RequestHash.getRequestHash(new JSONObjectWriter(root));
     }
 }

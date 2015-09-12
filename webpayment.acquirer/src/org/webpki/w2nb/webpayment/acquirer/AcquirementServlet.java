@@ -30,6 +30,7 @@ import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONParser;
 import org.webpki.w2nb.webpayment.common.BaseProperties;
+import org.webpki.w2nb.webpayment.common.FinalizeResponse;
 import org.webpki.w2nb.webpayment.common.ReserveOrDebitResponse;
 import org.webpki.w2nb.webpayment.common.FinalizeRequest;
 import org.webpki.w2nb.webpayment.common.PaymentRequest;
@@ -41,20 +42,20 @@ public class AcquirementServlet extends HttpServlet implements BaseProperties {
     
     static Logger logger = Logger.getLogger(AcquirementServlet.class.getCanonicalName());
     
-    static int referenceId = 164006;
+    static int referenceId = 194006;
     
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        JSONObjectWriter authorizationResponse = null;
+        JSONObjectWriter acquirerResponse = null;
          try {
             String contentType = request.getContentType();
             if (!contentType.equals(JSON_CONTENT_TYPE)) {
                 throw new IOException("Content-Type must be \"" + JSON_CONTENT_TYPE + "\" , found: " + contentType);
             }
-            JSONObjectReader authorizationRequest = JSONParser.parse(ServletUtil.getData(request));
-            logger.info("Received:\n" + authorizationRequest);
+            JSONObjectReader payeeRequest = JSONParser.parse(ServletUtil.getData(request));
+            logger.info("Received:\n" + payeeRequest);
 
             // Decode the finalize request message
-            FinalizeRequest payeeFinalizationRequest = new FinalizeRequest(authorizationRequest);
+            FinalizeRequest payeeFinalizationRequest = new FinalizeRequest(payeeRequest);
 
             // Get the embedded authorization from the payer's payment provider (bank)
             ReserveOrDebitResponse genericAuthorizationResponse =
@@ -83,6 +84,10 @@ public class AcquirementServlet extends HttpServlet implements BaseProperties {
             // Now we have all data needed for talking to the payment network but since //
             // we don't have such a connection we simply return success...              //
             //////////////////////////////////////////////////////////////////////////////
+            acquirerResponse = FinalizeResponse.encode(payeeFinalizationRequest,
+                                                       "#" + (referenceId++),
+                                                       AcquirerService.acquirerKey);
+            logger.info("Returned to caller:\n" + acquirerResponse);
 
         } catch (Exception e) {
             logger.log(Level.SEVERE, e.getMessage(), e);
@@ -91,6 +96,6 @@ public class AcquirementServlet extends HttpServlet implements BaseProperties {
         response.setContentType(JSON_CONTENT_TYPE);
         response.setHeader("Pragma", "No-Cache");
         response.setDateHeader("EXPIRES", 0);
-        response.getOutputStream().write(authorizationResponse.serializeJSONObject(JSONOutputFormats.NORMALIZED));
+        response.getOutputStream().write(acquirerResponse.serializeJSONObject(JSONOutputFormats.NORMALIZED));
       }
   }

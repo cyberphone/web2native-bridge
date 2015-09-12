@@ -30,7 +30,7 @@ import org.webpki.json.JSONObjectWriter;
 public class FinalizeRequest implements BaseProperties {
     
     public FinalizeRequest(JSONObjectReader rd) throws IOException, GeneralSecurityException {
-        Messages.parseBaseMessage(Messages.FINALIZE_REQUEST, rd);
+        root = Messages.parseBaseMessage(Messages.FINALIZE_REQUEST, rd);
         amount = rd.getBigDecimal(AMOUNT_JSON);
         genericAuthorizationResponse = new ReserveOrDebitResponse(rd.getObject(PROVIDER_AUTHORIZATION_JSON));
         timeStamp = rd.getDateTime(TIME_STAMP_JSON);
@@ -51,6 +51,8 @@ public class FinalizeRequest implements BaseProperties {
     Software software;
     
     X509Certificate[] outerCertificatePath;
+    
+    JSONObjectReader root;
     
     ReserveOrDebitResponse genericAuthorizationResponse;
     public ReserveOrDebitResponse getGenericAuthorizationResponse() {

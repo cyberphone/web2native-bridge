@@ -35,16 +35,11 @@ import org.webpki.util.ArrayUtil;
 
 public class ReserveOrDebitRequest implements BaseProperties {
     
-    public static final String JOSE_SHA_256_ALG_ID = "S256";              // Well, not really JOSE but "similar" :-)
-
     public ReserveOrDebitRequest(JSONObjectReader rd) throws IOException {
         directDebit = rd.getString(JSONDecoderCache.QUALIFIER_JSON).equals(Messages.DIRECT_DEBIT_REQUEST.toString());
         encryptedData = EncryptedData.parse(Messages.parseBaseMessage(directDebit ?
             Messages.DIRECT_DEBIT_REQUEST : Messages.RESERVE_FUNDS_REQUEST, rd).getObject(AUTHORIZATION_DATA_JSON));
-        if (!rd.getObject(REQUEST_HASH_JSON).getString(ALGORITHM_JSON).equals(JOSE_SHA_256_ALG_ID)) {
-            throw new IOException("Expected algorithm: " + JOSE_SHA_256_ALG_ID);
-        }
-        requestHash = rd.getObject(REQUEST_HASH_JSON).getBinary(VALUE_JSON);
+        requestHash = RequestHash.parse(rd);
         accountType = AccountTypes.fromType(rd.getString(ACCOUNT_TYPE_JSON));
         referenceId = rd.getString(REFERENCE_ID_JSON);
 // TODO
@@ -98,7 +93,7 @@ public class ReserveOrDebitRequest implements BaseProperties {
                                        Messages.DIRECT_DEBIT_REQUEST : Messages.RESERVE_FUNDS_REQUEST)
             .setObject(AUTHORIZATION_DATA_JSON, encryptedRequest)
             .setObject(REQUEST_HASH_JSON, new JSONObjectWriter()
-                                              .setString(ALGORITHM_JSON, JOSE_SHA_256_ALG_ID)
+                                              .setString(ALGORITHM_JSON, RequestHash.JOSE_SHA_256_ALG_ID)
                                               .setBinary(VALUE_JSON, requestHash))
             .setString(ACCOUNT_TYPE_JSON, accountType.getType())
             .setString(REFERENCE_ID_JSON, referenceId)

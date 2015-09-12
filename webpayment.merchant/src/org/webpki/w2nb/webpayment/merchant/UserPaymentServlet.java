@@ -43,6 +43,7 @@ import org.webpki.w2nb.webpayment.common.AccountTypes;
 import org.webpki.w2nb.webpayment.common.Expires;
 import org.webpki.w2nb.webpayment.common.Messages;
 import org.webpki.w2nb.webpayment.common.PaymentRequest;
+import org.webpki.w2nb.webpayment.common.RequestHash;
 
 public class UserPaymentServlet extends HttpServlet implements BaseProperties {
 
@@ -104,7 +105,7 @@ public class UserPaymentServlet extends HttpServlet implements BaseProperties {
                                   Expires.inMinutes(30),
                                   MerchantService.merchantKey);
 
-        session.setAttribute(REQUEST_HASH_SESSION_ATTR, PaymentRequest.getRequestHash(paymentRequest));
+        session.setAttribute(REQUEST_HASH_SESSION_ATTR, RequestHash.getRequestHash(paymentRequest));
 
         // Only used in indirect mode
         session.setAttribute(REQUEST_REFID_SESSION_ATTR, referenceID);
