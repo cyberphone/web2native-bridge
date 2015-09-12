@@ -27,6 +27,7 @@ import java.util.GregorianCalendar;
 import java.util.Vector;
 
 import org.webpki.json.JSONAlgorithmPreferences;
+import org.webpki.json.JSONDecoderCache;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 
@@ -37,13 +38,16 @@ public class ReserveOrDebitRequest implements BaseProperties {
     public static final String JOSE_SHA_256_ALG_ID = "S256";              // Well, not really JOSE but "similar" :-)
 
     public ReserveOrDebitRequest(JSONObjectReader rd) throws IOException {
-        encryptedData = EncryptedData.parse(Messages.parseBaseMessage(Messages.RESERVE_FUNDS_REQUEST, rd).getObject(AUTHORIZATION_DATA_JSON));
+        directDebit = rd.getString(JSONDecoderCache.QUALIFIER_JSON).equals(Messages.DIRECT_DEBIT_REQUEST.toString());
+        encryptedData = EncryptedData.parse(Messages.parseBaseMessage(directDebit ?
+            Messages.DIRECT_DEBIT_REQUEST : Messages.RESERVE_FUNDS_REQUEST, rd).getObject(AUTHORIZATION_DATA_JSON));
         if (!rd.getObject(REQUEST_HASH_JSON).getString(ALGORITHM_JSON).equals(JOSE_SHA_256_ALG_ID)) {
             throw new IOException("Expected algorithm: " + JOSE_SHA_256_ALG_ID);
         }
         requestHash = rd.getObject(REQUEST_HASH_JSON).getBinary(VALUE_JSON);
         accountType = AccountTypes.fromType(rd.getString(ACCOUNT_TYPE_JSON));
         referenceId = rd.getString(REFERENCE_ID_JSON);
+// TODO
         acquirerAuthorityUrl = rd.getString(ACQUIRER_AUTHORITY_URL_JSON);
         clientIpAddress = rd.getString(CLIENT_IP_ADDRESS_JSON);
         dateTime = rd.getDateTime(TIME_STAMP_JSON);
@@ -66,6 +70,11 @@ public class ReserveOrDebitRequest implements BaseProperties {
     
     EncryptedData encryptedData;
 
+    boolean directDebit;
+    public boolean isDirectDebit() {
+        return directDebit;
+    }
+
     String acquirerAuthorityUrl;
     public String getAcquirerAuthorityUrl() {
         return acquirerAuthorityUrl;
@@ -76,7 +85,8 @@ public class ReserveOrDebitRequest implements BaseProperties {
         return clientIpAddress;
     }
 
-    public static JSONObjectWriter encode(JSONObjectReader encryptedRequest,
+    public static JSONObjectWriter encode(boolean directDebit,
+                                          JSONObjectReader encryptedRequest,
                                           byte[] requestHash,
                                           AccountTypes accountType,
                                           String referenceId,
@@ -84,22 +94,25 @@ public class ReserveOrDebitRequest implements BaseProperties {
                                           String clientIpAddress,
                                           ServerSigner signer)
         throws IOException, GeneralSecurityException {
-        return Messages.createBaseMessage(Messages.RESERVE_FUNDS_REQUEST)
+        JSONObjectWriter wr = Messages.createBaseMessage(directDebit ?
+                                       Messages.DIRECT_DEBIT_REQUEST : Messages.RESERVE_FUNDS_REQUEST)
             .setObject(AUTHORIZATION_DATA_JSON, encryptedRequest)
             .setObject(REQUEST_HASH_JSON, new JSONObjectWriter()
                                               .setString(ALGORITHM_JSON, JOSE_SHA_256_ALG_ID)
                                               .setBinary(VALUE_JSON, requestHash))
             .setString(ACCOUNT_TYPE_JSON, accountType.getType())
             .setString(REFERENCE_ID_JSON, referenceId)
+// TODO
             .setString(ACQUIRER_AUTHORITY_URL_JSON, acquirerAuthorityUrl)
             .setString(CLIENT_IP_ADDRESS_JSON, clientIpAddress)
             .setDateTime(TIME_STAMP_JSON, new Date(), true)
             .setObject(SOFTWARE_JSON, Software.encode (PaymentRequest.SOFTWARE_ID,
                                                        PaymentRequest.SOFTWARE_VERSION))
             .setSignature(signer);
+        return wr;
     }
 
-    static void assertTrue(boolean assertion) throws IOException {
+    private static void assertTrue(boolean assertion) throws IOException {
         if (!assertion) {
             throw new IOException("Outer and inner certificate paths differ");
         }

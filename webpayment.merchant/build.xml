@@ -46,6 +46,7 @@
 
   <target name="_build">
     <property name="acquirer.host" value="https://localhost:8442"/>
+    <property name="server.port.map" value=""/>
     <property name="errormedia" value="false"/>
     <property name="unusualcard" value="false"/>
     <property name="currency" value="USD"/>
@@ -71,7 +72,7 @@
            classpath="${compile.classpath}"
            includeAntRuntime="false"/>
     <replace file="${temp.dir}/web.xml">
-      <replacefilter token="@bank-port-map@" value="${bank.port.map}"/>
+      <replacefilter token="@server-port-map@" value="${server.port.map}"/>
       <replacefilter token="@key-password@" value="${keypassword}"/>
 	  <replacefilter token="@merchant-eecert@" value="${merchantkey}${keyfilext}"/>
       <replacefilter token="@payment-root@" value="${payment.var.root}.cer"/>
@@ -151,7 +152,7 @@
        
        <param name="payment.var.root" value="${payment_root}"/>
 
-       <param name="bank.port.map" value=""/>
+       <param name="server.port.map" value=""/>
      </antcall>
      <copy file="${dist.dir}/${application}" todir="${env.CATALINA_HOME}/webapps" overwrite="true" preservelastmodified="true"/>
   </target>
@@ -160,7 +161,7 @@
   <target name="mobilepki-ejbca">
      <echo message="Web2Native Bridge &quot;mobilepki.org&quot; Merchant Plugin"/>
      <property name="acquirer.host" value="https://mobilepki.org"/>
-     <property name="bank_port_map" value="8442"/>
+     <property name="server.port.map" value="8442"/>
      <property file="common.properties"/>
      <property name="temp.dir" value="${ejbca.tmp.path}"/>
      <property name="dist.dir" value="${ejbca.gen.path}"/>
@@ -185,8 +186,6 @@
        <param name="zip.key.dir" value="keys"/>
 
        <param name="payment.var.root" value="${paymentroot}"/>
-
-       <param name="bank.port.map" value="${bank_port_map}"/>
      </antcall>
      <!-- Update application.xml -->
      <replace file="${ejbca.app.xml}" value="${ejbca-app-xml-mod}">
@@ -197,7 +196,7 @@
   <target name="localhost-ejbca">
      <echo message="Web2Native Bridge &quot;localhost&quot; Merchant Plugin"/>
      <property name="acquirer.host" value="https://localhost:8442"/>
-     <property name="bank_port_map" value=""/>
+     <property name="server.port.map" value=""/>
      <antcall target="mobilepki-ejbca"/>
   </target>
   

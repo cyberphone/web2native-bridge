@@ -23,6 +23,7 @@ import java.util.GregorianCalendar;
 import java.util.Vector;
 
 import org.webpki.json.JSONAlgorithmPreferences;
+import org.webpki.json.JSONDecoderCache;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONSignatureDecoder;
@@ -32,7 +33,17 @@ public class ReserveOrDebitResponse implements BaseProperties {
     
     public static final String SOFTWARE_ID      = "WebPKI.org - Bank";
     public static final String SOFTWARE_VERSION = "1.00";
-    
+
+    private static JSONObjectWriter header(boolean directDebit) throws IOException {
+        return Messages.createBaseMessage(directDebit ?
+                       Messages.DIRECT_DEBIT_RESPONSE : Messages.RESERVE_FUNDS_RESPONSE);
+    }
+
+    public static JSONObjectWriter encode(boolean directDebit,
+                                          ErrorReturn errorReturn) throws IOException, GeneralSecurityException {
+        return errorReturn.write(header(directDebit));
+    }
+
     public static JSONObjectWriter encode(boolean directDebit,
                                           PaymentRequest paymentRequest,
                                           String accountType,
@@ -45,11 +56,11 @@ public class ReserveOrDebitResponse implements BaseProperties {
         for (char c : accountId.toCharArray()) {
             accountReference.append((--q < 0) ? c : '*');
         }
-        JSONObjectWriter rd = Messages.createBaseMessage(directDebit ?
-                                      Messages.DIRECT_DEBIT_RESPONSE : Messages.RESERVE_FUNDS_RESPONSE)
+        JSONObjectWriter rd = header(directDebit)
             .setObject(PAYMENT_REQUEST_JSON, paymentRequest.root)
             .setString(ACCOUNT_TYPE_JSON, accountType)
             .setString(ACCOUNT_REFERENCE_JSON, accountReference.toString());
+// TODO
         if (encryptedAccountData != null) {
             rd.setObject(PROTECTED_ACCOUNT_DATA_JSON, encryptedAccountData);
         }
@@ -58,16 +69,24 @@ public class ReserveOrDebitResponse implements BaseProperties {
                  .setObject(SOFTWARE_JSON, Software.encode(SOFTWARE_ID, SOFTWARE_VERSION))
                  .setSignature (signer);
     }
-    
+
     EncryptedData encryptedData;
-    
+
     JSONObjectReader root;
     
     public ReserveOrDebitResponse(JSONObjectReader rd) throws IOException {
-        root = Messages.parseBaseMessage(Messages.RESERVE_FUNDS_RESPONSE, rd);
+        directDebit = rd.getString(JSONDecoderCache.QUALIFIER_JSON).equals(Messages.DIRECT_DEBIT_RESPONSE.toString());
+        root = Messages.parseBaseMessage(directDebit ?
+                      Messages.DIRECT_DEBIT_RESPONSE : Messages.RESERVE_FUNDS_RESPONSE, rd);
+        if (rd.hasProperty(ERROR_CODE_JSON)) {
+            errorReturn = new ErrorReturn(rd.getInt(ERROR_CODE_JSON), rd.getStringConditional(DESCRIPTION_JSON));
+            rd.checkForUnread();
+            return;
+        }
         paymentRequest = new PaymentRequest(rd.getObject(PAYMENT_REQUEST_JSON));
         accountType = rd.getString(ACCOUNT_TYPE_JSON);
         accountReference = rd.getString(ACCOUNT_REFERENCE_JSON);
+// TODO
         if (rd.hasProperty(PROTECTED_ACCOUNT_DATA_JSON)) {
             encryptedData = EncryptedData.parse(rd.getObject(PROTECTED_ACCOUNT_DATA_JSON));
         }
@@ -78,12 +97,26 @@ public class ReserveOrDebitResponse implements BaseProperties {
         rd.checkForUnread();
     }
 
+    ErrorReturn errorReturn;
+    public boolean success() {
+        return errorReturn == null;
+    }
+
+    public ErrorReturn getErrorReturn() {
+        return errorReturn;
+    }
+
     public boolean isAccount2Account() {
         return encryptedData == null;
     }
     
     public ProtectedAccountData getProtectedAccountData(Vector<DecryptionKeyHolder> decryptionKeys) throws IOException, GeneralSecurityException {
         return new ProtectedAccountData(encryptedData.getDecryptedData(decryptionKeys));
+    }
+
+    boolean directDebit;
+    public boolean isDirectDebit() {
+        return directDebit;
     }
 
     PaymentRequest paymentRequest;

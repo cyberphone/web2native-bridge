@@ -50,13 +50,13 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
 
     static String portFilter(String url) throws IOException {
         // Our JBoss installation has some port mapping issues...
-        if (MerchantService.bankPortMapping == null) {
+        if (MerchantService.serverPortMapping == null) {
             return url;
         }
         URL url2 = new URL(url);
         return new URL(url2.getProtocol(),
                        url2.getHost(),
-                       MerchantService.bankPortMapping,
+                       MerchantService.serverPortMapping,
                        url2.getFile()).toExternalForm(); 
     }
     
@@ -102,7 +102,7 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
 
             // Attest the user's encrypted authorization to show "intent"
             JSONObjectWriter providerRequest =
-                ReserveOrDebitRequest.encode(input.getObject(AUTHORIZATION_DATA_JSON),
+                ReserveOrDebitRequest.encode(false, input.getObject(AUTHORIZATION_DATA_JSON),
                                            requestHash,
                                            payerAuthorization.getAccountType(),
                                            (String)session.getAttribute(UserPaymentServlet.REQUEST_REFID_SESSION_ATTR),
@@ -129,11 +129,15 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
 
             if (debug) {
                 DebugData debugData = (DebugData)session.getAttribute(UserPaymentServlet.DEBUG_DATA_SESSION_ATTR); 
-                debugData.bankReserveFundsRequest = bankRequest;
-                debugData.bankReserveFundsResponse = wrap.getData();
+                debugData.bankReserveOrDebitRequest = bankRequest;
+                debugData.bankReserveOrDebitResponse = wrap.getData();
             }
 
             ReserveOrDebitResponse bankResponse = new ReserveOrDebitResponse(resultMessage);
+            if (!bankResponse.success()) {
+                HTML.softError(response, bankResponse.getErrorReturn());
+                return;
+            }
 
             // Lookup indicated authority
             wrap = new HTTPSWrapper();

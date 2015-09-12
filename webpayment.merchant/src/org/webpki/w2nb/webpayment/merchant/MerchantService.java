@@ -61,7 +61,7 @@ public class MerchantService extends InitPropertyReader implements ServletContex
     
     static final String ACQUIRER_AUTHORITY_URL = "acquirer_authority_url";
 
-    static final String BANK_PORT_MAP          = "bank_port_map";
+    static final String SERVER_PORT_MAP        = "server_port_map";
     
     static final String CURRENCY               = "currency";
 
@@ -75,7 +75,7 @@ public class MerchantService extends InitPropertyReader implements ServletContex
     
     static ServerSigner merchantKey;
     
-    static Integer bankPortMapping;
+    static Integer serverPortMapping;
     
     static Currencies currency;
 
@@ -108,8 +108,8 @@ public class MerchantService extends InitPropertyReader implements ServletContex
         try {
             CustomCryptoProvider.forcedLoad (false);
 
-            if (getPropertyString(BANK_PORT_MAP).length () > 0) {
-                bankPortMapping = getPropertyInt(BANK_PORT_MAP);
+            if (getPropertyString(SERVER_PORT_MAP).length () > 0) {
+                serverPortMapping = getPropertyInt(SERVER_PORT_MAP);
             }
 
             merchantKey = new ServerSigner(new KeyStoreEnumerator(getResource(MERCHANT_EECERT),

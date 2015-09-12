@@ -76,14 +76,14 @@ public class DebugServlet extends HttpServlet {
             s.append(description("In the indirect mode encrypted."));
             s.append(fancyBox(debugData.walletResponse));
             s.append(description("In the indirect mode encrypted."));
-            s.append(fancyBox(debugData.bankReserveFundsRequest));
+            s.append(fancyBox(debugData.bankReserveOrDebitRequest));
             s.append(description("The following message is <i>NOT</i> exchange between the " +
                         "Wallet and Merchant but is the response from the Payment Provider " +
                         "to the the indirect mode." +
                         "<p>As can been seen the authorization is <i>digitally signed</i> by the " +
                         "Payment Provider and contains both the original Merchant payment request " +
                         "as well as a minimal set of card data.</p>"));
-            s.append(fancyBox(debugData.bankReserveFundsResponse));
+            s.append(fancyBox(debugData.bankReserveOrDebitResponse));
             HTML.debugPage(response, s.toString());
             
          } catch (Exception e) {

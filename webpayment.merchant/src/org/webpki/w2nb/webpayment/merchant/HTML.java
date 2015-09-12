@@ -23,6 +23,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.webpki.w2nb.webpayment.common.AccountTypes;
 import org.webpki.w2nb.webpayment.common.BaseProperties;
+import org.webpki.w2nb.webpayment.common.ErrorReturn;
 import org.webpki.w2nb.webpayment.common.Messages;
 import org.webpki.w2nb.webpayment.common.PaymentRequest;
 import org.webpki.w2nbproxy.ExtensionPositioning;
@@ -462,4 +463,15 @@ public class HTML {
         .append("</td></tr></table></td></tr>");
         HTML.output(response, HTML.getHTML(null, null,s.toString()));
     }
+
+    public static void softError(HttpServletResponse response, ErrorReturn errorReturn)
+                                 throws IOException, ServletException {
+        StringBuffer s = new StringBuffer("<tr><td width=\"100%\" align=\"center\" valign=\"middle\">" + 
+        "<table>" +
+        "<tr><td style=\"text-align:center;font-weight:bolder;font-size:10pt;font-family:" + FONT_ARIAL +
+        "\">Payment Failure&nbsp;<br></td></tr><tr><td style=\"text-align:center\">")
+        .append(errorReturn.getClearText())
+        .append("</td></tr></table></td></tr>");
+        HTML.output(response, HTML.getHTML(null, null,s.toString()));
+     }
 }

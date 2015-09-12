@@ -47,6 +47,7 @@
 
   <target name="_build">
     <property name="bank.host" value="https://localhost:8442/webpay-bank"/>
+    <property name="server.port.map" value=""/>
     <property name="errormedia" value="false"/>
     <fixcrlf srcdir="${src.dir}"
        tab="remove"
@@ -63,7 +64,8 @@
            classpath="${compile.classpath}"
            includeAntRuntime="false"/>
     <replace file="${temp.dir}/web.xml">
- 	  <replacefilter token="@card-font@" value="${card.font}"/>
+      <replacefilter token="@server-port-map@" value="${server.port.map}"/>
+      <replacefilter token="@card-font@" value="${card.font}"/>
 	  <replacefilter token="@key-password@" value="${keypassword}"/>
 	  <replacefilter token="@bank-eecert@" value="${bankkey}${keyfilext}"/>
       <replacefilter token="@bank-decryptionkey1@" value="${encryptionkey_ec}${keyfilext}"/>
@@ -141,6 +143,7 @@
   <target name="mobilepki-ejbca">
      <echo message="Web2Native Bridge &quot;mobilepki.org&quot; Bank Plugin"/>
      <property name="bank.host" value="https://mobilepki.org/webpay-bank"/>
+     <property name="server.port.map" value="8442"/>
      <property file="common.properties"/>
      <property name="temp.dir" value="${ejbca.tmp.path}"/>
      <property name="dist.dir" value="${ejbca.gen.path}"/>
@@ -175,6 +178,7 @@
   <target name="localhost-ejbca">
      <echo message="Web2Native Bridge &quot;localhost&quot; Bank Plugin"/>
      <property name="bank.host" value="https://localhost:8442/webpay-bank"/>
+     <property name="server.port.map" value=""/>
      <antcall target="mobilepki-ejbca"/>
   </target>
   
