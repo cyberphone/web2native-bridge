@@ -17,13 +17,18 @@
 package org.webpki.w2nb.webpayment.bank;
 
 import java.io.IOException;
+
 import java.math.BigDecimal;
+
 import java.net.URL;
+
 import java.security.GeneralSecurityException;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
+
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -33,19 +38,24 @@ import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONParser;
+
 import org.webpki.net.HTTPSWrapper;
+
 import org.webpki.w2nb.webpayment.common.AccountTypes;
 import org.webpki.w2nb.webpayment.common.Authority;
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.EncryptedData;
 import org.webpki.w2nb.webpayment.common.ErrorReturn;
+import org.webpki.w2nb.webpayment.common.FinalizeRequest;
+import org.webpki.w2nb.webpayment.common.FinalizeResponse;
+import org.webpki.w2nb.webpayment.common.PayeeAccountDescriptor;
 import org.webpki.w2nb.webpayment.common.ReserveOrDebitRequest;
 import org.webpki.w2nb.webpayment.common.AuthorizationData;
 import org.webpki.w2nb.webpayment.common.ReserveOrDebitResponse;
 import org.webpki.w2nb.webpayment.common.Messages;
 import org.webpki.w2nb.webpayment.common.PaymentRequest;
-import org.webpki.w2nb.webpayment.common.PaymentTypeDescriptor;
 import org.webpki.w2nb.webpayment.common.ProtectedAccountData;
+
 import org.webpki.webutil.ServletUtil;
 
 public class PaymentServlet extends HttpServlet implements BaseProperties {
@@ -69,7 +79,9 @@ public class PaymentServlet extends HttpServlet implements BaseProperties {
                        BankService.serverPortMapping,
                        url2.getFile()).toExternalForm(); 
     }
-    private JSONObjectWriter processReserveOrDebitRequest(JSONObjectReader payeeRequest) throws IOException, GeneralSecurityException {
+
+    private JSONObjectWriter processReserveOrDebitRequest(JSONObjectReader payeeRequest)
+    throws IOException, GeneralSecurityException {
         // Read the attested and encrypted request
        ReserveOrDebitRequest attestedEncryptedRequest = new ReserveOrDebitRequest(payeeRequest);
 
@@ -104,6 +116,7 @@ public class PaymentServlet extends HttpServlet implements BaseProperties {
        }
 
        // Separate credit-card and account2account payments
+       PayeeAccountDescriptor payeeAccount = null;
        JSONObjectWriter encryptedCardData = null;
        if (AccountTypes.fromType(authorizationData.getAccountType()).isAcquirerBased()) {
            logger.info("card");
@@ -125,20 +138,38 @@ public class PaymentServlet extends HttpServlet implements BaseProperties {
                                                     authority.getKeyEncryptionAlgorithm());
         } else {
             logger.info("account");
+            payeeAccount = attestedEncryptedRequest.getPayeeAccountDescriptors()[0];
         }
 
-       return ReserveOrDebitResponse.encode(false,
-                                                             paymentRequest,
-                                                                   authorizationData.getAccountType(),
-                                                                   authorizationData.getAccountId(),
-                                                                   encryptedCardData,
-                                                                   "#" + (referenceId ++),
-                                                                   BankService.bankKey);
+       return ReserveOrDebitResponse.encode(attestedEncryptedRequest.isDirectDebit(),
+                                            paymentRequest,
+                                            authorizationData.getAccountType(),
+                                            authorizationData.getAccountId(),
+                                            encryptedCardData,
+                                            payeeAccount,
+                                            "#" + (referenceId ++),
+                                            BankService.bankKey);
     }
 
-    private JSONObjectWriter processFinalizeRequest(JSONObjectReader payeeRequest) {
-        // TODO Auto-generated method stub
-        return null;
+    JSONObjectWriter processFinalizeRequest(JSONObjectReader payeeRequest) throws IOException, GeneralSecurityException {
+        // Decode the finalize request message
+        FinalizeRequest payeeFinalizationRequest = new FinalizeRequest(payeeRequest);
+
+        // Get the embedded authorization made by ourselves :-)
+        ReserveOrDebitResponse embeddedResponse = payeeFinalizationRequest.getEmbeddedResponse();
+
+        // Verify that the provider's signature belongs to us
+        ReserveOrDebitRequest.compareCertificatePaths(embeddedResponse.getSignatureDecoder().getCertificatePath(),
+                                                      BankService.bankCertificatePath);
+
+        //////////////////////////////////////////////////////////////////////////////
+        // Since we don't have a real bank we simply return success...              //
+        //////////////////////////////////////////////////////////////////////////////
+        JSONObjectWriter bankResponse = FinalizeResponse.encode(payeeFinalizationRequest,
+                                                                "#" + (referenceId++),
+                                                                BankService.bankKey);
+        logger.info("Returned to caller:\n" + bankResponse);
+        return bankResponse;
     }
         
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {

@@ -18,6 +18,7 @@ package org.webpki.w2nb.webpayment.merchant;
 
 import java.io.IOException;
 import java.net.URL;
+import java.security.GeneralSecurityException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -33,12 +34,13 @@ import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONParser;
 import org.webpki.net.HTTPSWrapper;
 import org.webpki.util.ArrayUtil;
-
 import org.webpki.w2nb.webpayment.common.AccountTypes;
 import org.webpki.w2nb.webpayment.common.Authority;
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.AuthorizationData;
+import org.webpki.w2nb.webpayment.common.Expires;
 import org.webpki.w2nb.webpayment.common.FinalizeResponse;
+import org.webpki.w2nb.webpayment.common.PayeeAccountDescriptor;
 import org.webpki.w2nb.webpayment.common.RequestHash;
 import org.webpki.w2nb.webpayment.common.ReserveOrDebitResponse;
 import org.webpki.w2nb.webpayment.common.ReserveOrDebitRequest;
@@ -103,15 +105,29 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
             }
             Authority providerAuthority = new Authority(JSONParser.parse(wrap.getData()), providerAuthorityUrl);
 
+            // Direct debit is only applicable to account2account operations
+            boolean directDebit = !UserPaymentServlet.getOption(session, HomeServlet.RESERVE_MODE_SESSION_ATTR) &&
+                                  !payerAuthorization.getAccountType().isAcquirerBased();
+            
+            PayeeAccountDescriptor[] accounts = {new PayeeAccountDescriptor("http://ultragiro", "35964640"),
+                                                 new PayeeAccountDescriptor("http://mybank", 
+                                                                            "399962",
+                                                                            new String[]{"enterprise"})};
+
             // Attest the user's encrypted authorization to show "intent"
             JSONObjectWriter providerRequest =
-                ReserveOrDebitRequest.encode(false, userAuthorization.getObject(AUTHORIZATION_DATA_JSON),
-                                           requestHash,
-                                           payerAuthorization.getAccountType(),
-                                           (String)session.getAttribute(UserPaymentServlet.REQUEST_REFID_SESSION_ATTR),
-                                           MerchantService.acquirerAuthorityUrl,
-                                           request.getRemoteAddr(),
-                                           MerchantService.merchantKey);
+                ReserveOrDebitRequest.encode(directDebit, 
+                                             userAuthorization.getObject(AUTHORIZATION_DATA_JSON),
+                                             requestHash,
+                                             payerAuthorization.getAccountType(),
+                                             (String)session.getAttribute(UserPaymentServlet.REQUEST_REFID_SESSION_ATTR),
+                                             payerAuthorization.getAccountType().isAcquirerBased() ? 
+                                                              MerchantService.acquirerAuthorityUrl : null,
+                                             payerAuthorization.getAccountType().isAcquirerBased() ? 
+                                                              null : accounts,
+                                             request.getRemoteAddr(),
+                                             directDebit ? null : Expires.inMinutes(30),
+                                             MerchantService.merchantKey);
             String transactionUrl = providerAuthority.getTransactionUrl();
 
             logger.info("About to send to \"" + transactionUrl + "\":\n" + providerRequest);
@@ -145,40 +161,9 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
             if (!ArrayUtil.compare(bankResponse.getPaymentRequest().getRequestHash(), requestHash)) {
                 throw new IOException("Non-matching \"" + REQUEST_HASH_JSON + "\"");
             }
-
-            // Lookup indicated authority
-            wrap = new HTTPSWrapper();
-            wrap.setTimeout(TIMEOUT_FOR_REQUEST);
-            wrap.setHeader("Content-Type", MerchantService.jsonMediaType);
-            wrap.setRequireSuccess(true);
-            wrap.makeGetRequest(portFilter(MerchantService.acquirerAuthorityUrl));
-            if (!wrap.getContentType().equals(JSON_CONTENT_TYPE)) {
-                throw new IOException("Content-Type must be \"" + JSON_CONTENT_TYPE + "\" , found: " + wrap.getContentType());
-            }
-            Authority acquirerAuthority = new Authority(JSONParser.parse(wrap.getData()), MerchantService.acquirerAuthorityUrl);
-
-            JSONObjectWriter finalizationMessage = FinalizeRequest.encode(bankResponse,
-                                                                          bankResponse.getPaymentRequest().getAmount(),
-                                                                          MerchantService.merchantKey);
-
-            // Call the payment provider
-            byte[] sentFinalize = finalizationMessage.serializeJSONObject(JSONOutputFormats.NORMALIZED);
-            wrap.setTimeout(TIMEOUT_FOR_REQUEST);
-            wrap.setHeader("Content-Type", MerchantService.jsonMediaType);
-            wrap.setRequireSuccess(true);
-            wrap.makePostRequest(portFilter(acquirerAuthority.getTransactionUrl()), sentFinalize);
-            if (!wrap.getContentType().equals(JSON_CONTENT_TYPE)) {
-                throw new IOException("Content-Type must be \"" + JSON_CONTENT_TYPE + "\" , found: " + wrap.getContentType());
-            }
-            byte[] finalizeRequestHash = RequestHash.getRequestHash(sentFinalize);
-
-            JSONObjectReader finalizeMessage = JSONParser.parse(wrap.getData());
-            logger.info("Received from provider:\n" + finalizeMessage);
             
-            FinalizeResponse finalizeResponse = new FinalizeResponse(finalizeMessage);
-
-            if (!ArrayUtil.compare(finalizeRequestHash, finalizeResponse.getRequestHash())) {
-                throw new IOException("Non-matching \"" + REQUEST_HASH_JSON + "\"");
+            if (!bankResponse.isDirectDebit()) {
+                processFinalize (bankResponse, transactionUrl);
             }
 
             logger.info("Successful authorization of request: " + bankResponse.getPaymentRequest().getReferenceId());
@@ -199,6 +184,51 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
             response.setHeader("Pragma", "No-Cache");
             response.setDateHeader("EXPIRES", 0);
             response.getOutputStream().println("Error: " + e.getMessage());
+        }
+    }
+
+    void processFinalize(ReserveOrDebitResponse bankResponse, String transactionUrl)
+    throws IOException, GeneralSecurityException {
+        HTTPSWrapper wrap = new HTTPSWrapper();
+        String target = "provider";
+        if (!bankResponse.isAccount2Account()) {
+            target = "acquirer";
+            // Lookup indicated authority
+            wrap.setTimeout(TIMEOUT_FOR_REQUEST);
+            wrap.setHeader("Content-Type", MerchantService.jsonMediaType);
+            wrap.setRequireSuccess(true);
+            wrap.makeGetRequest(portFilter(MerchantService.acquirerAuthorityUrl));
+            if (!wrap.getContentType().equals(JSON_CONTENT_TYPE)) {
+                throw new IOException("Content-Type must be \"" + JSON_CONTENT_TYPE + "\" , found: " + wrap.getContentType());
+            }
+            transactionUrl = new Authority(JSONParser.parse(wrap.getData()), 
+                                                            MerchantService.acquirerAuthorityUrl).getTransactionUrl();
+        }
+
+        JSONObjectWriter finalizeRequest = FinalizeRequest.encode(bankResponse,
+                                                                  bankResponse.getPaymentRequest().getAmount(),
+                                                                  MerchantService.merchantKey);
+
+        logger.info("About to send to " + target + ":\n" + finalizeRequest);
+
+        // Call the payment provider or acquirer
+        byte[] sentFinalize = finalizeRequest.serializeJSONObject(JSONOutputFormats.NORMALIZED);
+        wrap.setTimeout(TIMEOUT_FOR_REQUEST);
+        wrap.setHeader("Content-Type", MerchantService.jsonMediaType);
+        wrap.setRequireSuccess(true);
+        wrap.makePostRequest(portFilter(transactionUrl), sentFinalize);
+        if (!wrap.getContentType().equals(JSON_CONTENT_TYPE)) {
+            throw new IOException("Content-Type must be \"" + JSON_CONTENT_TYPE + "\" , found: " + wrap.getContentType());
+        }
+        byte[] finalizeRequestHash = RequestHash.getRequestHash(sentFinalize);
+
+        JSONObjectReader response = JSONParser.parse(wrap.getData());
+        logger.info("Received from " + target + ":\n" + response);
+        
+        FinalizeResponse finalizeResponse = new FinalizeResponse(response);
+
+        if (!ArrayUtil.compare(finalizeRequestHash, finalizeResponse.getRequestHash())) {
+            throw new IOException("Non-matching \"" + REQUEST_HASH_JSON + "\"");
         }
     }
 

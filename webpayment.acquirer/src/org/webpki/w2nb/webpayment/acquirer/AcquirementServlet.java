@@ -58,18 +58,17 @@ public class AcquirementServlet extends HttpServlet implements BaseProperties {
             FinalizeRequest payeeFinalizationRequest = new FinalizeRequest(payeeRequest);
 
             // Get the embedded authorization from the payer's payment provider (bank)
-            ReserveOrDebitResponse genericAuthorizationResponse =
-                payeeFinalizationRequest.getGenericAuthorizationResponse();
+            ReserveOrDebitResponse embeddedResponse = payeeFinalizationRequest.getEmbeddedResponse();
 
             // Verify that the provider's signature belongs to a valid payment provider trust network
-            genericAuthorizationResponse.getSignatureDecoder().verify(AcquirerService.paymentRoot);
+            embeddedResponse.getSignatureDecoder().verify(AcquirerService.paymentRoot);
 
             // Get the the account data we sent encrypted through the merchant 
             logger.info("Protected Account Data:\n" +
-                genericAuthorizationResponse.getProtectedAccountData(AcquirerService.decryptionKeys));
+                embeddedResponse.getProtectedAccountData(AcquirerService.decryptionKeys));
 
             // The original request contains some required data like currency
-            PaymentRequest paymentRequest = genericAuthorizationResponse.getPaymentRequest();
+            PaymentRequest paymentRequest = embeddedResponse.getPaymentRequest();
 
             // Verify that the merchant's signature belongs to a valid merchant trust network
             paymentRequest.getSignatureDecoder().verify(AcquirerService.merchantRoot);

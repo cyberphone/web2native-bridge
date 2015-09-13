@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
+import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Vector;
 import java.util.logging.Level;
@@ -70,6 +71,8 @@ public class BankService extends InitPropertyReader implements ServletContextLis
     
     static ServerSigner bankKey;
     
+    static X509Certificate[] bankCertificatePath;
+    
     static String jsonMediaType = BaseProperties.JSON_CONTENT_TYPE;
 
     static byte[] publishedAuthorityData;
@@ -111,9 +114,11 @@ public class BankService extends InitPropertyReader implements ServletContextLis
             if (getPropertyString(SERVER_PORT_MAP).length () > 0) {
                 serverPortMapping = getPropertyInt(SERVER_PORT_MAP);
             }
-
-            bankKey = new ServerSigner(new KeyStoreEnumerator(getResource(BANK_EECERT),
-                                                              getPropertyString(KEYSTORE_PASSWORD)));
+            
+            KeyStoreEnumerator bankcreds = new KeyStoreEnumerator(getResource(BANK_EECERT),
+                                                                  getPropertyString(KEYSTORE_PASSWORD));
+            bankCertificatePath = bankcreds.getCertificatePath();
+            bankKey = new ServerSigner(bankcreds);
             
             merchantRoot = getRoot(MERCHANT_ROOT);
             clientRoot = getRoot(CLIENT_ROOT);

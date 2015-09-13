@@ -23,6 +23,7 @@ public interface BaseProperties {
     String PAYMENT_REQUEST_JSON              = "paymentRequest";
     String ACQUIRER_AUTHORITY_URL_JSON       = "acquirerAuthorityUrl";  // For CreditCard payments
     String PAYEE_ACCOUNT_TYPES_JSON          = "payeeAccountTypes";     // For Account2Account payments
+    String PAYEE_ACCOUNT_JSON                = "payeeAccount";          // Selected Account2Account
     String EXPIRES_JSON                      = "expires";               // Object expiration time
     String AUTHORITY_URL_JSON                = "authorityUrl";
     String TRANSACTION_URL_JSON              = "transactionUrl";
@@ -62,6 +63,10 @@ public interface BaseProperties {
     String CIPHER_TEXT_JSON                  = "cipherText";
     String SOFTWARE_JSON                     = "software";
     String ID_JSON                           = "id";
+    String TYPE_JSON                         = "type";
+    String FIELD1_JSON                       = "field1";
+    String FIELD2_JSON                       = "field2";
+    String FIELD3_JSON                       = "field3";
     String VERSION_JSON                      = "version";
     
     String W2NB_WEB_PAY_CONTEXT_URI          = "http://xmlns.webpki.org/webpay/v1";

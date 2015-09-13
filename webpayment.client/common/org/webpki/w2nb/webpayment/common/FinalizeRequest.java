@@ -32,11 +32,11 @@ public class FinalizeRequest implements BaseProperties {
     public FinalizeRequest(JSONObjectReader rd) throws IOException, GeneralSecurityException {
         root = Messages.parseBaseMessage(Messages.FINALIZE_REQUEST, rd);
         amount = rd.getBigDecimal(AMOUNT_JSON);
-        genericAuthorizationResponse = new ReserveOrDebitResponse(rd.getObject(PROVIDER_AUTHORIZATION_JSON));
+        embeddedResponse = new ReserveOrDebitResponse(rd.getObject(PROVIDER_AUTHORIZATION_JSON));
         timeStamp = rd.getDateTime(TIME_STAMP_JSON);
         software = new Software(rd);
         outerCertificatePath = rd.getSignature(JSONAlgorithmPreferences.JOSE).getCertificatePath();
-        PaymentRequest paymentRequest = genericAuthorizationResponse.getPaymentRequest();
+        PaymentRequest paymentRequest = embeddedResponse.getPaymentRequest();
         ReserveOrDebitRequest.compareCertificatePaths(outerCertificatePath, paymentRequest);
         if (amount.compareTo(paymentRequest.getAmount()) > 0) {
             throw new IOException("Final amount must be less or equal to reserved amount");
@@ -54,9 +54,9 @@ public class FinalizeRequest implements BaseProperties {
     
     JSONObjectReader root;
     
-    ReserveOrDebitResponse genericAuthorizationResponse;
-    public ReserveOrDebitResponse getGenericAuthorizationResponse() {
-        return genericAuthorizationResponse;
+    ReserveOrDebitResponse embeddedResponse;
+    public ReserveOrDebitResponse getEmbeddedResponse() {
+        return embeddedResponse;
     }
 
     String acquirerAuthorityUrl;

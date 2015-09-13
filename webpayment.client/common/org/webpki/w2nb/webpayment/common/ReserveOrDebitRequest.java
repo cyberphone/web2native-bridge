@@ -17,20 +17,18 @@
 package org.webpki.w2nb.webpayment.common;
 
 import java.io.IOException;
-
 import java.security.GeneralSecurityException;
-
 import java.security.cert.X509Certificate;
-
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Vector;
 
 import org.webpki.json.JSONAlgorithmPreferences;
+import org.webpki.json.JSONArrayReader;
+import org.webpki.json.JSONArrayWriter;
 import org.webpki.json.JSONDecoderCache;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
-
 import org.webpki.util.ArrayUtil;
 
 public class ReserveOrDebitRequest implements BaseProperties {
@@ -42,8 +40,19 @@ public class ReserveOrDebitRequest implements BaseProperties {
         requestHash = RequestHash.parse(rd);
         accountType = AccountTypes.fromType(rd.getString(ACCOUNT_TYPE_JSON));
         referenceId = rd.getString(REFERENCE_ID_JSON);
-// TODO
-        acquirerAuthorityUrl = rd.getString(ACQUIRER_AUTHORITY_URL_JSON);
+        if (!directDebit) {
+            expires = rd.getDateTime(EXPIRES_JSON);
+        }
+        Vector<PayeeAccountDescriptor> accounts = new Vector<PayeeAccountDescriptor> ();
+        if (!directDebit && rd.hasProperty(ACQUIRER_AUTHORITY_URL_JSON)) {
+            acquirerAuthorityUrl = rd.getString(ACQUIRER_AUTHORITY_URL_JSON);
+        } else {
+            JSONArrayReader ar = rd.getArray(PAYEE_ACCOUNT_TYPES_JSON);
+            do {
+                accounts.add(new PayeeAccountDescriptor(ar.getObject()));
+            } while (ar.hasMore());
+        }
+        this.accounts = accounts.toArray(new PayeeAccountDescriptor[0]);
         clientIpAddress = rd.getString(CLIENT_IP_ADDRESS_JSON);
         dateTime = rd.getDateTime(TIME_STAMP_JSON);
         software = new Software(rd);
@@ -57,6 +66,8 @@ public class ReserveOrDebitRequest implements BaseProperties {
     
     String referenceId;
     
+    GregorianCalendar expires;
+
     GregorianCalendar dateTime;
 
     Software software;
@@ -65,6 +76,11 @@ public class ReserveOrDebitRequest implements BaseProperties {
     
     EncryptedData encryptedData;
 
+    PayeeAccountDescriptor[] accounts;
+    public PayeeAccountDescriptor[] getPayeeAccountDescriptors() {
+        return accounts;
+    }
+    
     boolean directDebit;
     public boolean isDirectDebit() {
         return directDebit;
@@ -86,7 +102,9 @@ public class ReserveOrDebitRequest implements BaseProperties {
                                           AccountTypes accountType,
                                           String referenceId,
                                           String acquirerAuthorityUrl,
+                                          PayeeAccountDescriptor[] accounts,
                                           String clientIpAddress,
+                                          Date expires,
                                           ServerSigner signer)
         throws IOException, GeneralSecurityException {
         JSONObjectWriter wr = Messages.createBaseMessage(directDebit ?
@@ -96,15 +114,34 @@ public class ReserveOrDebitRequest implements BaseProperties {
                                               .setString(ALGORITHM_JSON, RequestHash.JOSE_SHA_256_ALG_ID)
                                               .setBinary(VALUE_JSON, requestHash))
             .setString(ACCOUNT_TYPE_JSON, accountType.getType())
-            .setString(REFERENCE_ID_JSON, referenceId)
-// TODO
-            .setString(ACQUIRER_AUTHORITY_URL_JSON, acquirerAuthorityUrl)
-            .setString(CLIENT_IP_ADDRESS_JSON, clientIpAddress)
-            .setDateTime(TIME_STAMP_JSON, new Date(), true)
-            .setObject(SOFTWARE_JSON, Software.encode (PaymentRequest.SOFTWARE_ID,
-                                                       PaymentRequest.SOFTWARE_VERSION))
+            .setString(REFERENCE_ID_JSON, referenceId);
+        if (directDebit || acquirerAuthorityUrl == null) {
+            JSONArrayWriter aw = wr.setArray(PAYEE_ACCOUNT_TYPES_JSON);
+            for (PayeeAccountDescriptor account : accounts) {
+                aw.setObject(account.write());
+            }
+        } else {
+            zeroTest(PAYEE_ACCOUNT_TYPES_JSON, accounts);
+            wr.setString(ACQUIRER_AUTHORITY_URL_JSON, acquirerAuthorityUrl);
+        }
+        wr.setString(CLIENT_IP_ADDRESS_JSON, clientIpAddress);
+        if (directDebit) {
+            zeroTest(EXPIRES_JSON, expires);
+            zeroTest(ACQUIRER_AUTHORITY_URL_JSON, acquirerAuthorityUrl);
+        } else {
+            wr.setDateTime(EXPIRES_JSON, expires, true);
+        }
+        wr.setDateTime(TIME_STAMP_JSON, new Date(), true)
+          .setObject(SOFTWARE_JSON, Software.encode (PaymentRequest.SOFTWARE_ID,
+                                                     PaymentRequest.SOFTWARE_VERSION))
             .setSignature(signer);
         return wr;
+    }
+
+    static void zeroTest(String name, Object object) throws IOException {
+        if (object != null) {
+            throw new IOException("Argument error, parameter \"" + name + "\" must be \"null\"");
+        }
     }
 
     private static void assertTrue(boolean assertion) throws IOException {
@@ -113,12 +150,15 @@ public class ReserveOrDebitRequest implements BaseProperties {
         }
     }
 
-    public static void compareCertificatePaths(X509Certificate[] outer, PaymentRequest paymentRequest) throws IOException {
-        X509Certificate[] inner = paymentRequest.signatureDecoder.getCertificatePath();
+    public static void compareCertificatePaths(X509Certificate[] outer, X509Certificate[] inner) throws IOException {
         assertTrue(inner.length == outer.length);
         for (int q = 0; q < inner.length; q++) {
             assertTrue(outer[q].equals(inner[q]));
         }
+    }
+
+    public static void compareCertificatePaths(X509Certificate[] outer, PaymentRequest paymentRequest) throws IOException {
+        compareCertificatePaths(outer, paymentRequest.signatureDecoder.getCertificatePath());
     }
 
     public AuthorizationData getDecryptedAuthorizationRequest(Vector<DecryptionKeyHolder> decryptionKeys)

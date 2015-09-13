@@ -49,6 +49,7 @@ public class ReserveOrDebitResponse implements BaseProperties {
                                           String accountType,
                                           String accountId,
                                           JSONObjectWriter encryptedAccountData,
+                                          PayeeAccountDescriptor payeeAccount, 
                                           String referenceId,
                                           JSONX509Signer signer) throws IOException {
         StringBuffer accountReference = new StringBuffer();
@@ -56,15 +57,20 @@ public class ReserveOrDebitResponse implements BaseProperties {
         for (char c : accountId.toCharArray()) {
             accountReference.append((--q < 0) ? c : '*');
         }
-        JSONObjectWriter rd = header(directDebit)
+        JSONObjectWriter wr = header(directDebit)
             .setObject(PAYMENT_REQUEST_JSON, paymentRequest.root)
             .setString(ACCOUNT_TYPE_JSON, accountType)
             .setString(ACCOUNT_REFERENCE_JSON, accountReference.toString());
-// TODO
-        if (encryptedAccountData != null) {
-            rd.setObject(PROTECTED_ACCOUNT_DATA_JSON, encryptedAccountData);
+        if (encryptedAccountData == null) {
+            wr.setObject(PAYEE_ACCOUNT_JSON, payeeAccount.write());
+        } else {
+            if (directDebit) {
+                throw new IOException("\""+ PROTECTED_ACCOUNT_DATA_JSON + "\" not applicable for directDebit");
+            }
+            ReserveOrDebitRequest.zeroTest(PAYEE_ACCOUNT_JSON, payeeAccount);
+            wr.setObject(PROTECTED_ACCOUNT_DATA_JSON, encryptedAccountData);
         }
-        return rd.setString(REFERENCE_ID_JSON, referenceId)
+        return wr.setString(REFERENCE_ID_JSON, referenceId)
                  .setDateTime(TIME_STAMP_JSON, new Date(), true)
                  .setObject(SOFTWARE_JSON, Software.encode(SOFTWARE_ID, SOFTWARE_VERSION))
                  .setSignature (signer);
@@ -86,9 +92,13 @@ public class ReserveOrDebitResponse implements BaseProperties {
         paymentRequest = new PaymentRequest(rd.getObject(PAYMENT_REQUEST_JSON));
         accountType = rd.getString(ACCOUNT_TYPE_JSON);
         accountReference = rd.getString(ACCOUNT_REFERENCE_JSON);
-// TODO
         if (rd.hasProperty(PROTECTED_ACCOUNT_DATA_JSON)) {
             encryptedData = EncryptedData.parse(rd.getObject(PROTECTED_ACCOUNT_DATA_JSON));
+            if (directDebit) {
+                throw new IOException("\""+ PROTECTED_ACCOUNT_DATA_JSON + "\" not applicable for directDebit");
+            }
+        } else {
+            account = new PayeeAccountDescriptor(rd.getObject(PAYEE_ACCOUNT_JSON));
         }
         referenceId = rd.getString(REFERENCE_ID_JSON);
         timeStamp = rd.getDateTime(TIME_STAMP_JSON);
@@ -104,6 +114,11 @@ public class ReserveOrDebitResponse implements BaseProperties {
 
     public ErrorReturn getErrorReturn() {
         return errorReturn;
+    }
+
+    PayeeAccountDescriptor account;
+    public PayeeAccountDescriptor getPayeeAccountDescriptor() {
+        return account;
     }
 
     public boolean isAccount2Account() {

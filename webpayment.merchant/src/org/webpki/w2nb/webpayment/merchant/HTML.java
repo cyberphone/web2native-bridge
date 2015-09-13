@@ -88,7 +88,7 @@ public class HTML {
 
     public static void homePage(HttpServletResponse response,
                                 boolean debugMode,
-                                boolean acquirerMode) throws IOException, ServletException {
+                                boolean reserveMode) throws IOException, ServletException {
         HTML.output(response, HTML.getHTML(null, null,
                 "<tr><td width=\"100%\" align=\"center\" valign=\"middle\">" +
                 "<table style=\"max-width:600px;\" cellpadding=\"4\">" +
@@ -106,9 +106,9 @@ public class HTML {
                    "<tr style=\"text-align:left\"><td><a href=\"" + "shop" + "\">Go To Merchant</a></td><td>Shop Til You Drop!</td></tr>" +
                    "<tr style=\"text-align:left\"><form name=\"options\" method=\"POST\">" +
                    "<td><input type=\"checkbox\" name=\"" + 
-                   HomeServlet.ACQUIRER_SESSION_ATTR + "\" onchange=\"document.forms.options.submit()\"" +
-                   (acquirerMode ? " checked" : "") +
-                   "></td><td>&quot;Acquirer&quot; Mode Payment Option</td></tr>" +
+                   HomeServlet.RESERVE_MODE_SESSION_ATTR + "\" onchange=\"document.forms.options.submit()\"" +
+                   (reserveMode ? " checked" : "") +
+                   "></td><td>Reserve+Finalize Payment Mode</td></tr>" +
                    "<tr style=\"text-align:left\"><td><input type=\"checkbox\" name=\"" +
                    HomeServlet.DEBUG_SESSION_ATTR + "\" onchange=\"document.forms.options.submit()\"" +
                    (debugMode ? " checked" : "") +
