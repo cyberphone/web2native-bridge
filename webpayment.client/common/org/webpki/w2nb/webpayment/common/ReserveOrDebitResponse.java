@@ -17,7 +17,9 @@
 package org.webpki.w2nb.webpayment.common;
 
 import java.io.IOException;
+
 import java.security.GeneralSecurityException;
+
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Vector;
@@ -44,7 +46,7 @@ public class ReserveOrDebitResponse implements BaseProperties {
         return errorReturn.write(header(directDebit));
     }
 
-    public static JSONObjectWriter encode(boolean directDebit,
+    public static JSONObjectWriter encode(ReserveOrDebitRequest request,
                                           PaymentRequest paymentRequest,
                                           String accountType,
                                           String accountId,
@@ -57,6 +59,7 @@ public class ReserveOrDebitResponse implements BaseProperties {
         for (char c : accountId.toCharArray()) {
             accountReference.append((--q < 0) ? c : '*');
         }
+        boolean directDebit = request.isDirectDebit();
         JSONObjectWriter wr = header(directDebit)
             .setObject(PAYMENT_REQUEST_JSON, paymentRequest.root)
             .setString(ACCOUNT_TYPE_JSON, accountType)
@@ -70,8 +73,11 @@ public class ReserveOrDebitResponse implements BaseProperties {
             ReserveOrDebitRequest.zeroTest(PAYEE_ACCOUNT_JSON, payeeAccount);
             wr.setObject(PROTECTED_ACCOUNT_DATA_JSON, encryptedAccountData);
         }
-        return wr.setString(REFERENCE_ID_JSON, referenceId)
-                 .setDateTime(TIME_STAMP_JSON, new Date(), true)
+        wr.setString(REFERENCE_ID_JSON, referenceId);
+        if (!directDebit) {
+            wr.setDateTime(EXPIRES_JSON, request.expires.getTime(), true);
+        }
+        return wr.setDateTime(TIME_STAMP_JSON, new Date(), true)
                  .setObject(SOFTWARE_JSON, Software.encode(SOFTWARE_ID, SOFTWARE_VERSION))
                  .setSignature (signer);
     }
@@ -101,6 +107,9 @@ public class ReserveOrDebitResponse implements BaseProperties {
             account = new PayeeAccountDescriptor(rd.getObject(PAYEE_ACCOUNT_JSON));
         }
         referenceId = rd.getString(REFERENCE_ID_JSON);
+        if (!directDebit) {
+            expires = rd.getDateTime(EXPIRES_JSON);
+        }
         timeStamp = rd.getDateTime(TIME_STAMP_JSON);
         software = new Software(rd);
         signatureDecoder = rd.getSignature(JSONAlgorithmPreferences.JOSE);
@@ -157,6 +166,11 @@ public class ReserveOrDebitResponse implements BaseProperties {
     GregorianCalendar timeStamp;
     public GregorianCalendar getTimeStamp() {
         return timeStamp;
+    }
+
+    GregorianCalendar expires;
+    public GregorianCalendar getExpires() {
+        return expires;
     }
 
     Software software;

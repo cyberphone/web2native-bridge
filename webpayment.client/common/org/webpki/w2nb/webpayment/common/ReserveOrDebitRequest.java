@@ -17,8 +17,11 @@
 package org.webpki.w2nb.webpayment.common;
 
 import java.io.IOException;
+
 import java.security.GeneralSecurityException;
+
 import java.security.cert.X509Certificate;
+
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Vector;
@@ -29,6 +32,7 @@ import org.webpki.json.JSONArrayWriter;
 import org.webpki.json.JSONDecoderCache;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
+
 import org.webpki.util.ArrayUtil;
 
 public class ReserveOrDebitRequest implements BaseProperties {
@@ -66,8 +70,6 @@ public class ReserveOrDebitRequest implements BaseProperties {
     
     String referenceId;
     
-    GregorianCalendar expires;
-
     GregorianCalendar dateTime;
 
     Software software;
@@ -80,7 +82,12 @@ public class ReserveOrDebitRequest implements BaseProperties {
     public PayeeAccountDescriptor[] getPayeeAccountDescriptors() {
         return accounts;
     }
-    
+
+    GregorianCalendar expires;
+    public GregorianCalendar getExpires() {
+        return expires;
+    }
+
     boolean directDebit;
     public boolean isDirectDebit() {
         return directDebit;

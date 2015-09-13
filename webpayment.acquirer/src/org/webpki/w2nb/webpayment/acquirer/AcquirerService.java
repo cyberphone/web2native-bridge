@@ -18,10 +18,14 @@ package org.webpki.w2nb.webpayment.acquirer;
 
 import java.io.IOException;
 import java.io.InputStream;
+
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
+
 import java.security.interfaces.RSAPublicKey;
+
 import java.util.Vector;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -31,16 +35,19 @@ import javax.servlet.ServletContextListener;
 import org.webpki.crypto.CertificateUtil;
 import org.webpki.crypto.CustomCryptoProvider;
 import org.webpki.crypto.KeyStoreVerifier;
+
 import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONX509Verifier;
+
 import org.webpki.util.ArrayUtil;
+
 import org.webpki.w2nb.webpayment.common.Authority;
-import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.DecryptionKeyHolder;
 import org.webpki.w2nb.webpayment.common.Encryption;
 import org.webpki.w2nb.webpayment.common.Expires;
 import org.webpki.w2nb.webpayment.common.KeyStoreEnumerator;
 import org.webpki.w2nb.webpayment.common.ServerSigner;
+
 import org.webpki.webutil.InitPropertyReader;
 
 public class AcquirerService extends InitPropertyReader implements ServletContextListener {

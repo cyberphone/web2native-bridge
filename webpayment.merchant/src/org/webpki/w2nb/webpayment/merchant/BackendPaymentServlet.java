@@ -17,12 +17,16 @@
 package org.webpki.w2nb.webpayment.merchant;
 
 import java.io.IOException;
+
 import java.net.URL;
+
 import java.security.GeneralSecurityException;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
+
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -32,8 +36,11 @@ import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONParser;
+
 import org.webpki.net.HTTPSWrapper;
+
 import org.webpki.util.ArrayUtil;
+
 import org.webpki.w2nb.webpayment.common.AccountTypes;
 import org.webpki.w2nb.webpayment.common.Authority;
 import org.webpki.w2nb.webpayment.common.BaseProperties;
@@ -153,6 +160,8 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
             }
 
             ReserveOrDebitResponse bankResponse = new ReserveOrDebitResponse(resultMessage);
+            bankResponse.getSignatureDecoder().verify(MerchantService.paymentRoot);
+
             if (!bankResponse.success()) {
                 HTML.softError(response, bankResponse.getErrorReturn());
                 return;
@@ -191,9 +200,10 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
     throws IOException, GeneralSecurityException {
         HTTPSWrapper wrap = new HTTPSWrapper();
         String target = "provider";
+        Authority acquirerAuthority = null;
         if (!bankResponse.isAccount2Account()) {
             target = "acquirer";
-            // Lookup indicated authority
+            // Lookup indicated acquirer authority
             wrap.setTimeout(TIMEOUT_FOR_REQUEST);
             wrap.setHeader("Content-Type", MerchantService.jsonMediaType);
             wrap.setRequireSuccess(true);
@@ -201,9 +211,9 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
             if (!wrap.getContentType().equals(JSON_CONTENT_TYPE)) {
                 throw new IOException("Content-Type must be \"" + JSON_CONTENT_TYPE + "\" , found: " + wrap.getContentType());
             }
-            transactionUrl = new Authority(JSONParser.parse(wrap.getData()), 
-                                                            MerchantService.acquirerAuthorityUrl).getTransactionUrl();
-        }
+            acquirerAuthority = new Authority(JSONParser.parse(wrap.getData()), MerchantService.acquirerAuthorityUrl);
+            transactionUrl = acquirerAuthority.getTransactionUrl();
+         }
 
         JSONObjectWriter finalizeRequest = FinalizeRequest.encode(bankResponse,
                                                                   bankResponse.getPaymentRequest().getAmount(),
@@ -226,6 +236,13 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
         logger.info("Received from " + target + ":\n" + response);
         
         FinalizeResponse finalizeResponse = new FinalizeResponse(response);
+
+        // Check signature origins
+        ReserveOrDebitRequest.compareCertificatePaths(bankResponse.isAccount2Account() ?
+                                                bankResponse.getSignatureDecoder().getCertificatePath()
+                                                                                       :
+                                                acquirerAuthority.getSignatureDecoder().getCertificatePath(),                                         
+                                                      finalizeResponse.getSignatureDecoder().getCertificatePath());
 
         if (!ArrayUtil.compare(finalizeRequestHash, finalizeResponse.getRequestHash())) {
             throw new IOException("Non-matching \"" + REQUEST_HASH_JSON + "\"");

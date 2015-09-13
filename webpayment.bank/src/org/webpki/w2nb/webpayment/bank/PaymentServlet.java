@@ -141,35 +141,34 @@ public class PaymentServlet extends HttpServlet implements BaseProperties {
             payeeAccount = attestedEncryptedRequest.getPayeeAccountDescriptors()[0];
         }
 
-       return ReserveOrDebitResponse.encode(attestedEncryptedRequest.isDirectDebit(),
+       return ReserveOrDebitResponse.encode(attestedEncryptedRequest,
                                             paymentRequest,
                                             authorizationData.getAccountType(),
                                             authorizationData.getAccountId(),
                                             encryptedCardData,
                                             payeeAccount,
                                             "#" + (referenceId ++),
-                                            BankService.bankKey);
+                                             BankService.bankKey);
     }
 
     JSONObjectWriter processFinalizeRequest(JSONObjectReader payeeRequest) throws IOException, GeneralSecurityException {
-        // Decode the finalize request message
+
+        // Decode the finalize request message which the one which lifts money
         FinalizeRequest payeeFinalizationRequest = new FinalizeRequest(payeeRequest);
 
-        // Get the embedded authorization made by ourselves :-)
+        // Get the embedded authorization presumably made by ourselves :-)
         ReserveOrDebitResponse embeddedResponse = payeeFinalizationRequest.getEmbeddedResponse();
 
-        // Verify that the provider's signature belongs to us
+        // Verify that the provider's signature really belongs to us
         ReserveOrDebitRequest.compareCertificatePaths(embeddedResponse.getSignatureDecoder().getCertificatePath(),
                                                       BankService.bankCertificatePath);
 
         //////////////////////////////////////////////////////////////////////////////
         // Since we don't have a real bank we simply return success...              //
         //////////////////////////////////////////////////////////////////////////////
-        JSONObjectWriter bankResponse = FinalizeResponse.encode(payeeFinalizationRequest,
-                                                                "#" + (referenceId++),
-                                                                BankService.bankKey);
-        logger.info("Returned to caller:\n" + bankResponse);
-        return bankResponse;
+       return FinalizeResponse.encode(payeeFinalizationRequest,
+                                      "#" + (referenceId++),
+                                      BankService.bankKey);
     }
         
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {

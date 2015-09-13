@@ -19,13 +19,10 @@ package org.webpki.w2nb.webpayment.common;
 import java.io.IOException;
 
 import org.webpki.crypto.HashAlgorithms;
-import org.webpki.json.JSONAlgorithmPreferences;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONOutputFormats;
-import org.webpki.json.JSONSignatureDecoder;
-import org.webpki.json.JSONSignatureTypes;
-import org.webpki.json.JSONX509Signer;
+
 
 public class RequestHash implements BaseProperties {
     

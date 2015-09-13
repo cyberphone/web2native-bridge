@@ -17,9 +17,13 @@
 package org.webpki.w2nb.webpayment.common;
 
 import java.io.IOException;
+
 import java.math.BigDecimal;
+
 import java.security.GeneralSecurityException;
+
 import java.security.cert.X509Certificate;
+
 import java.util.Date;
 import java.util.GregorianCalendar;
 

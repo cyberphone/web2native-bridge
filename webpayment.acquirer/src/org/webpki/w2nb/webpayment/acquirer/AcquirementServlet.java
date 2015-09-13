@@ -17,10 +17,12 @@
 package org.webpki.w2nb.webpayment.acquirer;
 
 import java.io.IOException;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
+
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -29,11 +31,13 @@ import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONParser;
+
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.FinalizeResponse;
 import org.webpki.w2nb.webpayment.common.ReserveOrDebitResponse;
 import org.webpki.w2nb.webpayment.common.FinalizeRequest;
 import org.webpki.w2nb.webpayment.common.PaymentRequest;
+
 import org.webpki.webutil.ServletUtil;
 
 public class AcquirementServlet extends HttpServlet implements BaseProperties {
