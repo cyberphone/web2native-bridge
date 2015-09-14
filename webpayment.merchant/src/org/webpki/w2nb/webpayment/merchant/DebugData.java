@@ -22,13 +22,21 @@ public class DebugData implements Serializable {
 
     private static final long serialVersionUID = 1L;
     
-    public byte[] initMessage;
+    public byte[] WalletInitialized;
 
-    public byte[] paymentRequest;
+    public byte[] InvokeWallet;
     
     public byte[] walletResponse;
+
+    public boolean directDebit;
     
-    public byte[] bankReserveOrDebitRequest;
+    public byte[] reserveOrDebitRequest;
     
-    public byte[] bankReserveOrDebitResponse;
+    public byte[] reserveOrDebitResponse;
+    
+    public boolean acquirerMode;
+    
+    public byte[] finalizeRequest;
+
+    public byte[] finalizeResponse;
 }

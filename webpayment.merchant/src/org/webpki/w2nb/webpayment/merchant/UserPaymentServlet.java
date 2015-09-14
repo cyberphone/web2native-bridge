@@ -120,7 +120,7 @@ public class UserPaymentServlet extends HttpServlet implements BaseProperties {
             .setObject(PAYMENT_REQUEST_JSON, paymentRequest);
    
         if (debugMode) {
-            debugData.paymentRequest = invokeRequest.serializeJSONObject(JSONOutputFormats.NORMALIZED);
+            debugData.InvokeWallet = invokeRequest.serializeJSONObject(JSONOutputFormats.NORMALIZED);
         }
         
         HTML.userPayPage(response,

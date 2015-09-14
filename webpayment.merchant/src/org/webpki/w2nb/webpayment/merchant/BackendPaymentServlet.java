@@ -89,11 +89,11 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
             logger.info("Received from wallet:\n" + userAuthorization);
 
             // Do we have web debug mode?
+            DebugData debugData = null;
             boolean debug = UserPaymentServlet.getOption(session, HomeServlet.DEBUG_SESSION_ATTR);
-
             if (debug) {
-                DebugData debugData = (DebugData) session.getAttribute(UserPaymentServlet.DEBUG_DATA_SESSION_ATTR);
-                debugData.initMessage = request.getParameter(UserPaymentServlet.INITMSG_FORM_ATTR).getBytes("UTF-8");
+                debugData = (DebugData) session.getAttribute(UserPaymentServlet.DEBUG_DATA_SESSION_ATTR);
+                debugData.WalletInitialized = request.getParameter(UserPaymentServlet.INITMSG_FORM_ATTR).getBytes("UTF-8");
                 debugData.walletResponse = userAuthorization.serializeJSONObject(JSONOutputFormats.NORMALIZED);
             }
 
@@ -102,6 +102,14 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
 
             // Lookup indicated authority (Payment Provider)
             String providerAuthorityUrl = payerAuthorization.getAuthorityUrl();
+
+            // Ugly patch allowing the wallet to work with a local system as well
+            if (request.getServerName().equals("localhost")) {
+                URL orig = new URL(providerAuthorityUrl);
+                providerAuthorityUrl = new URL(request.isSecure() ? "https": "http",
+                                               "localhost", request.getServerPort(), orig.getFile()).toExternalForm();
+            }
+
             HTTPSWrapper wrap = new HTTPSWrapper();
             wrap.setTimeout(TIMEOUT_FOR_REQUEST);
             wrap.setHeader("Content-Type", MerchantService.jsonMediaType);
@@ -115,7 +123,11 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
             // Direct debit is only applicable to account2account operations
             boolean directDebit = !UserPaymentServlet.getOption(session, HomeServlet.RESERVE_MODE_SESSION_ATTR) &&
                                   !payerAuthorization.getAccountType().isAcquirerBased();
-            
+
+            if (debug) {
+                debugData.directDebit = directDebit;
+            }
+
             PayeeAccountDescriptor[] accounts = {new PayeeAccountDescriptor("http://ultragiro", "35964640"),
                                                  new PayeeAccountDescriptor("http://mybank", 
                                                                             "399962",
@@ -154,9 +166,8 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
             logger.info("Returned from payment provider:\n" + resultMessage);
 
             if (debug) {
-                DebugData debugData = (DebugData)session.getAttribute(UserPaymentServlet.DEBUG_DATA_SESSION_ATTR); 
-                debugData.bankReserveOrDebitRequest = bankRequest;
-                debugData.bankReserveOrDebitResponse = wrap.getData();
+                debugData.reserveOrDebitRequest = bankRequest;
+                debugData.reserveOrDebitResponse = wrap.getData();
             }
 
             ReserveOrDebitResponse bankResponse = new ReserveOrDebitResponse(resultMessage);
@@ -172,7 +183,7 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
             }
             
             if (!bankResponse.isDirectDebit()) {
-                processFinalize (bankResponse, transactionUrl);
+                processFinalize (bankResponse, transactionUrl, debugData);
             }
 
             logger.info("Successful authorization of request: " + bankResponse.getPaymentRequest().getReferenceId());
@@ -196,7 +207,7 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
         }
     }
 
-    void processFinalize(ReserveOrDebitResponse bankResponse, String transactionUrl)
+    void processFinalize(ReserveOrDebitResponse bankResponse, String transactionUrl, DebugData debugData)
     throws IOException, GeneralSecurityException {
         HTTPSWrapper wrap = new HTTPSWrapper();
         String target = "provider";

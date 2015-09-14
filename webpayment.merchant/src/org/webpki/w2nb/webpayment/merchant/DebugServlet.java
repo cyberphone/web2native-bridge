@@ -28,8 +28,9 @@ import javax.servlet.http.HttpSession;
 
 import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONParser;
+import org.webpki.w2nb.webpayment.common.BaseProperties;
 
-public class DebugServlet extends HttpServlet {
+public class DebugServlet extends HttpServlet implements BaseProperties {
 
     private static final long serialVersionUID = 1L;
     
@@ -48,6 +49,10 @@ public class DebugServlet extends HttpServlet {
         return "<div style=\"word-wrap:break-word;width:800pt;margin-bottom:10pt;margin-top:20pt\">" + string + "</div>";
     }
     
+    String descriptionStdMargin(String string) {
+        return "<div style=\"word-wrap:break-word;width:800pt;margin-bottom:10pt;margin-top:10pt\">" + string + "</div>";
+    }
+
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         try {
             DebugData debugData = null;
@@ -59,31 +64,31 @@ public class DebugServlet extends HttpServlet {
             StringBuffer s = new StringBuffer( );
             
             s.append(description("<p>The following page shows the messages exchanged between the " +
-                                 "Merchant (Payee) the Wallet (Payer).</p>" +
-                                 "In both modes (direct and indirect) the Wallet sends (after invocation by the " +
-                                 "merchant's checkout page) a &quot;ready&quot; signal that also holds the " +
-                                 "size of the payment application window which the demo payment application " +
-                                 "uses to adapt the the layout so that the Wallet doesn't cover the " +
-                                 "order summary."));
-            s.append(fancyBox(debugData.initMessage));
+                                 "<b>Merchant</b> (Payee), the <b>Wallet</b> (Payer), and the user's <b>Bank</b> (Payment provider).&nbsp;&nbsp;" +
+                                 "For traditional card payments there is also an <b>Acquirer</b> (&quot;Card processor&quot;) involved.</p>" +
+                                 "<p>After the <b>Wallet</b> has been invoked, the invoking <b>Merchant</b> Web-page waits for a ready signal from the Wallet:</p>"));
+            s.append(fancyBox(debugData.WalletInitialized));
  
-            s.append(description("In both modes (direct and indirect) the Merchant now responds with a " +
-                                 "list of accepted card types and a <i>digitally signed</i> payment request." +
-                                 "<p>The mode is also supplied since this governs what the Wallet should do " +
-                                 "with the payment request.</p>"));
-            s.append(fancyBox(debugData.paymentRequest));
+            s.append(descriptionStdMargin("The " + keyWord(WINDOW_JSON) + " object provides the invoking <b>Merchant</b> Web-page with the size "+
+                                 "of the <b>Wallet</b>.<p>When the message above has been received the <b>Merchant</b> Web-page responds with a " +
+                                 "list of accepted card types and a <i>digitally signed</i> payment request:</p>"));
+            s.append(fancyBox(debugData.InvokeWallet));
 
-            s.append(description("In the indirect mode encrypted."));
+            s.append(description("After <i>optional</i> selection of payment credentials (Cards), the user " +
+                    "authorizes the payment request using a PIN.  The result of this process is not supposed be " +
+                    "directly available to the <b>Merchant</b> since it contains potentially sensitive user data." +
+                    "<p>Therefore the result is encrypted by a key supplied (as a part of the payment credential) by the " +
+                    "associated <b>Bank</b> before it is returned to the <b>Merchant</b>:</p>"));
             s.append(fancyBox(debugData.walletResponse));
             s.append(description("In the indirect mode encrypted."));
-            s.append(fancyBox(debugData.bankReserveOrDebitRequest));
+            s.append(fancyBox(debugData.reserveOrDebitRequest));
             s.append(description("The following message is <i>NOT</i> exchange between the " +
                         "Wallet and Merchant but is the response from the Payment Provider " +
                         "to the the indirect mode." +
                         "<p>As can been seen the authorization is <i>digitally signed</i> by the " +
                         "Payment Provider and contains both the original Merchant payment request " +
                         "as well as a minimal set of card data.</p>"));
-            s.append(fancyBox(debugData.bankReserveOrDebitResponse));
+            s.append(fancyBox(debugData.reserveOrDebitResponse));
             HTML.debugPage(response, s.toString());
             
          } catch (Exception e) {
@@ -93,6 +98,10 @@ public class DebugServlet extends HttpServlet {
             response.setDateHeader("EXPIRES", 0);
             response.getOutputStream().println("Error: " + e.getMessage());
         }
+    }
+
+    private String keyWord(String keyWord) {
+        return "<code style=\"font-size:10pt\">&quot;" + keyWord + "&quot;</code>";
     }
 
 }

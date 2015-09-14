@@ -903,11 +903,6 @@ public class Wallet {
                     }
                     card.keyEncryptionKey = encryptionParameters.getPublicKey(JSONAlgorithmPreferences.JOSE);
 
-                    // Minor "feature" to allow local testing without reconfiguration...
-                    if (domainName.equals("localhost")) {
-                        card.authorityUrl = "https://localhost:8442" + new URL(card.authorityUrl).getFile();
-                    }
-                
                     // We found a useful card!
                     cardCollection.put(keyHandle, card);
                     break;
