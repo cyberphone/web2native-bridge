@@ -255,6 +255,11 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
         JSONObjectReader response = JSONParser.parse(wrap.getData());
         logger.info("Received from " + target + ":\n" + response);
         
+        if (debugData != null) {
+            debugData.finalizeRequest = sentFinalize;
+            debugData.finalizeResponse = wrap.getData();
+        }
+        
         FinalizeResponse finalizeResponse = new FinalizeResponse(response);
 
         // Check signature origins

@@ -41,6 +41,8 @@ import org.webpki.json.JSONParser;
 
 import org.webpki.net.HTTPSWrapper;
 
+import org.webpki.util.ISODateTime;
+
 import org.webpki.w2nb.webpayment.common.AccountTypes;
 import org.webpki.w2nb.webpayment.common.Authority;
 import org.webpki.w2nb.webpayment.common.BaseProperties;
@@ -131,7 +133,10 @@ public class PaymentServlet extends HttpServlet implements BaseProperties {
            }
            Authority authority = new Authority(JSONParser.parse(wrap.getData()),authorityUrl);
            JSONObjectWriter protectedAccountData =
-                ProtectedAccountData.encode(authorizationData.getAccountId());
+                ProtectedAccountData.encode(authorizationData.getAccountId(),
+                                            "Luke Skywalker",
+                                            ISODateTime.parseDateTime("2019-12-01T00:00:00Z"),
+                                            "943");
            encryptedCardData = EncryptedData.encode(protectedAccountData,
                                                     authority.getDataEncryptionAlgorithm(),
                                                     authority.getPublicKey(),

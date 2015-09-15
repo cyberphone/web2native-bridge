@@ -180,7 +180,7 @@
     <antcall target="_import">
        <param name="sks.certificate" value="${clientkey_rsa}"/>
        <param name="sks.pin" value="1234"/>
-       <param name="card.type" value="COOL_CARD"/>
+       <param name="card.type" value="BANK_DIRECT"/>
        <param name="card.number" value="!8645-7800239403"/>
        <param name="sks.encryption" value="${encryptionkey_ec}"/>
      </antcall>

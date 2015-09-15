@@ -90,7 +90,7 @@ public class DebugServlet extends HttpServlet implements BaseProperties {
                     "The signature must be verified to belong to a known payment provider network.<p>" +
                     "Now the <b>Merchant</b> creates a <i>signed</i> request and sends it to the " + keyWord(TRANSACTION_URL_JSON) +
                     " extracted from the " + keyWord(Messages.AUTHORITY.toString()) + " object.&nbsp;&nbsp;" +
-                    "Since the <b>Wallet</b> response is encrypted, the <b>Merchant</b> needs to prove to <b>Bank</b> " +
+                    "Since the <b>Wallet</b> response is encrypted, the <b>Merchant</b> needs to prove to the <b>Bank</b> " +
                     "that it knows the embedded " + keyWord(PAYMENT_REQUEST_JSON) + " which it does through the " + keyWord(REQUEST_HASH_JSON) +
                     " construct.&nbsp;&nbsp;Since this particular session was " + (debugData.acquirerMode ? "a card transaction, " + 
                     keyWord(ACQUIRER_AUTHORITY_URL_JSON) : "an account-2-account transaction, " +
@@ -113,6 +113,8 @@ public class DebugServlet extends HttpServlet implements BaseProperties {
                 HTML.debugPage(response, s.toString());
                 return;
             }
+            s.append(fancyBox(debugData.finalizeRequest));
+            s.append(fancyBox(debugData.finalizeResponse));
             HTML.debugPage(response, s.toString());
             
          } catch (Exception e) {

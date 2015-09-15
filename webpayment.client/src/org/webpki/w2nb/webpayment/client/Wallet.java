@@ -119,8 +119,10 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 //  - Federation using credentials with embedded links                  //
 // and (of course...), the Web2Native Bridge.                           //
 //                                                                      //
-// The Wallet supports both "push" and "pull" Web Payments using a      //
-// common set of JSON-based message components.                         //                                     
+// The Wallet supports both account-2-account (aka "Push") Web payments //
+// well as traditional card (aka "Pull") Web payments using a common    //
+// set of JSON-based message components. In fact, the Wallet part of    //
+// this scheme (including UI) is identical for these use-cases.         //                  
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 

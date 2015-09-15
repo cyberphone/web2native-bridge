@@ -17,15 +17,22 @@
 package org.webpki.w2nb.webpayment.common;
 
 import java.io.IOException;
+import java.util.GregorianCalendar;
 
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 
 public class ProtectedAccountData implements BaseProperties {
     
-    public static JSONObjectWriter encode(String accountId) throws IOException {
+    public static JSONObjectWriter encode(String accountId,
+                                          String accountHolder,
+                                          GregorianCalendar expires,
+                                          String accountSecurityCode) throws IOException {
         return new JSONObjectWriter()
-            .setString(ACCOUNT_ID_JSON, accountId);
+            .setString(ACCOUNT_ID_JSON, accountId)
+            .setString(ACCOUNT_HOLDER_JSON, accountHolder)
+            .setDateTime(EXPIRES_JSON, expires.getTime(), true)
+            .setString(ACCOUNT_SECURITY_CODE_JSON, accountSecurityCode);
     }
     
     JSONObjectReader root;
@@ -33,6 +40,9 @@ public class ProtectedAccountData implements BaseProperties {
     public ProtectedAccountData(JSONObjectReader rd) throws IOException {
         root = rd;
         accountId = rd.getString(ACCOUNT_ID_JSON);
+        rd.getString(ACCOUNT_HOLDER_JSON);
+        rd.getDateTime(EXPIRES_JSON);
+        rd.getString(ACCOUNT_SECURITY_CODE_JSON);
         rd.checkForUnread();
     }
 

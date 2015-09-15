@@ -22,11 +22,11 @@ import java.io.IOException;
 
 public enum AccountTypes {
 
-    SUPER_CARD   (true,  "https://supercard.com", "SuperCard",   "supercard.png",   Color.BLUE), 
-    COOL_CARD    (false, "https://coolcard.com",  "CoolCard",    "coolcard.png",    Color.BLACK),
-    UNUSUAL_CARD (false, "https://usualcard.com", "UnusualCard", "unusualcard.png", Color.GRAY);
+    SUPER_CARD   (true,  "https://supercard.com",  "SuperCard",   "supercard.png",   Color.BLUE), 
+    BANK_DIRECT  (false, "https://bankdirect.net", "Bank Direct", "bankdirect.png",  Color.BLACK),
+    UNUSUAL_CARD (false, "https://usualcard.com",  "UnusualCard", "unusualcard.png", Color.GRAY);
 
-    boolean acquirerBased;  // True => 4 corner model, false = > 3 corner model
+    boolean acquirerBased;  // True => card processor model, false = > 3 or 4 corner distributed model
     String type;            // A brand URI
     String commonName;      // What it is usually called
     String imageName;

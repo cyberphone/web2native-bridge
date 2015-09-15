@@ -43,6 +43,8 @@ public interface BaseProperties {
     String ACCEPTED_ACCOUNT_TYPES_JSON       = "acceptedAccountTypes";  // List of ACCOUNT_TYPE_JSON
     String ACCOUNT_TYPE_JSON                 = "accountType";           // Account/Card type in the form of a URI
     String ACCOUNT_ID_JSON                   = "accountId";             // Account/Card number. For cards PAN
+    String ACCOUNT_HOLDER_JSON               = "accountHolder";         // Card holder
+    String ACCOUNT_SECURITY_CODE_JSON        = "accountSecurityCode";   // CCV
     String CARD_FORMAT_ACCOUNT_ID_JSON       = "cardFormatAccountId";   // Display formatting like cards or not
     String ACCOUNT_REFERENCE_JSON            = "accountReference";      // Account/Card number for payee (like ************5678)
     String PROTECTED_ACCOUNT_DATA_JSON       = "protectedAccountData";  // Account data that (only) an acquirer needs
@@ -64,7 +66,7 @@ public interface BaseProperties {
     String SOFTWARE_JSON                     = "software";
     String ID_JSON                           = "id";
     String TYPE_JSON                         = "type";
-    String FIELD1_JSON                       = "field1";
+    String FIELD1_JSON                       = "field1";                //Used for "additional" account data 
     String FIELD2_JSON                       = "field2";
     String FIELD3_JSON                       = "field3";
     String VERSION_JSON                      = "version";

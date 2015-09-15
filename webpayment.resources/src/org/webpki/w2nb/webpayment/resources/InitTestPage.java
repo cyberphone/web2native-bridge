@@ -125,7 +125,7 @@ public class InitTestPage implements BaseProperties {
             .setStringArray(ACCEPTED_ACCOUNT_TYPES_JSON,
                             new String[]{"https://nosuchcard.com",
                                           AccountTypes.SUPER_CARD.getType(),
-                                          AccountTypes.COOL_CARD.getType()})
+                                          AccountTypes.BANK_DIRECT.getType()})
             .setObject(PAYMENT_REQUEST_JSON, standardRequest));
 
         // The normal request is cloned and modified for testing error handling
