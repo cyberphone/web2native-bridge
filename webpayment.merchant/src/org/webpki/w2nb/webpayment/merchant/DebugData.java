@@ -28,6 +28,8 @@ public class DebugData implements Serializable {
     
     public byte[] walletResponse;
 
+    public byte[] providerAuthority;
+
     public boolean directDebit;
     
     public byte[] reserveOrDebitRequest;
@@ -35,6 +37,8 @@ public class DebugData implements Serializable {
     public byte[] reserveOrDebitResponse;
     
     public boolean acquirerMode;
+    
+    public byte[] acquirerAuthority;
     
     public byte[] finalizeRequest;
 

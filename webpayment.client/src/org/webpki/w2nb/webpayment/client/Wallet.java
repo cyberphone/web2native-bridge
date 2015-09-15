@@ -798,7 +798,7 @@ public class Wallet {
             try {
                 JSONObjectReader invokeMessage = stdin.readJSONObject();
                 logger.info("Received from browser:\n" + invokeMessage);
-                Messages.parseBaseMessage(Messages.INVOKE_WALLET, invokeMessage);
+                Messages.parseBaseMessage(Messages.WALLET_REQUEST, invokeMessage);
                 final String[] accountTypes = invokeMessage.getStringArray(BaseProperties.ACCEPTED_ACCOUNT_TYPES_JSON);
                 paymentRequest = new PaymentRequest(invokeMessage.getObject(BaseProperties.PAYMENT_REQUEST_JSON));
                 timer.cancel();

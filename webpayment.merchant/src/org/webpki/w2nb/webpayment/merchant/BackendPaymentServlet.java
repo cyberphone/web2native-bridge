@@ -110,6 +110,7 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
                                                "localhost", request.getServerPort(), orig.getFile()).toExternalForm();
             }
 
+            // In a production setup you would cache authority objects since they are long-lived
             HTTPSWrapper wrap = new HTTPSWrapper();
             wrap.setTimeout(TIMEOUT_FOR_REQUEST);
             wrap.setHeader("Content-Type", MerchantService.jsonMediaType);
@@ -120,17 +121,21 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
             }
             Authority providerAuthority = new Authority(JSONParser.parse(wrap.getData()), providerAuthorityUrl);
 
+            // Verify that the claimed authority belongs to a known payment provider network
+            providerAuthority.getSignatureDecoder().verify(MerchantService.paymentRoot);
+
             // Direct debit is only applicable to account2account operations
             boolean directDebit = !UserPaymentServlet.getOption(session, HomeServlet.RESERVE_MODE_SESSION_ATTR) &&
                                   !payerAuthorization.getAccountType().isAcquirerBased();
 
             if (debug) {
+                debugData.providerAuthority = wrap.getData();
                 debugData.directDebit = directDebit;
             }
 
-            PayeeAccountDescriptor[] accounts = {new PayeeAccountDescriptor("http://ultragiro", "35964640"),
-                                                 new PayeeAccountDescriptor("http://mybank", 
-                                                                            "399962",
+            PayeeAccountDescriptor[] accounts = {new PayeeAccountDescriptor("http://ultragiro.fr", "35964640"),
+                                                 new PayeeAccountDescriptor("http://mybank.com", 
+                                                                            "J-399.962",
                                                                             new String[]{"enterprise"})};
 
             // Attest the user's encrypted authorization to show "intent"
@@ -224,7 +229,11 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
             }
             acquirerAuthority = new Authority(JSONParser.parse(wrap.getData()), MerchantService.acquirerAuthorityUrl);
             transactionUrl = acquirerAuthority.getTransactionUrl();
-         }
+            if (debugData != null) {
+                debugData.acquirerMode = true;
+                debugData.acquirerAuthority = wrap.getData();
+            }
+        }
 
         JSONObjectWriter finalizeRequest = FinalizeRequest.encode(bankResponse,
                                                                   bankResponse.getPaymentRequest().getAmount(),

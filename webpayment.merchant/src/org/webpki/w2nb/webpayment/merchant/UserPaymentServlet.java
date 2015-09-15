@@ -115,7 +115,7 @@ public class UserPaymentServlet extends HttpServlet implements BaseProperties {
             acceptedCards.add(card.getType());
         }
         acceptedCards.add("https://nosuchcard.com");
-        JSONObjectWriter invokeRequest = Messages.createBaseMessage(Messages.INVOKE_WALLET)
+        JSONObjectWriter invokeRequest = Messages.createBaseMessage(Messages.WALLET_REQUEST)
             .setStringArray(ACCEPTED_ACCOUNT_TYPES_JSON, acceptedCards.toArray(new String[0]))
             .setObject(PAYMENT_REQUEST_JSON, paymentRequest);
    

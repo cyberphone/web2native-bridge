@@ -28,7 +28,9 @@ import javax.servlet.http.HttpSession;
 
 import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONParser;
+
 import org.webpki.w2nb.webpayment.common.BaseProperties;
+import org.webpki.w2nb.webpayment.common.Messages;
 
 public class DebugServlet extends HttpServlet implements BaseProperties {
 
@@ -65,30 +67,52 @@ public class DebugServlet extends HttpServlet implements BaseProperties {
             
             s.append(description("<p>The following page shows the messages exchanged between the " +
                                  "<b>Merchant</b> (Payee), the <b>Wallet</b> (Payer), and the user's <b>Bank</b> (Payment provider).&nbsp;&nbsp;" +
-                                 "For traditional card payments there is also an <b>Acquirer</b> (&quot;Card processor&quot;) involved.</p>" +
+                                 "For traditional card payments there is also an <b>Acquirer</b> (aka &quot;card processor&quot;) involved.</p>" +
                                  "<p>After the <b>Wallet</b> has been invoked, the invoking <b>Merchant</b> Web-page waits for a ready signal from the Wallet:</p>"));
             s.append(fancyBox(debugData.WalletInitialized));
  
             s.append(descriptionStdMargin("The " + keyWord(WINDOW_JSON) + " object provides the invoking <b>Merchant</b> Web-page with the size "+
                                  "of the <b>Wallet</b>.<p>When the message above has been received the <b>Merchant</b> Web-page responds with a " +
-                                 "list of accepted card types and a <i>digitally signed</i> payment request:</p>"));
+                                 "list of accepted card types and a <i>signed</i> " + keyWord(PAYMENT_REQUEST_JSON) + ":</p>"));
             s.append(fancyBox(debugData.InvokeWallet));
 
-            s.append(description("After <i>optional</i> selection of payment credentials (Cards), the user " +
-                    "authorizes the payment request using a PIN.  The result of this process is not supposed be " +
+            s.append(description("After selection of payment instruments (cards) in the <b>Wallet</b> UI, the user " +
+                    "authorizes the payment request currently using a PIN.  The result of this process is not supposed be " +
                     "directly available to the <b>Merchant</b> since it contains potentially sensitive user data." +
-                    "<p>Therefore the result is encrypted by a key supplied (as a part of the payment credential) by the " +
-                    "associated <b>Bank</b> before it is returned to the <b>Merchant</b>:</p>"));
+                    "<p>Therefore the result is <i>encrypted</i> (using a key supplied by the <b>Bank</b> as a part of the " +
+                    "payment credential) before it is returned to the <b>Merchant</b>:</p>"));
             s.append(fancyBox(debugData.walletResponse));
-            s.append(description("In the indirect mode encrypted."));
+            s.append(description("After receiving the <b>Wallet</b> response, the <b>Merchant</b> uses the supplied " +
+                     keyWord(PROVIDER_AUTHORITY_URL_JSON) + " to retrieve the associated " + keyWord(Messages.AUTHORITY.toString()) +
+                     " object of the <b>Bank</b> claimed to be the user's account holder for the selected payment instrument:"));
+            s.append(fancyBox(debugData.providerAuthority));
+            s.append(descriptionStdMargin("Note: This object is long-lived and would usually be <i>cached</i>.&nbsp;&nbsp;" +
+                    "The signature must be verified to belong to a known payment provider network.<p>" +
+                    "Now the <b>Merchant</b> creates a <i>signed</i> request and sends it to the " + keyWord(TRANSACTION_URL_JSON) +
+                    " extracted from the " + keyWord(Messages.AUTHORITY.toString()) + " object.&nbsp;&nbsp;" +
+                    "Since the <b>Wallet</b> response is encrypted, the <b>Merchant</b> needs to prove to <b>Bank</b> " +
+                    "that it knows the embedded " + keyWord(PAYMENT_REQUEST_JSON) + " which it does through the " + keyWord(REQUEST_HASH_JSON) +
+                    " construct.&nbsp;&nbsp;Since this particular session was " + (debugData.acquirerMode ? "a card transaction, " + 
+                    keyWord(ACQUIRER_AUTHORITY_URL_JSON) : "an account-2-account transaction, " +
+                    keyWord(PAYEE_ACCOUNT_TYPES_JSON) + "holding an array of <b>Merchant</b> receiver accounts") + " is also supplied:"));
             s.append(fancyBox(debugData.reserveOrDebitRequest));
-            s.append(description("The following message is <i>NOT</i> exchange between the " +
+            s.append(description("The called <b>Bank</b> responds with a <i>signed</i> message contatiningfollowing message is <i>NOT</i> exchange between the " +
                         "Wallet and Merchant but is the response from the Payment Provider " +
                         "to the the indirect mode." +
                         "<p>As can been seen the authorization is <i>digitally signed</i> by the " +
                         "Payment Provider and contains both the original Merchant payment request " +
                         "as well as a minimal set of card data.</p>"));
             s.append(fancyBox(debugData.reserveOrDebitResponse));
+            if (debugData.acquirerMode) {
+                s.append(description("In the <b>Acquirer</b> mode a pre-configured URL is used by the <b>Merchant</b> " +
+                                     "to get its associated card processor's " + keyWord(TRANSACTION_URL_JSON) + ":"));
+                s.append(fancyBox(debugData.acquirerAuthority));
+            } else if (debugData.directDebit) {
+                s.append(descriptionStdMargin("That's all that is needed in the direct debit mode (a <i>signed receipt</i> from the <b>Bank</b> " +
+                                              "attesting that the transaction succeded)."));
+                HTML.debugPage(response, s.toString());
+                return;
+            }
             HTML.debugPage(response, s.toString());
             
          } catch (Exception e) {
