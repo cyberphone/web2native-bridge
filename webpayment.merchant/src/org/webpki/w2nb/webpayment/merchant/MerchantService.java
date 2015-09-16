@@ -35,16 +35,19 @@ import org.webpki.crypto.CertificateUtil;
 import org.webpki.crypto.CustomCryptoProvider;
 import org.webpki.crypto.KeyStoreVerifier;
 
+import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONParser;
 import org.webpki.json.JSONX509Verifier;
 
 import org.webpki.util.ArrayUtil;
+import org.webpki.util.ISODateTime;
 
 import org.webpki.w2nb.webpayment.common.AuthorizationData;
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.AccountTypes;
 import org.webpki.w2nb.webpayment.common.Currencies;
 import org.webpki.w2nb.webpayment.common.KeyStoreEnumerator;
+import org.webpki.w2nb.webpayment.common.ProtectedAccountData;
 import org.webpki.w2nb.webpayment.common.ServerSigner;
 
 import org.webpki.webutil.InitPropertyReader;
@@ -90,6 +93,8 @@ public class MerchantService extends InitPropertyReader implements ServletContex
     static String acquirerAuthorityUrl;
     
     static byte[] user_authorization;
+
+    static byte[] protected_account_data;
 
     InputStream getResource(String name) throws IOException {
         return this.getClass().getResourceAsStream(getPropertyString(name));
@@ -141,6 +146,13 @@ public class MerchantService extends InitPropertyReader implements ServletContex
 
             new AuthorizationData(JSONParser.parse(user_authorization = 
                 ArrayUtil.getByteArrayFromInputStream (this.getClass().getResourceAsStream(USER_AUTH_SAMPLE))));
+
+            protected_account_data = 
+                ProtectedAccountData.encode("6875056745552109",
+                                            "Luke Skywalker",
+                                            ISODateTime.parseDateTime("2019-12-31T00:00:00Z").getTime(),
+                                            "943",
+                                            new String[0]).serializeJSONObject(JSONOutputFormats.NORMALIZED);
 
             logger.info("Web2Native Bridge Merchant-server initiated");
         } catch (Exception e) {

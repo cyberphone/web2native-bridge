@@ -110,8 +110,12 @@ public class DebugServlet extends HttpServlet implements BaseProperties {
             } else if (debugData.directDebit) {
                 s.append(descriptionStdMargin("That's all that is needed in the direct debit mode (a <i>signed receipt</i> from the <b>Bank</b> " +
                                               "attesting that the transaction succeded)."));
-            } else {
+            }
+            if (!debugData.directDebit) {
                 s.append(fancyBox(debugData.finalizeRequest));
+                if (debugData.acquirerMode) {
+                    s.append(fancyBox(MerchantService.protected_account_data));
+                }
                 s.append(fancyBox(debugData.finalizeResponse));
             }
             s.append(description("<p id=\"secretdata\" style=\"text-align:center;font-weight:bold;font-size:10pt;font-family:" + HTML.FONT_ARIAL + "\">Unencrypted User Authorization</p>" +
