@@ -132,11 +132,14 @@ public class PaymentServlet extends HttpServlet implements BaseProperties {
                throw new IOException("Content-Type must be \"" + JSON_CONTENT_TYPE + "\" , found: " + wrap.getContentType());
            }
            Authority authority = new Authority(JSONParser.parse(wrap.getData()),authorityUrl);
+
+           // Pure sample data...
            JSONObjectWriter protectedAccountData =
                 ProtectedAccountData.encode(authorizationData.getAccountId(),
                                             "Luke Skywalker",
-                                            ISODateTime.parseDateTime("2019-12-01T00:00:00Z"),
-                                            "943");
+                                            ISODateTime.parseDateTime("2019-12-31T00:00:00Z").getTime(),
+                                            "943",
+                                            new String[0]);
            encryptedCardData = EncryptedData.encode(protectedAccountData,
                                                     authority.getDataEncryptionAlgorithm(),
                                                     authority.getPublicKey(),

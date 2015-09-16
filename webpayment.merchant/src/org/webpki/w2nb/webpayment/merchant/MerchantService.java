@@ -35,10 +35,12 @@ import org.webpki.crypto.CertificateUtil;
 import org.webpki.crypto.CustomCryptoProvider;
 import org.webpki.crypto.KeyStoreVerifier;
 
+import org.webpki.json.JSONParser;
 import org.webpki.json.JSONX509Verifier;
 
 import org.webpki.util.ArrayUtil;
 
+import org.webpki.w2nb.webpayment.common.AuthorizationData;
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.AccountTypes;
 import org.webpki.w2nb.webpayment.common.Currencies;
@@ -70,6 +72,8 @@ public class MerchantService extends InitPropertyReader implements ServletContex
     static final String ERR_MEDIA              = "err_media_type";
     
     static final String W2NB_NAME              = "w2nb_name";
+    
+    static final String USER_AUTH_SAMPLE       = "user-authorization.json";
 
     static JSONX509Verifier paymentRoot;
     
@@ -84,6 +88,8 @@ public class MerchantService extends InitPropertyReader implements ServletContex
     static Object w2nbName;
     
     static String acquirerAuthorityUrl;
+    
+    static byte[] user_authorization;
 
     InputStream getResource(String name) throws IOException {
         return this.getClass().getResourceAsStream(getPropertyString(name));
@@ -132,6 +138,9 @@ public class MerchantService extends InitPropertyReader implements ServletContex
             if (getPropertyBoolean(ERR_MEDIA)) {
                 jsonMediaType = "text/html";
             }
+
+            new AuthorizationData(JSONParser.parse(user_authorization = 
+                ArrayUtil.getByteArrayFromInputStream (this.getClass().getResourceAsStream(USER_AUTH_SAMPLE))));
 
             logger.info("Web2Native Bridge Merchant-server initiated");
         } catch (Exception e) {

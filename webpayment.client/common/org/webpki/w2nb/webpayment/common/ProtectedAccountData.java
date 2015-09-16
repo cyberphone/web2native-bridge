@@ -17,22 +17,35 @@
 package org.webpki.w2nb.webpayment.common;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Vector;
 
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 
 public class ProtectedAccountData implements BaseProperties {
     
+    static final String[] fields = {FIELD1_JSON, FIELD2_JSON, FIELD3_JSON};
+
     public static JSONObjectWriter encode(String accountId,
                                           String accountHolder,
-                                          GregorianCalendar expires,
-                                          String accountSecurityCode) throws IOException {
-        return new JSONObjectWriter()
+                                          Date expires,
+                                          String accountSecurityCode,
+                                          String[] optionalFields) throws IOException {
+        JSONObjectWriter wr = new JSONObjectWriter()
             .setString(ACCOUNT_ID_JSON, accountId)
             .setString(ACCOUNT_HOLDER_JSON, accountHolder)
-            .setDateTime(EXPIRES_JSON, expires.getTime(), true)
+            .setDateTime(EXPIRES_JSON, expires, true)
             .setString(ACCOUNT_SECURITY_CODE_JSON, accountSecurityCode);
+        if (optionalFields.length > 3) {
+            throw new IOException("There can be 3 fields max");
+        }
+        int q = 0;
+        for (String field : optionalFields) {
+            wr.setString(fields[q++], field);
+        }
+        return wr;
     }
     
     JSONObjectReader root;
@@ -40,9 +53,18 @@ public class ProtectedAccountData implements BaseProperties {
     public ProtectedAccountData(JSONObjectReader rd) throws IOException {
         root = rd;
         accountId = rd.getString(ACCOUNT_ID_JSON);
-        rd.getString(ACCOUNT_HOLDER_JSON);
-        rd.getDateTime(EXPIRES_JSON);
-        rd.getString(ACCOUNT_SECURITY_CODE_JSON);
+        accountHolder = rd.getString(ACCOUNT_HOLDER_JSON);
+        expires = rd.getDateTime(EXPIRES_JSON);
+        accountSecurityCode = rd.getString(ACCOUNT_SECURITY_CODE_JSON);
+        Vector<String> optionalFields = new Vector<String>();
+        for (String field : fields) {
+            if (rd.hasProperty(field)) {
+                optionalFields.add(rd.getString(field));
+            } else {
+                break;
+            }
+        }
+        this.optionalFields = optionalFields.toArray(new String[0]);
         rd.checkForUnread();
     }
 
@@ -50,7 +72,27 @@ public class ProtectedAccountData implements BaseProperties {
     public String getAccountId() {
         return accountId;
     }
-    
+
+    String accountHolder;
+    public String getAccountHolder() {
+        return accountHolder;
+    }
+
+    GregorianCalendar expires;
+    public GregorianCalendar getExpires() {
+        return expires;
+    }
+
+    String accountSecurityCode;
+    public String getAccountSecurityCode() {
+        return accountSecurityCode;
+    }
+
+    String[] optionalFields;
+    public String[] getOptionalFields() {
+        return optionalFields;
+    }
+
     @Override
     public String toString() {
         return root.toString();

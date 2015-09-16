@@ -68,7 +68,8 @@ public class DebugServlet extends HttpServlet implements BaseProperties {
             s.append(description("<p>The following page shows the messages exchanged between the " +
                                  "<b>Merchant</b> (Payee), the <b>Wallet</b> (Payer), and the user's <b>Bank</b> (Payment provider).&nbsp;&nbsp;" +
                                  "For traditional card payments there is also an <b>Acquirer</b> (aka &quot;card processor&quot;) involved.</p>" +
-                                 "<p>After the <b>Wallet</b> has been invoked, the invoking <b>Merchant</b> Web-page waits for a ready signal from the Wallet:</p>"));
+                                 "<p>After the <b>Wallet</b> has been invoked through the " + keyWord("navigator.nativeConnect()") + 
+                                 " browser API, the invoking <b>Merchant</b> Web-page waits for a ready signal from the <b>Wallet</b>:</p>"));
             s.append(fancyBox(debugData.WalletInitialized));
  
             s.append(descriptionStdMargin("The " + keyWord(WINDOW_JSON) + " object provides the invoking <b>Merchant</b> Web-page with the size "+
@@ -78,7 +79,8 @@ public class DebugServlet extends HttpServlet implements BaseProperties {
 
             s.append(description("After selection of payment instruments (cards) in the <b>Wallet</b> UI, the user " +
                     "authorizes the payment request currently using a PIN.  The result of this process is not supposed be " +
-                    "directly available to the <b>Merchant</b> since it contains potentially sensitive user data." +
+                    "directly available to the <b>Merchant</b> since it contains potentially sensitive user data.&nbsp;&nbsp;" +
+                    "For an example turn to <a href=\"#secretdata\">Unecrypted User Authorization</a>." +
                     "<p>Therefore the result is <i>encrypted</i> (using a key supplied by the <b>Bank</b> as a part of the " +
                     "payment credential) before it is returned to the <b>Merchant</b>:</p>"));
             s.append(fancyBox(debugData.walletResponse));
@@ -94,14 +96,12 @@ public class DebugServlet extends HttpServlet implements BaseProperties {
                     "that it knows the embedded " + keyWord(PAYMENT_REQUEST_JSON) + " which it does through the " + keyWord(REQUEST_HASH_JSON) +
                     " construct.&nbsp;&nbsp;Since this particular session was " + (debugData.acquirerMode ? "a card transaction, " + 
                     keyWord(ACQUIRER_AUTHORITY_URL_JSON) : "an account-2-account transaction, " +
-                    keyWord(PAYEE_ACCOUNT_TYPES_JSON) + "holding an array of <b>Merchant</b> receiver accounts") + " is also supplied:"));
+                    keyWord(PAYEE_ACCOUNT_TYPES_JSON) + "holding an array [1..n] of <b>Merchant</b> receiver accounts") + " is also supplied:"));
             s.append(fancyBox(debugData.reserveOrDebitRequest));
-            s.append(description("The called <b>Bank</b> responds with a <i>signed</i> message contatiningfollowing message is <i>NOT</i> exchange between the " +
-                        "Wallet and Merchant but is the response from the Payment Provider " +
-                        "to the the indirect mode." +
-                        "<p>As can been seen the authorization is <i>digitally signed</i> by the " +
-                        "Payment Provider and contains both the original Merchant payment request " +
-                        "as well as a minimal set of card data.</p>"));
+            s.append(description("The called <b>Bank</b> responds with a <i>signed</i> message containing both the original <b>Merchant</b> " +
+                     keyWord(PAYMENT_REQUEST_JSON) + " as well as a minimal set of user account data." +
+                        (debugData.directDebit ? "<p>Also note the inclusion of the (by the <b>Bank></b>) selected <b>Merchant</b> receiver account (" +
+                        keyWord(PAYEE_ACCOUNT_JSON) + ").</p>" : "")));
             s.append(fancyBox(debugData.reserveOrDebitResponse));
             if (debugData.acquirerMode) {
                 s.append(description("In the <b>Acquirer</b> mode a pre-configured URL is used by the <b>Merchant</b> " +
@@ -110,11 +110,14 @@ public class DebugServlet extends HttpServlet implements BaseProperties {
             } else if (debugData.directDebit) {
                 s.append(descriptionStdMargin("That's all that is needed in the direct debit mode (a <i>signed receipt</i> from the <b>Bank</b> " +
                                               "attesting that the transaction succeded)."));
-                HTML.debugPage(response, s.toString());
-                return;
+            } else {
+                s.append(fancyBox(debugData.finalizeRequest));
+                s.append(fancyBox(debugData.finalizeResponse));
             }
-            s.append(fancyBox(debugData.finalizeRequest));
-            s.append(fancyBox(debugData.finalizeResponse));
+            s.append(description("<p id=\"secretdata\" style=\"text-align:center;font-weight:bold;font-size:10pt;font-family:" + HTML.FONT_ARIAL + "\">Unencrypted User Authorization</p>" +
+                     "The following printout shows a sample of <i>internal</i> <b>Wallet</b> data <i>before</i> it is encrypted.&nbsp;&nbsp;As you can see it contains " +
+                     "user account data and identity which <i>usually</i> is of no importance for the <b>Merchant</b>:"));
+            s.append(fancyBox(MerchantService.user_authorization));
             HTML.debugPage(response, s.toString());
             
          } catch (Exception e) {

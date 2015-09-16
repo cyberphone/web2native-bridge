@@ -52,6 +52,8 @@ public class PayeeAccountDescriptor implements BaseProperties {
         for (String field : fields) {
             if (rd.hasProperty(field)) {
                 optionalFields.add(rd.getString(field));
+            } else {
+                break;
             }
         }
         this.optionalFields = optionalFields.toArray(new String[0]);
