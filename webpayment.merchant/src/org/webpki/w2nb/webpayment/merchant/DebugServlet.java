@@ -67,14 +67,17 @@ public class DebugServlet extends HttpServlet implements BaseProperties {
             
             s.append(description("<p>The following page shows the messages exchanged between the " +
                                  "<b>Merchant</b> (Payee), the <b>Wallet</b> (Payer), and the user's <b>Bank</b> (Payment provider).&nbsp;&nbsp;" +
-                                 "For traditional card payments there is also an <b>Acquirer</b> (aka &quot;card processor&quot;) involved.</p>" +
-                                 "<p>After the <b>Wallet</b> has been invoked through the " + keyWord("navigator.nativeConnect()") + 
-                                 " browser API, the invoking <b>Merchant</b> Web-page waits for a ready signal from the <b>Wallet</b>:</p>"));
+                                 "For traditional card payments there is also an <b>Acquirer</b> (aka &quot;card processor&quot;) involved.</p><p>Current mode: <i>" +
+                                 (debugData.acquirerMode ? "Card payment" : "Account-2-Account payment using " + (debugData.directDebit ? "direct debit" : "reserve+finalize")) +
+                                 "</i></p><p>After the <b>Wallet</b> has been invoked through the " + keyWord("navigator.nativeConnect()") + 
+                                 " browser API <a target=\"_blank\" href=\"https://github.com/cyberphone/web2native-bridge#api\">[CONNECT]</a>, " +
+                                 "the invoking <b>Merchant</b> Web-page waits for a ready signal from the <b>Wallet</b>:</p>"));
             s.append(fancyBox(debugData.WalletInitialized));
  
             s.append(descriptionStdMargin("The " + keyWord(WINDOW_JSON) + " object provides the invoking <b>Merchant</b> Web-page with the size "+
                                  "of the <b>Wallet</b>.<p>When the message above has been received the <b>Merchant</b> Web-page responds with a " +
-                                 "list of accepted card types and a <i>signed</i> " + keyWord(PAYMENT_REQUEST_JSON) + ":</p>"));
+                                 "list of accepted account types (payment schemes) and a <i>signed</i> " + keyWord(PAYMENT_REQUEST_JSON) +
+                                 " <a target=\"_blank\" href=\"https://cyberphone.github.io/openkeystore/resources/docs/jcs.html\">[JCS]</a>:</p>"));
             s.append(fancyBox(debugData.InvokeWallet));
 
             s.append(description("After selection of payment instruments (cards) in the <b>Wallet</b> UI, the user " +
@@ -94,28 +97,50 @@ public class DebugServlet extends HttpServlet implements BaseProperties {
                     " extracted from the " + keyWord(Messages.AUTHORITY.toString()) + " object.&nbsp;&nbsp;" +
                     "Since the <b>Wallet</b> response is encrypted, the <b>Merchant</b> needs to prove to the <b>Bank</b> " +
                     "that it knows the embedded " + keyWord(PAYMENT_REQUEST_JSON) + " which it does through the " + keyWord(REQUEST_HASH_JSON) +
-                    " construct.&nbsp;&nbsp;Since this particular session was " + (debugData.acquirerMode ? "a card transaction, " + 
+                    " construct.&nbsp;&nbsp;Since this particular session was " + (debugData.acquirerMode ? "a card transaction, a pre-configured " + 
                     keyWord(ACQUIRER_AUTHORITY_URL_JSON) : "an account-2-account transaction, " +
                     keyWord(PAYEE_ACCOUNT_TYPES_JSON) + "holding an array [1..n] of <b>Merchant</b> receiver accounts") + " is also supplied:"));
             s.append(fancyBox(debugData.reserveOrDebitRequest));
-            s.append(description("The called <b>Bank</b> responds with a <i>signed</i> message containing both the original <b>Merchant</b> " +
-                     keyWord(PAYMENT_REQUEST_JSON) + " as well as a minimal set of user account data." +
-                        (debugData.directDebit ? "<p>Also note the inclusion of the (by the <b>Bank></b>) selected <b>Merchant</b> receiver account (" +
-                        keyWord(PAYEE_ACCOUNT_JSON) + ").</p>" : "")));
-            s.append(fancyBox(debugData.reserveOrDebitResponse));
             if (debugData.acquirerMode) {
-                s.append(description("In the <b>Acquirer</b> mode a pre-configured URL is used by the <b>Merchant</b> " +
-                                     "to get its associated card processor's " + keyWord(TRANSACTION_URL_JSON) + ":"));
+                s.append(description("In the <b>Acquirer</b> mode the received " + keyWord(ACQUIRER_AUTHORITY_URL_JSON) + " is used by the <b>Bank</b> " +
+                                     "to retrieve the designated card processor's encryption keys:"));
                 s.append(fancyBox(debugData.acquirerAuthority));
-            } else if (debugData.directDebit) {
-                s.append(descriptionStdMargin("That's all that is needed in the direct debit mode (a <i>signed receipt</i> from the <b>Bank</b> " +
-                                              "attesting that the transaction succeded)."));
             }
+            s.append(description("<p>After retrieving the <a href=\"#secretdata\">Unecrypted User Authorization</a>, " +
+                    "the called <b>Bank</b> invokes the local payment backend (to verify the account, check funds, etc.) " +
+                    "<i>which is outside of this specification and implementation</i>.</p>" +
+                    "If the operation is sucessful, the <b>Bank</b> responds with a <i>signed</i> message containing both the original <b>Merchant</b> " +
+                    keyWord(PAYMENT_REQUEST_JSON) + " as well as a minimal set of user account data." +
+                    (debugData.acquirerMode ?
+                               "<p>Also note the inclusion of " +
+                               keyWord(PROTECTED_ACCOUNT_DATA_JSON) + " which only the <b>Acquirer</b> can decrypt.</p>" :
+                               "<p>Also note the inclusion of the (by the <b>Bank</b>) selected <b>Merchant</b> receiver account (" +
+                               keyWord(PAYEE_ACCOUNT_JSON) + ").</p>") +
+                               (debugData.directDebit? "This is the final interaction in the direct debit mode.":"")));
+            s.append(fancyBox(debugData.reserveOrDebitResponse));
             if (!debugData.directDebit) {
+                s.append(description("For finalization of the payment, the <b>Merchant</b> sets an " + keyWord(AMOUNT_JSON) + 
+                         " which is equal or lower than in the original request, <i>counter-signs</i> the request, " +
+                         "and sends it to the " + (debugData.acquirerMode ? keyWord(TRANSACTION_URL_JSON) +
+                         " retrievable from the <b>Acquirer</b> " + keyWord(Messages.AUTHORITY.toString()) + " object:" :
+                         "<b>Bank</b> again:")));
                 s.append(fancyBox(debugData.finalizeRequest));
+                String finalDescription = null;
                 if (debugData.acquirerMode) {
+                    s.append(descriptionStdMargin("After receiving the request, the " +
+                             keyWord(PROTECTED_ACCOUNT_DATA_JSON) + " object is <i>decrypted</i>.&nbsp;&nbsp;" +
+                            "This mechanism effectively replaces a <b>Merchant</b>-based &quot;tokenization&quot; scheme with the added advantage "+
+                            "that the <b>Acquirer</b> also can be included in a protection model by " +
+                            "for example randomizing CCVs per request (&quot;upstreams tokenization&quot;).<p>The following printout " +
+                            "shows a <i>sample</i> of protected account data:</p>"));
                     s.append(fancyBox(MerchantService.protected_account_data));
+                    
+                    finalDescription = "<p>After this step the card network is invoked <i>which is outside of this specification and implementation</i>.</p>";
+                } else {
+                    finalDescription = "<p>After receiving the request, the actual payment operation is performed " +
+                            "<i>which is outside of this specification and implementation</i>.</p>";
                 }
+                s.append(descriptionStdMargin(finalDescription + "If the operation is sucessful, a <i>signed</i> hash of the request is returned:"));
                 s.append(fancyBox(debugData.finalizeResponse));
             }
             s.append(description("<p id=\"secretdata\" style=\"text-align:center;font-weight:bold;font-size:10pt;font-family:" + HTML.FONT_ARIAL + "\">Unencrypted User Authorization</p>" +
