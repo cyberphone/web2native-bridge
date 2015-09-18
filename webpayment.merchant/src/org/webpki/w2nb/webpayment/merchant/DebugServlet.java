@@ -181,7 +181,7 @@ public class DebugServlet extends HttpServlet implements BaseProperties {
                      "The following printout shows a sample of <i>internal</i> <b>Wallet</b> data <i>before</i> it is encrypted.&nbsp;&nbsp;As you can see it contains " +
                      "user account data and identity which <i>usually</i> is of no importance for the <b>Merchant</b>:"));
             s.append(fancyBox(MerchantService.user_authorization));
-            s.append(descriptionStdMargin("Protocol version: <i>" + Version.PROTOCOL + "<i><br>Date: <i>" + Version.DATE + "</i>"));
+            s.append(descriptionStdMargin("Protocol version: <i>" + Version.PROTOCOL + "</i><br>Date: <i>" + Version.DATE + "</i>"));
             HTML.debugPage(response, s.toString());
             
          } catch (Exception e) {
