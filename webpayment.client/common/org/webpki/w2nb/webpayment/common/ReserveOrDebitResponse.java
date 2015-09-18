@@ -48,21 +48,20 @@ public class ReserveOrDebitResponse implements BaseProperties {
 
     public static JSONObjectWriter encode(ReserveOrDebitRequest request,
                                           PaymentRequest paymentRequest,
-                                          String accountType,
-                                          String accountId,
+                                          AccountDescriptor accountDescriptor,
                                           JSONObjectWriter encryptedAccountData,
-                                          PayeeAccountDescriptor payeeAccount, 
+                                          AccountDescriptor payeeAccount, 
                                           String referenceId,
                                           JSONX509Signer signer) throws IOException {
         StringBuffer accountReference = new StringBuffer();
-        int q = accountId.length() - 4;
-        for (char c : accountId.toCharArray()) {
+        int q = accountDescriptor.getAccountId().length() - 4;
+        for (char c : accountDescriptor.getAccountId().toCharArray()) {
             accountReference.append((--q < 0) ? c : '*');
         }
         boolean directDebit = request.isDirectDebit();
         JSONObjectWriter wr = header(directDebit)
             .setObject(PAYMENT_REQUEST_JSON, paymentRequest.root)
-            .setString(ACCOUNT_TYPE_JSON, accountType)
+            .setString(ACCOUNT_TYPE_JSON, accountDescriptor.getAccountType())
             .setString(ACCOUNT_REFERENCE_JSON, accountReference.toString());
         if (encryptedAccountData == null) {
             wr.setObject(PAYEE_ACCOUNT_JSON, payeeAccount.write());
@@ -104,7 +103,7 @@ public class ReserveOrDebitResponse implements BaseProperties {
                 throw new IOException("\""+ PROTECTED_ACCOUNT_DATA_JSON + "\" not applicable for directDebit");
             }
         } else {
-            account = new PayeeAccountDescriptor(rd.getObject(PAYEE_ACCOUNT_JSON));
+            account = new AccountDescriptor(rd.getObject(PAYEE_ACCOUNT_JSON));
         }
         referenceId = rd.getString(REFERENCE_ID_JSON);
         if (!directDebit) {
@@ -125,8 +124,8 @@ public class ReserveOrDebitResponse implements BaseProperties {
         return errorReturn;
     }
 
-    PayeeAccountDescriptor account;
-    public PayeeAccountDescriptor getPayeeAccountDescriptor() {
+    AccountDescriptor account;
+    public AccountDescriptor getPayeeAccountDescriptor() {
         return account;
     }
 

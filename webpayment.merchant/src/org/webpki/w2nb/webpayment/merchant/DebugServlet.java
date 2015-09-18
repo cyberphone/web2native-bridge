@@ -55,6 +55,13 @@ public class DebugServlet extends HttpServlet implements BaseProperties {
         return "<div style=\"word-wrap:break-word;width:800pt;margin-bottom:10pt;margin-top:10pt\">" + string + "</div>";
     }
 
+    class Point {
+        int i = 1;
+        public String toString() {
+            return "<div class=\"point\">" + (i++) + "</div>";
+        }
+    }
+
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         try {
             DebugData debugData = null;
@@ -64,53 +71,68 @@ public class DebugServlet extends HttpServlet implements BaseProperties {
                 throw new IOException("Session timed out");
             }
             StringBuffer s = new StringBuffer( );
+            Point point = new Point();
             
             s.append(description("<p>The following page shows the messages exchanged between the " +
                                  "<b>Merchant</b> (Payee), the <b>Wallet</b> (Payer), and the user's <b>Bank</b> (Payment provider).&nbsp;&nbsp;" +
                                  "For traditional card payments there is also an <b>Acquirer</b> (aka &quot;card processor&quot;) involved.</p><p>Current mode: <i>" +
                                  (debugData.acquirerMode ? "Card payment" : "Account-2-Account payment using " + (debugData.directDebit ? "direct debit" : "reserve+finalize")) +
-                                 "</i></p><p>After the <b>Wallet</b> has been invoked through the " + keyWord("navigator.nativeConnect()") + 
-                                 " browser API <a target=\"_blank\" href=\"https://github.com/cyberphone/web2native-bridge#api\">[CONNECT]</a>, " +
+                                 "</i></p>" +
+                                 point +
+                                 "<p>After the <b>Wallet</b> has been invoked through the " + keyWord("navigator.nativeConnect()") + 
+                                 " <a target=\"_blank\" href=\"https://github.com/cyberphone/web2native-bridge#api\">[CONNECT]</a> browser API, " +
                                  "the invoking <b>Merchant</b> Web-page waits for a ready signal from the <b>Wallet</b>:</p>"));
             s.append(fancyBox(debugData.WalletInitialized));
  
             s.append(descriptionStdMargin("The " + keyWord(WINDOW_JSON) + " object provides the invoking <b>Merchant</b> Web-page with the size "+
-                                 "of the <b>Wallet</b>.<p>When the message above has been received the <b>Merchant</b> Web-page responds with a " +
-                                 "list of accepted account types (payment schemes) and a <i>signed</i> " + keyWord(PAYMENT_REQUEST_JSON) +
-                                 " <a target=\"_blank\" href=\"https://cyberphone.github.io/openkeystore/resources/docs/jcs.html\">[JCS]</a>:</p>"));
+                                 "of the <b>Wallet</b> which is used to adapt the Web-page so that this <i>external</i> " +
+                                 "application does not hide important buyer information.<p>" + 
+                                 point +
+                                 "</p><p>When the message above has been received the <b>Merchant</b> Web-page responds with a " +
+                                 "list of accepted account types (payment schemes) and a <i>signed</i> " + 
+                                 "<a target=\"_blank\" href=\"https://cyberphone.github.io/openkeystore/resources/docs/jcs.html\">[SIGNATURE]</a> " +
+                                 keyWord(PAYMENT_REQUEST_JSON) + ":</p>"));
             s.append(fancyBox(debugData.InvokeWallet));
 
-            s.append(description("After selection of payment instruments (cards) in the <b>Wallet</b> UI, the user " +
-                    "authorizes the payment request currently using a PIN.  The result of this process is not supposed be " +
+            s.append(description(point +
+                    "<p>After selection of payment instruments (cards) in the <b>Wallet</b> UI, the user " +
+                    "authorizes the payment request (currently using a PIN):</p>" +
+                    "<img style=\"display:block;margin-left:auto;margin-right:auto;height:33%;width:33%\" src=\"" + MerchantService.wallet_ui + "\">" +
+                    "<p>The result of this process is not supposed be " +
                     "directly available to the <b>Merchant</b> since it contains potentially sensitive user data.&nbsp;&nbsp;" +
-                    "For an example turn to <a href=\"#secretdata\">Unecrypted User Authorization</a>." +
-                    "<p>Therefore the result is <i>encrypted</i> (using a key supplied by the <b>Bank</b> as a part of the " +
+                    "For an example turn to <a href=\"#secretdata\">Unecrypted User Authorization</a>.</p><p>" +
+                    point +
+                    "</p><p>Therefore the result is <i>encrypted</i> (using a key supplied by the <b>Bank</b> as a part of the " +
                     "payment credential) before it is returned to the <b>Merchant</b>:</p>"));
             s.append(fancyBox(debugData.walletResponse));
-            s.append(description("After receiving the <b>Wallet</b> response, the <b>Merchant</b> uses the supplied " +
+            s.append(description(point +
+                    "<p>After receiving the <b>Wallet</b> response, the <b>Merchant</b> uses the supplied " +
                      keyWord(PROVIDER_AUTHORITY_URL_JSON) + " to retrieve the associated " + keyWord(Messages.AUTHORITY.toString()) +
-                     " object of the <b>Bank</b> claimed to be the user's account holder for the selected payment instrument:"));
+                     " object of the <b>Bank</b> claimed to be the user's account holder for the selected payment instrument:</p>"));
             s.append(fancyBox(debugData.providerAuthority));
             s.append(descriptionStdMargin("Note: This object is long-lived and would usually be <i>cached</i>.&nbsp;&nbsp;" +
                     "The signature must be verified to belong to a known payment provider network.<p>" +
-                    "Now the <b>Merchant</b> creates a <i>signed</i> request and sends it to the " + keyWord(TRANSACTION_URL_JSON) +
+                    point +
+                    "<p>Now the <b>Merchant</b> creates a <i>signed</i> request and sends it to the " + keyWord(TRANSACTION_URL_JSON) +
                     " extracted from the " + keyWord(Messages.AUTHORITY.toString()) + " object.&nbsp;&nbsp;" +
                     "Since the <b>Wallet</b> response is encrypted, the <b>Merchant</b> needs to prove to the <b>Bank</b> " +
                     "that it knows the embedded " + keyWord(PAYMENT_REQUEST_JSON) + " which it does through the " + keyWord(REQUEST_HASH_JSON) +
                     " construct.&nbsp;&nbsp;Since this particular session was " + (debugData.acquirerMode ? "a card transaction, a pre-configured " + 
                     keyWord(ACQUIRER_AUTHORITY_URL_JSON) : "an account-2-account transaction, " +
-                    keyWord(PAYEE_ACCOUNT_TYPES_JSON) + "holding an array [1..n] of <b>Merchant</b> receiver accounts") + " is also supplied:"));
+                    keyWord(PAYEE_ACCOUNT_TYPES_JSON) + "holding an array [1..n] of <b>Merchant</b> receiver accounts") + " is also supplied:</p>"));
             s.append(fancyBox(debugData.reserveOrDebitRequest));
             if (debugData.acquirerMode) {
-                s.append(description("In the <b>Acquirer</b> mode the received " + keyWord(ACQUIRER_AUTHORITY_URL_JSON) + " is used by the <b>Bank</b> " +
-                                     "to retrieve the designated card processor's encryption keys:"));
+                s.append(description(point +
+                                     "<p>In the <b>Acquirer</b> mode the received " + keyWord(ACQUIRER_AUTHORITY_URL_JSON) + " is used by the <b>Bank</b> " +
+                                     "to retrieve the designated card processor's encryption keys:</p>"));
                 s.append(fancyBox(debugData.acquirerAuthority));
             }
             s.append(description("<p>After retrieving the <a href=\"#secretdata\">Unecrypted User Authorization</a>, " +
                     "the called <b>Bank</b> invokes the local payment backend (to verify the account, check funds, etc.) " +
-                    "<i>which is outside of this specification and implementation</i>.</p>" +
-                    "If the operation is sucessful, the <b>Bank</b> responds with a <i>signed</i> message containing both the original <b>Merchant</b> " +
-                    keyWord(PAYMENT_REQUEST_JSON) + " as well as a minimal set of user account data." +
+                    "<i>which is outside of this specification and implementation</i>.</p><p>" +
+                    point +
+                    "</p><p>If the operation is sucessful, the <b>Bank</b> responds with a <i>signed</i> message containing both the original <b>Merchant</b> " +
+                    keyWord(PAYMENT_REQUEST_JSON) + " as well as a minimal set of user account data.</p>" +
                     (debugData.acquirerMode ?
                                "<p>Also note the inclusion of " +
                                keyWord(PROTECTED_ACCOUNT_DATA_JSON) + " which only the <b>Acquirer</b> can decrypt.</p>" :
@@ -119,11 +141,12 @@ public class DebugServlet extends HttpServlet implements BaseProperties {
                                (debugData.directDebit? "This is the final interaction in the direct debit mode.":"")));
             s.append(fancyBox(debugData.reserveOrDebitResponse));
             if (!debugData.directDebit) {
-                s.append(description("For finalization of the payment, the <b>Merchant</b> sets an " + keyWord(AMOUNT_JSON) + 
+                s.append(description(point +
+                         "<p>For finalization of the payment, the <b>Merchant</b> sets an " + keyWord(AMOUNT_JSON) + 
                          " which is equal or lower than in the original request, <i>counter-signs</i> the request, " +
                          "and sends it to the " + (debugData.acquirerMode ? keyWord(TRANSACTION_URL_JSON) +
                          " retrievable from the <b>Acquirer</b> " + keyWord(Messages.AUTHORITY.toString()) + " object:" :
-                         "<b>Bank</b> again:")));
+                         "<b>Bank</b> again:</p>")));
                 s.append(fancyBox(debugData.finalizeRequest));
                 String finalDescription = null;
                 if (debugData.acquirerMode) {
@@ -131,7 +154,9 @@ public class DebugServlet extends HttpServlet implements BaseProperties {
                              keyWord(PROTECTED_ACCOUNT_DATA_JSON) + " object is <i>decrypted</i>.&nbsp;&nbsp;" +
                             "This mechanism effectively replaces a <b>Merchant</b>-based &quot;tokenization&quot; scheme with the added advantage "+
                             "that the <b>Acquirer</b> also can be included in a protection model by " +
-                            "for example randomizing CCVs per request (&quot;upstreams tokenization&quot;).<p>The following printout " +
+                            "for example randomizing CCVs per request (&quot;upstreams tokenization&quot;).<p>" +
+                            point +
+                            "</p><p>The following printout " +
                             "shows a <i>sample</i> of protected account data:</p>"));
                     s.append(fancyBox(MerchantService.protected_account_data));
                     
@@ -140,7 +165,8 @@ public class DebugServlet extends HttpServlet implements BaseProperties {
                     finalDescription = "<p>After receiving the request, the actual payment operation is performed " +
                             "<i>which is outside of this specification and implementation</i>.</p>";
                 }
-                s.append(descriptionStdMargin(finalDescription + "If the operation is sucessful, a <i>signed</i> hash of the request is returned:"));
+                s.append(descriptionStdMargin(finalDescription + 
+                         point + "<p>If the operation is sucessful, a <i>signed</i> hash of the request is returned:</p>"));
                 s.append(fancyBox(debugData.finalizeResponse));
             }
             s.append(description("<p id=\"secretdata\" style=\"text-align:center;font-weight:bold;font-size:10pt;font-family:" + HTML.FONT_ARIAL + "\">Unencrypted User Authorization</p>" +

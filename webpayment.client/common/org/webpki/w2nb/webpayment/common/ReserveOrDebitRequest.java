@@ -47,16 +47,16 @@ public class ReserveOrDebitRequest implements BaseProperties {
         if (!directDebit) {
             expires = rd.getDateTime(EXPIRES_JSON);
         }
-        Vector<PayeeAccountDescriptor> accounts = new Vector<PayeeAccountDescriptor> ();
+        Vector<AccountDescriptor> accounts = new Vector<AccountDescriptor> ();
         if (!directDebit && rd.hasProperty(ACQUIRER_AUTHORITY_URL_JSON)) {
             acquirerAuthorityUrl = rd.getString(ACQUIRER_AUTHORITY_URL_JSON);
         } else {
             JSONArrayReader ar = rd.getArray(PAYEE_ACCOUNT_TYPES_JSON);
             do {
-                accounts.add(new PayeeAccountDescriptor(ar.getObject()));
+                accounts.add(new AccountDescriptor(ar.getObject()));
             } while (ar.hasMore());
         }
-        this.accounts = accounts.toArray(new PayeeAccountDescriptor[0]);
+        this.accounts = accounts.toArray(new AccountDescriptor[0]);
         clientIpAddress = rd.getString(CLIENT_IP_ADDRESS_JSON);
         dateTime = rd.getDateTime(TIME_STAMP_JSON);
         software = new Software(rd);
@@ -78,8 +78,8 @@ public class ReserveOrDebitRequest implements BaseProperties {
     
     EncryptedData encryptedData;
 
-    PayeeAccountDescriptor[] accounts;
-    public PayeeAccountDescriptor[] getPayeeAccountDescriptors() {
+    AccountDescriptor[] accounts;
+    public AccountDescriptor[] getPayeeAccountDescriptors() {
         return accounts;
     }
 
@@ -109,7 +109,7 @@ public class ReserveOrDebitRequest implements BaseProperties {
                                           AccountTypes accountType,
                                           String referenceId,
                                           String acquirerAuthorityUrl,
-                                          PayeeAccountDescriptor[] accounts,
+                                          AccountDescriptor[] accounts,
                                           String clientIpAddress,
                                           Date expires,
                                           ServerSigner signer)
@@ -124,7 +124,7 @@ public class ReserveOrDebitRequest implements BaseProperties {
             .setString(REFERENCE_ID_JSON, referenceId);
         if (directDebit || acquirerAuthorityUrl == null) {
             JSONArrayWriter aw = wr.setArray(PAYEE_ACCOUNT_TYPES_JSON);
-            for (PayeeAccountDescriptor account : accounts) {
+            for (AccountDescriptor account : accounts) {
                 aw.setObject(account.write());
             }
         } else {

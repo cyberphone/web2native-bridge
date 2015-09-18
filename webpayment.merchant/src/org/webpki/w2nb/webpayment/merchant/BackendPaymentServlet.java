@@ -47,7 +47,7 @@ import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.AuthorizationData;
 import org.webpki.w2nb.webpayment.common.Expires;
 import org.webpki.w2nb.webpayment.common.FinalizeResponse;
-import org.webpki.w2nb.webpayment.common.PayeeAccountDescriptor;
+import org.webpki.w2nb.webpayment.common.AccountDescriptor;
 import org.webpki.w2nb.webpayment.common.RequestHash;
 import org.webpki.w2nb.webpayment.common.ReserveOrDebitResponse;
 import org.webpki.w2nb.webpayment.common.ReserveOrDebitRequest;
@@ -133,10 +133,10 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
                 debugData.directDebit = directDebit;
             }
 
-            PayeeAccountDescriptor[] accounts = {new PayeeAccountDescriptor("http://ultragiro.fr", "35964640"),
-                                                 new PayeeAccountDescriptor("http://mybank.com", 
-                                                                            "J-399.962",
-                                                                            new String[]{"enterprise"})};
+            AccountDescriptor[] accounts = {new AccountDescriptor("http://ultragiro.fr", "35964640"),
+                                            new AccountDescriptor("http://mybank.com", 
+                                                                  "J-399.962",
+                                                                  new String[]{"enterprise"})};
 
             // Attest the user's encrypted authorization to show "intent"
             JSONObjectWriter providerRequest =

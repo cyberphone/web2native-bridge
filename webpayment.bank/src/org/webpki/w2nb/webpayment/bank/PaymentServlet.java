@@ -50,7 +50,7 @@ import org.webpki.w2nb.webpayment.common.EncryptedData;
 import org.webpki.w2nb.webpayment.common.ErrorReturn;
 import org.webpki.w2nb.webpayment.common.FinalizeRequest;
 import org.webpki.w2nb.webpayment.common.FinalizeResponse;
-import org.webpki.w2nb.webpayment.common.PayeeAccountDescriptor;
+import org.webpki.w2nb.webpayment.common.AccountDescriptor;
 import org.webpki.w2nb.webpayment.common.ReserveOrDebitRequest;
 import org.webpki.w2nb.webpayment.common.AuthorizationData;
 import org.webpki.w2nb.webpayment.common.ReserveOrDebitResponse;
@@ -118,9 +118,9 @@ public class PaymentServlet extends HttpServlet implements BaseProperties {
        }
 
        // Separate credit-card and account2account payments
-       PayeeAccountDescriptor payeeAccount = null;
+       AccountDescriptor payeeAccount = null;
        JSONObjectWriter encryptedCardData = null;
-       if (AccountTypes.fromType(authorizationData.getAccountType()).isAcquirerBased()) {
+       if (AccountTypes.fromType(authorizationData.getAccountDescriptor().getAccountType()).isAcquirerBased()) {
            logger.info("card");
            String authorityUrl = attestedEncryptedRequest.getAcquirerAuthorityUrl();
            HTTPSWrapper wrap = new HTTPSWrapper();
@@ -135,11 +135,10 @@ public class PaymentServlet extends HttpServlet implements BaseProperties {
 
            // Pure sample data...
            JSONObjectWriter protectedAccountData =
-                ProtectedAccountData.encode(authorizationData.getAccountId(),
+                ProtectedAccountData.encode(authorizationData.getAccountDescriptor(),
                                             "Luke Skywalker",
                                             ISODateTime.parseDateTime("2019-12-31T00:00:00Z").getTime(),
-                                            "943",
-                                            new String[0]);
+                                            "943");
            encryptedCardData = EncryptedData.encode(protectedAccountData,
                                                     authority.getDataEncryptionAlgorithm(),
                                                     authority.getPublicKey(),
@@ -151,8 +150,7 @@ public class PaymentServlet extends HttpServlet implements BaseProperties {
 
        return ReserveOrDebitResponse.encode(attestedEncryptedRequest,
                                             paymentRequest,
-                                            authorizationData.getAccountType(),
-                                            authorizationData.getAccountId(),
+                                            authorizationData.getAccountDescriptor(),
                                             encryptedCardData,
                                             payeeAccount,
                                             "#" + (referenceId ++),

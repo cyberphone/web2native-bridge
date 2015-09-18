@@ -23,7 +23,8 @@ public interface BaseProperties {
     String PAYMENT_REQUEST_JSON              = "paymentRequest";
     String ACQUIRER_AUTHORITY_URL_JSON       = "acquirerAuthorityUrl";  // For CreditCard payments
     String PAYEE_ACCOUNT_TYPES_JSON          = "payeeAccountTypes";     // For Account2Account payments
-    String PAYEE_ACCOUNT_JSON                = "payeeAccount";          // Selected Account2Account
+    String PAYEE_ACCOUNT_JSON                = "payeeAccount";          // Selected payee Account2Account
+    String PAYER_ACCOUNT_JSON                = "payerAccount";          // Selected payer Account2Account or Card
     String EXPIRES_JSON                      = "expires";               // Object expiration time
     String AUTHORITY_URL_JSON                = "authorityUrl";
     String TRANSACTION_URL_JSON              = "transactionUrl";
@@ -42,7 +43,6 @@ public interface BaseProperties {
     String PROVIDER_AUTHORITY_URL_JSON       = "providerAuthorityUrl";  // URL to payment provider
     String ACCEPTED_ACCOUNT_TYPES_JSON       = "acceptedAccountTypes";  // List of ACCOUNT_TYPE_JSON
     String ACCOUNT_TYPE_JSON                 = "accountType";           // Account/Card type in the form of a URI
-    String ACCOUNT_ID_JSON                   = "accountId";             // Account/Card number. For cards PAN
     String ACCOUNT_HOLDER_JSON               = "accountHolder";         // Card holder
     String ACCOUNT_SECURITY_CODE_JSON        = "accountSecurityCode";   // CCV
     String CARD_FORMAT_ACCOUNT_ID_JSON       = "cardFormatAccountId";   // Display formatting like cards or not

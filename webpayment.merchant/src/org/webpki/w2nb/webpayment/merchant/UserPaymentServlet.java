@@ -73,12 +73,12 @@ public class UserPaymentServlet extends HttpServlet implements BaseProperties {
         long total = 0;
         while (ar.hasMore()) {
             JSONObjectReader or = ar.getObject();
-            int units = or.getInt("units");
-            if (units != 0) {
+            int quantity = or.getInt("quantity");
+            if (quantity != 0) {
                 String sku = or.getString("sku");
-                savedShoppingCart.items.put(sku, units);
-                logger.info("SKU=" + sku + " Units=" + units);
-                total += units * or.getLong("priceX100");
+                savedShoppingCart.items.put(sku, quantity);
+                logger.info("SKU=" + sku + " Quantity=" + quantity);
+                total += quantity * or.getLong("priceX100");
             }
         }
         savedShoppingCart.total = total;

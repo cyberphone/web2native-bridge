@@ -40,8 +40,10 @@ import org.webpki.json.JSONParser;
 import org.webpki.json.JSONX509Verifier;
 
 import org.webpki.util.ArrayUtil;
+import org.webpki.util.Base64;
 import org.webpki.util.ISODateTime;
 
+import org.webpki.w2nb.webpayment.common.AccountDescriptor;
 import org.webpki.w2nb.webpayment.common.AuthorizationData;
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.AccountTypes;
@@ -78,6 +80,8 @@ public class MerchantService extends InitPropertyReader implements ServletContex
     
     static final String USER_AUTH_SAMPLE       = "user-authorization.json";
 
+    static final String WALLET_UI_SAMPLE       = "wallet-ui.png";
+
     static JSONX509Verifier paymentRoot;
     
     static ServerSigner merchantKey;
@@ -91,15 +95,25 @@ public class MerchantService extends InitPropertyReader implements ServletContex
     static Object w2nbName;
     
     static String acquirerAuthorityUrl;
-    
+
+    // Debug mode samples
     static byte[] user_authorization;
 
     static byte[] protected_account_data;
 
+    static String wallet_ui;
+
     InputStream getResource(String name) throws IOException {
         return this.getClass().getResourceAsStream(getPropertyString(name));
     }
-    
+
+    String getImageDataURI (String name) throws IOException  {
+        byte[] image = ArrayUtil.getByteArrayFromInputStream (this.getClass().getResourceAsStream(name));
+        return "data:image/" + name.substring(name.lastIndexOf('.') + 1) +
+               ";base64," +
+               new Base64 (false).getBase64StringFromBinary (image);
+    }
+
     JSONX509Verifier getRoot(String name) throws IOException, GeneralSecurityException {
         KeyStore keyStore = KeyStore.getInstance("JKS");
         keyStore.load (null, null);
@@ -144,15 +158,17 @@ public class MerchantService extends InitPropertyReader implements ServletContex
                 jsonMediaType = "text/html";
             }
 
-            new AuthorizationData(JSONParser.parse(user_authorization = 
-                ArrayUtil.getByteArrayFromInputStream (this.getClass().getResourceAsStream(USER_AUTH_SAMPLE))));
+            new AuthorizationData(JSONParser.parse(user_authorization =
+                    ArrayUtil.getByteArrayFromInputStream (this.getClass().getResourceAsStream(USER_AUTH_SAMPLE))));
+
+            wallet_ui = getImageDataURI(WALLET_UI_SAMPLE);
 
             protected_account_data = 
-                ProtectedAccountData.encode("6875056745552109",
+                ProtectedAccountData.encode(new AccountDescriptor(AccountTypes.SUPER_CARD.getType(),
+                                                                  "6875056745552109"),
                                             "Luke Skywalker",
                                             ISODateTime.parseDateTime("2019-12-31T00:00:00Z").getTime(),
-                                            "943",
-                                            new String[0]).serializeJSONObject(JSONOutputFormats.NORMALIZED);
+                                            "943").serializeJSONObject(JSONOutputFormats.NORMALIZED);
 
             logger.info("Web2Native Bridge Merchant-server initiated");
         } catch (Exception e) {

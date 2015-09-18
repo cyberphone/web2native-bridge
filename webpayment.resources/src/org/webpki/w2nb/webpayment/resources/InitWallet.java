@@ -62,6 +62,7 @@ import org.webpki.sks.test.SKSReferenceImplementation;
 
 import org.webpki.util.ArrayUtil;
 
+import org.webpki.w2nb.webpayment.common.AccountDescriptor;
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.AccountTypes;
 import org.webpki.w2nb.webpayment.common.Encryption;
@@ -143,8 +144,9 @@ public class InitWallet {
                 accountId = accountId.substring(1);
             }
             ow = new JSONObjectWriter()
-                 .setString(BaseProperties.ACCOUNT_TYPE_JSON, accountType.getType())
-                 .setString(BaseProperties.ACCOUNT_ID_JSON, accountId)
+                 .setObject(BaseProperties.PAYER_ACCOUNT_JSON, 
+                            new AccountDescriptor(accountType.getType(),
+                                                  accountId).write())
                  .setBoolean(BaseProperties.CARD_FORMAT_ACCOUNT_ID_JSON, cardFormatted)
                  .setString(BaseProperties.PROVIDER_AUTHORITY_URL_JSON, args[6])
                  .setString(BaseProperties.SIGNATURE_ALGORITHM_JSON,

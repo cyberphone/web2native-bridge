@@ -95,6 +95,7 @@ import org.webpki.sks.test.SKSReferenceImplementation;
 
 import org.webpki.util.ArrayUtil;
 
+import org.webpki.w2nb.webpayment.common.AccountDescriptor;
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.PayerAuthorization;
 import org.webpki.w2nb.webpayment.common.AuthorizationData;
@@ -159,26 +160,23 @@ public class Wallet {
     static final String DUMMY_ACCOUNT_ID       = "12341234123412341234";
 
     static class Account {
-        String accountId;
+        AccountDescriptor accountDescriptor;
         boolean cardFormatAccountId;
         ImageIcon cardIcon;
-        String accountType;
         AsymSignatureAlgorithms signatureAlgorithm;
         String authorityUrl;
         String dataEncryptionAlgorithm;
         String keyEncryptionAlgorithm;
         PublicKey keyEncryptionKey;
         
-        Account(String accountId,
-            boolean cardFormatAccountId,
-            ImageIcon cardIcon,
-            String accountType,
-            AsymSignatureAlgorithms signatureAlgorithm,
-            String authorityUrl) {
-            this.accountId = accountId;
+        Account(AccountDescriptor accountDescriptor,
+                boolean cardFormatAccountId,
+                ImageIcon cardIcon,
+                AsymSignatureAlgorithms signatureAlgorithm,
+                String authorityUrl) {
+            this.accountDescriptor = accountDescriptor;
             this.cardFormatAccountId = cardFormatAccountId;
             this.cardIcon = cardIcon;
-            this.accountType = accountType;
             this.signatureAlgorithm = signatureAlgorithm;
             this.authorityUrl = authorityUrl;
         }
@@ -301,7 +299,7 @@ public class Wallet {
         
         JSONObjectWriter resultMessage;
         
-        ApplicationWindow() {
+        ApplicationWindow() throws IOException {
             // First we measure all the panes to be used to get the size of the holding window
             views = frame.getContentPane();
             views.setLayout(new CardLayout());
@@ -359,7 +357,10 @@ public class Wallet {
         }
 
         String formatAccountId(Account card) {
-            return card.cardFormatAccountId ? AuthorizationData.formatCardNumber(card.accountId) : card.accountId;
+            return card.cardFormatAccountId ?
+                AuthorizationData.formatCardNumber(card.accountDescriptor.getAccountId()) 
+                                            :
+                card.accountDescriptor.getAccountId();
         }
 
         JPanel initCardSelectionViewCore(LinkedHashMap<Integer,Account> cards) {
@@ -404,7 +405,7 @@ public class Wallet {
             return cardSelectionViewCore;
         }
 
-        void initCardSelectionView(boolean actualCards) {
+        void initCardSelectionView(boolean actualCards) throws IOException {
             JPanel cardSelectionView = new JPanel();
             cardSelectionView.setBackground(Color.WHITE);
             cardSelectionView.setLayout(new GridBagLayout());
@@ -430,7 +431,8 @@ public class Wallet {
             } else {
                 LinkedHashMap<Integer,Account> cards = new LinkedHashMap<Integer,Account>();
                 for (int i = 0; i < 2; i++) {
-                    cards.put(i, new Account(DUMMY_ACCOUNT_ID, true, dummyCardIcon, null, null, null));
+                    cards.put(i, new Account(new AccountDescriptor("n/a", DUMMY_ACCOUNT_ID),
+                                             true, dummyCardIcon, null, null));
                 }
                 cardSelectionView.add(initCardSelectionViewCore(cards), c);
             }
@@ -457,7 +459,7 @@ public class Wallet {
             views.add(cardSelectionView, actualCards ? VIEW_SELECTION : VIEW_DUMMY_SELECTION);
         }
 
-        void showCardSelectionView() {
+        void showCardSelectionView() throws IOException {
             initCardSelectionView(true);
             ((CardLayout)views.getLayout()).show(views, VIEW_SELECTION);
         }
@@ -636,7 +638,7 @@ public class Wallet {
         void showAuthorizationView(int keyHandle) {
             selectedCard = cardCollection.get(keyHandle);
             logger.info("Selected Account: Key=" + keyHandle +
-                        ", Number=" + selectedCard.accountId +
+                        ", Number=" + selectedCard.accountDescriptor.getAccountId() +
                         ", URL=" + selectedCard.authorityUrl +
                         ", KeyEncryptionKey=" + selectedCard.keyEncryptionKey);
             this.keyHandle = keyHandle;
@@ -847,7 +849,10 @@ public class Wallet {
                             } else if (cardCollection.size() == 1) {
                                 showAuthorizationView(cardCollection.keySet().iterator().next());
                             } else {
-                                showCardSelectionView();
+                                try {
+                                    showCardSelectionView();
+                                } catch (IOException e) {
+                                }
                             }
                         }
                     });
@@ -872,25 +877,25 @@ public class Wallet {
         void collectPotentialCard(int keyHandle,
                                   JSONObjectReader cardProperties,
                                   String[] accountTypes) throws IOException {
+            AccountDescriptor cardAccount = new AccountDescriptor(cardProperties.getObject(BaseProperties.PAYER_ACCOUNT_JSON));
             for (String accountType : accountTypes) {
-                if (cardProperties.getString(BaseProperties.ACCOUNT_TYPE_JSON).equals(accountType)) {
+                if (cardAccount.getAccountType().equals(accountType)) {
                     Account card =
-                        new Account(cardProperties.getString(BaseProperties.ACCOUNT_ID_JSON),
-                                 cardProperties.getBoolean(BaseProperties.CARD_FORMAT_ACCOUNT_ID_JSON),
-                                 getImageIcon(sks.getExtension(keyHandle, 
-                                              KeyGen2URIs.LOGOTYPES.CARD).getExtensionData(SecureKeyStore.SUB_TYPE_LOGOTYPE),
-                                              false),
-                                 accountType,
-                                 AsymSignatureAlgorithms.getAlgorithmFromID(
-                                     JSONSignatureDecoder.algorithmCheck(
-                                         cardProperties.getString(BaseProperties.SIGNATURE_ALGORITHM_JSON),
-                                         JSONAlgorithmPreferences.JOSE)),
-                                 cardProperties.getString(BaseProperties.PROVIDER_AUTHORITY_URL_JSON));
+                        new Account(cardAccount,
+                                    cardProperties.getBoolean(BaseProperties.CARD_FORMAT_ACCOUNT_ID_JSON),
+                                    getImageIcon(sks.getExtension(keyHandle, 
+                                                 KeyGen2URIs.LOGOTYPES.CARD).getExtensionData(SecureKeyStore.SUB_TYPE_LOGOTYPE),
+                                                 false),
+                                    AsymSignatureAlgorithms.getAlgorithmFromID(
+                                        JSONSignatureDecoder.algorithmCheck(
+                                            cardProperties.getString(BaseProperties.SIGNATURE_ALGORITHM_JSON),
+                                            JSONAlgorithmPreferences.JOSE)),
+                                    cardProperties.getString(BaseProperties.PROVIDER_AUTHORITY_URL_JSON));
                     JSONObjectReader encryptionParameters = cardProperties.getObject(BaseProperties.ENCRYPTION_PARAMETERS_JSON);
                     card.keyEncryptionAlgorithm =
                             encryptionParameters.getString(BaseProperties.KEY_ENCRYPTION_ALGORITHM_JSON);
                     if (!Encryption.permittedKeyEncryptionAlgorithm(card.keyEncryptionAlgorithm)) {
-                        logger.warning("Account " + card.accountId + " contained an unknown \"" +
+                        logger.warning("Account " + cardAccount.getAccountId() + " contained an unknown \"" +
                                        BaseProperties.KEY_ENCRYPTION_ALGORITHM_JSON + "\": " +
                                        card.keyEncryptionAlgorithm);
                         break;
@@ -898,7 +903,7 @@ public class Wallet {
                     card.dataEncryptionAlgorithm =
                             encryptionParameters.getString(BaseProperties.DATA_ENCRYPTION_ALGORITHM_JSON);
                     if (!Encryption.permittedDataEncryptionAlgorithm(card.dataEncryptionAlgorithm)) {
-                        logger.warning("Account " + card.accountId + " contained an unknown \"" +
+                        logger.warning("Account " + cardAccount.getAccountId() + " contained an unknown \"" +
                                        BaseProperties.DATA_ENCRYPTION_ALGORITHM_JSON + "\": " +
                                        card.dataEncryptionAlgorithm);
                         break;
@@ -931,8 +936,7 @@ public class Wallet {
                     resultMessage = AuthorizationData.encode(
                         paymentRequest,
                         domainName,
-                        selectedCard.accountType,
-                        selectedCard.accountId,
+                        selectedCard.accountDescriptor,
                         selectedCard.signatureAlgorithm,
                         new SignerInterface () {
                             @Override
@@ -955,7 +959,7 @@ public class Wallet {
                     // and process user authorizations.
                     resultMessage = PayerAuthorization.encode(resultMessage,
                                                               selectedCard.authorityUrl,
-                                                              selectedCard.accountType,
+                                                              selectedCard.accountDescriptor.getAccountType(),
                                                               selectedCard.dataEncryptionAlgorithm,
                                                               selectedCard.keyEncryptionKey,
                                                               selectedCard.keyEncryptionAlgorithm);
@@ -1001,7 +1005,7 @@ public class Wallet {
         }
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         // Configure the logger with handler and formatter
         try {
             FileHandler fh = new FileHandler(args[0]);

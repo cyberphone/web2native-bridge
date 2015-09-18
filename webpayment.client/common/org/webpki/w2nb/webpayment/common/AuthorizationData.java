@@ -37,15 +37,13 @@ public class AuthorizationData implements BaseProperties {
 
     public static JSONObjectWriter encode(PaymentRequest paymentRequest,
                                           String domainName,
-                                          String accountType,
-                                          String accountId,
+                                          AccountDescriptor accountDescriptor,
                                           Date timeStamp,
                                           JSONX509Signer signer) throws IOException {
         return new JSONObjectWriter()
             .setObject(PAYMENT_REQUEST_JSON, paymentRequest.root)
             .setString(DOMAIN_NAME_JSON, domainName)
-            .setString(ACCOUNT_TYPE_JSON, accountType)
-            .setString(ACCOUNT_ID_JSON, accountId)
+            .setObject(PAYER_ACCOUNT_JSON, accountDescriptor.write())
             .setDateTime(TIME_STAMP_JSON, timeStamp, false)
             .setObject(SOFTWARE_JSON, Software.encode(SOFTWARE_ID, SOFTWARE_VERSION))
             .setSignature (signer);
@@ -53,14 +51,12 @@ public class AuthorizationData implements BaseProperties {
 
     public static JSONObjectWriter encode(PaymentRequest paymentRequest,
                                           String domainName,
-                                          String accountType,
-                                          String accountId,
+                                          AccountDescriptor accountDescriptor,
                                           AsymSignatureAlgorithms signatureAlgorithm,
                                           SignerInterface signer) throws IOException {
         return encode(paymentRequest,
                       domainName,
-                      accountType,
-                      accountId,
+                      accountDescriptor,
                       new Date(),
                       new JSONX509Signer(signer).setSignatureAlgorithm(signatureAlgorithm)
                                                 .setSignatureCertificateAttributes(true)
@@ -83,8 +79,7 @@ public class AuthorizationData implements BaseProperties {
     public AuthorizationData(JSONObjectReader rd) throws IOException {
         paymentRequest = new PaymentRequest(rd.getObject(PAYMENT_REQUEST_JSON));
         domainName = rd.getString(DOMAIN_NAME_JSON);
-        accountType = rd.getString(ACCOUNT_TYPE_JSON);
-        accountId = rd.getString(ACCOUNT_ID_JSON);
+        accountDescriptor = new AccountDescriptor(rd.getObject(PAYER_ACCOUNT_JSON));
         timeStamp = rd.getDateTime(TIME_STAMP_JSON);
         software = new Software(rd);
         signatureDecoder = rd.getSignature(JSONAlgorithmPreferences.JOSE);
@@ -101,14 +96,9 @@ public class AuthorizationData implements BaseProperties {
         return domainName;
     }
 
-    String accountType;
-    public String getAccountType() {
-        return accountType;
-    }
-
-    String accountId;
-    public String getAccountId() {
-        return accountId;
+    AccountDescriptor accountDescriptor;
+    public AccountDescriptor getAccountDescriptor() {
+        return accountDescriptor;
     }
 
     GregorianCalendar timeStamp;

@@ -99,7 +99,7 @@
          <include name="${merchantkey}${keyfilext}"/>
          <include name="${payment.var.root}.cer"/>
       </zipfileset>
-      <zipfileset dir="sample-messages" prefix="${class_war_path}"/>
+      <zipfileset dir="debug-samples" prefix="${class_war_path}"/>
       <fileset dir="web"/>
       <fileset dir="${testfiledir}">
          <include name="*.html"/>

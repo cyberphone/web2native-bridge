@@ -41,6 +41,7 @@ public class HTML {
 //        "<meta name=\"viewport\" content=\"initial-scale=1.0\"/>" +
         "<title>W2NB Payment Demo</title>"+
         "<style type=\"text/css\">html {overflow:auto}\n"+
+        ".point {text-align:center;font-family:courier;font-weight:bold;font-size:10pt;border-radius:3pt;border-width:1px;border-style:solid;border-color:#B0B0B0;display:inline-block;padding:1.5pt 3pt 1pt 3pt}\n" +
         ".tftable {border-collapse:collapse;box-shadow:3pt 3pt 3pt #D0D0D0}\n" +
         ".tftable th {font-size:10pt;background:" +
           "linear-gradient(to bottom, #eaeaea 14%,#fcfcfc 52%,#e5e5e5 89%);" +
@@ -145,7 +146,7 @@ public class HTML {
                                              String sku,
                                              SavedShoppingCart savedShoppingCart,
                                              int index) {
-        int units = savedShoppingCart.items.containsKey(sku) ? savedShoppingCart.items.get(sku): 0;
+        int quantity = savedShoppingCart.items.containsKey(sku) ? savedShoppingCart.items.get(sku): 0;
         StringBuffer s = new StringBuffer(
             "<tr style=\"text-align:center\"><td><img src=\"images/")
         .append(product_entry.imageUrl)
@@ -157,7 +158,7 @@ public class HTML {
             "</td><td><form>" +
             "<table style=\"border-width:0px;padding:0px;margin:0px;border-spacing:2px;border-collapse:separate\">" +
             "<tr>" +
-            "<td style=\"border-width:0px;padding:0px;margin:0px\"><input type=\"button\" class=\"updnbtn\" value=\"&#x25b2;\" title=\"More\" onclick=\"updateUnits(this.form.p")
+            "<td style=\"border-width:0px;padding:0px;margin:0px\"><input type=\"button\" class=\"updnbtn\" value=\"&#x25b2;\" title=\"More\" onclick=\"updateQuantity(this.form.p")
         .append(index)
         .append(", 1, ")
         .append(index)
@@ -167,7 +168,7 @@ public class HTML {
             "<td style=\"border-width:0px;padding:0px;margin:0px\"><input size=\"6\" type=\"text\" name=\"p")
         .append(index)
         .append("\" value=\"")
-        .append(units)
+        .append(quantity)
         .append("\" class=\"quantity\" oninput=\"updateInput(")
         .append(index)
         .append(", this);\" autocomplete=\"off\"/></td>" +
@@ -175,13 +176,13 @@ public class HTML {
             "<tr>" +
             "<td style=\"border-width:0px;padding:0px;margin:0px\">"
             + "<input type=\"button\" class=\"updnbtn\" value=\"&#x25bc;\" title=\"Less\" "
-            + "onclick=\"updateUnits(this.form.p")
+            + "onclick=\"updateQuantity(this.form.p")
         .append(index)
         .append(", -1, ")
         .append(index)
         .append(")\"></td></tr></table></form></td></tr>");
         temp_string.insert(0, "shoppingCart[" + index + "] = new webpki.ShopEntry(" 
-                       + product_entry.priceX100 + ",'" + product_entry.name + "','" + sku + "'," + units + ");\n");        
+                       + product_entry.priceX100 + ",'" + product_entry.name + "','" + sku + "'," + quantity + ");\n");        
         return s;
     }
 
@@ -212,7 +213,7 @@ public class HTML {
             "function getTotal() {\n" +
             "    var total = 0;\n" +
             "    for (var i = 0; i < shoppingCart.length; i++) {\n" +
-            "        total += shoppingCart[i].priceX100 * shoppingCart[i].units;\n" +
+            "        total += shoppingCart[i].priceX100 * shoppingCart[i].quantity;\n" +
             "    }\n" +
             "    return total;\n"+
             "}\n\n" +
@@ -238,10 +239,10 @@ public class HTML {
             "function updateInput(index, control) {\n" +
             "    if (!numeric_only.test(control.value)) control.value = '0';\n" +
             "    while (control.value.length > 1 && control.value.charAt(0) == '0') control.value = control.value.substring(1);\n" +
-            "    shoppingCart[index].units = parseInt(control.value);\n" +
+            "    shoppingCart[index].quantity = parseInt(control.value);\n" +
             "    updateTotal();\n" +
             "}\n\n" +
-            "function updateUnits(control, value, index) {\n" +
+            "function updateQuantity(control, value, index) {\n" +
             "    control.value = parseInt(control.value) + value;\n" +
             "    updateInput(index, control);\n" +
             "}\n");
@@ -253,7 +254,7 @@ public class HTML {
             ShoppingServlet.COMMON_NAME +
             "<br>&nbsp;</td></tr>" +
             "<tr><td id=\"result\"><table style=\"margin-left:auto;margin-right:auto\" class=\"tftable\">" +
-            "<tr><th>Image</th><th>Description</th><th>Price</th><th>Units</th></tr>");
+            "<tr><th>Image</th><th>Description</th><th>Price</th><th>Quantity</th></tr>");
         int q = 0;
         for (String sku : ShoppingServlet.products.keySet()) {
             page_data.append(productEntry(temp_string, ShoppingServlet.products.get(sku), sku, savedShoppingCart, q++));
@@ -272,11 +273,11 @@ public class HTML {
             "\n\n\"use strict\";\n\n" +
             "var numeric_only = new RegExp('^[0-9]{1,6}$');\n\n" +
             "var webpki = {};\n\n" +
-            "webpki.ShopEntry = function(priceX100, name,sku, units) {\n" +
+            "webpki.ShopEntry = function(priceX100, name,sku, quantity) {\n" +
             "    this.priceX100 = priceX100;\n" +
             "    this.name = name;\n" +
             "    this.sku = sku;\n" +
-            "    this.units = units;\n" +
+            "    this.quantity = quantity;\n" +
             "};\n\n" +
             "var shoppingCart = [];\n");
 
@@ -296,7 +297,7 @@ public class HTML {
             "<tr><td style=\"text-align:center;font-weight:bolder;font-size:10pt;font-family:"
             + FONT_ARIAL + "\">Current Order<br>&nbsp;</td></tr>" +
             "<tr><td id=\"result\"><table style=\"margin-left:auto;margin-right:auto\" class=\"tftable\">" +
-            "<tr><th>Description</th><th>Price</th><th>Units</th><th>Sum</th></tr>");
+            "<tr><th>Description</th><th>Price</th><th>Quantity</th><th>Sum</th></tr>");
         for (String sku : savedShoppingCart.items.keySet()) {
             ProductEntry product_entry = ShoppingServlet.products.get(sku);
             s.append("<tr style=\"text-align:center\"><td>")
