@@ -17,6 +17,7 @@
 package org.webpki.w2nb.webpayment.merchant;
 
 import java.io.IOException;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -31,6 +32,7 @@ import org.webpki.json.JSONParser;
 
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.Messages;
+import org.webpki.w2nb.webpayment.common.Version;
 
 public class DebugServlet extends HttpServlet implements BaseProperties {
 
@@ -131,7 +133,7 @@ public class DebugServlet extends HttpServlet implements BaseProperties {
                     "the called <b>Bank</b> invokes the local payment backend (to verify the account, check funds, etc.) " +
                     "<i>which is outside of this specification and implementation</i>.</p><p>" +
                     point +
-                    "</p><p>If the operation is sucessful, the <b>Bank</b> responds with a <i>signed</i> message containing both the original <b>Merchant</b> " +
+                    "</p><p>If the operation is successful, the <b>Bank</b> responds with a <i>signed</i> message containing both the original <b>Merchant</b> " +
                     keyWord(PAYMENT_REQUEST_JSON) + " as well as a minimal set of user account data.</p>" +
                     (debugData.acquirerMode ?
                                "<p>Also note the inclusion of " +
@@ -166,13 +168,20 @@ public class DebugServlet extends HttpServlet implements BaseProperties {
                             "<i>which is outside of this specification and implementation</i>.</p>";
                 }
                 s.append(descriptionStdMargin(finalDescription + 
-                         point + "<p>If the operation is sucessful, a <i>signed</i> hash of the request is returned:</p>"));
+                         point + "<p>If the operation is successful, a <i>signed</i> hash of the request is returned:</p>"));
                 s.append(fancyBox(debugData.finalizeResponse));
+                s.append(descriptionStdMargin("Not embedding the request in the response may appear illogical but since<ul>" +
+                        "<li>the communication is assumed to be <i>synchronous</i> (using HTTP)</li>" +
+                        "<li>there is no additional information needed by the transaction, only a sender-unique " +
+                        keyWord(REFERENCE_ID_JSON) +
+                        "</li><li>the 256-bit hash + signature fully bind the response to the request</li></ul>this would not add any security, " +
+                        "assuming that logging is working."));
             }
             s.append(description("<p id=\"secretdata\" style=\"text-align:center;font-weight:bold;font-size:10pt;font-family:" + HTML.FONT_ARIAL + "\">Unencrypted User Authorization</p>" +
                      "The following printout shows a sample of <i>internal</i> <b>Wallet</b> data <i>before</i> it is encrypted.&nbsp;&nbsp;As you can see it contains " +
                      "user account data and identity which <i>usually</i> is of no importance for the <b>Merchant</b>:"));
             s.append(fancyBox(MerchantService.user_authorization));
+            s.append(descriptionStdMargin("Protocol version: <i>" + Version.PROTOCOL + "<i><br>Date: <i>" + Version.DATE + "</i>"));
             HTML.debugPage(response, s.toString());
             
          } catch (Exception e) {
