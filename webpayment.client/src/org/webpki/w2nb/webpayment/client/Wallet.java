@@ -819,7 +819,7 @@ public class Wallet {
                                 payeeString = paymentRequest.getPayee();
 
                                 // Enumerate keys but only go for those who are intended for
-                                // Web Payments (according to our fictitious payment schema...)
+                                // Web Payments (according to our fictitious payment schemes...)
                                 EnumeratedKey ek = new EnumeratedKey();
                                 while ((ek = sks.enumerateKeys(ek.getKeyHandle())) != null) {
                                     Extension ext = null;
@@ -834,7 +834,7 @@ public class Wallet {
                                     }
 
                                     // This key had the attribute signifying that it is a payment credential
-                                    // for the fictitious payment scheme this system is supporting but it
+                                    // for the fictitious payment schemes this system is supporting but it
                                     // might still not match the Payee's list of supported account types.
                                     collectPotentialCard(ek.getKeyHandle(),
                                                          JSONParser.parse(ext.getExtensionData(SecureKeyStore.SUB_TYPE_EXTENSION)),

@@ -93,34 +93,42 @@ public class HTML {
         HTML.output(response, HTML.getHTML(null, null,
                 "<tr><td width=\"100%\" align=\"center\" valign=\"middle\">" +
                 "<table style=\"max-width:600px;\" cellpadding=\"4\">" +
-                   "<tr><td style=\"text-align:center;font-weight:bolder;font-size:10pt;font-family:" + FONT_ARIAL + "\">Web2Native Bridge Payment Demo<br>&nbsp;</td></tr>" +
-                   "<tr><td style=\"text-align:left\">This application is a demo of what a &quot;Wallet&quot; based on Web2Native " +
-                   "could offer for <span style=\"color:red\">decentralized payment systems</span>.</td></tr>" +
-                   "<tr><td style=\"text-align:left\">In particular note the <span style=\"color:red\">automatic payment card discovery</span> process " +
-                   "and that <span style=\"color:red\">payment card logotypes are personalized</span> since they "+
-                   "are read from the user's local credential-store.</td></tr>" +
-                   "<tr><td>By applying <span style=\"color:red\">3D Secure</span> like methods using <span style=\"color:red\">two-factor authentication</span> as well as <span style=\"color:red\">encrypting user-data</span> " +
-                   "both security and privacy is catered for.</td></tr>" +
+                   "<tr><td style=\"text-align:center;font-weight:bolder;font-size:10pt;font-family:" + FONT_ARIAL + "\">Web2Native Bridge - Web Payment Demo<br>&nbsp;</td></tr>" +
+                   "<tr><td style=\"text-align:left\">This application is a demo of what a &quot;Wallet&quot; based on the Web2Native Bridge " +
+                   "could offer for <span style=\"color:red\">Decentralized Web Payments</span>.&nbsp; Primary features:<ul>" +
+                   "<li>All messages are <i>digitally signed</i> enabling a security level comparable to a PIN-code terminal and chip-card in a brick-and-mortar shop</li>" +
+                   "<li>Tunneling encrypted data (like in SET) hides senstive customer data from merchants without using &quot;tokenization&quot;</li>" +
+                   "<li>Needs an &quot;extra pipe to the bank&quot; like 3D Secure but without a central registry</li>" +
+                   "<li>Equally applicable for traditional card payment (&quot;pull&quot;) networks  as for bank-2-bank (&quot;push&quot;) schemes</li>" +
+                   "<li>All messages are coded in JSON</li>" +
+                   "<li>Consumers only deal with payment instruments visualized as cards (like they did <i>before</i> the Web)</li>" +
+                   "<li>Designed to also work in an NFC/BLE setup where the wallet resides in a mobile device and payments are " +
+                   "performed locally as well as on the Web (through Web-NFC)</li>" +
+                   "</ul>" +
+                   "Note that the Wallet is <i>pre-configured</i> with payment credentials and requires no signup etc." +
+                   "</td></tr>" +
                    "<tr><td align=\"center\"><table cellspacing=\"0\">" +
 //TODO
 //                   "<tr style=\"text-align:left\"><td><a href=\"" + "hh" + "/cards\">Initialize Payment Cards&nbsp;&nbsp;</a></td><td><i>Mandatory</i> First Step</td></tr>" +
-                   "<tr style=\"text-align:left\"><td><a href=\"" + "shop" + "\">Go To Merchant</a></td><td>Shop Til You Drop!</td></tr>" +
-                   "<tr style=\"text-align:left\"><form name=\"options\" method=\"POST\">" +
-                   "<td><input type=\"checkbox\" name=\"" + 
+                   "<tr><td style=\"text-align:left;padding-bottom:5pt\"><a href=\"" + "shop" + 
+                     "\">Go To Merchant</a></td><td style=\"text-align:left;padding-bottom:5pt\">Shop Till You Drop!</td></tr>" +
+                   "<form name=\"options\" method=\"POST\"><tr>" +
+                   "<td style=\"text-align:center\"><input type=\"checkbox\" name=\"" + 
                    HomeServlet.RESERVE_MODE_SESSION_ATTR + "\" onchange=\"document.forms.options.submit()\"" +
                    (reserveMode ? " checked" : "") +
                    "></td><td>Reserve+Finalize Payment Mode</td></tr>" +
-                   "<tr style=\"text-align:left\"><td><input type=\"checkbox\" name=\"" +
+                   "<tr><td style=\"text-align:center\"><input type=\"checkbox\" name=\"" +
                    HomeServlet.DEBUG_SESSION_ATTR + "\" onchange=\"document.forms.options.submit()\"" +
                    (debugMode ? " checked" : "") +
-                   "></td><td>Debug Option</td></form></tr>" +
+                   "></td><td>Debug (JSON Message Dump) Option</td></form></tr>" +
                     "<tr><td style=\"text-align:center;padding-top:15pt;padding-bottom:5pt\" colspan=\"2\"><b>Documentation</b></td></tr>" +
                    "<tr style=\"text-align:left\"><td><a target=\"_blank\" href=\"https://cyberphone.github.io/openkeystore/resources/docs/web2native-bridge.pdf\">Web2Native Bridge</a></td><td>&quot;Executive Level&quot; Description</td></tr>" +
                    "<tr style=\"text-align:left\"><td><a target=\"_blank\" href=\"http://webpki.org/papers/decentralized-payments.pdf\">Demo Payment System</a>&nbsp;&nbsp;</td><td>State Diagram</td></tr>" +
                    "<tr style=\"text-align:left\"><td><a target=\"_blank\" href=\"https://github.com/cyberphone/web2native-bridge\">Demo Source Code</a></td><td>For Nerds...</td></tr>" +
                    "<tr><td style=\"text-align:center;padding-top:15pt;padding-bottom:5pt\" colspan=\"2\"><b>Related Applications</b></td></tr>" +
                    "<tr style=\"text-align:left\"><td><a target=\"_blank\" href=\"https://mobilepki.org/jcs\">JCS</a></td><td>JSON Cleartext Signature</td></tr>" +
-                   "<tr style=\"text-align:left\"><td><a target=\"_blank\" href=\"https://cyberphone.github.io/openkeystore/resources/docs/sks-api-arch.pdf\">SKS</a></td><td>Secure Key Store</td></tr>" +
+                   "<tr style=\"text-align:left\"><td><a target=\"_blank\" href=\"https://cyberphone.github.io/openkeystore/resources/docs/keygen2.html\">KeyGen2</a></td><td>Wallet Enrollment Protocol</td></tr>" +
+                   "<tr style=\"text-align:left\"><td><a target=\"_blank\" href=\"https://cyberphone.github.io/openkeystore/resources/docs/sks-api-arch.pdf\">SKS</a></td><td>Wallet Credential Store</td></tr>" +
                    "<tr style=\"text-align:left\"><td><a target=\"_blank\" href=\"https://play.google.com/store/apps/details?id=org.webpki.mobile.android\">SKS/KeyGen2</a></td><td>Android PoC</td></tr>" +
                  "</table></td></tr></table></td></tr>"));
     }

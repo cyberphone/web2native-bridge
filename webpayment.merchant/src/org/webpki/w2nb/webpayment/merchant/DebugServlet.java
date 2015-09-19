@@ -60,7 +60,7 @@ public class DebugServlet extends HttpServlet implements BaseProperties {
     class Point {
         int i = 1;
         public String toString() {
-            return "<div class=\"point\">" + (i++) + "</div>";
+            return "<div id=\"p" + i + "\" class=\"point\">" + (i++) + "</div>";
         }
     }
 
@@ -112,8 +112,12 @@ public class DebugServlet extends HttpServlet implements BaseProperties {
                      keyWord(PROVIDER_AUTHORITY_URL_JSON) + " to retrieve the associated " + keyWord(Messages.AUTHORITY.toString()) +
                      " object of the <b>Bank</b> claimed to be the user's account holder for the selected payment instrument:</p>"));
             s.append(fancyBox(debugData.providerAuthority));
-            s.append(descriptionStdMargin("Note: This object is long-lived and would usually be <i>cached</i>.&nbsp;&nbsp;" +
-                    "The signature must be verified to belong to a known payment provider network.<p>" +
+            s.append(descriptionStdMargin("An " + keyWord(Messages.AUTHORITY.toString()) + " object is long-lived and would usually be <i>cached</i>.&nbsp;&nbsp;It " +
+                    "has the following tasks:<ul>" +
+                    "<li>Provide credentials of an entity allowing relying parties verifying such before interacting with the entity</li>" +
+                    "<li>Through a signature attest the authenticy of " +
+                    keyWord(AUTHORITY_URL_JSON) + " and " + keyWord(TRANSACTION_URL_JSON) + "</li>" +
+                    "<li>Publish and attest the entity's current encryption key and parameters</li></ul>" +
                     point +
                     "<p>Now the <b>Merchant</b> creates a <i>signed</i> request and sends it to the " + keyWord(TRANSACTION_URL_JSON) +
                     " extracted from the " + keyWord(Messages.AUTHORITY.toString()) + " object.&nbsp;&nbsp;" +
