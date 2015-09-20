@@ -176,12 +176,17 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
             }
 
             ReserveOrDebitResponse bankResponse = new ReserveOrDebitResponse(resultMessage);
-            bankResponse.getSignatureDecoder().verify(MerchantService.paymentRoot);
 
             if (!bankResponse.success()) {
-                HTML.softError(response, bankResponse.getErrorReturn());
+                if (debug) {
+                    debugData.softError = true;
+                }
+                HTML.softError(response, debug, bankResponse.getErrorReturn());
                 return;
             }
+
+            // No error return, then we can verify the response fully
+            bankResponse.getSignatureDecoder().verify(MerchantService.paymentRoot);
 
             if (!ArrayUtil.compare(bankResponse.getPaymentRequest().getRequestHash(), requestHash)) {
                 throw new IOException("Non-matching \"" + REQUEST_HASH_JSON + "\"");
@@ -194,7 +199,7 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
             logger.info("Successful authorization of request: " + bankResponse.getPaymentRequest().getReferenceId());
             AccountTypes accountType = AccountTypes.fromType(bankResponse.getAccountType());
             HTML.resultPage(response,
-                            UserPaymentServlet.getOption(session, HomeServlet.DEBUG_SESSION_ATTR),
+                            debug,
                             null,
                             bankResponse.getPaymentRequest(),
                             accountType,

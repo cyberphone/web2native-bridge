@@ -154,7 +154,7 @@
         <arg value="${card.number}"/>
         <arg value="${bank.host}/webpay-bank/authority"/>
         <arg value="${sks.encryption}.cer"/>
-        <arg value="${cardimage.dir}/"/>
+        <arg value="${cardimage.dir}/${card.image}"/>
     </java>
   </target>
 
@@ -175,6 +175,7 @@
        <param name="sks.pin" value="1234"/>
        <param name="card.type" value="SUPER_CARD"/>
        <param name="card.number" value="6875056745552109"/>
+       <param name="card.image" value="supercard.png"/>
        <param name="sks.encryption" value="${encryptionkey_rsa}"/>
     </antcall>
     <antcall target="_import">
@@ -182,6 +183,7 @@
        <param name="sks.pin" value="1234"/>
        <param name="card.type" value="BANK_DIRECT"/>
        <param name="card.number" value="!8645-7800239403"/>
+       <param name="card.image" value="bankdirect.png"/>
        <param name="sks.encryption" value="${encryptionkey_ec}"/>
      </antcall>
      <antcall target="_import">
@@ -194,6 +196,7 @@
        <param name="sks.pin" value="1234"/>
        <param name="card.type" value="UNUSUAL_CARD"/>
        <param name="card.number" value="1111222233334444"/>
+       <param name="card.image" value="unusualcard.png"/>
        <param name="sks.encryption" value="${encryptionkey_ec}"/>
      </antcall>
   </target>

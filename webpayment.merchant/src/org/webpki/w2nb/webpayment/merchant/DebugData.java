@@ -32,6 +32,8 @@ public class DebugData implements Serializable {
 
     public boolean directDebit;
     
+    public boolean softError;
+    
     public byte[] reserveOrDebitRequest;
     
     public byte[] reserveOrDebitResponse;

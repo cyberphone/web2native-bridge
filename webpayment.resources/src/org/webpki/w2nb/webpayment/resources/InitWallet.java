@@ -75,7 +75,7 @@ public class InitWallet {
             System.out.println("\nUsage: " +
                                InitWallet.class.getCanonicalName() +
                                "sksFile clientCertFile certFilePassword pin accountType/@ accountId" +
-                               " authorityUrl keyEncryptionKey imageDirectory");
+                               " authorityUrl keyEncryptionKey imageFile");
             System.exit(-3);
         }
         CustomCryptoProvider.forcedLoad(true);
@@ -170,7 +170,7 @@ public class InitWallet {
             surrogateKey.addExtension(KeyGen2URIs.LOGOTYPES.CARD,
                                       SecureKeyStore.SUB_TYPE_LOGOTYPE,
                                       "image/png",
-                                      ArrayUtil.readFile(args[8] + accountType.getImageName()));
+                                      ArrayUtil.readFile(args[8]));
         }
         sess.closeSession();
         

@@ -473,14 +473,18 @@ public class HTML {
         HTML.output(response, HTML.getHTML(null, null,s.toString()));
     }
 
-    public static void softError(HttpServletResponse response, ErrorReturn errorReturn)
+    public static void softError(HttpServletResponse response, boolean debugMode, ErrorReturn errorReturn)
                                  throws IOException, ServletException {
         StringBuffer s = new StringBuffer("<tr><td width=\"100%\" align=\"center\" valign=\"middle\">" + 
         "<table>" +
         "<tr><td style=\"text-align:center;font-weight:bolder;font-size:10pt;font-family:" + FONT_ARIAL +
         "\">Payment Failure&nbsp;<br></td></tr><tr><td style=\"text-align:center\">")
         .append(errorReturn.getClearText())
-        .append("</td></tr></table></td></tr>");
+        .append("</td></tr>");
+        if (debugMode) {
+            s.append("<tr><td style=\"text-align:center;padding-top:20pt\"><a href=\"debug\">Show Debug Info</a></td></tr>");
+        }
+        s.append("</table></td></tr>");
         HTML.output(response, HTML.getHTML(null, null,s.toString()));
      }
 }

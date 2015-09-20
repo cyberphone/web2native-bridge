@@ -16,28 +16,22 @@
  */
 package org.webpki.w2nb.webpayment.common;
 
-import java.awt.Color;
-
 import java.io.IOException;
 
 public enum AccountTypes {
 
-    SUPER_CARD   (true,  "https://supercard.com",  "SuperCard",   "supercard.png",   Color.BLUE), 
-    BANK_DIRECT  (false, "https://bankdirect.net", "Bank Direct", "bankdirect.png",  Color.BLACK),
-    UNUSUAL_CARD (false, "https://usualcard.com",  "UnusualCard", "unusualcard.png", Color.GRAY);
+    SUPER_CARD   (true,  "https://supercard.com",  "SuperCard"), 
+    BANK_DIRECT  (false, "https://bankdirect.net", "Bank Direct"),
+    UNUSUAL_CARD (false, "https://usualcard.com",  "UnusualCard");
 
     boolean acquirerBased;  // True => card processor model, false = > 3 or 4 corner distributed model
     String type;            // A brand URI
     String commonName;      // What it is usually called
-    String imageName;
-    Color fontColor;
     
-    AccountTypes (boolean acquirerBased, String type, String commonName, String imageName, Color fontColor) {
+    AccountTypes (boolean acquirerBased, String type, String commonName) {
         this.acquirerBased = acquirerBased;
         this.type = type;
         this.commonName = commonName;
-        this.imageName = imageName;
-        this.fontColor = fontColor;
     }
 
     public boolean isAcquirerBased() {
@@ -48,16 +42,10 @@ public enum AccountTypes {
         return type;
     }
 
-    public String getImageName() {
-        return imageName;
-    }
     public String getCommonName() {
         return commonName;
     }
 
-    public Color getFontColor() {
-        return fontColor;
-    }
     public static AccountTypes fromType(String type) throws IOException {
         for (AccountTypes accountType : AccountTypes.values()) {
             if (accountType.type.equals(type)) {
