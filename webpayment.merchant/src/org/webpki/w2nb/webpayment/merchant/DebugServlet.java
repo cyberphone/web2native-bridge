@@ -96,14 +96,14 @@ public class DebugServlet extends HttpServlet implements BaseProperties {
                                  "invocation provides additional (here not shown) information to make positioning and alignment feasible.<p>" + 
                                  point +
                                  "</p><p>When the message above has been received the <b>Merchant</b> Web-page sends a " +
-                                 "list of accepted account types (payment schemes) and a <i>signed</i> " + 
+                                 "list of accepted account types (aka payment instruments) and a <i>signed</i> " + 
                                  "<a target=\"_blank\" href=\"https://cyberphone.github.io/openkeystore/resources/docs/jcs.html\">[SIGNATURE]</a> " +
                                  keyWord(PAYMENT_REQUEST_JSON) + " to the <b>Wallet</b>:</p>"));
             s.append(fancyBox(debugData.InvokeWallet));
 
             s.append(description(point +
-                    "<p>After selection of payment instruments (cards) in the <b>Wallet</b> UI, the user " +
-                    "authorizes the payment request (currently using a PIN):</p>" +
+                    "<p>After selection of account (card) in the <b>Wallet</b> UI, the user " +
+                    "authorizes the payment request (typically using a PIN):</p>" +
                     "<img style=\"display:block;margin-left:auto;margin-right:auto;height:33%;width:33%\" src=\"" + MerchantService.wallet_ui + "\"><p>" +
                     point +
                     "</p><p>The result of this process is not supposed be " +
@@ -116,7 +116,7 @@ public class DebugServlet extends HttpServlet implements BaseProperties {
             s.append(description(point +
                     "<p>After receiving the <b>Wallet</b> response, the <b>Merchant</b> uses the supplied " +
                      keyWord(PROVIDER_AUTHORITY_URL_JSON) + " to retrieve the associated " + keyWord(Messages.AUTHORITY.toString()) +
-                     " object of the <b>Bank</b> claimed to be the user's account holder for the selected payment instrument:</p>"));
+                     " object of the <b>Bank</b> claimed to be the user's account holder for the selected card:</p>"));
             s.append(fancyBox(debugData.providerAuthority));
             s.append(descriptionStdMargin("An " + keyWord(Messages.AUTHORITY.toString()) + 
                     " is a long-lived object that typically would be <i>cached</i>.&nbsp;&nbsp;It " +
@@ -132,7 +132,7 @@ public class DebugServlet extends HttpServlet implements BaseProperties {
                     "that it knows the embedded " + keyWord(PAYMENT_REQUEST_JSON) + " which it does through the " + keyWord(REQUEST_HASH_JSON) +
                     " construct.&nbsp;&nbsp;Since this particular session was " + (debugData.acquirerMode ? "a card transaction, a pre-configured " + 
                     keyWord(ACQUIRER_AUTHORITY_URL_JSON) : "an account-2-account transaction, " +
-                    keyWord(PAYEE_ACCOUNT_TYPES_JSON) + "holding an array [1..n] of <b>Merchant</b> receiver accounts") + " is also supplied:</p>"));
+                    keyWord(PAYEE_ACCOUNTS_JSON) + "holding an array [1..n] of <b>Merchant</b> receiver accounts") + " is also supplied:</p>"));
             s.append(fancyBox(debugData.reserveOrDebitRequest));
             if (debugData.acquirerMode) {
                 s.append(description(point +

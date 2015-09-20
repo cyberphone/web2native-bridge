@@ -51,7 +51,7 @@ public class ReserveOrDebitRequest implements BaseProperties {
         if (!directDebit && rd.hasProperty(ACQUIRER_AUTHORITY_URL_JSON)) {
             acquirerAuthorityUrl = rd.getString(ACQUIRER_AUTHORITY_URL_JSON);
         } else {
-            JSONArrayReader ar = rd.getArray(PAYEE_ACCOUNT_TYPES_JSON);
+            JSONArrayReader ar = rd.getArray(PAYEE_ACCOUNTS_JSON);
             do {
                 accounts.add(new AccountDescriptor(ar.getObject()));
             } while (ar.hasMore());
@@ -123,12 +123,12 @@ public class ReserveOrDebitRequest implements BaseProperties {
             .setString(ACCOUNT_TYPE_JSON, accountType.getType())
             .setString(REFERENCE_ID_JSON, referenceId);
         if (directDebit || acquirerAuthorityUrl == null) {
-            JSONArrayWriter aw = wr.setArray(PAYEE_ACCOUNT_TYPES_JSON);
+            JSONArrayWriter aw = wr.setArray(PAYEE_ACCOUNTS_JSON);
             for (AccountDescriptor account : accounts) {
                 aw.setObject(account.write());
             }
         } else {
-            zeroTest(PAYEE_ACCOUNT_TYPES_JSON, accounts);
+            zeroTest(PAYEE_ACCOUNTS_JSON, accounts);
             wr.setString(ACQUIRER_AUTHORITY_URL_JSON, acquirerAuthorityUrl);
         }
         wr.setString(CLIENT_IP_ADDRESS_JSON, clientIpAddress);
