@@ -39,7 +39,7 @@ import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONParser;
 
 import org.webpki.w2nb.webpayment.common.BaseProperties;
-import org.webpki.w2nb.webpayment.common.AccountTypes;
+import org.webpki.w2nb.webpayment.common.PayerAccountTypes;
 import org.webpki.w2nb.webpayment.common.Expires;
 import org.webpki.w2nb.webpayment.common.Messages;
 import org.webpki.w2nb.webpayment.common.PaymentRequest;
@@ -110,13 +110,13 @@ public class UserPaymentServlet extends HttpServlet implements BaseProperties {
         // Only used in indirect mode
         session.setAttribute(REQUEST_REFID_SESSION_ATTR, referenceID);
 
-        Vector<String> acceptedCards = new Vector<String>();
-        for (AccountTypes card : MerchantService.acceptedAccountTypes) {
-            acceptedCards.add(card.getType());
+        Vector<String> acceptedAccountTypes = new Vector<String>();
+        for (PayerAccountTypes account : MerchantService.acceptedAccountTypes) {
+            acceptedAccountTypes.add(account.getType());
         }
-        acceptedCards.add("https://nosuchcard.com");
+        acceptedAccountTypes.add("https://nosuchcard.com");
         JSONObjectWriter invokeRequest = Messages.createBaseMessage(Messages.WALLET_REQUEST)
-            .setStringArray(ACCEPTED_ACCOUNT_TYPES_JSON, acceptedCards.toArray(new String[0]))
+            .setStringArray(ACCEPTED_ACCOUNT_TYPES_JSON, acceptedAccountTypes.toArray(new String[0]))
             .setObject(PAYMENT_REQUEST_JSON, paymentRequest);
    
         if (debugMode) {

@@ -46,7 +46,7 @@ import org.webpki.util.ISODateTime;
 import org.webpki.w2nb.webpayment.common.AccountDescriptor;
 import org.webpki.w2nb.webpayment.common.AuthorizationData;
 import org.webpki.w2nb.webpayment.common.BaseProperties;
-import org.webpki.w2nb.webpayment.common.AccountTypes;
+import org.webpki.w2nb.webpayment.common.PayerAccountTypes;
 import org.webpki.w2nb.webpayment.common.Currencies;
 import org.webpki.w2nb.webpayment.common.KeyStoreEnumerator;
 import org.webpki.w2nb.webpayment.common.ProtectedAccountData;
@@ -58,7 +58,7 @@ public class MerchantService extends InitPropertyReader implements ServletContex
 
     static Logger logger = Logger.getLogger(MerchantService.class.getCanonicalName());
     
-    static Set<AccountTypes> acceptedAccountTypes = EnumSet.noneOf(AccountTypes.class);
+    static Set<PayerAccountTypes> acceptedAccountTypes = EnumSet.noneOf(PayerAccountTypes.class);
   
     static final String KEYSTORE_PASSWORD      = "key_password";
 
@@ -142,8 +142,8 @@ public class MerchantService extends InitPropertyReader implements ServletContex
 
             paymentRoot = getRoot(PAYMENT_ROOT);
 
-            for (AccountTypes card : AccountTypes.values()) {
-                if (card != AccountTypes.UNUSUAL_CARD || getPropertyBoolean(ADD_UNUSUAL_CARD)) {
+            for (PayerAccountTypes card : PayerAccountTypes.values()) {
+                if (card != PayerAccountTypes.UNUSUAL_CARD || getPropertyBoolean(ADD_UNUSUAL_CARD)) {
                     acceptedAccountTypes.add(card);
                 }
             }
@@ -164,7 +164,7 @@ public class MerchantService extends InitPropertyReader implements ServletContex
             wallet_ui = getImageDataURI(WALLET_UI_SAMPLE);
 
             protected_account_data = 
-                ProtectedAccountData.encode(new AccountDescriptor(AccountTypes.SUPER_CARD.getType(),
+                ProtectedAccountData.encode(new AccountDescriptor(PayerAccountTypes.SUPER_CARD.getType(),
                                                                   "6875056745552109"),
                                             "Luke Skywalker",
                                             ISODateTime.parseDateTime("2019-12-31T00:00:00Z").getTime(),

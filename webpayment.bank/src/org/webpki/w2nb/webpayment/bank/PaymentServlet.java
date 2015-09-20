@@ -43,7 +43,7 @@ import org.webpki.net.HTTPSWrapper;
 
 import org.webpki.util.ISODateTime;
 
-import org.webpki.w2nb.webpayment.common.AccountTypes;
+import org.webpki.w2nb.webpayment.common.PayerAccountTypes;
 import org.webpki.w2nb.webpayment.common.Authority;
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.EncryptedData;
@@ -120,7 +120,7 @@ public class PaymentServlet extends HttpServlet implements BaseProperties {
        // Separate credit-card and account2account payments
        AccountDescriptor payeeAccount = null;
        JSONObjectWriter encryptedCardData = null;
-       if (AccountTypes.fromType(authorizationData.getAccountDescriptor().getAccountType()).isAcquirerBased()) {
+       if (PayerAccountTypes.fromType(authorizationData.getAccountDescriptor().getAccountType()).isAcquirerBased()) {
            logger.info("card");
            String authorityUrl = attestedEncryptedRequest.getAcquirerAuthorityUrl();
            HTTPSWrapper wrap = new HTTPSWrapper();

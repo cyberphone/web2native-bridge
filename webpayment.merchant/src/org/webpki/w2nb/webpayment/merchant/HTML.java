@@ -19,13 +19,15 @@ package org.webpki.w2nb.webpayment.merchant;
 import java.io.IOException;
 
 import javax.servlet.ServletException;
+
 import javax.servlet.http.HttpServletResponse;
 
-import org.webpki.w2nb.webpayment.common.AccountTypes;
+import org.webpki.w2nb.webpayment.common.PayerAccountTypes;
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.ErrorReturn;
 import org.webpki.w2nb.webpayment.common.Messages;
 import org.webpki.w2nb.webpayment.common.PaymentRequest;
+
 import org.webpki.w2nbproxy.ExtensionPositioning;
 
 public class HTML {
@@ -430,7 +432,7 @@ public class HTML {
                                   boolean debugMode,
                                   String error_message,
                                   PaymentRequest paymentRequest, 
-                                  AccountTypes accountType,
+                                  PayerAccountTypes accountType,
                                   String accountReference) throws IOException, ServletException {
         StringBuffer s = new StringBuffer("<tr><td width=\"100%\" align=\"center\" valign=\"middle\">");
         if (error_message == null) {

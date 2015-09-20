@@ -32,7 +32,7 @@ import org.webpki.json.JSONX509Signer;
 
 import org.webpki.util.ISODateTime;
 
-import org.webpki.w2nb.webpayment.common.AccountTypes;
+import org.webpki.w2nb.webpayment.common.PayerAccountTypes;
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.Currencies;
 import org.webpki.w2nb.webpayment.common.KeyStoreEnumerator;
@@ -124,8 +124,8 @@ public class InitTestPage implements BaseProperties {
         write(Messages.createBaseMessage(Messages.WALLET_REQUEST)
             .setStringArray(ACCEPTED_ACCOUNT_TYPES_JSON,
                             new String[]{"https://nosuchcard.com",
-                                          AccountTypes.SUPER_CARD.getType(),
-                                          AccountTypes.BANK_DIRECT.getType()})
+                                          PayerAccountTypes.SUPER_CARD.getType(),
+                                          PayerAccountTypes.BANK_DIRECT.getType()})
             .setObject(PAYMENT_REQUEST_JSON, standardRequest));
 
         // The normal request is cloned and modified for testing error handling
@@ -133,7 +133,7 @@ public class InitTestPage implements BaseProperties {
               "// All our cards/accounts should match during the discovery phase...\n" +
               "var scrollMatchingRequest = JSON.parse(JSON.stringify(normalRequest)); // Deep clone\n" +
               "scrollMatchingRequest." + ACCEPTED_ACCOUNT_TYPES_JSON + " = [\"https://nosuchcard.com\"");
-        for (AccountTypes accountType : AccountTypes.values()) {
+        for (PayerAccountTypes accountType : PayerAccountTypes.values()) {
             write(", \"");
             write(accountType.getType());
             write("\"");

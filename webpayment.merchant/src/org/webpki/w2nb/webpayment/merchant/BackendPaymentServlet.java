@@ -41,7 +41,7 @@ import org.webpki.net.HTTPSWrapper;
 
 import org.webpki.util.ArrayUtil;
 
-import org.webpki.w2nb.webpayment.common.AccountTypes;
+import org.webpki.w2nb.webpayment.common.PayerAccountTypes;
 import org.webpki.w2nb.webpayment.common.Authority;
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.AuthorizationData;
@@ -197,7 +197,7 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
             }
 
             logger.info("Successful authorization of request: " + bankResponse.getPaymentRequest().getReferenceId());
-            AccountTypes accountType = AccountTypes.fromType(bankResponse.getAccountType());
+            PayerAccountTypes accountType = PayerAccountTypes.fromType(bankResponse.getAccountType());
             HTML.resultPage(response,
                             debug,
                             null,

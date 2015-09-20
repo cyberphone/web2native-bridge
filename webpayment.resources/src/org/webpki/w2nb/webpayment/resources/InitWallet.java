@@ -64,7 +64,7 @@ import org.webpki.util.ArrayUtil;
 
 import org.webpki.w2nb.webpayment.common.AccountDescriptor;
 import org.webpki.w2nb.webpayment.common.BaseProperties;
-import org.webpki.w2nb.webpayment.common.AccountTypes;
+import org.webpki.w2nb.webpayment.common.PayerAccountTypes;
 import org.webpki.w2nb.webpayment.common.Encryption;
 import org.webpki.w2nb.webpayment.common.KeyStoreEnumerator;
 
@@ -136,7 +136,7 @@ public class InitWallet {
         surrogateKey.setPrivateKey(importedKey.getPrivateKey());
         JSONObjectWriter ow = null;
         if (!args[4].equals("@")) {
-            AccountTypes accountType = AccountTypes.valueOf(args[4]);
+            PayerAccountTypes accountType = PayerAccountTypes.valueOf(args[4]);
             String accountId = args[5];
             boolean cardFormatted = true;
             if (accountId.startsWith("!")) {
