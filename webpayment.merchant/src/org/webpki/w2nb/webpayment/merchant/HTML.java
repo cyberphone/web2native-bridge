@@ -205,7 +205,12 @@ public class HTML {
     public static void merchantPage(HttpServletResponse response,
                                     SavedShoppingCart savedShoppingCart) throws IOException, ServletException {
         StringBuffer temp_string = new StringBuffer(
-            "\nfunction userPay() {\n" +
+            "\nfunction closeFundFlash() {\n" +
+            "    setTimeout(function() {\n" +
+            "        document.getElementById('fundlimit').style.visibility = 'hidden';\n" +
+            "    }, 5000);\n" +
+            "}\n\n" +
+            "function userPay() {\n" +
             "    if (getTotal()) {\n" +
             "        document.getElementById('" + UserPaymentServlet.SHOPPING_CART_FORM_ATTR + "').value = JSON.stringify(shoppingCart);\n" +
             "        document.forms.shoot.submit();\n" +           
@@ -289,8 +294,9 @@ public class HTML {
             "};\n\n" +
             "var shoppingCart = [];\n");
 
-        HTML.output(response, HTML.getHTML(temp_string.toString(), 
-            "><div id=\"emptybasket\" style=\"border-color:grey;border-style:solid;border-width:3px;text-align:center;font-family:"
+        HTML.output(response, HTML.getHTML(temp_string.toString(),
+            "onload=\"closeFundFlash()\"><div id=\"fundlimit\" style=\"position:absolute;left:15pt;bottom:15pt;z-index:3;font-size:8pt\">Your funds at the bank are limited to $1M...</div>" +
+            "<div id=\"emptybasket\" style=\"border-color:grey;border-style:solid;border-width:3px;text-align:center;font-family:"
             + FONT_ARIAL+ ";z-index:3;background:#f0f0f0;position:absolute;visibility:hidden;padding:5pt 10pt 5pt 10pt\">Nothing ordered yet...</div",
             page_data.toString()));
     }
