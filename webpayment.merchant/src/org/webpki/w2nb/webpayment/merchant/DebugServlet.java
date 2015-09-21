@@ -190,7 +190,7 @@ public class DebugServlet extends HttpServlet implements BaseProperties {
                             "<li>the communication is assumed to be <i>synchronous</i> (using HTTP)</li>" +
                             "<li>there is no additional information needed by the transaction, only a sender-unique " +
                             keyWord(REFERENCE_ID_JSON) +
-                            "</li><li>the 256-bit hash + signature fully bind the response to the request</li></ul>this would not add any security, " +
+                            "</li><li>the signed 256-bit hash fully binds the response to the request</li></ul>this would not add any security, " +
                             "assuming that logging is working."));
                 }
             }
