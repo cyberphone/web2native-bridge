@@ -80,7 +80,9 @@ public class MerchantService extends InitPropertyReader implements ServletContex
     
     static final String USER_AUTH_SAMPLE       = "user-authorization.json";
 
-    static final String WALLET_UI_SAMPLE       = "wallet-ui.png";
+    static final String SUPERCARD_AUTH_SAMPLE  = "wallet-supercard-auth.png";
+
+    static final String BANKDIRECT_AUTH_SAMPLE = "wallet-bankdirect-auth.png";
 
     static JSONX509Verifier paymentRoot;
     
@@ -101,7 +103,9 @@ public class MerchantService extends InitPropertyReader implements ServletContex
 
     static byte[] protected_account_data;
 
-    static String wallet_ui;
+    static String wallet_supercard_auth;
+
+    static String wallet_bankdirect_auth;
 
     InputStream getResource(String name) throws IOException {
         return this.getClass().getResourceAsStream(getPropertyString(name));
@@ -161,7 +165,9 @@ public class MerchantService extends InitPropertyReader implements ServletContex
             new AuthorizationData(JSONParser.parse(user_authorization =
                     ArrayUtil.getByteArrayFromInputStream (this.getClass().getResourceAsStream(USER_AUTH_SAMPLE))));
 
-            wallet_ui = getImageDataURI(WALLET_UI_SAMPLE);
+            wallet_supercard_auth = getImageDataURI(SUPERCARD_AUTH_SAMPLE);
+
+            wallet_bankdirect_auth = getImageDataURI(BANKDIRECT_AUTH_SAMPLE);
 
             protected_account_data = 
                 ProtectedAccountData.encode(new AccountDescriptor(PayerAccountTypes.SUPER_CARD.getType(),

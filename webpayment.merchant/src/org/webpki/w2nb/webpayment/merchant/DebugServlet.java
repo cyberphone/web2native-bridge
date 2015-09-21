@@ -102,9 +102,11 @@ public class DebugServlet extends HttpServlet implements BaseProperties {
             s.append(fancyBox(debugData.InvokeWallet));
 
             s.append(description(point +
-                    "<p>After selection of account (card) in the <b>Wallet</b> UI, the user " +
+                    "<p>After an <i>optional</i> selection of account (card) in the <b>Wallet</b> UI, the user " +
                     "authorizes the payment request (typically using a PIN):</p>" +
-                    "<img style=\"display:block;margin-left:auto;margin-right:auto;height:33%;width:33%\" src=\"" + MerchantService.wallet_ui + "\"><p>" +
+                    "<img style=\"display:block;margin-left:auto;margin-right:auto;height:33%;width:33%\" src=\"" +
+                    (debugData.acquirerMode ? MerchantService.wallet_supercard_auth : MerchantService.wallet_bankdirect_auth) + 
+                    "\"><p>" +
                     point +
                     "</p><p>The result of this process is not supposed be " +
                     "directly available to the <b>Merchant</b> since it contains potentially sensitive user data.&nbsp;&nbsp;" +
@@ -159,7 +161,7 @@ public class DebugServlet extends HttpServlet implements BaseProperties {
                if (!debugData.directDebit) {
                     s.append(description(point +
                              "<p>For finalization of the payment, the <b>Merchant</b> sets an " + keyWord(AMOUNT_JSON) + 
-                             " which is equal or lower than in the original request, <i>counter-signs</i> the request, " +
+                             " which must be <i>equal or lower</i> than in the original request, <i>counter-signs</i> the request, " +
                              "and sends it to the " + (debugData.acquirerMode ? keyWord(TRANSACTION_URL_JSON) +
                              " retrievable from the <b>Acquirer</b> " + keyWord(Messages.AUTHORITY.toString()) + " object:" :
                              "<b>Bank</b> again:</p>")));
