@@ -19,7 +19,6 @@ package org.webpki.w2nb.webpayment.merchant;
 import java.io.IOException;
 
 import javax.servlet.ServletException;
-
 import javax.servlet.http.HttpServletResponse;
 
 import org.webpki.w2nb.webpayment.common.PayerAccountTypes;
@@ -27,12 +26,17 @@ import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.ErrorReturn;
 import org.webpki.w2nb.webpayment.common.Messages;
 import org.webpki.w2nb.webpayment.common.PaymentRequest;
-
 import org.webpki.w2nbproxy.ExtensionPositioning;
 
 public class HTML {
 
     static final int PAYMENT_TIMEOUT_INIT            = 5000;
+    
+    static final String STICK_TO_HOME_URL            =
+                    "history.pushState(null, null, 'home');\n" +
+                    "window.addEventListener('popstate', function(event) {\n" +
+                    "    history.pushState(null, null, 'home');\n" +
+                    "});";
     
     static final String FONT_VERDANA = "Verdana,'Bitstream Vera Sans','DejaVu Sans',Arial,'Liberation Sans'";
     static final String FONT_ARIAL = "Arial,'Liberation Sans',Verdana,'Bitstream Vera Sans','DejaVu Sans'";
@@ -430,44 +434,33 @@ public class HTML {
 
     public static void resultPage(HttpServletResponse response,
                                   boolean debugMode,
-                                  String error_message,
                                   PaymentRequest paymentRequest, 
                                   PayerAccountTypes accountType,
                                   String accountReference) throws IOException, ServletException {
         StringBuffer s = new StringBuffer("<tr><td width=\"100%\" align=\"center\" valign=\"middle\">");
-        if (error_message == null) {
-            s.append("<table>" +
-             "<tr><td style=\"text-align:center;font-weight:bolder;font-size:10pt;font-family:" + FONT_ARIAL + "\">Order Status<br>&nbsp;</td></tr>" +
-             "<tr><td style=\"text-align:center;padding-bottom:15pt;font-size:10pt\">Dear customer, your order has been successfully processed!</td></tr>" +
-             "<tr><td><table class=\"tftable\"><tr><th>Our Reference</th><th>Amount</th><th>")
-            .append(accountType.isAcquirerBased() ? "Card" : "Account")
-            .append(" Type</th><th>")
-            .append(accountType.isAcquirerBased() ? "Card Reference" : "Account Number")
-            .append("</th></tr>" +
-             "<tr><td style=\"text-align:center\">")
-            .append(paymentRequest.getReferenceId())
-            .append("</td><td style=\"text-align:center\">")
-            .append(paymentRequest.getCurrency().convertAmountToString(paymentRequest.getAmount()))
-            .append("</td><td style=\"text-align:center\">")
-            .append(accountType.getCommonName())
-            .append("</td><td style=\"text-align:center\">")
-            .append(accountReference)
-            .append("</td></tr></table></td></tr>");
-            if (debugMode) {
-                s.append("<tr><td style=\"text-align:center;padding-top:20pt\"><a href=\"debug\">Show Debug Info</a></td></tr>");
-            }
-            s.append("</table></td></tr></table>");
-        } else {
-            s.append("There was a problem with your order: " + error_message);
+        s.append("<table>" +
+         "<tr><td style=\"text-align:center;font-weight:bolder;font-size:10pt;font-family:" + FONT_ARIAL + "\">Order Status<br>&nbsp;</td></tr>" +
+         "<tr><td style=\"text-align:center;padding-bottom:15pt;font-size:10pt\">Dear customer, your order has been successfully processed!</td></tr>" +
+         "<tr><td><table class=\"tftable\"><tr><th>Our Reference</th><th>Amount</th><th>")
+        .append(accountType.isAcquirerBased() ? "Card" : "Account")
+        .append(" Type</th><th>")
+        .append(accountType.isAcquirerBased() ? "Card Reference" : "Account Number")
+        .append("</th></tr>" +
+         "<tr><td style=\"text-align:center\">")
+        .append(paymentRequest.getReferenceId())
+        .append("</td><td style=\"text-align:center\">")
+        .append(paymentRequest.getCurrency().convertAmountToString(paymentRequest.getAmount()))
+        .append("</td><td style=\"text-align:center\">")
+        .append(accountType.getCommonName())
+        .append("</td><td style=\"text-align:center\">")
+        .append(accountReference)
+        .append("</td></tr></table></td></tr>");
+        if (debugMode) {
+            s.append("<tr><td style=\"text-align:center;padding-top:20pt\"><a href=\"debug\">Show Debug Info</a></td></tr>");
         }
-        s.append("</td></tr>");
+        s.append("</table></td></tr></table></td></tr>");
         HTML.output(response, 
-                    HTML.getHTML("history.pushState(null, null, 'home');\n" +
-                                 "window.addEventListener('popstate', function(event) {\n" +
-                                 "    history.pushState(null, null, 'home');\n" +
-                                 "});",
-                                 null,
-                                 s.toString()));
+                    HTML.getHTML(STICK_TO_HOME_URL, null, s.toString()));
     }
 
     public static void debugPage(HttpServletResponse response,
@@ -478,11 +471,11 @@ public class HTML {
         "\">Payment Session Debug Information&nbsp;<br></td></tr><tr><td style=\"text-align:left\">")
         .append(string)
         .append("</td></tr></table></td></tr>");
-        HTML.output(response, HTML.getHTML(null, null,s.toString()));
+        HTML.output(response, HTML.getHTML(STICK_TO_HOME_URL, null,s.toString()));
     }
 
-    public static void softError(HttpServletResponse response, boolean debugMode, ErrorReturn errorReturn)
-                                 throws IOException, ServletException {
+    public static void paymentError(HttpServletResponse response, boolean debugMode, ErrorReturn errorReturn)
+                                    throws IOException, ServletException {
         StringBuffer s = new StringBuffer("<tr><td width=\"100%\" align=\"center\" valign=\"middle\">" + 
         "<table>" +
         "<tr><td style=\"text-align:center;font-weight:bolder;font-size:10pt;font-family:" + FONT_ARIAL +
@@ -493,6 +486,16 @@ public class HTML {
             s.append("<tr><td style=\"text-align:center;padding-top:20pt\"><a href=\"debug\">Show Debug Info</a></td></tr>");
         }
         s.append("</table></td></tr>");
-        HTML.output(response, HTML.getHTML(null, null,s.toString()));
+        HTML.output(response, HTML.getHTML(STICK_TO_HOME_URL, null,s.toString()));
      }
+
+    public static void errorPage(HttpServletResponse response, String error) throws IOException, ServletException {
+        StringBuffer s = new StringBuffer("<tr><td width=\"100%\" align=\"center\" valign=\"middle\">" + 
+        "<table>" +
+        "<tr><td style=\"text-align:center;font-weight:bolder;font-size:10pt;font-family:" + FONT_ARIAL +
+        "\">Failure&nbsp;<br></td></tr><tr><td style=\"text-align:center\">")
+        .append(error)
+        .append("</td></tr></table></td></tr>");
+        HTML.output(response, HTML.getHTML(STICK_TO_HOME_URL, null,s.toString()));
+    }
 }

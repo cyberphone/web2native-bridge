@@ -70,7 +70,8 @@ public class DebugServlet extends HttpServlet implements BaseProperties {
             HttpSession session = request.getSession(false);
             if (session == null ||
                 (debugData = (DebugData)session.getAttribute(UserPaymentServlet.DEBUG_DATA_SESSION_ATTR)) == null) {
-                throw new IOException("Session timed out");
+                ErrorServlet.sessionTimeout(response);
+                return;
             }
             StringBuffer s = new StringBuffer( );
             Point point = new Point();

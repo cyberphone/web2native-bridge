@@ -80,8 +80,9 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
         try {
             HttpSession session = request.getSession(false);
             if (session == null) {
-                throw new IOException("Session timed out!");
-            }
+                ErrorServlet.sessionTimeout(response);
+                return;
+             }
             byte[] requestHash = (byte[]) session.getAttribute(UserPaymentServlet.REQUEST_HASH_SESSION_ATTR);
 
             request.setCharacterEncoding("UTF-8");
@@ -181,7 +182,7 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
                 if (debug) {
                     debugData.softError = true;
                 }
-                HTML.softError(response, debug, bankResponse.getErrorReturn());
+                HTML.paymentError(response, debug, bankResponse.getErrorReturn());
                 return;
             }
 
@@ -200,7 +201,6 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
             PayerAccountTypes accountType = PayerAccountTypes.fromType(bankResponse.getAccountType());
             HTML.resultPage(response,
                             debug,
-                            null,
                             bankResponse.getPaymentRequest(),
                             accountType,
                             accountType.isAcquirerBased() ? // = Card
