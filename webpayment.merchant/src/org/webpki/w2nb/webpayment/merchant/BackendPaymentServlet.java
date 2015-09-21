@@ -210,10 +210,7 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
 
         } catch (Exception e) {
             logger.log(Level.SEVERE, e.getMessage(), e);
-            response.setContentType("text/plain; charset=utf-8");
-            response.setHeader("Pragma", "No-Cache");
-            response.setDateHeader("EXPIRES", 0);
-            response.getOutputStream().println("Error: " + e.getMessage());
+            ErrorServlet.fail(response, e.getMessage());
         }
     }
 

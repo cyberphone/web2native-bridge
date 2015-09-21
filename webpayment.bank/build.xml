@@ -31,7 +31,7 @@
   </condition>
 
   <target name="help">
-      <echo message="tomcat [-Derr.merchant.ca=0] [-Derr.media=0] mobilepki-ejbca localhost-ejbca zip-distribution"/>
+      <echo message="tomcat [-Derr.merchant.root=0] [-Derr.media=0] mobilepki-ejbca localhost-ejbca zip-distribution"/>
   </target>
 
   <target name="_init" unless="app_path">

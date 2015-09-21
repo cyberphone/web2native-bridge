@@ -27,10 +27,12 @@ import org.webpki.json.JSONObjectWriter;
 public class ErrorReturn implements BaseProperties {
 
     public enum ERRORS {
-        INSUFFICIENT_FUNDS (0, "Insufficient Funds"),
-        EXPIRED_CREDENTIAL (1, "Expired Credential"),
-        BLOCKED_ACCOUNT    (2, "Account is blocked"),
-        OTHER_ERROR        (3, "Other Error");
+        INSUFFICIENT_FUNDS  (0, "Insufficient Funds"),
+        EXPIRED_CREDENTIAL  (1, "Expired Credential"),
+        EXPIRED_RESERVATION (2, "Expired Fund Reservation"),
+        BLOCKED_ACCOUNT     (3, "Account is blocked"),
+        NOT_AUTHORIZED      (4, "Not Authorized"),
+        OTHER_ERROR         (5, "Other Error");
         
         int errorCode;
         String clearText;
