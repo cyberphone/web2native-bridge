@@ -18,8 +18,6 @@ package org.webpki.w2nb.webpayment.bank;
 
 import java.io.IOException;
 
-import java.util.logging.Logger;
-
 import javax.servlet.ServletException;
 
 import javax.servlet.http.HttpServlet;
@@ -28,11 +26,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 
+//This servlet publishes the Payment Provider (Bank) "Authority" object.
+
 public class AuthorityPublisherServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
-    
-    static Logger logger = Logger.getLogger(AuthorityPublisherServlet.class.getCanonicalName());
     
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         response.setContentType(BaseProperties.JSON_CONTENT_TYPE);

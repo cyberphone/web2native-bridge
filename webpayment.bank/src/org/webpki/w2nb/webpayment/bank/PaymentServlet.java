@@ -61,6 +61,8 @@ import org.webpki.w2nb.webpayment.common.ProtectedAccountData;
 
 import org.webpki.webutil.ServletUtil;
 
+// This is the core Payment Provider (Bank) payment servlet.
+
 public class PaymentServlet extends HttpServlet implements BaseProperties {
 
     private static final long serialVersionUID = 1L;
@@ -87,7 +89,7 @@ public class PaymentServlet extends HttpServlet implements BaseProperties {
         return "#" + (referenceId++);
     }
 
-    private JSONObjectWriter processReserveOrDebitRequest(JSONObjectReader payeeRequest)
+    JSONObjectWriter processReserveOrDebitRequest(JSONObjectReader payeeRequest)
     throws IOException, GeneralSecurityException {
         // Read the attested and encrypted request
        ReserveOrDebitRequest attestedEncryptedRequest = new ReserveOrDebitRequest(payeeRequest);
