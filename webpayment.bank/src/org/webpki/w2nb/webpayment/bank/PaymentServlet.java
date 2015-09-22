@@ -83,6 +83,10 @@ public class PaymentServlet extends HttpServlet implements BaseProperties {
                        url2.getFile()).toExternalForm(); 
     }
 
+    static String getReferenceId() {
+        return "#" + (referenceId++);
+    }
+
     private JSONObjectWriter processReserveOrDebitRequest(JSONObjectReader payeeRequest)
     throws IOException, GeneralSecurityException {
         // Read the attested and encrypted request
@@ -154,8 +158,8 @@ public class PaymentServlet extends HttpServlet implements BaseProperties {
                                             authorizationData.getAccountDescriptor(),
                                             encryptedCardData,
                                             payeeAccount,
-                                            "#" + (referenceId ++),
-                                             BankService.bankKey);
+                                            getReferenceId(),
+                                            BankService.bankKey);
     }
 
     JSONObjectWriter processFinalizeRequest(JSONObjectReader payeeRequest) throws IOException, GeneralSecurityException {
@@ -174,7 +178,7 @@ public class PaymentServlet extends HttpServlet implements BaseProperties {
         // Since we don't have a real bank we simply return success...              //
         //////////////////////////////////////////////////////////////////////////////
        return FinalizeResponse.encode(payeeFinalizationRequest,
-                                      "#" + (referenceId++),
+                                      getReferenceId(),
                                       BankService.bankKey);
     }
         
