@@ -114,10 +114,9 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
             // In a production setup you would cache authority objects since they are long-lived
             HTTPSWrapper wrap = new HTTPSWrapper();
             wrap.setTimeout(TIMEOUT_FOR_REQUEST);
-            wrap.setHeader("Content-Type", MerchantService.jsonMediaType);
             wrap.setRequireSuccess(true);
             wrap.makeGetRequest(portFilter(providerAuthorityUrl));
-            if (!wrap.getContentType().equals(JSON_CONTENT_TYPE)) {
+            if (!wrap.getRawContentType().equals(JSON_CONTENT_TYPE)) {
                 throw new IOException("Content-Type must be \"" + JSON_CONTENT_TYPE + "\" , found: " + wrap.getContentType());
             }
             Authority providerAuthority = new Authority(JSONParser.parse(wrap.getData()), providerAuthorityUrl);
@@ -164,7 +163,7 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
             wrap.setHeader("Content-Type", MerchantService.jsonMediaType);
             wrap.setRequireSuccess(true);
             wrap.makePostRequest(portFilter(transactionUrl), bankRequest);
-            if (!wrap.getContentType().equals(JSON_CONTENT_TYPE)) {
+            if (!wrap.getRawContentType().equals(JSON_CONTENT_TYPE)) {
                 throw new IOException("Content-Type must be \"" + JSON_CONTENT_TYPE + "\" , found: " + wrap.getContentType());
             }
 
@@ -223,10 +222,9 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
             target = "acquirer";
             // Lookup indicated acquirer authority
             wrap.setTimeout(TIMEOUT_FOR_REQUEST);
-            wrap.setHeader("Content-Type", MerchantService.jsonMediaType);
             wrap.setRequireSuccess(true);
             wrap.makeGetRequest(portFilter(MerchantService.acquirerAuthorityUrl));
-            if (!wrap.getContentType().equals(JSON_CONTENT_TYPE)) {
+            if (!wrap.getRawContentType().equals(JSON_CONTENT_TYPE)) {
                 throw new IOException("Content-Type must be \"" + JSON_CONTENT_TYPE + "\" , found: " + wrap.getContentType());
             }
             acquirerAuthority = new Authority(JSONParser.parse(wrap.getData()), MerchantService.acquirerAuthorityUrl);
@@ -249,7 +247,7 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
         wrap.setHeader("Content-Type", MerchantService.jsonMediaType);
         wrap.setRequireSuccess(true);
         wrap.makePostRequest(portFilter(transactionUrl), sentFinalize);
-        if (!wrap.getContentType().equals(JSON_CONTENT_TYPE)) {
+        if (!wrap.getRawContentType().equals(JSON_CONTENT_TYPE)) {
             throw new IOException("Content-Type must be \"" + JSON_CONTENT_TYPE + "\" , found: " + wrap.getContentType());
         }
         byte[] finalizeRequestHash = RequestHash.getRequestHash(sentFinalize);

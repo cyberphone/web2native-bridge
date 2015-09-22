@@ -46,8 +46,6 @@ public enum Messages {
     FINALIZE_RESPONSE         ("FinalizeResponse"),        // Provider or Acquirer response to request
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
-    ERROR_RESPONSE            ("ErrorResponse"),           // Hard (but detected) error
-
     AUTHORITY                 ("Authority");               // Published entity data
 
     String qualifier;

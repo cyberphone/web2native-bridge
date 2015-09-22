@@ -17,6 +17,7 @@
 package org.webpki.w2nb.webpayment.bank;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 
 import java.math.BigDecimal;
 
@@ -197,9 +198,12 @@ public class PaymentServlet extends HttpServlet implements BaseProperties {
             logger.info("Returned to caller:\n" + providerResponse);
             
         } catch (Exception e) {
-            providerResponse = Messages.createBaseMessage(Messages.ERROR_RESPONSE);
-            providerResponse.setString(DESCRIPTION_JSON, e.getMessage());
             logger.log(Level.SEVERE, e.getMessage(), e);
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            PrintWriter writer = response.getWriter();
+            writer.print(e.getMessage());
+            writer.flush();
+            return;
         }
 
         response.setContentType(BankService.jsonMediaType);

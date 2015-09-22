@@ -19,13 +19,17 @@ package org.webpki.w2nb.webpayment.merchant;
 import java.io.IOException;
 
 import javax.servlet.ServletException;
+
 import javax.servlet.http.HttpServletResponse;
+
+import org.webpki.util.HTMLEncoder;
 
 import org.webpki.w2nb.webpayment.common.PayerAccountTypes;
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.ErrorReturn;
 import org.webpki.w2nb.webpayment.common.Messages;
 import org.webpki.w2nb.webpayment.common.PaymentRequest;
+
 import org.webpki.w2nbproxy.ExtensionPositioning;
 
 public class HTML {
@@ -494,7 +498,7 @@ public class HTML {
         "<table>" +
         "<tr><td style=\"text-align:center;font-weight:bolder;font-size:10pt;font-family:" + FONT_ARIAL +
         "\">Failure&nbsp;<br></td></tr><tr><td style=\"text-align:center\">")
-        .append(error)
+        .append(HTMLEncoder.encodeWithLineBreaks(error.getBytes("UTF-8")))
         .append("</td></tr></table></td></tr>");
         HTML.output(response, HTML.getHTML(STICK_TO_HOME_URL, null,s.toString()));
     }
