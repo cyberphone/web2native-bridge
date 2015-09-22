@@ -130,7 +130,6 @@ public class PaymentServlet extends HttpServlet implements BaseProperties {
            String authorityUrl = attestedEncryptedRequest.getAcquirerAuthorityUrl();
            HTTPSWrapper wrap = new HTTPSWrapper();
            wrap.setTimeout(TIMEOUT_FOR_REQUEST);
-           wrap.setHeader("Content-Type", JSON_CONTENT_TYPE);
            wrap.setRequireSuccess(true);
            wrap.makeGetRequest(portFilter(authorityUrl));
            if (!wrap.getContentType().equals(JSON_CONTENT_TYPE)) {
