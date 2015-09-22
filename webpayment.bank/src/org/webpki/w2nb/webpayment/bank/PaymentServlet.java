@@ -194,15 +194,23 @@ public class PaymentServlet extends HttpServlet implements BaseProperties {
             providerResponse = 
                 payeeRequest.getString(JSONDecoderCache.QUALIFIER_JSON).equals(Messages.FINALIZE_REQUEST.toString()) ?
                     processFinalizeRequest(payeeRequest) : processReserveOrDebitRequest(payeeRequest);
-
             logger.info("Returned to caller:\n" + providerResponse);
 
+            /////////////////////////////////////////////////////////////////////////////////////////
+            // Normal return                                                                       //
+            /////////////////////////////////////////////////////////////////////////////////////////
             response.setContentType(BankService.jsonMediaType);
             response.setHeader("Pragma", "No-Cache");
             response.setDateHeader("EXPIRES", 0);
             response.getOutputStream().write(providerResponse.serializeJSONObject(JSONOutputFormats.NORMALIZED));
             
         } catch (Exception e) {
+            /////////////////////////////////////////////////////////////////////////////////////////
+            // Hard error return. Note that we return a clear-text message in the response body.   //
+            // Having specific error message syntax for hard errors only complicates things since  //
+            // there will always be the dreadful "internal server error" to deal with as well as   //
+            // general connectivity problems.                                                      //
+            /////////////////////////////////////////////////////////////////////////////////////////
             logger.log(Level.SEVERE, e.getMessage(), e);
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             PrintWriter writer = response.getWriter();
