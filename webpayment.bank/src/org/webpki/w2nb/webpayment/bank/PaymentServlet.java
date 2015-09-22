@@ -196,6 +196,11 @@ public class PaymentServlet extends HttpServlet implements BaseProperties {
                     processFinalizeRequest(payeeRequest) : processReserveOrDebitRequest(payeeRequest);
 
             logger.info("Returned to caller:\n" + providerResponse);
+
+            response.setContentType(BankService.jsonMediaType);
+            response.setHeader("Pragma", "No-Cache");
+            response.setDateHeader("EXPIRES", 0);
+            response.getOutputStream().write(providerResponse.serializeJSONObject(JSONOutputFormats.NORMALIZED));
             
         } catch (Exception e) {
             logger.log(Level.SEVERE, e.getMessage(), e);
@@ -203,12 +208,6 @@ public class PaymentServlet extends HttpServlet implements BaseProperties {
             PrintWriter writer = response.getWriter();
             writer.print(e.getMessage());
             writer.flush();
-            return;
         }
-
-        response.setContentType(BankService.jsonMediaType);
-        response.setHeader("Pragma", "No-Cache");
-        response.setDateHeader("EXPIRES", 0);
-        response.getOutputStream().write(providerResponse.serializeJSONObject(JSONOutputFormats.NORMALIZED));
-      }
-  }
+    }
+}
