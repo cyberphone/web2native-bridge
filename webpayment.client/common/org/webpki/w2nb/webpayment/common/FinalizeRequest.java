@@ -37,6 +37,7 @@ public class FinalizeRequest implements BaseProperties {
         root = Messages.parseBaseMessage(Messages.FINALIZE_REQUEST, rd);
         amount = rd.getBigDecimal(AMOUNT_JSON);
         embeddedResponse = new ReserveOrDebitResponse(rd.getObject(PROVIDER_AUTHORIZATION_JSON));
+        referenceId = rd.getString(REFERENCE_ID_JSON);
         timeStamp = rd.getDateTime(TIME_STAMP_JSON);
         software = new Software(rd);
         outerCertificatePath = rd.getSignature(JSONAlgorithmPreferences.JOSE).getCertificatePath();
@@ -73,13 +74,20 @@ public class FinalizeRequest implements BaseProperties {
         return clientIpAddress;
     }
 
+    String referenceId;
+    public String getReferenceId() {
+        return referenceId;
+    }
+
     public static JSONObjectWriter encode(ReserveOrDebitResponse providerResponse,
                                           BigDecimal amount,  // Less or equal the reserved amount
+                                          String referenceId,
                                           ServerSigner signer)
     throws IOException, GeneralSecurityException {
         return Messages.createBaseMessage(Messages.FINALIZE_REQUEST)
             .setBigDecimal(AMOUNT_JSON, amount)
             .setObject(PROVIDER_AUTHORIZATION_JSON, providerResponse.root)
+            .setString(REFERENCE_ID_JSON, referenceId)
             .setDateTime(TIME_STAMP_JSON, new Date(), true)
             .setObject(SOFTWARE_JSON, Software.encode (PaymentRequest.SOFTWARE_ID,
                                                        PaymentRequest.SOFTWARE_VERSION))

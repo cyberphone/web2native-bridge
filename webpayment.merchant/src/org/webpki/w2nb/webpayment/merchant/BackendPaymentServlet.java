@@ -74,8 +74,6 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
     
     static Logger logger = Logger.getLogger(BackendPaymentServlet.class.getCanonicalName());
     
-    static int transaction_id = 164006;
-    
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         try {
             HttpSession session = request.getSession(false);
@@ -237,6 +235,7 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
 
         JSONObjectWriter finalizeRequest = FinalizeRequest.encode(bankResponse,
                                                                   bankResponse.getPaymentRequest().getAmount(),
+                                                                  UserPaymentServlet.getReferenceId(),
                                                                   MerchantService.merchantKey);
 
         logger.info("About to send to " + target + ":\n" + finalizeRequest);

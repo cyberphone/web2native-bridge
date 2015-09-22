@@ -133,7 +133,8 @@ public class DebugServlet extends HttpServlet implements BaseProperties {
                     " extracted from the " + keyWord(Messages.AUTHORITY.toString()) + " object.&nbsp;&nbsp;" +
                     "Since the <b>Wallet</b> response is encrypted, the <b>Merchant</b> needs to prove to the <b>Bank</b> " +
                     "that it knows the embedded " + keyWord(PAYMENT_REQUEST_JSON) + " which it does through the " + keyWord(REQUEST_HASH_JSON) +
-                    " construct.&nbsp;&nbsp;Since this particular session was " + (debugData.acquirerMode ? "a card transaction, a pre-configured " + 
+                    " construct and " + keyWord(REFERENCE_ID_JSON) + " which must match the hash of the request and property respectively" +
+                    ".&nbsp;&nbsp;Since this particular session was " + (debugData.acquirerMode ? "a card transaction, a pre-configured " + 
                     keyWord(ACQUIRER_AUTHORITY_URL_JSON) : "an account-2-account transaction, " +
                     keyWord(PAYEE_ACCOUNTS_JSON) + "holding an array [1..n] of <b>Merchant</b> receiver accounts") + " is also supplied:</p>"));
             s.append(fancyBox(debugData.reserveOrDebitRequest));

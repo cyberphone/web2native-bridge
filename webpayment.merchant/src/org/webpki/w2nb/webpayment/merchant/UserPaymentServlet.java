@@ -61,12 +61,16 @@ public class UserPaymentServlet extends HttpServlet implements BaseProperties {
     
     static Logger logger = Logger.getLogger(UserPaymentServlet.class.getName());
     
-    static int nextReferenceId = 1000000;
-    
     static boolean getOption(HttpSession session, String name) {
         return session.getAttribute(name) != null && (Boolean)session.getAttribute(name);
     }
+
+    static int referenceId = 1000000;
     
+    static String getReferenceId() {
+        return "#" + (referenceId++);
+    }
+
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         JSONArrayReader ar = JSONParser.parse(request.getParameter(SHOPPING_CART_FORM_ATTR)).getJSONArrayReader();
         SavedShoppingCart savedShoppingCart = new SavedShoppingCart();
@@ -96,19 +100,19 @@ public class UserPaymentServlet extends HttpServlet implements BaseProperties {
         }
         session.setAttribute(SHOPPING_CART_SESSION_ATTR, savedShoppingCart);
 
-        String referenceID = "#" + (nextReferenceId++);
+        String currReferenceId = getReferenceId();
         JSONObjectWriter paymentRequest =
             PaymentRequest.encode("Demo Merchant",
                                   new BigDecimal(BigInteger.valueOf(savedShoppingCart.roundedPaymentAmount), 2),
                                   MerchantService.currency,
-                                  referenceID,
+                                  currReferenceId,
                                   Expires.inMinutes(30),
                                   MerchantService.merchantKey);
 
         session.setAttribute(REQUEST_HASH_SESSION_ATTR, RequestHash.getRequestHash(paymentRequest));
 
-        // Only used in indirect mode
-        session.setAttribute(REQUEST_REFID_SESSION_ATTR, referenceID);
+        // For keeping track of Wallet request
+        session.setAttribute(REQUEST_REFID_SESSION_ATTR, currReferenceId);
 
         Vector<String> acceptedAccountTypes = new Vector<String>();
         for (PayerAccountTypes account : MerchantService.acceptedAccountTypes) {
