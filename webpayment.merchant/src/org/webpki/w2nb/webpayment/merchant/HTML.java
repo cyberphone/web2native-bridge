@@ -443,22 +443,22 @@ public class HTML {
                                   String accountReference) throws IOException, ServletException {
         StringBuffer s = new StringBuffer("<tr><td width=\"100%\" align=\"center\" valign=\"middle\">");
         s.append("<table>" +
-         "<tr><td style=\"text-align:center;font-weight:bolder;font-size:10pt;font-family:" + FONT_ARIAL + "\">Order Status<br>&nbsp;</td></tr>" +
-         "<tr><td style=\"text-align:center;padding-bottom:15pt;font-size:10pt\">Dear customer, your order has been successfully processed!</td></tr>" +
-         "<tr><td><table class=\"tftable\"><tr><th>Our Reference</th><th>Amount</th><th>")
-        .append(accountType.isAcquirerBased() ? "Card" : "Account")
-        .append(" Type</th><th>")
-        .append(accountType.isAcquirerBased() ? "Card Reference" : "Account Number")
-        .append("</th></tr>" +
-         "<tr><td style=\"text-align:center\">")
-        .append(paymentRequest.getReferenceId())
-        .append("</td><td style=\"text-align:center\">")
-        .append(paymentRequest.getCurrency().convertAmountToString(paymentRequest.getAmount()))
-        .append("</td><td style=\"text-align:center\">")
-        .append(accountType.getCommonName())
-        .append("</td><td style=\"text-align:center\">")
-        .append(accountReference)
-        .append("</td></tr></table></td></tr>");
+                 "<tr><td style=\"text-align:center;font-weight:bolder;font-size:10pt;font-family:" + FONT_ARIAL + "\">Order Status<br>&nbsp;</td></tr>" +
+                 "<tr><td style=\"text-align:center;padding-bottom:15pt;font-size:10pt\">Dear customer, your order has been successfully processed!</td></tr>" +
+                 "<tr><td><table class=\"tftable\"><tr><th>Our Reference</th><th>Amount</th><th>")
+         .append(accountType.isAcquirerBased() ? "Card" : "Account")
+         .append(" Type</th><th>")
+         .append(accountType.isAcquirerBased() ? "Card Reference" : "Account Number")
+         .append("</th></tr>" +
+                 "<tr><td style=\"text-align:center\">")
+         .append(paymentRequest.getReferenceId())
+         .append("</td><td style=\"text-align:center\">")
+         .append(paymentRequest.getCurrency().convertAmountToString(paymentRequest.getAmount()))
+         .append("</td><td style=\"text-align:center\">")
+         .append(accountType.getCommonName())
+         .append("</td><td style=\"text-align:center\">")
+         .append(accountReference)
+         .append("</td></tr></table></td></tr>");
         if (debugMode) {
             s.append("<tr><td style=\"text-align:center;padding-top:20pt\"><a href=\"debug\">Show Debug Info</a></td></tr>");
         }
@@ -470,22 +470,22 @@ public class HTML {
     public static void debugPage(HttpServletResponse response,
                                  String string) throws IOException, ServletException {
         StringBuffer s = new StringBuffer("<tr><td width=\"100%\" align=\"center\" valign=\"middle\">" + 
-        "<table>" +
-        "<tr><td style=\"padding-top:50pt;text-align:center;font-weight:bolder;font-size:10pt;font-family:" + FONT_ARIAL +
-        "\">Payment Session Debug Information&nbsp;<br></td></tr><tr><td style=\"text-align:left\">")
-        .append(string)
-        .append("</td></tr></table></td></tr>");
+                  "<table>" +
+                  "<tr><td style=\"padding-top:50pt;text-align:center;font-weight:bolder;font-size:10pt;font-family:" + FONT_ARIAL +
+                  "\">Payment Session Debug Information&nbsp;<br></td></tr><tr><td style=\"text-align:left\">")
+          .append(string)
+          .append("</td></tr></table></td></tr>");
         HTML.output(response, HTML.getHTML(STICK_TO_HOME_URL, null,s.toString()));
     }
 
     public static void paymentError(HttpServletResponse response, boolean debugMode, ErrorReturn errorReturn)
                                     throws IOException, ServletException {
         StringBuffer s = new StringBuffer("<tr><td width=\"100%\" align=\"center\" valign=\"middle\">" + 
-        "<table>" +
-        "<tr><td style=\"text-align:center;font-weight:bolder;font-size:10pt;font-family:" + FONT_ARIAL +
-        "\">Payment Failure&nbsp;<br></td></tr><tr><td style=\"text-align:center\">")
-        .append(errorReturn.getClearText())
-        .append("</td></tr>");
+                 "<table>" +
+                 "<tr><td style=\"text-align:center;font-weight:bolder;font-size:10pt;font-family:" + FONT_ARIAL +
+                 "\">Payment Failure&nbsp;<br></td></tr><tr><td style=\"text-align:center\">")
+         .append(errorReturn.getClearText())
+         .append("</td></tr>");
         if (debugMode) {
             s.append("<tr><td style=\"text-align:center;padding-top:20pt\"><a href=\"debug\">Show Debug Info</a></td></tr>");
         }
@@ -493,13 +493,16 @@ public class HTML {
         HTML.output(response, HTML.getHTML(STICK_TO_HOME_URL, null,s.toString()));
      }
 
-    public static void errorPage(HttpServletResponse response, String error) throws IOException, ServletException {
+    public static void errorPage(HttpServletResponse response, String error, boolean system)
+                                 throws IOException, ServletException {
         StringBuffer s = new StringBuffer("<tr><td width=\"100%\" align=\"center\" valign=\"middle\">" + 
-        "<table>" +
-        "<tr><td style=\"text-align:center;font-weight:bolder;font-size:10pt;font-family:" + FONT_ARIAL +
-        "\">Failure&nbsp;<br></td></tr><tr><td style=\"text-align:center\">")
-        .append(HTMLEncoder.encodeWithLineBreaks(error.getBytes("UTF-8")))
-        .append("</td></tr></table></td></tr>");
+                 "<table>" +
+                 "<tr><td style=\"text-align:center;font-weight:bolder;font-size:10pt;font-family:" + FONT_ARIAL +
+                 "\">")
+         .append(system ? "System " : "")
+         .append("Failure&nbsp;<br></td></tr><tr><td style=\"text-align:center\">")
+         .append(HTMLEncoder.encodeWithLineBreaks(error.getBytes("UTF-8")))
+         .append("</td></tr></table></td></tr>");
         HTML.output(response, HTML.getHTML(STICK_TO_HOME_URL, null,s.toString()));
     }
 }

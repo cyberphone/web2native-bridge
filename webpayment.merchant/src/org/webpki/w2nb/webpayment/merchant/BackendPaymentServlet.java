@@ -58,6 +58,8 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
 
     private static final long serialVersionUID = 1L;
     
+    static Logger logger = Logger.getLogger(BackendPaymentServlet.class.getCanonicalName());
+    
     static final int TIMEOUT_FOR_REQUEST = 5000;
 
     static String portFilter(String url) throws IOException {
@@ -72,9 +74,42 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
                        url2.getFile()).toExternalForm(); 
     }
     
-    static Logger logger = Logger.getLogger(BackendPaymentServlet.class.getCanonicalName());
-    
+    JSONObjectReader fetchJSONData(HTTPSWrapper wrap) throws IOException {
+        if (wrap.getResponseCode() != HttpServletResponse.SC_OK) {
+            throw new IOException("HTTP error " + wrap.getResponseCode() + " " + wrap.getResponseMessage() + ": " +
+                                  (wrap.getData() == null ? "No other information available" : wrap.getDataUTF8()));
+        }
+        // We expect JSON, yes
+        if (!wrap.getRawContentType().equals(JSON_CONTENT_TYPE)) {
+            throw new IOException("Content-Type must be \"" + JSON_CONTENT_TYPE + "\" , found: " + wrap.getRawContentType());
+        }
+        return JSONParser.parse(wrap.getData());        
+    }
+
+    JSONObjectReader postData(URLHolder urlHolder, byte[] data) throws IOException {
+        HTTPSWrapper wrap = new HTTPSWrapper();
+        wrap.setTimeout(TIMEOUT_FOR_REQUEST);
+        wrap.setHeader("Content-Type", MerchantService.jsonMediaType);
+        wrap.setRequireSuccess(false);
+        wrap.makePostRequest(portFilter(urlHolder.url), data);
+        return fetchJSONData(wrap);
+    }
+
+    JSONObjectReader getData(URLHolder urlHolder) throws IOException {
+        HTTPSWrapper wrap = new HTTPSWrapper();
+        wrap.setTimeout(TIMEOUT_FOR_REQUEST);
+        wrap.setRequireSuccess(false);
+        wrap.makeGetRequest(portFilter(urlHolder.url));
+        return fetchJSONData(wrap);
+    }
+
+    // Purpose of this class is to enable URL information in exceptions
+    class URLHolder {
+        String url;
+    }
+
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        URLHolder urlHolder = new URLHolder();
         try {
             HttpSession session = request.getSession(false);
             if (session == null) {
@@ -100,24 +135,19 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
             PayerAuthorization payerAuthorization = new PayerAuthorization(userAuthorization);
 
             // Lookup indicated authority (Payment Provider)
-            String providerAuthorityUrl = payerAuthorization.getAuthorityUrl();
+            urlHolder.url = payerAuthorization.getAuthorityUrl();
 
             // Ugly patch allowing the wallet to work with a local system as well
             if (request.getServerName().equals("localhost")) {
-                URL orig = new URL(providerAuthorityUrl);
-                providerAuthorityUrl = new URL(request.isSecure() ? "https": "http",
-                                               "localhost", request.getServerPort(), orig.getFile()).toExternalForm();
+                URL orig = new URL(urlHolder.url);
+                urlHolder.url = new URL(request.isSecure() ? "https": "http",
+                                        "localhost", 
+                                        request.getServerPort(),
+                                        orig.getFile()).toExternalForm();
             }
 
             // In a production setup you would cache authority objects since they are long-lived
-            HTTPSWrapper wrap = new HTTPSWrapper();
-            wrap.setTimeout(TIMEOUT_FOR_REQUEST);
-            wrap.setRequireSuccess(true);
-            wrap.makeGetRequest(portFilter(providerAuthorityUrl));
-            if (!wrap.getRawContentType().equals(JSON_CONTENT_TYPE)) {
-                throw new IOException("Content-Type must be \"" + JSON_CONTENT_TYPE + "\" , found: " + wrap.getContentType());
-            }
-            Authority providerAuthority = new Authority(JSONParser.parse(wrap.getData()), providerAuthorityUrl);
+            Authority providerAuthority = new Authority(getData(urlHolder), urlHolder.url);
 
             // Verify that the claimed authority belongs to a known payment provider network
             providerAuthority.getSignatureDecoder().verify(MerchantService.paymentRoot);
@@ -127,10 +157,11 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
                                   !payerAuthorization.getAccountType().isAcquirerBased();
 
             if (debug) {
-                debugData.providerAuthority = wrap.getData();
+                debugData.providerAuthority = providerAuthority.getRoot();
                 debugData.directDebit = directDebit;
             }
 
+            // Should be external data but this is a demo you know...
             AccountDescriptor[] accounts = {new AccountDescriptor("http://ultragiro.fr", "35964640"),
                                             new AccountDescriptor("http://mybank.com", 
                                                                   "J-399.962",
@@ -150,27 +181,20 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
                                              request.getRemoteAddr(),
                                              directDebit ? null : Expires.inMinutes(30),
                                              MerchantService.merchantKey);
-            String transactionUrl = providerAuthority.getTransactionUrl();
+            urlHolder.url = providerAuthority.getTransactionUrl();
 
-            logger.info("About to send to \"" + transactionUrl + "\":\n" + providerRequest);
+            logger.info("About to send to payment provider [" + urlHolder.url + "]:\n" + providerRequest);
 
             // Call the payment provider (which is the only party that can deal with
             // encrypted user authorizations)
             byte[] bankRequest = providerRequest.serializeJSONObject(JSONOutputFormats.NORMALIZED);
-            wrap.setTimeout(TIMEOUT_FOR_REQUEST);
-            wrap.setHeader("Content-Type", MerchantService.jsonMediaType);
-            wrap.setRequireSuccess(true);
-            wrap.makePostRequest(portFilter(transactionUrl), bankRequest);
-            if (!wrap.getRawContentType().equals(JSON_CONTENT_TYPE)) {
-                throw new IOException("Content-Type must be \"" + JSON_CONTENT_TYPE + "\" , found: " + wrap.getContentType());
-            }
+            JSONObjectReader resultMessage = postData(urlHolder, bankRequest);
 
-            JSONObjectReader resultMessage = JSONParser.parse(wrap.getData());
-            logger.info("Returned from payment provider:\n" + resultMessage);
+            logger.info("Returned from payment provider [" + urlHolder.url + "]:\n" + resultMessage);
 
             if (debug) {
                 debugData.reserveOrDebitRequest = bankRequest;
-                debugData.reserveOrDebitResponse = wrap.getData();
+                debugData.reserveOrDebitResponse = resultMessage;
             }
 
             ReserveOrDebitResponse bankResponse = new ReserveOrDebitResponse(resultMessage);
@@ -191,7 +215,7 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
             }
             
             if (!bankResponse.isDirectDebit()) {
-                processFinalize (bankResponse, transactionUrl, debugData);
+                processFinalize (bankResponse, urlHolder, debugData);
             }
 
             logger.info("Successful authorization of request: " + bankResponse.getPaymentRequest().getReferenceId());
@@ -206,30 +230,25 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
                                 bankResponse.getAccountReference());  // Currently "unmoderated" account
 
         } catch (Exception e) {
-            logger.log(Level.SEVERE, e.getMessage(), e);
-            ErrorServlet.fail(response, e.getMessage());
+            String message = (urlHolder.url == null ? "" : "URL=" + urlHolder.url + "\n") + e.getMessage();
+            logger.log(Level.SEVERE, message, e);
+            ErrorServlet.systemFail(response, message);
         }
     }
 
-    void processFinalize(ReserveOrDebitResponse bankResponse, String transactionUrl, DebugData debugData)
+    void processFinalize(ReserveOrDebitResponse bankResponse, URLHolder urlHolder, DebugData debugData)
     throws IOException, GeneralSecurityException {
-        HTTPSWrapper wrap = new HTTPSWrapper();
         String target = "provider";
         Authority acquirerAuthority = null;
         if (!bankResponse.isAccount2Account()) {
             target = "acquirer";
             // Lookup indicated acquirer authority
-            wrap.setTimeout(TIMEOUT_FOR_REQUEST);
-            wrap.setRequireSuccess(true);
-            wrap.makeGetRequest(portFilter(MerchantService.acquirerAuthorityUrl));
-            if (!wrap.getRawContentType().equals(JSON_CONTENT_TYPE)) {
-                throw new IOException("Content-Type must be \"" + JSON_CONTENT_TYPE + "\" , found: " + wrap.getContentType());
-            }
-            acquirerAuthority = new Authority(JSONParser.parse(wrap.getData()), MerchantService.acquirerAuthorityUrl);
-            transactionUrl = acquirerAuthority.getTransactionUrl();
+            urlHolder.url = MerchantService.acquirerAuthorityUrl;
+            acquirerAuthority = new Authority(getData(urlHolder), MerchantService.acquirerAuthorityUrl);
+            urlHolder.url = acquirerAuthority.getTransactionUrl();
             if (debugData != null) {
                 debugData.acquirerMode = true;
-                debugData.acquirerAuthority = wrap.getData();
+                debugData.acquirerAuthority = acquirerAuthority.getRoot();
             }
         }
 
@@ -238,25 +257,16 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
                                                                   UserPaymentServlet.getReferenceId(),
                                                                   MerchantService.merchantKey);
 
-        logger.info("About to send to " + target + ":\n" + finalizeRequest);
+        logger.info("About to send to " + target + " [" + urlHolder.url + "]:\n" + finalizeRequest);
 
         // Call the payment provider or acquirer
         byte[] sentFinalize = finalizeRequest.serializeJSONObject(JSONOutputFormats.NORMALIZED);
-        wrap.setTimeout(TIMEOUT_FOR_REQUEST);
-        wrap.setHeader("Content-Type", MerchantService.jsonMediaType);
-        wrap.setRequireSuccess(true);
-        wrap.makePostRequest(portFilter(transactionUrl), sentFinalize);
-        if (!wrap.getRawContentType().equals(JSON_CONTENT_TYPE)) {
-            throw new IOException("Content-Type must be \"" + JSON_CONTENT_TYPE + "\" , found: " + wrap.getContentType());
-        }
-        byte[] finalizeRequestHash = RequestHash.getRequestHash(sentFinalize);
+        JSONObjectReader response = postData(urlHolder, sentFinalize);
+        logger.info("Received from " + target + " [" + urlHolder.url + "]:\n" + response);
 
-        JSONObjectReader response = JSONParser.parse(wrap.getData());
-        logger.info("Received from " + target + ":\n" + response);
-        
         if (debugData != null) {
             debugData.finalizeRequest = sentFinalize;
-            debugData.finalizeResponse = wrap.getData();
+            debugData.finalizeResponse = response;
         }
         
         FinalizeResponse finalizeResponse = new FinalizeResponse(response);
@@ -268,7 +278,7 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
                                                 acquirerAuthority.getSignatureDecoder().getCertificatePath(),                                         
                                                       finalizeResponse.getSignatureDecoder().getCertificatePath());
 
-        if (!ArrayUtil.compare(finalizeRequestHash, finalizeResponse.getRequestHash())) {
+        if (!ArrayUtil.compare(RequestHash.getRequestHash(sentFinalize), finalizeResponse.getRequestHash())) {
             throw new IOException("Non-matching \"" + REQUEST_HASH_JSON + "\"");
         }
     }

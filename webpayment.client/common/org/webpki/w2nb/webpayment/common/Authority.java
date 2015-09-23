@@ -53,7 +53,7 @@ public class Authority implements BaseProperties {
     }
 
     public Authority(JSONObjectReader rd, String expectedAuthorityUrl) throws IOException {
-        Messages.parseBaseMessage(Messages.AUTHORITY, rd);
+        root = Messages.parseBaseMessage(Messages.AUTHORITY, rd);
         authorityUrl = rd.getString(AUTHORITY_URL_JSON);
         if (!authorityUrl.equals(expectedAuthorityUrl)) {
             throw new IOException("\"" + AUTHORITY_URL_JSON + "\" mismatch, read=" + authorityUrl +
@@ -109,5 +109,10 @@ public class Authority implements BaseProperties {
     JSONSignatureDecoder signatureDecoder;
     public JSONSignatureDecoder getSignatureDecoder() {
         return signatureDecoder;
+    }
+
+    JSONObjectReader root;
+    public JSONObjectReader getRoot() {
+        return root;
     }
 }

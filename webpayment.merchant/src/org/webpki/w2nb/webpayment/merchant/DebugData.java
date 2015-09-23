@@ -18,6 +18,8 @@ package org.webpki.w2nb.webpayment.merchant;
 
 import java.io.Serializable;
 
+import org.webpki.json.JSONObjectReader;
+
 public class DebugData implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -28,7 +30,7 @@ public class DebugData implements Serializable {
     
     public byte[] walletResponse;
 
-    public byte[] providerAuthority;
+    public JSONObjectReader providerAuthority;
 
     public boolean directDebit;
     
@@ -36,13 +38,13 @@ public class DebugData implements Serializable {
     
     public byte[] reserveOrDebitRequest;
     
-    public byte[] reserveOrDebitResponse;
+    public JSONObjectReader reserveOrDebitResponse;
     
     public boolean acquirerMode;
     
-    public byte[] acquirerAuthority;
+    public JSONObjectReader acquirerAuthority;
     
     public byte[] finalizeRequest;
 
-    public byte[] finalizeResponse;
+    public JSONObjectReader finalizeResponse;
 }

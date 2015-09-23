@@ -22,11 +22,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
+
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONParser;
 
@@ -47,6 +49,10 @@ public class DebugServlet extends HttpServlet implements BaseProperties {
       return "<div style=\"" + STATIC_BOX + COMMON_BOX + "\">" +
               new String(JSONParser.parse(json).serializeJSONObject(JSONOutputFormats.PRETTY_HTML), "UTF-8") +
               "</div>";
+    }
+
+    String fancyBox(JSONObjectReader json) throws IOException {
+        return fancyBox(json.serializeJSONObject(JSONOutputFormats.NORMALIZED));
     }
 
     String description(String string) {
