@@ -155,8 +155,9 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
             providerAuthority.getSignatureDecoder().verify(MerchantService.paymentRoot);
 
             // Direct debit is only applicable to account2account operations
+            boolean acquirerBased = payerAuthorization.getAccountType().isAcquirerBased();
             boolean directDebit = !UserPaymentServlet.getOption(session, HomeServlet.RESERVE_MODE_SESSION_ATTR) &&
-                                  !payerAuthorization.getAccountType().isAcquirerBased();
+                                  !acquirerBased;
 
             if (debug) {
                 debugData.providerAuthority = providerAuthority.getRoot();
@@ -176,10 +177,8 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
                                              requestHash,
                                              payerAuthorization.getAccountType(),
                                              (String)session.getAttribute(UserPaymentServlet.REQUEST_REFID_SESSION_ATTR),
-                                             payerAuthorization.getAccountType().isAcquirerBased() ? 
-                                                              MerchantService.acquirerAuthorityUrl : null,
-                                             payerAuthorization.getAccountType().isAcquirerBased() ? 
-                                                              null : accounts,
+                                             acquirerBased ? MerchantService.acquirerAuthorityUrl : null,
+                                             acquirerBased ? null : accounts,
                                              request.getRemoteAddr(),
                                              directDebit ? null : Expires.inMinutes(30),
                                              MerchantService.merchantKey);
@@ -231,12 +230,11 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
             }
 
             logger.info("Successful authorization of request: " + bankResponse.getPaymentRequest().getReferenceId());
-            PayerAccountTypes accountType = PayerAccountTypes.fromType(bankResponse.getAccountType());
             HTML.resultPage(response,
                             debug,
                             bankResponse.getPaymentRequest(),
-                            accountType,
-                            accountType.isAcquirerBased() ? // = Card
+                            PayerAccountTypes.fromType(bankResponse.getAccountType()),
+                            acquirerBased ? // = Card
                                 AuthorizationData.formatCardNumber(bankResponse.getAccountReference())
                                                           :
                                 bankResponse.getAccountReference());  // Currently "unmoderated" account
