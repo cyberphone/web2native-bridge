@@ -17,6 +17,9 @@
 package org.webpki.w2nb.webpayment.acquirer;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+
+import java.math.BigDecimal;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -33,6 +36,7 @@ import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONParser;
 
 import org.webpki.w2nb.webpayment.common.BaseProperties;
+import org.webpki.w2nb.webpayment.common.ErrorReturn;
 import org.webpki.w2nb.webpayment.common.FinalizeResponse;
 import org.webpki.w2nb.webpayment.common.ReserveOrDebitResponse;
 import org.webpki.w2nb.webpayment.common.FinalizeRequest;
@@ -83,22 +87,41 @@ public class AcquirementServlet extends HttpServlet implements BaseProperties {
                 throw new IOException ("Unknown merchant: " + merchantDn);
             }
 
-            //////////////////////////////////////////////////////////////////////////////
-            // Now we have all data needed for talking to the payment network but since //
-            // we don't have such a connection we simply return success...              //
-            //////////////////////////////////////////////////////////////////////////////
-            acquirerResponse = FinalizeResponse.encode(payeeFinalizationRequest,
-                                                       "#" + (referenceId++),
-                                                       AcquirerService.acquirerKey);
+            ////////////////////////////////////////////////////////////////////////////
+            // We got an authentic request.  Now we need to check available funds etc.//
+            // Since we don't have a real acquirer this part is rather simplistic :-) //
+            ////////////////////////////////////////////////////////////////////////////
+
+            // Sorry but you don't appear to have a million bucks :-)
+            if (paymentRequest.getAmount().compareTo(new BigDecimal("1000000.00")) >= 0) {
+                acquirerResponse =  FinalizeResponse.encode(new ErrorReturn(ErrorReturn.ERRORS.INSUFFICIENT_FUNDS));
+            } else {
+                acquirerResponse = FinalizeResponse.encode(payeeFinalizationRequest,
+                                                           "#" + (referenceId++),
+                                                           AcquirerService.acquirerKey);
+            }
             logger.info("Returned to caller:\n" + acquirerResponse);
 
+            /////////////////////////////////////////////////////////////////////////////////////////
+            // Normal return                                                                       //
+            /////////////////////////////////////////////////////////////////////////////////////////
+            response.setContentType(JSON_CONTENT_TYPE);
+            response.setHeader("Pragma", "No-Cache");
+            response.setDateHeader("EXPIRES", 0);
+            response.getOutputStream().write(acquirerResponse.serializeJSONObject(JSONOutputFormats.NORMALIZED));
+
         } catch (Exception e) {
+            /////////////////////////////////////////////////////////////////////////////////////////
+            // Hard error return. Note that we return a clear-text message in the response body.   //
+            // Having specific error message syntax for hard errors only complicates things since  //
+            // there will always be the dreadful "internal server error" to deal with as well as   //
+            // general connectivity problems.                                                      //
+            /////////////////////////////////////////////////////////////////////////////////////////
             logger.log(Level.SEVERE, e.getMessage(), e);
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            PrintWriter writer = response.getWriter();
+            writer.print(e.getMessage());
+            writer.flush();
         }
- 
-        response.setContentType(JSON_CONTENT_TYPE);
-        response.setHeader("Pragma", "No-Cache");
-        response.setDateHeader("EXPIRES", 0);
-        response.getOutputStream().write(acquirerResponse.serializeJSONObject(JSONOutputFormats.NORMALIZED));
-      }
-  }
+    }
+}

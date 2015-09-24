@@ -113,13 +113,17 @@ public class PaymentServlet extends HttpServlet implements BaseProperties {
        // Verify that the merchant's signature belongs to a valid merchant trust network
        paymentRequest.getSignatureDecoder().verify(BankService.merchantRoot);
        
+       // We need to separate credit-card and account-2-account payments
+       boolean acquirerBased = PayerAccountTypes.fromType(authorizationData.getAccountDescriptor().getAccountType()).isAcquirerBased();
+       logger.info("Kind of operation: " + (acquirerBased ? "credit-card" : "account-2-account"));
+
        ////////////////////////////////////////////////////////////////////////////
        // We got an authentic request.  Now we need to check available funds etc.//
        // Since we don't have a real bank this part is rather simplistic :-)     //
        ////////////////////////////////////////////////////////////////////////////
 
        // Sorry but you don't appear to have a million bucks :-)
-       if (paymentRequest.getAmount().compareTo(new BigDecimal("1000000.00")) >= 0) {
+       if (!acquirerBased && paymentRequest.getAmount().compareTo(new BigDecimal("1000000.00")) >= 0) {
            return ReserveOrDebitResponse.encode(attestedEncryptedRequest.isDirectDebit(),
                                                 new ErrorReturn(ErrorReturn.ERRORS.INSUFFICIENT_FUNDS));
        }
@@ -127,8 +131,7 @@ public class PaymentServlet extends HttpServlet implements BaseProperties {
        // Separate credit-card and account2account payments
        AccountDescriptor payeeAccount = null;
        JSONObjectWriter encryptedCardData = null;
-       if (PayerAccountTypes.fromType(authorizationData.getAccountDescriptor().getAccountType()).isAcquirerBased()) {
-           logger.info("card");
+       if (acquirerBased) {
            String authorityUrl = attestedEncryptedRequest.getAcquirerAuthorityUrl();
            HTTPSWrapper wrap = new HTTPSWrapper();
            wrap.setTimeout(TIMEOUT_FOR_REQUEST);
@@ -150,7 +153,7 @@ public class PaymentServlet extends HttpServlet implements BaseProperties {
                                                     authority.getPublicKey(),
                                                     authority.getKeyEncryptionAlgorithm());
         } else {
-            logger.info("account");
+            // We simply take the first account in the list
             payeeAccount = attestedEncryptedRequest.getPayeeAccountDescriptors()[0];
         }
 
