@@ -55,6 +55,8 @@ import org.webpki.w2nb.webpayment.common.ReserveOrDebitRequest;
 import org.webpki.w2nb.webpayment.common.FinalizeRequest;
 import org.webpki.w2nb.webpayment.common.PayerAuthorization;
 
+// This servlet does all the backend payment work
+
 public class BackendPaymentServlet extends HttpServlet implements BaseProperties {
 
     private static final long serialVersionUID = 1L;
@@ -92,7 +94,7 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
         wrap.setTimeout(TIMEOUT_FOR_REQUEST);
         wrap.setHeader("Content-Type", MerchantService.jsonMediaType);
         wrap.setRequireSuccess(false);
-        wrap.makePostRequest(portFilter(urlHolder.url), data);
+        wrap.makePostRequest(portFilter(urlHolder.getUrl()), data);
         return fetchJSONData(wrap);
     }
 
@@ -100,14 +102,24 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
         HTTPSWrapper wrap = new HTTPSWrapper();
         wrap.setTimeout(TIMEOUT_FOR_REQUEST);
         wrap.setRequireSuccess(false);
-        wrap.makeGetRequest(portFilter(urlHolder.url));
+        wrap.makeGetRequest(portFilter(urlHolder.getUrl()));
         return fetchJSONData(wrap);
     }
 
     // Purpose of this class is to enable URL information in exceptions
+
     class URLHolder {
-        String url;
+        private String url;
+
+        public String getUrl() {
+            return url;
+        }
+
+        public void setUrl(String url) {
+            this.url = url;
+        }
     }
+
 
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         URLHolder urlHolder = new URLHolder();
@@ -137,19 +149,19 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
             PayerAuthorization payerAuthorization = new PayerAuthorization(userAuthorization);
 
             // Lookup indicated authority (Payment Provider)
-            urlHolder.url = payerAuthorization.getAuthorityUrl();
+            urlHolder.setUrl(payerAuthorization.getAuthorityUrl());
 
             // Ugly patch allowing the wallet to work with a local system as well
             if (request.getServerName().equals("localhost")) {
-                URL orig = new URL(urlHolder.url);
-                urlHolder.url = new URL(request.isSecure() ? "https": "http",
+                URL orig = new URL(urlHolder.getUrl());
+                urlHolder.setUrl(new URL(request.isSecure() ? "https": "http",
                                         "localhost", 
                                         request.getServerPort(),
-                                        orig.getFile()).toExternalForm();
+                                        orig.getFile()).toExternalForm());
             }
 
             // In a production setup you would cache authority objects since they are long-lived
-            Authority providerAuthority = new Authority(getData(urlHolder), urlHolder.url);
+            Authority providerAuthority = new Authority(getData(urlHolder), urlHolder.getUrl());
 
             // Verify that the claimed authority belongs to a known payment provider network
             providerAuthority.getSignatureDecoder().verify(MerchantService.paymentRoot);
@@ -182,14 +194,14 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
                                              request.getRemoteAddr(),
                                              directDebit ? null : Expires.inMinutes(30),
                                              MerchantService.merchantKey);
-            urlHolder.url = providerAuthority.getTransactionUrl();
-            logger.info("About to send to payment provider [" + urlHolder.url + "]:\n" + providerRequest);
+            urlHolder.setUrl(providerAuthority.getTransactionUrl());
+            logger.info("About to send to payment provider [" + urlHolder.getUrl() + "]:\n" + providerRequest);
 
             // Call the payment provider (which is the only party that can deal with
             // encrypted user authorizations)
             byte[] bankRequest = providerRequest.serializeJSONObject(JSONOutputFormats.NORMALIZED);
             JSONObjectReader resultMessage = postData(urlHolder, bankRequest);
-            logger.info("Returned from payment provider [" + urlHolder.url + "]:\n" + resultMessage);
+            logger.info("Returned from payment provider [" + urlHolder.getUrl() + "]:\n" + resultMessage);
 
             if (debug) {
                 debugData.reserveOrDebitRequest = bankRequest;
@@ -240,7 +252,7 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
                                 bankResponse.getAccountReference());  // Currently "unmoderated" account
 
         } catch (Exception e) {
-            String message = (urlHolder.url == null ? "" : "URL=" + urlHolder.url + "\n") + e.getMessage();
+            String message = (urlHolder.getUrl() == null ? "" : "URL=" + urlHolder.getUrl() + "\n") + e.getMessage();
             logger.log(Level.SEVERE, message, e);
             ErrorServlet.systemFail(response, message);
         }
@@ -253,9 +265,9 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
         if (!bankResponse.isAccount2Account()) {
             target = "acquirer";
             // Lookup indicated acquirer authority
-            urlHolder.url = MerchantService.acquirerAuthorityUrl;
+            urlHolder.setUrl(MerchantService.acquirerAuthorityUrl);
             acquirerAuthority = new Authority(getData(urlHolder), MerchantService.acquirerAuthorityUrl);
-            urlHolder.url = acquirerAuthority.getTransactionUrl();
+            urlHolder.setUrl(acquirerAuthority.getTransactionUrl());
             if (debugData != null) {
                 debugData.acquirerMode = true;
                 debugData.acquirerAuthority = acquirerAuthority.getRoot();
@@ -266,12 +278,12 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
                                                                   bankResponse.getPaymentRequest().getAmount(),
                                                                   UserPaymentServlet.getReferenceId(),
                                                                   MerchantService.merchantKey);
-        logger.info("About to send to " + target + " [" + urlHolder.url + "]:\n" + finalizeRequest);
+        logger.info("About to send to " + target + " [" + urlHolder.getUrl() + "]:\n" + finalizeRequest);
 
         // Call the payment provider or acquirer
         byte[] sentFinalize = finalizeRequest.serializeJSONObject(JSONOutputFormats.NORMALIZED);
         JSONObjectReader response = postData(urlHolder, sentFinalize);
-        logger.info("Received from " + target + " [" + urlHolder.url + "]:\n" + response);
+        logger.info("Received from " + target + " [" + urlHolder.getUrl() + "]:\n" + response);
 
         if (debugData != null) {
             debugData.finalizeRequest = sentFinalize;
