@@ -34,7 +34,7 @@ public class DebugData implements Serializable {
 
     public boolean directDebit;
     
-    public boolean softError;
+    public boolean softReserveOrDebitError;
     
     public byte[] reserveOrDebitRequest;
     
@@ -47,4 +47,6 @@ public class DebugData implements Serializable {
     public byte[] finalizeRequest;
 
     public JSONObjectReader finalizeResponse;
+
+    public boolean softFinalizeError;
 }

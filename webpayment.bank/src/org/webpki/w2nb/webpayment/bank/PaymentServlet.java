@@ -178,9 +178,9 @@ public class PaymentServlet extends HttpServlet implements BaseProperties {
         //////////////////////////////////////////////////////////////////////////////
         // Since we don't have a real bank we simply return success...              //
         //////////////////////////////////////////////////////////////////////////////
-       return FinalizeResponse.encode(payeeFinalizationRequest,
-                                      getReferenceId(),
-                                      BankService.bankKey);
+        return FinalizeResponse.encode(payeeFinalizationRequest,
+                                       getReferenceId(),
+                                       BankService.bankKey);
     }
         
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {

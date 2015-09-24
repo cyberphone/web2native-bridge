@@ -70,6 +70,13 @@ public class DebugServlet extends HttpServlet implements BaseProperties {
         }
     }
 
+    String errorDescription(boolean bank) {
+        return "The operation failed causing the <b>" +
+               (bank? "Bank" : "Acquirer") +
+               "</b> to return a standardized error code.&nbsp;&nbsp;This " +
+                "response is <i>unsigned</i> since the associated request is assumed to be <i>rolled-back</i>:";
+    }
+
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         try {
             DebugData debugData = null;
@@ -154,8 +161,7 @@ public class DebugServlet extends HttpServlet implements BaseProperties {
                     "the called <b>Bank</b> invokes the local payment backend (to verify the account, check funds, etc.) " +
                     "<i>which is outside of this specification and implementation</i>.</p><p>" +
                     point +
-                    "</p><p>" + (debugData.softError? "The operation failed causing the <b>Bank</b> to return a standardized error code.&nbsp;&nbsp;This " +
-                    "response is <i>unsigned</i> since the associated request is assumed to be <i>rolled-back</i>.":
+                    "</p><p>" + (debugData.softReserveOrDebitError? errorDescription(true):
                     "If the operation is successful, the <b>Bank</b> responds with a <i>signed</i> message containing both the original <b>Merchant</b> " +
                     keyWord(PAYMENT_REQUEST_JSON) + " as well as a minimal set of user account data.</p>" +
                     (debugData.acquirerMode ?
@@ -165,7 +171,7 @@ public class DebugServlet extends HttpServlet implements BaseProperties {
                                keyWord(PAYEE_ACCOUNT_JSON) + ").</p>") +
                                (debugData.directDebit? "This is the final interaction in the direct debit mode.":""))));
             s.append(fancyBox(debugData.reserveOrDebitResponse));
-            if (!debugData.softError) {
+            if (!debugData.softReserveOrDebitError) {
                if (!debugData.directDebit) {
                     s.append(description(point +
                              "<p>For finalization of the payment, the <b>Merchant</b> sets an " + keyWord(AMOUNT_JSON) + 
@@ -192,14 +198,19 @@ public class DebugServlet extends HttpServlet implements BaseProperties {
                                 "<i>which is outside of this specification and implementation</i>.</p>";
                     }
                     s.append(descriptionStdMargin(finalDescription + 
-                             point + "<p>If the operation is successful, a <i>signed</i> hash of the request is returned:</p>"));
+                             point + "<p>" +
+                            (debugData.softFinalizeError ? errorDescription(!debugData.acquirerMode) : 
+                                "If the operation is successful, a <i>signed</i> hash of the request is returned:") +
+                             "</p>"));
                     s.append(fancyBox(debugData.finalizeResponse));
-                    s.append(descriptionStdMargin("Not embedding the request in the response may appear illogical but since<ul>" +
-                            "<li>the communication is assumed to be <i>synchronous</i> (using HTTP)</li>" +
-                            "<li>there is no additional information needed by the transaction, only a sender-unique " +
-                            keyWord(REFERENCE_ID_JSON) +
-                            "</li><li>the signed 256-bit hash fully binds the response to the request</li></ul>this would not add any security, " +
-                            "assuming that logging is working."));
+                    if (!debugData.softFinalizeError) {
+                        s.append(descriptionStdMargin("Not embedding the request in the response may appear illogical but since<ul>" +
+                                "<li>the communication is assumed to be <i>synchronous</i> (using HTTP)</li>" +
+                                "<li>there is no additional information needed by the transaction, only a sender-unique " +
+                                keyWord(REFERENCE_ID_JSON) +
+                                "</li><li>the signed 256-bit hash fully binds the response to the request</li></ul>this would not add any security, " +
+                                "assuming that logging is working."));
+                    }
                 }
             }
             s.append(description("<p id=\"secretdata\" style=\"text-align:center;font-weight:bold;font-size:10pt;font-family:" + HTML.FONT_ARIAL + "\">Unencrypted User Authorization</p>" +

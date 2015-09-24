@@ -49,8 +49,6 @@ public class FinalizeRequest implements BaseProperties {
         rd.checkForUnread();
     }
 
-    BigDecimal amount;
-    
     GregorianCalendar timeStamp;
 
     Software software;
@@ -64,16 +62,11 @@ public class FinalizeRequest implements BaseProperties {
         return embeddedResponse;
     }
 
-    String acquirerAuthorityUrl;
-    public String getAcquirerAuthorityUrl() {
-        return acquirerAuthorityUrl;
+    BigDecimal amount;
+    public BigDecimal getAmount() {
+        return amount;
     }
- 
-    String clientIpAddress;
-    public String getClientIpAddress() {
-        return clientIpAddress;
-    }
-
+    
     String referenceId;
     public String getReferenceId() {
         return referenceId;

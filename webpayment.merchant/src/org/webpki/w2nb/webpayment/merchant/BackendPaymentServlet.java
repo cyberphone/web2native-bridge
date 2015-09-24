@@ -17,16 +17,12 @@
 package org.webpki.w2nb.webpayment.merchant;
 
 import java.io.IOException;
-
 import java.net.URL;
-
 import java.security.GeneralSecurityException;
-
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
-
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -36,11 +32,9 @@ import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONParser;
-
 import org.webpki.net.HTTPSWrapper;
-
 import org.webpki.util.ArrayUtil;
-
+import org.webpki.w2nb.webpayment.common.ErrorReturn;
 import org.webpki.w2nb.webpayment.common.PayerAccountTypes;
 import org.webpki.w2nb.webpayment.common.Authority;
 import org.webpki.w2nb.webpayment.common.BaseProperties;
@@ -116,8 +110,9 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
                 ErrorServlet.sessionTimeout(response);
                 return;
              }
-            byte[] requestHash = (byte[]) session.getAttribute(UserPaymentServlet.REQUEST_HASH_SESSION_ATTR);
 
+            // Reading the wallet response which is FORM POSTed
+            byte[] requestHash = (byte[]) session.getAttribute(UserPaymentServlet.REQUEST_HASH_SESSION_ATTR);
             request.setCharacterEncoding("UTF-8");
             JSONObjectReader userAuthorization = JSONParser.parse(request.getParameter(UserPaymentServlet.AUTHDATA_FORM_ATTR));
             logger.info("Received from wallet:\n" + userAuthorization);
@@ -182,14 +177,12 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
                                              directDebit ? null : Expires.inMinutes(30),
                                              MerchantService.merchantKey);
             urlHolder.url = providerAuthority.getTransactionUrl();
-
             logger.info("About to send to payment provider [" + urlHolder.url + "]:\n" + providerRequest);
 
             // Call the payment provider (which is the only party that can deal with
             // encrypted user authorizations)
             byte[] bankRequest = providerRequest.serializeJSONObject(JSONOutputFormats.NORMALIZED);
             JSONObjectReader resultMessage = postData(urlHolder, bankRequest);
-
             logger.info("Returned from payment provider [" + urlHolder.url + "]:\n" + resultMessage);
 
             if (debug) {
@@ -199,9 +192,11 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
 
             ReserveOrDebitResponse bankResponse = new ReserveOrDebitResponse(resultMessage);
 
+            // In addition to hard errors, there are a few "normal" errors which preferably would
+            // be dealt with in more user-oriented fashion.
             if (!bankResponse.success()) {
                 if (debug) {
-                    debugData.softError = true;
+                    debugData.softReserveOrDebitError = true;
                 }
                 HTML.paymentError(response, debug, bankResponse.getErrorReturn());
                 return;
@@ -215,7 +210,15 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
             }
             
             if (!bankResponse.isDirectDebit()) {
-                processFinalize (bankResponse, urlHolder, debugData);
+                // Two-phase operation: perform the final step
+                ErrorReturn errorReturn = processFinalize (bankResponse, urlHolder, debugData);
+                if (errorReturn != null) {
+                    if (debug) {
+                        debugData.softFinalizeError = true;
+                    }
+                    HTML.paymentError(response, debug, errorReturn);
+                    return;
+                }
             }
 
             logger.info("Successful authorization of request: " + bankResponse.getPaymentRequest().getReferenceId());
@@ -236,7 +239,7 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
         }
     }
 
-    void processFinalize(ReserveOrDebitResponse bankResponse, URLHolder urlHolder, DebugData debugData)
+    ErrorReturn processFinalize(ReserveOrDebitResponse bankResponse, URLHolder urlHolder, DebugData debugData)
     throws IOException, GeneralSecurityException {
         String target = "provider";
         Authority acquirerAuthority = null;
@@ -256,7 +259,6 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
                                                                   bankResponse.getPaymentRequest().getAmount(),
                                                                   UserPaymentServlet.getReferenceId(),
                                                                   MerchantService.merchantKey);
-
         logger.info("About to send to " + target + " [" + urlHolder.url + "]:\n" + finalizeRequest);
 
         // Call the payment provider or acquirer
@@ -270,6 +272,9 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
         }
         
         FinalizeResponse finalizeResponse = new FinalizeResponse(response);
+        if (!finalizeResponse.success()) {
+            return finalizeResponse.getErrorReturn();
+        }
 
         // Check signature origins
         ReserveOrDebitRequest.compareCertificatePaths(bankResponse.isAccount2Account() ?
@@ -281,6 +286,7 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
         if (!ArrayUtil.compare(RequestHash.getRequestHash(sentFinalize), finalizeResponse.getRequestHash())) {
             throw new IOException("Non-matching \"" + REQUEST_HASH_JSON + "\"");
         }
+        return null;
     }
 
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
