@@ -28,6 +28,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 
+//This servlet publishes the Acquirer (Card-Processor) "Authority" object.
+
 public class AuthorityPublisherServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;

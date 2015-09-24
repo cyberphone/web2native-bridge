@@ -44,6 +44,8 @@ import org.webpki.w2nb.webpayment.common.PaymentRequest;
 
 import org.webpki.webutil.ServletUtil;
 
+//This is the core Acquirer (Card-Processor) payment servlet.
+
 public class AcquirementServlet extends HttpServlet implements BaseProperties {
 
     private static final long serialVersionUID = 1L;
@@ -51,7 +53,11 @@ public class AcquirementServlet extends HttpServlet implements BaseProperties {
     static Logger logger = Logger.getLogger(AcquirementServlet.class.getCanonicalName());
     
     static int referenceId = 194006;
-    
+
+    static String getReferenceId() {
+        return "#" + (referenceId++);
+    }
+
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         JSONObjectWriter acquirerResponse = null;
          try {
@@ -97,7 +103,7 @@ public class AcquirementServlet extends HttpServlet implements BaseProperties {
                 acquirerResponse =  FinalizeResponse.encode(new ErrorReturn(ErrorReturn.ERRORS.INSUFFICIENT_FUNDS));
             } else {
                 acquirerResponse = FinalizeResponse.encode(payeeFinalizationRequest,
-                                                           "#" + (referenceId++),
+                                                           getReferenceId(),
                                                            AcquirerService.acquirerKey);
             }
             logger.info("Returned to caller:\n" + acquirerResponse);
