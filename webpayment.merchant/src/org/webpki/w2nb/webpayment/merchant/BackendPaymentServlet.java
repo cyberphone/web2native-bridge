@@ -212,6 +212,8 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
             if (!bankResponse.isDirectDebit()) {
                 // Two-phase operation: perform the final step
                 ErrorReturn errorReturn = processFinalize (bankResponse, urlHolder, debugData);
+
+                // Is there a soft error?  Return it to the user
                 if (errorReturn != null) {
                     if (debug) {
                         debugData.softFinalizeError = true;
@@ -272,6 +274,8 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
         }
         
         FinalizeResponse finalizeResponse = new FinalizeResponse(response);
+
+        // Is there a soft error?  Then there is no more to do
         if (!finalizeResponse.success()) {
             return finalizeResponse.getErrorReturn();
         }
