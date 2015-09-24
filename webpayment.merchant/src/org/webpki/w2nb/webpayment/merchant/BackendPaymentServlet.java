@@ -17,12 +17,16 @@
 package org.webpki.w2nb.webpayment.merchant;
 
 import java.io.IOException;
+
 import java.net.URL;
+
 import java.security.GeneralSecurityException;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
+
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -32,8 +36,11 @@ import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONParser;
+
 import org.webpki.net.HTTPSWrapper;
+
 import org.webpki.util.ArrayUtil;
+
 import org.webpki.w2nb.webpayment.common.ErrorReturn;
 import org.webpki.w2nb.webpayment.common.PayerAccountTypes;
 import org.webpki.w2nb.webpayment.common.Authority;
