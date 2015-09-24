@@ -100,7 +100,7 @@ public class AcquirementServlet extends HttpServlet implements BaseProperties {
 
             // Sorry but you don't appear to have a million bucks :-)
             if (paymentRequest.getAmount().compareTo(new BigDecimal("1000000.00")) >= 0) {
-                acquirerResponse =  FinalizeResponse.encode(new ErrorReturn(ErrorReturn.ERRORS.INSUFFICIENT_FUNDS));
+                acquirerResponse = FinalizeResponse.encode(new ErrorReturn(ErrorReturn.ERRORS.INSUFFICIENT_FUNDS));
             } else {
                 acquirerResponse = FinalizeResponse.encode(payeeFinalizationRequest,
                                                            getReferenceId(),
