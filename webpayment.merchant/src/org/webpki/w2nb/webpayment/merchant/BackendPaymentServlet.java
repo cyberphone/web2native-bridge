@@ -106,7 +106,7 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
         return fetchJSONData(wrap);
     }
 
-    // Purpose of this class is to enable URL information in exceptions
+    // The purpose of this class is to enable URL information in exceptions
 
     class URLHolder {
         private String url;
@@ -119,7 +119,6 @@ public class BackendPaymentServlet extends HttpServlet implements BaseProperties
             this.url = url;
         }
     }
-
 
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         URLHolder urlHolder = new URLHolder();
