@@ -172,7 +172,8 @@ class DebugPrintout implements BaseProperties {
 
     DebugPrintout(DebugData debugData, boolean clean) throws IOException, GeneralSecurityException {
         this.clean = clean;
-        description("<p>The following page shows the messages exchanged between the " +
+        description("<p>The following page shows the messages " + (clean? "(<i>here slightly edited for brevity</i>) " : "") +
+            "exchanged between the " +
             "<b>Merchant</b> (Payee), the <b>Wallet</b> (Payer), and the user's <b>Bank</b> (Payment provider).&nbsp;&nbsp;" +
             "For traditional card payments there is also an <b>Acquirer</b> (aka &quot;card processor&quot;) involved.</p><p>Current mode: <i>" +
             (debugData.acquirerMode ? "Card payment" : "Account-2-Account payment using " + (debugData.directDebit ? "direct debit" : "reserve+finalize")) +
