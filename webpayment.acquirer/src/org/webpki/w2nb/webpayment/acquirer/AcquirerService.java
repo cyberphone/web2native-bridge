@@ -124,7 +124,7 @@ public class AcquirerService extends InitPropertyReader implements ServletContex
             String aquirerHost = getPropertyString(ACQUIRER_HOST);
             publishedAuthorityData =
                 Authority.encode(aquirerHost + "/authority",
-                                 aquirerHost + "/acquire",
+                                 aquirerHost + "/transact",
                                  decryptionKeys.get(0).getPublicKey(),
                                  Expires.inDays(365),
                                  acquirerKey).serializeJSONObject(JSONOutputFormats.PRETTY_PRINT);

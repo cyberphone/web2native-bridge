@@ -347,7 +347,7 @@ public class HTML {
          .append("</td></tr>" +
                  "</table></td></tr>" +
                  "<tr><td style=\"padding:20pt\" id=\"wallet\">&nbsp;</td></tr></table>" +
-                 "<form name=\"shoot\" method=\"POST\" action=\"backendpay\">" +
+                 "<form name=\"shoot\" method=\"POST\" action=\"transact\">" +
                  "<input type=\"hidden\" name=\"" + UserPaymentServlet.AUTHDATA_FORM_ATTR + "\" id=\"" + UserPaymentServlet.AUTHDATA_FORM_ATTR + "\">");
         if (debugMode) {
             s.append("<input type=\"hidden\" name=\"" + UserPaymentServlet.INITMSG_FORM_ATTR + "\" id=\"" + UserPaymentServlet.INITMSG_FORM_ATTR + "\">");

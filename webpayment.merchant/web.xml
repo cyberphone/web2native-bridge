@@ -78,8 +78,8 @@
     </servlet>
 
     <servlet>
-        <servlet-name>BackendPaymentServlet</servlet-name>
-        <servlet-class>org.webpki.w2nb.webpayment.merchant.BackendPaymentServlet</servlet-class>
+        <servlet-name>TransactionServlet</servlet-name>
+        <servlet-class>org.webpki.w2nb.webpayment.merchant.TransactionServlet</servlet-class>
     </servlet>
 
     <servlet>
@@ -108,8 +108,8 @@
     </servlet-mapping>
 
     <servlet-mapping>
-        <servlet-name>BackendPaymentServlet</servlet-name>
-        <url-pattern>/backendpay</url-pattern>
+        <servlet-name>TransactionServlet</servlet-name>
+        <url-pattern>/transact</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>

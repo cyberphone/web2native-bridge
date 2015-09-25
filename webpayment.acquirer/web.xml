@@ -62,8 +62,8 @@
     </servlet>
 
     <servlet>
-        <servlet-name>AcquirementServlet</servlet-name>
-        <servlet-class>org.webpki.w2nb.webpayment.acquirer.AcquirementServlet</servlet-class>
+        <servlet-name>TransactionServlet</servlet-name>
+        <servlet-class>org.webpki.w2nb.webpayment.acquirer.TransactionServlet</servlet-class>
     </servlet>
 
     <servlet-mapping>
@@ -72,8 +72,8 @@
     </servlet-mapping>
 
     <servlet-mapping>
-        <servlet-name>AcquirementServlet</servlet-name>
-        <url-pattern>/acquire</url-pattern>
+        <servlet-name>TransactionServlet</servlet-name>
+        <url-pattern>/transact</url-pattern>
     </servlet-mapping>
 
     <security-constraint>
