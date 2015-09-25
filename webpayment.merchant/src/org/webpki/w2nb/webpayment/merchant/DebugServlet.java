@@ -346,7 +346,8 @@ public class DebugServlet extends HttpServlet {
                 ErrorServlet.sessionTimeout(response);
                 return;
             }
-            HTML.debugPage(response, new DebugPrintout(debugData, request.getParameter("clean") != null).toString());
+            boolean clean = request.getParameter("clean") != null;
+            HTML.debugPage(response, new DebugPrintout(debugData, clean).toString(), clean);
             
          } catch (Exception e) {
             logger.log(Level.SEVERE, e.getMessage(), e);
