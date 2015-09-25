@@ -18,5 +18,5 @@ package org.webpki.w2nb.webpayment.common;
 
 public class Version {
     public final static String PROTOCOL = "0.42";
-    public final static String DATE     = "2015-09-22";
+    public final static String DATE     = "2015-09-25";
 }
