@@ -115,7 +115,8 @@ public class HTML {
                    "<li>Designed to also work in an NFC/BLE setup where the wallet resides in a mobile device and payments are " +
                    "performed locally as well as on the Web (through Web-NFC)</li>" +
                    "</ul>" +
-                   "Note that the Wallet is <i>pre-configured</i> with payment credentials and requires no signup etc." +
+                   "Note that the Wallet is <i>pre-configured</i> with payment credentials requiring no signup etc.&nbsp;&nbsp;" +
+                   "<a href=\"https://github.com/cyberphone/web2native-bridge#installation\">Install Wallet</a>." +
                    "</td></tr>" +
                    "<tr><td align=\"center\"><table cellspacing=\"0\">" +
 //TODO
