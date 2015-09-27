@@ -42,7 +42,7 @@ public class ReserveOrDebitRequest implements BaseProperties {
         encryptedData = EncryptedData.parse(Messages.parseBaseMessage(directDebit ?
             Messages.DIRECT_DEBIT_REQUEST : Messages.RESERVE_FUNDS_REQUEST, rd).getObject(AUTHORIZATION_DATA_JSON));
         requestHash = RequestHash.parse(rd);
-        accountType = PayerAccountTypes.fromType(rd.getString(ACCOUNT_TYPE_JSON));
+        accountType = PayerAccountTypes.fromTypeUri(rd.getString(ACCOUNT_TYPE_JSON));
         referenceId = rd.getString(REFERENCE_ID_JSON);
         if (!directDebit) {
             expires = rd.getDateTime(EXPIRES_JSON);
@@ -120,7 +120,7 @@ public class ReserveOrDebitRequest implements BaseProperties {
             .setObject(REQUEST_HASH_JSON, new JSONObjectWriter()
                                               .setString(ALGORITHM_JSON, RequestHash.JOSE_SHA_256_ALG_ID)
                                               .setBinary(VALUE_JSON, requestHash))
-            .setString(ACCOUNT_TYPE_JSON, accountType.getType())
+            .setString(ACCOUNT_TYPE_JSON, accountType.getTypeUri())
             .setString(REFERENCE_ID_JSON, referenceId);
         if (directDebit || acquirerAuthorityUrl == null) {
             JSONArrayWriter aw = wr.setArray(PAYEE_ACCOUNTS_JSON);

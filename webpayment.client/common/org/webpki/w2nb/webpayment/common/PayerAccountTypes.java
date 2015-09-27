@@ -25,12 +25,12 @@ public enum PayerAccountTypes {
     UNUSUAL_CARD (false, "https://usualcard.com",  "UnusualCard");
 
     boolean acquirerBased;  // True => card processor model, false = > 3 or 4 corner distributed model
-    String type;            // A brand URI
+    String typeUri;            // A brand URI
     String commonName;      // What it is usually called
     
-    PayerAccountTypes (boolean acquirerBased, String type, String commonName) {
+    PayerAccountTypes (boolean acquirerBased, String typeUri, String commonName) {
         this.acquirerBased = acquirerBased;
-        this.type = type;
+        this.typeUri = typeUri;
         this.commonName = commonName;
     }
 
@@ -38,20 +38,20 @@ public enum PayerAccountTypes {
         return acquirerBased;
     }
 
-    public String getType() {
-        return type;
+    public String getTypeUri() {
+        return typeUri;
     }
 
     public String getCommonName() {
         return commonName;
     }
 
-    public static PayerAccountTypes fromType(String type) throws IOException {
+    public static PayerAccountTypes fromTypeUri(String typeUri) throws IOException {
         for (PayerAccountTypes accountType : PayerAccountTypes.values()) {
-            if (accountType.type.equals(type)) {
+            if (accountType.typeUri.equals(typeUri)) {
                 return accountType;
             }
         }
-        throw new IOException("No such account type: " + type);
+        throw new IOException("No such account type: " + typeUri);
     }
 }

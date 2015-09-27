@@ -170,7 +170,7 @@ public class MerchantService extends InitPropertyReader implements ServletContex
             wallet_bankdirect_auth = getImageDataURI(BANKDIRECT_AUTH_SAMPLE);
 
             protected_account_data = 
-                ProtectedAccountData.encode(new AccountDescriptor(PayerAccountTypes.SUPER_CARD.getType(),
+                ProtectedAccountData.encode(new AccountDescriptor(PayerAccountTypes.SUPER_CARD.getTypeUri(),
                                                                   "6875056745552109"),
                                             "Luke Skywalker",
                                             ISODateTime.parseDateTime("2019-12-31T00:00:00Z").getTime(),

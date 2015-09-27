@@ -116,7 +116,7 @@ public class UserPaymentServlet extends HttpServlet implements BaseProperties {
 
         Vector<String> acceptedAccountTypes = new Vector<String>();
         for (PayerAccountTypes account : MerchantService.acceptedAccountTypes) {
-            acceptedAccountTypes.add(account.getType());
+            acceptedAccountTypes.add(account.getTypeUri());
         }
         acceptedAccountTypes.add("https://nosuchcard.com");
         JSONObjectWriter invokeRequest = Messages.createBaseMessage(Messages.WALLET_REQUEST)

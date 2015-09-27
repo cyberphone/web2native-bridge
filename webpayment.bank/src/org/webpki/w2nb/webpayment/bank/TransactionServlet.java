@@ -116,7 +116,7 @@ public class TransactionServlet extends HttpServlet implements BaseProperties {
        paymentRequest.getSignatureDecoder().verify(BankService.merchantRoot);
        
        // We need to separate credit-card and account-2-account payments
-       boolean acquirerBased = PayerAccountTypes.fromType(authorizationData.getAccountDescriptor().getAccountType()).isAcquirerBased();
+       boolean acquirerBased = PayerAccountTypes.fromTypeUri(authorizationData.getAccountDescriptor().getAccountType()).isAcquirerBased();
        logger.info("Kind of operation: " + (acquirerBased ? "credit-card" : "account-2-account"));
 
        ////////////////////////////////////////////////////////////////////////////
@@ -142,7 +142,7 @@ public class TransactionServlet extends HttpServlet implements BaseProperties {
            if (!wrap.getContentType().equals(JSON_CONTENT_TYPE)) {
                throw new IOException("Content-Type must be \"" + JSON_CONTENT_TYPE + "\" , found: " + wrap.getContentType());
            }
-           Authority authority = new Authority(JSONParser.parse(wrap.getData()),authorityUrl);
+           Authority authority = new Authority(JSONParser.parse(wrap.getData()), authorityUrl);
 
            // Pure sample data...
            JSONObjectWriter protectedAccountData =
