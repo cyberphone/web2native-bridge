@@ -1,2 +1,2 @@
 ###Web Payment Application
-This project holds the code for an Payment Provider (Bank)
+This project holds the code for a Payment Provider (Bank)
