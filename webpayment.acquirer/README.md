@@ -1,2 +1,2 @@
 ###Web Payment Application
-This project is currently in development and should be **ignored!**
+This project holds the code for an Acquirer (Card Processor)
