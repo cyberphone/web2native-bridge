@@ -189,7 +189,6 @@ public class TransactionServlet extends HttpServlet implements BaseProperties {
     }
         
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        JSONObjectWriter providerResponse = null;
         try {
             String contentType = request.getContentType();
             if (!contentType.equals(JSON_CONTENT_TYPE)) {
@@ -201,7 +200,7 @@ public class TransactionServlet extends HttpServlet implements BaseProperties {
             /////////////////////////////////////////////////////////////////////////////////////////
             // We rationalize here by using a single end-point for both reserve/debit and finalize //
             /////////////////////////////////////////////////////////////////////////////////////////
-            providerResponse = 
+            JSONObjectWriter providerResponse = 
                 payeeRequest.getString(JSONDecoderCache.QUALIFIER_JSON).equals(Messages.FINALIZE_REQUEST.toString()) ?
                     processFinalizeRequest(payeeRequest) : processReserveOrDebitRequest(payeeRequest);
             logger.info("Returned to caller:\n" + providerResponse);
