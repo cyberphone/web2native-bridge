@@ -15,7 +15,8 @@ if you accidentally navigate to a malicious page since
 an improperly designed native message extension could enable web access to *any* local application!
 
 ### API
-The Web2Native Bridge emulator extends the **navigator** object by a *single* method **nativeConnect**(*NameOfTargetApplication* [, *optionalArgument*]) which
+The Web2Native Bridge emulator extends the **navigator** object by a *single* method<br>
+**nativeConnect**('*Name of target application*' [, *optionalArgument*]) which
 returns a JavaScript **Promise** to a **port** object.
 
 The **port** object supports the following methods and events:
@@ -28,7 +29,7 @@ The **port** object supports the following methods and events:
 
 An example which could be hosted in an ordinary (*non-privileged*) web page:
 ```javascript
-navigator.nativeConnect('com.example.w2nb.sample').then(function(port) {
+navigator.nativeConnect('com.example.sample').then(function(port) {
 
     port.addMessageListener(function(message) {
         // We got a message from the native application...
