@@ -29,7 +29,7 @@ The **port** object supports the following methods and events:
 
 An example which could be hosted in an ordinary (*non-privileged*) web page:
 ```javascript
-navigator.nativeConnect('com.example.sample').then(function(port) {
+navigator.nativeConnect('com.example.myapp').then(function(port) {
 
     port.addMessageListener(function(message) {
         // We got a message from the native application...
