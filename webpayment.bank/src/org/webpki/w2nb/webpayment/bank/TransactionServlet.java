@@ -96,11 +96,11 @@ public class TransactionServlet extends HttpServlet implements BaseProperties {
         // Read the attested and encrypted request
        ReserveOrDebitRequest attestedEncryptedRequest = new ReserveOrDebitRequest(payeeRequest);
 
-       // Decrypt the encrypted request
+       // Decrypt the encrypted user authorization
        AuthorizationData authorizationData =
                attestedEncryptedRequest.getDecryptedAuthorizationRequest(BankService.decryptionKeys);
 
-       // In the indirect mode the merchant is the only one who can provide the client's IP address
+       // The merchant is the only entity who can provide the client's IP address
        String clientIpAddress = attestedEncryptedRequest.getClientIpAddress();
 
        // Client IP could be used for risk-based authentication, here it is only logged
