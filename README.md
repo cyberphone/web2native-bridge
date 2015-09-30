@@ -16,13 +16,15 @@ an improperly designed native message extension could enable web access to *any*
 
 ### API
 The Web2Native Bridge emulator extends the **navigator** object by a *single* method **nativeConnect**(*NameOfTargetApplication* [, *OptionalArgument*]) which
-returns a JavaScript promise to a **port** object.  *OptionalArgument* must be a valid JSON-serializable JavaScript object.
+returns a JavaScript **Promise** to a **port** object.
 
 The **port** object supports the following methods and events:
-* **postMessage**(*JSONObject*)
+* **postMessage**(*Message*)
 * **disconnect**()
-* **addMessageListener**(function(*JSONObject*))
+* **addMessageListener**(function(*Message*))
 * **addDisconnectListener**(function())
+
+*OptionalArgument* and *Message* must be a valid JSON-serializable JavaScript objects.
 
 An example which could be hosted in an ordinary (*non-privileged*) web page:
 ```javascript
