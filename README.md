@@ -84,13 +84,13 @@ https://chrome.google.com/webstore/search/web2native
 3. Clone the **web2native-bridge** master repository or just download the ZIP via GitHub to any free directory
 4. Start a terminal window and move to <code>proxy/install</code>. Then run the <code>install-proxy</code> script that suits your platform
 
-That's it!  Now you can try the sample application (see next section) since it is installed by default.
+That's it!  Now you can try the two sample applications (see next section) since they are installed by default.
 
 Note: If you are using Oracle Java you must install the **Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy Files** as well.
 
 Please don't hesitate contacting me if you run into problems during installation or execution of the emulator!
 
-### Sample Application
+### Basic Sample Application
 The HTML file <code>sample1/demo/sample1.html</code> does approximately
 the same thing as the application depicted in
 http://www.cnet.com/news/google-paves-over-hole-left-by-chrome-plug-in-ban/
@@ -102,7 +102,7 @@ albeit with a few significant enhancements:
 The native part of the sample application resides in <code>proxy/install/apps/org.webpki.w2nb.sample1/org.webpki.w2nb.sample1.jar</code>.
 
 ### "Wallet" Application
-In addition to the sample application which highlights the core, the installation also makes a digital wallet
+In addition to the basic sample application which highlights the core, the installation also makes a digital wallet
 available for testing over the web which can be invoking by clicking the URL:
 https://test.webpki.org/webpay-merchant
 
