@@ -84,7 +84,7 @@ https://chrome.google.com/webstore/search/web2native
 3. Clone the **web2native-bridge** master repository or just download the ZIP via GitHub to any free directory
 4. Start a terminal window and move to <code>proxy/install</code>. Then run the <code>install-proxy</code> script that suits your platform
 
-That's it!  Now you can try the two sample applications (see next section) since they are installed by default.
+That's it!  Now you can try the two sample applications (see next sections) since they are installed by default.
 
 Note: If you are using Oracle Java you must install the **Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy Files** as well.
 
