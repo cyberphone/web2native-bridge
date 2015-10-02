@@ -124,8 +124,8 @@ public class InitTestPage implements BaseProperties {
         write(Messages.createBaseMessage(Messages.WALLET_REQUEST)
             .setStringArray(ACCEPTED_ACCOUNT_TYPES_JSON,
                             new String[]{"https://nosuchcard.com",
-                                          PayerAccountTypes.SUPER_CARD.getType(),
-                                          PayerAccountTypes.BANK_DIRECT.getType()})
+                                          PayerAccountTypes.SUPER_CARD.getTypeUri(),
+                                          PayerAccountTypes.BANK_DIRECT.getTypeUri()})
             .setObject(PAYMENT_REQUEST_JSON, standardRequest));
 
         // The normal request is cloned and modified for testing error handling
@@ -135,7 +135,7 @@ public class InitTestPage implements BaseProperties {
               "scrollMatchingRequest." + ACCEPTED_ACCOUNT_TYPES_JSON + " = [\"https://nosuchcard.com\"");
         for (PayerAccountTypes accountType : PayerAccountTypes.values()) {
             write(", \"");
-            write(accountType.getType());
+            write(accountType.getTypeUri());
             write("\"");
         }
 

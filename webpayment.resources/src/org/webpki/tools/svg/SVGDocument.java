@@ -16,6 +16,7 @@
  */
 package org.webpki.tools.svg;
 
+import java.io.IOException;
 import java.util.Vector;
 
 public abstract class SVGDocument {
@@ -55,5 +56,9 @@ public abstract class SVGDocument {
         if (maxY > currentMaxY) {
             currentMaxY = maxY;
         }
+    }
+
+    public String getFilters() {
+        return "";
     }
 }

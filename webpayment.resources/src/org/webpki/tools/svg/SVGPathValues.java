@@ -42,38 +42,41 @@ public class SVGPathValues extends SVGValue {
         maxY = masterPath.maxY;
     }
     
-    class Coordinate {
+    class Coordinate implements Cloneable {
         boolean absolute;
         double xValue;
         double yValue;
         
-        Coordinate (boolean absolute, boolean actual, double xValue, double yValue) {
+        Coordinate (boolean absolute, double xValue, double yValue) {
             this.absolute = absolute;
             this.xValue = xValue;
             this.yValue = yValue;
-            if (actual) {
-                if (absolute) {
-                    currX = xValue;
-                    currY = yValue;
-                } else {
-                    currX += xValue;
-                    currY += yValue;
-                    if (currX > maxX) {
-                        maxX = currX;
-                    } else if (currX < minX) {
-                        minX = currX;
-                    }
-                    if (currY > maxY) {
-                        maxY = currY;
-                    } else if (currY < minY) {
-                        minY = currY;
-                    }
-                }
+            if (absolute) {
+                currX = xValue;
+                currY = yValue;
+            } else {
+                currX += xValue;
+                currY += yValue;
             }
+            if (currX > maxX) {
+                maxX = currX;
+            } else if (currX < minX) {
+                minX = currX;
+            }
+            if (currY > maxY) {
+                maxY = currY;
+            } else if (currY < minY) {
+                minY = currY;
+            }
+        }
+
+        @Override
+        public Object clone() throws CloneNotSupportedException {
+            return super.clone();
         }
     }
 
-    class SubCommand {
+    class SubCommand implements Cloneable {
         char command;
         Vector<Coordinate> coordinates = new Vector<Coordinate>();
         
@@ -81,9 +84,17 @@ public class SVGPathValues extends SVGValue {
             this.command = command;
         }
         
-        SubCommand addCoordinate(boolean absolute, boolean actual, double x, double y) {
-            coordinates.add(new Coordinate(absolute, actual, x, y));
+        SubCommand addCoordinate(boolean absolute, double x, double y) {
+            coordinates.add(new Coordinate(absolute, x, y));
             return this;
+        }
+
+        public SubCommand copy() throws CloneNotSupportedException {
+            SubCommand newSC = new SubCommand(command);
+            for (Coordinate co : coordinates) {
+                newSC.coordinates.add((Coordinate) co.clone());
+            }
+            return newSC;
         }
     }
 
@@ -92,11 +103,14 @@ public class SVGPathValues extends SVGValue {
     @Override
     public String getStringRepresentation() {
         StringBuffer result = new StringBuffer();
+        char last = 0;
         for (SubCommand subCommand : commands) {
             if (result.length() > 0) {
                 result.append(' ');
             }
-            result.append(subCommand.command);
+            if (last != subCommand.command) {
+                result.append(last = subCommand.command);
+            }
             for (Coordinate coordinate : subCommand.coordinates) {
                 double xValue = coordinate.xValue;
                 double yValue = coordinate.yValue;
@@ -117,20 +131,37 @@ public class SVGPathValues extends SVGValue {
         commands.add(subCommand);
     }
     
+    public SVGPathValues moveRelative(double x, double y) {
+        addSubCommand(new SubCommand('m').addCoordinate(false, x, y));
+        return this;
+    }
+
     public SVGPathValues moveAbsolute(double x, double y) {
-        addSubCommand(new SubCommand('M').addCoordinate(true, true, x, y));
+        addSubCommand(new SubCommand('M').addCoordinate(true, x, y));
         return this;
     }
 
     public SVGPathValues lineToRelative(double x, double y) {
-        addSubCommand(new SubCommand('l').addCoordinate(false, true, x, y));
+        addSubCommand(new SubCommand('l').addCoordinate(false, x, y));
         return this;
     }
 
-    public SVGPathValues cubicBezier(double c1x, double c1y, double c2x,double c2y, double x, double y) {
-        addSubCommand(new SubCommand('c').addCoordinate(false, false, c1x, c1y)
-                                         .addCoordinate(false, false, c2x, c2y)
-                                         .addCoordinate(false, true, x, y));
+    public SVGPathValues lineToAbsolute(double x, double y) {
+        addSubCommand(new SubCommand('L').addCoordinate(true, x, y));
+        return this;
+    }
+
+    public SVGPathValues cubicBezierRelative(double c1x, double c1y, double c2x,double c2y, double x, double y) {
+        addSubCommand(new SubCommand('c').addCoordinate(false, c1x, c1y)
+                                         .addCoordinate(false, c2x, c2y)
+                                         .addCoordinate(false, x, y));
+        return this;
+    }
+
+    public SVGPathValues cubicBezierAbsolute(double c1x, double c1y, double c2x,double c2y, double x, double y) {
+        addSubCommand(new SubCommand('C').addCoordinate(true, c1x, c1y)
+                                         .addCoordinate(true, c2x, c2y)
+                                         .addCoordinate(true, x, y));
         return this;
     }
 

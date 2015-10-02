@@ -106,6 +106,11 @@ public class SVGText extends SVGObject {
         return this;
     }
 
+    public SVGText setLetterSpacing(double letterSpacing) {
+        addDouble(SVGAttributes.LETTER_SPACING, new SVGDoubleValue(letterSpacing));
+        return this;
+    }
+
     public SVGText setFontWeight(FONT_WEIGHTS fontWeight) {
         addString(SVGAttributes.FONT_WEIGHT, new SVGStringValue(fontWeight.value));
         return this;

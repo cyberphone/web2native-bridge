@@ -81,6 +81,7 @@ public class SVG {
             if (args.length == 3) {
                 filters = new String(ArrayUtil.readFile(args[2]), "UTF-8");
             }
+            filters += doc.getFilters();
             doc.generate();
             for (SVGObject svgObject : SVGDocument.svgObjects) {
                 writeSVGObject(svgObject);

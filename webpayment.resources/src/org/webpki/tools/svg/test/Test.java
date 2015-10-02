@@ -16,6 +16,8 @@
  */
 package org.webpki.tools.svg.test;
 
+import java.io.IOException;
+
 import org.webpki.tools.svg.SVGAddDouble;
 import org.webpki.tools.svg.SVGAddOffset;
 import org.webpki.tools.svg.SVGAnchor;
@@ -24,6 +26,7 @@ import org.webpki.tools.svg.SVGCircle;
 import org.webpki.tools.svg.SVGDocument;
 import org.webpki.tools.svg.SVGDoubleValue;
 import org.webpki.tools.svg.SVGEllipse;
+import org.webpki.tools.svg.SVGEmbeddedText;
 import org.webpki.tools.svg.SVGHorizontalLine;
 import org.webpki.tools.svg.SVGObject;
 import org.webpki.tools.svg.SVGPath;
@@ -245,13 +248,13 @@ SVGObject lo= add(new SVGCircle(new SVGDoubleValue(300), new SVGDoubleValue(250)
     add(new SVGPath(new SVGDoubleValue(400), new SVGDoubleValue(220),
         new SVGPathValues().moveAbsolute(0, 0)
         .lineToRelative(100, 0)
-        .cubicBezier(25, 0, 25, 0, 25,-25)
+        .cubicBezierRelative(25, 0, 25, 0, 25,-25)
         .lineToRelative(0, -100)
-        .cubicBezier(0, -25, 0, -25, 25,-25)
+        .cubicBezierRelative(0, -25, 0, -25, 25,-25)
         .lineToRelative(50, 0)
-        .cubicBezier(25, 0, 25, 0, 25, 25)
+        .cubicBezierRelative(25, 0, 25, 0, 25, 25)
         .lineToRelative(0, 150)
-        .cubicBezier(0, 25, 0, 25, -25, 25)
+        .cubicBezierRelative(0, 25, 0, 25, -25, 25)
         .lineToRelative(-200, 0),
         1.2,
         "#000000",
@@ -284,6 +287,25 @@ add(new SVGRect(createDocumentAnchor(600, 250, SVGAnchor.ALIGNMENT.TOP_LEFT),
                      "Sans-serif",
                      10,
                      "Hi, this is a few\nlines of text\nto be showed in a square"));
+
+SVGEmbeddedText et = new SVGEmbeddedText(org.webpki.w2nb.webpayment.resources.svg.diagrams.SupercardGlyphs.class);
+
+String superCardString = "SuperCard";
+
+double x = 100;
+
+for (char c : superCardString.toCharArray()) {
+    
+    SVGEmbeddedText.DecodedGlyph dg = et.getDecodedGlyph(c, 50);
+
+add(new SVGPath(new SVGDoubleValue(x), new SVGDoubleValue(680),
+        dg.getSVGPathValues(),
+        null,
+        null,
+        "#000000"));
+x += dg.getXAdvance() + 3;
+}
+
 
 linesLength.setDouble(lo.getPrimaryY().getDouble() + lo.getPrimaryHeight().getDouble() - linesY.getDouble() + 15);
 }

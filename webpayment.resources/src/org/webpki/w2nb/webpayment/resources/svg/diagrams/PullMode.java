@@ -209,13 +209,13 @@ SVGObject lo= add(new SVGCircle(new SVGDoubleValue(300), new SVGDoubleValue(250)
     add(new SVGPath(new SVGDoubleValue(400), new SVGDoubleValue(220),
         new SVGPathValues().moveAbsolute(0, 0)
         .lineToRelative(100, 0)
-        .cubicBezier(25, 0, 25, 0, 25,-25)
+        .cubicBezierRelative(25, 0, 25, 0, 25,-25)
         .lineToRelative(0, -100)
-        .cubicBezier(0, -25, 0, -25, 25,-25)
+        .cubicBezierRelative(0, -25, 0, -25, 25,-25)
         .lineToRelative(50, 0)
-        .cubicBezier(25, 0, 25, 0, 25, 25)
+        .cubicBezierRelative(25, 0, 25, 0, 25, 25)
         .lineToRelative(0, 150)
-        .cubicBezier(0, 25, 0, 25, -25, 25)
+        .cubicBezierRelative(0, 25, 0, 25, -25, 25)
         .lineToRelative(-200, 0),
         2.0,
         "#000000",
