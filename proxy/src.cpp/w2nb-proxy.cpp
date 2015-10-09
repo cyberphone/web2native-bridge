@@ -118,13 +118,13 @@ int main(int argc, char *argv[]) {
 
     char *application = getJSONProperty("\"application\":");
 
-	// Check that the caller isn't trying to get outside the sandbox
+    // Check that the caller isn't trying to get outside the sandbox
 	i = 0;
-	char c;
-	while(c = application[i++]) {
-		if ((c > 'Z' || c < 'A') && (c > 'z' || c < 'a') && (c > '9' || c < '0') && c != '.' && c != '_') {
-			exit(EXIT_FAILURE);
-		}
+    char c;
+    while(c = application[i++]) {
+        if ((c > 'Z' || c < 'A') && (c > 'z' || c < 'a') && (c > '9' || c < '0') && c != '.' && c != '_') {
+            exit(EXIT_FAILURE);
+        }
     }
 
     strcat(cmd, path);
