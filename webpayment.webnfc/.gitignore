@@ -1,0 +1,6 @@
+/bin/
+.tmp/
+/windows-build/nfc/obj/
+/windows-build/nfc/bin/x64/Debug/NFCWriter.pdb
+/windows-build/nfc/bin/x64/Debug/NFCWriter.exe.config
+
