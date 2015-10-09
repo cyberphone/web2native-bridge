@@ -66,11 +66,12 @@ is performed through <code>stdin</code> and <code>stdout</code>.
 ### Native Application Interface
 Native applications (in the prototype Java applications hosted in JAR-files) are called as follows:
 <table>
-<tr><td>args[0]</td><td>Path to logfile</td></tr>
-<tr><td>args[1]</td><td>URL of calling web page</td></tr>
-<tr><td>args[2]</td><td>Coordinates of calling web page</td></tr>
-<tr><td>args[3]</td><td>Custom invocation data (<i>OptionalArgument</i>)</td></tr>
-<tr><td>args[4...]</td><td>Chrome's Native Messaging arguments</td></tr>
+<tr><td>args[0]</td><td>Absolute path to the proxy/install directory</td></tr>
+<tr><td>args[1]</td><td>Application name (dotted path)</td></tr>
+<tr><td>args[2]</td><td>URL of calling web page</td></tr>
+<tr><td>args[3]</td><td>Coordinates of calling web page</td></tr>
+<tr><td>args[4]</td><td>Custom invocation data (<i>OptionalArgument</i>)</td></tr>
+<tr><td>args[5...]</td><td>Chrome's Native Messaging arguments</td></tr>
 </table>
 For detailed information about the format of these fields, turn to the code :-)
 

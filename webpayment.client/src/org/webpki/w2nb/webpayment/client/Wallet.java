@@ -54,10 +54,8 @@ import java.util.LinkedHashMap;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import java.util.logging.SimpleFormatter;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -107,6 +105,7 @@ import org.webpki.w2nbproxy.BrowserWindow;
 import org.webpki.w2nbproxy.ExtensionPositioning;
 import org.webpki.w2nbproxy.StdinJSONPipe;
 import org.webpki.w2nbproxy.StdoutJSONPipe;
+import org.webpki.w2nbproxy.LoggerConfiguration;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
@@ -1007,14 +1006,7 @@ public class Wallet {
 
     public static void main(String[] args) throws IOException {
         // Configure the logger with handler and formatter
-        try {
-            FileHandler fh = new FileHandler(args[0]);
-            logger.addHandler(fh);
-            SimpleFormatter formatter = new SimpleFormatter();
-            fh.setFormatter(formatter);
-        } catch (Exception e) {
-            terminate();
-        }
+        LoggerConfiguration.init(logger, args);
         for (int i = 0; i < args.length; i++) {
             logger.info("ARG[" + i + "]=" + args[i]);
         }
@@ -1026,14 +1018,14 @@ public class Wallet {
         BrowserWindow browserWindow = null;
         ExtensionPositioning extensionPositioning = null;
         try {
-            browserWindow = new BrowserWindow(args[2]);
-            extensionPositioning = new ExtensionPositioning(args[3]);
+            browserWindow = new BrowserWindow(args[3]);
+            extensionPositioning = new ExtensionPositioning(args[4]);
             logger.info("Browser window: " + browserWindow);
             logger.info("Positioning arguments: " + extensionPositioning);
-            if (args[1].startsWith("http")) {
-                domainName = new URL(args[1]).getHost();
+            if (args[2].startsWith("http")) {
+                domainName = new URL(args[2]).getHost();
             } else {
-                domainName = args[1];
+                domainName = args[2];
             }
         } catch (Exception e) {
             logger.log(Level.SEVERE, "nativeConnect argument errors", e);

@@ -30,8 +30,10 @@
 #define FILE_SEPARATOR   '\\'
 #define _CRT_SECURE_NO_WARNINGS
 #define JAVA_PLAF " -Dswing.defaultlaf=com.sun.java.swing.plaf.windows.WindowsLookAndFeel"
+#define JAVA_LOG " \"-Djava.util.logging.SimpleFormatter.format=%1$tY-%1$tm-%1$td %1$tH:%1$tM:%1$tS %4$s %2$s %5$s%6$s%n\""
 #else
 #define FILE_SEPARATOR   '/'
+#define JAVA_LOG " \"-Djava.util.logging.SimpleFormatter.format=%1\\$tY-%1\\$tm-%1\\$td %1\\$tH:%1\\$tM:%1\\$tS %4\\$s %2\\$s %5\\$s%6\\$s%n\""
 #define JAVA_PLAF ""
 #endif
 
@@ -105,18 +107,28 @@ int main(int argc, char *argv[]) {
     }
 
     // No, we are executing a Java target application
-    char cmd[2000] = "java" JAVA_PLAF " -jar ";
+    char cmd[2000] = "java" JAVA_LOG JAVA_PLAF " -jar ";
     char path[500] = "\"";
     strcat(path, argv[0]);
     int i = strlen (path);
     while (path[--i] != FILE_SEPARATOR)
       ;
-    path[++i] = 0;
+    path[i] = 0;
     char fs[] = {FILE_SEPARATOR,0};
 
     char *application = getJSONProperty("\"application\":");
 
+	// Check that the caller isn't trying to get outside the sandbox
+	i = 0;
+	char c;
+	while(c = application[i++]) {
+		if ((c > 'Z' || c < 'A') && (c > 'z' || c < 'a') && (c > '9' || c < '0') && c != '.' && c != '_') {
+			exit(EXIT_FAILURE);
+		}
+    }
+
     strcat(cmd, path);
+    strcat(cmd, fs);
     strcat(cmd, "apps");
     strcat(cmd, fs);
     strcat(cmd, application);
@@ -126,31 +138,33 @@ int main(int argc, char *argv[]) {
 
     // Parameters to called Java program
 
-    // args[0] => Log file path
+    // args[0] => Full path to proxy/install
     strcat(cmd, path);
-    strcat(cmd, "logs");
-    strcat(cmd, fs);
+    strcat(cmd, "\" ");
+
+    // args[1] => Dotted path (=application name)
     strcat(cmd, application);
-    strcat(cmd, ".log\" ");
+    strcat(cmd, " \"");
 
-    // args[1] => invoking URL
+    // args[2] => invoking URL
     strcat(cmd, getJSONProperty("\"url\":"));
-    strcat(cmd, " ");
+    strcat(cmd, "\" ");
 
-    // args[2] => Invoking window core data
+    // args[3] => Invoking window core data
     strcat(cmd, getJSONProperty("\"windowB64\":"));
     strcat(cmd, " ");
 
-    // args[3] => Optional arguments to navigator.nativeConnect
+    // args[4] => Optional arguments to navigator.nativeConnect
     strcat(cmd, getJSONProperty("\"argumentsB64\":"));
     
-    // args[4..n] => Chrome standard arguments
+    // args[5..n] => Chrome standard arguments
     for (int i = 1; i < argc; i++) {
         strcat(cmd," ");
         strcat(cmd, argv[i]);
     }
     char fileName[500];
     strcpy(fileName, path + 1);
+    strcat(fileName, fs);
     strcat(fileName, "logs");
     strcat(fileName, fs);
     strcat(fileName, "last-init-application.log");

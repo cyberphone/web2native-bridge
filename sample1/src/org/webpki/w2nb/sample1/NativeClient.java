@@ -23,6 +23,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Toolkit;
 import java.awt.Insets;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
@@ -32,10 +33,8 @@ import java.io.IOException;
 
 import java.util.Date;
 
-import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import java.util.logging.SimpleFormatter;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -52,6 +51,7 @@ import org.webpki.util.ISODateTime;
 import org.webpki.w2nbproxy.BrowserWindow;
 import org.webpki.w2nbproxy.StdinJSONPipe;
 import org.webpki.w2nbproxy.StdoutJSONPipe;
+import org.webpki.w2nbproxy.LoggerConfiguration;
 
 
 //Simple Web2Native Bridge emulator application
@@ -150,32 +150,20 @@ class ApplicationFrame extends Thread {
 public class NativeClient {
     static Logger logger = Logger.getLogger("MyLog");
 
-    private static void initLogger(String logFile) {
-        // This block configure the logger with handler and formatter
-        try {
-            FileHandler fh = new FileHandler(logFile);
-            logger.addHandler(fh);
-            SimpleFormatter formatter = new SimpleFormatter();
-            fh.setFormatter(formatter);
-        } catch (Exception e) {
-            System.exit(3);
-        }
-    }
-
     public static void main(String[] args) {
-        initLogger(args[0]);
+        LoggerConfiguration.init(logger, args);
         for (int i = 0; i < args.length; i++) {
             logger.info("ARG[" + i + "]=" + args[i]);
         }
 
         BrowserWindow browserWindow = null;
         try {
-            browserWindow = new BrowserWindow(args[2]);
+            browserWindow = new BrowserWindow(args[3]);
             logger.info("Browser window: " + browserWindow);
         } catch (Exception e) {
             logger.log(Level.SEVERE, "nativeConnect argument errors", e);
         }
-        JDialog frame = new JDialog(new JFrame(), "W2NB - Sample #1 [" + args[1] + "]");
+        JDialog frame = new JDialog(new JFrame(), "W2NB - Sample #1 [" + args[2] + "]");
         ApplicationFrame md = new ApplicationFrame(frame.getContentPane());
         frame.pack();
 
