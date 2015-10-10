@@ -21,7 +21,7 @@
   
   <target name="clean">
     <delete dir="${temp.dir}"/>
-    <delete dir="${dist.dir}/${w2nb.name}"/>
+    <delete dir="${dist.dir}/${w2nb.webwallet}"/>
   </target>
   
   <target name="build" depends="clean">
@@ -36,7 +36,7 @@
 	  </filterchain>
 	</loadresource>
     <mkdir dir="${temp.dir}" />
-    <mkdir dir="${dist.dir}/${w2nb.name}" />
+    <mkdir dir="${dist.dir}/${w2nb.webwallet}" />
     <javac debug="${debug}"
            source="${javaversion}"
            target="${javaversion}"
@@ -46,7 +46,7 @@
            includeAntRuntime="false">
 	       <include name="**/Wallet.java"/>
     </javac>
-    <jar jarfile="${dist.dir}/${w2nb.name}/${w2nb.name}.jar">
+    <jar jarfile="${dist.dir}/${w2nb.webwallet}/${w2nb.webwallet}.jar">
       <fileset dir="${temp.dir}">
         <exclude name="**/AccountTypes.class"/>
         <exclude name="**/DecryptionKeyHolder.class"/>

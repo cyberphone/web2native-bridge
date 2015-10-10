@@ -314,6 +314,7 @@ public class HTML {
 
     public static void userPayPage(HttpServletResponse response,
                                    SavedShoppingCart savedShoppingCart, 
+                                   String w2nbApplicationName,
                                    boolean debugMode,
                                    String invoke_json) throws IOException, ServletException {
         StringBuffer s = new StringBuffer(
@@ -382,7 +383,7 @@ public class HTML {
                     "        return;\n" +
                     "    }\n" +
                     "    navigator.nativeConnect(\"")
-             .append(MerchantService.w2nbName)
+             .append(w2nbApplicationName)
              .append("\",\n" +
                     "                            ")
              .append(ExtensionPositioning.encode(ExtensionPositioning.HORIZONTAL_ALIGNMENT.Center,
@@ -418,7 +419,7 @@ public class HTML {
                     "        });\n" +
                     "        port.addDisconnectListener(function() {\n" +
                     "            if (initMode) alert('Wallet application \"" + 
-                                      MerchantService.w2nbName + ".jar\" appears to be missing!');\n" +
+                                    w2nbApplicationName + ".jar\" appears to be missing!');\n" +
                     "            nativePort = null;\n" +
                     "            document.forms.restore.submit();\n" +
                     "        });\n" +

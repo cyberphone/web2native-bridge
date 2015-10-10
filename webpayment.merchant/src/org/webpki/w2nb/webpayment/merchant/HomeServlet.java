@@ -31,6 +31,11 @@ public class HomeServlet extends HttpServlet {
     
     static final String RESERVE_MODE_SESSION_ATTR = "rsrvmd";
     static final String DEBUG_SESSION_ATTR        = "debug";
+    static final String W2NB_APP_SESSION_ATTR     = "w2nb";
+
+    String getW2NBApplication() {
+        return MerchantService.w2nbWalletName;
+    }
     
     boolean checkBoxGet(HttpSession session, String name) {
         boolean argument = false;
@@ -48,6 +53,7 @@ public class HomeServlet extends HttpServlet {
 
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         HttpSession session = request.getSession(true);
+        session.setAttribute(W2NB_APP_SESSION_ATTR, getW2NBApplication());
         HTML.homePage(response,
                       checkBoxGet(session, DEBUG_SESSION_ATTR),
                       checkBoxGet(session, RESERVE_MODE_SESSION_ATTR));

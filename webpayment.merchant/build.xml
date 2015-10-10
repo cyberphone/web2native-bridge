@@ -80,7 +80,8 @@
       <replacefilter token="@currency@" value="${currency}"/>
       <replacefilter token="@add-unusual-card@" value="${unusualcard}"/>
       <replacefilter token="@err-media-type@" value="${errormedia}"/>
-      <replacefilter token="@w2nb-name@" value="${w2nb.name}"/>
+      <replacefilter token="@w2nb-wallet@" value="${w2nb.webwallet}"/>
+      <replacefilter token="@w2nb-nfclauncher@" value="${w2nb.nfclauncher}"/>
     </replace>
     <war destfile="${dist.dir}/${application}" webxml="${temp.dir}/web.xml">
       <classes dir="${temp.dir}">

@@ -60,7 +60,7 @@
         <arg value="${testpage}"/>
         <arg value="${merchantkey}${keyfilext}"/>
         <arg value="${keypassword}"/>
-        <arg value="${w2nb.name}"/>
+        <arg value="${w2nb.webwallet}"/>
     </java>
   </target>
 

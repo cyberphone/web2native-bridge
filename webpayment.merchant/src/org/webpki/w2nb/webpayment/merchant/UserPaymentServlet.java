@@ -72,6 +72,11 @@ public class UserPaymentServlet extends HttpServlet implements BaseProperties {
     }
 
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            ErrorServlet.sessionTimeout(response);
+            return;
+         }
         JSONArrayReader ar = JSONParser.parse(request.getParameter(SHOPPING_CART_FORM_ATTR)).getJSONArrayReader();
         SavedShoppingCart savedShoppingCart = new SavedShoppingCart();
         long total = 0;
@@ -92,7 +97,6 @@ public class UserPaymentServlet extends HttpServlet implements BaseProperties {
 
         // Then we round up to the nearest 25 centimes, cents, or pennies
         savedShoppingCart.roundedPaymentAmount = ((savedShoppingCart.tax + total + 24) / 25) * 25;
-        HttpSession session = request.getSession(true);
         boolean debugMode = getOption(session, HomeServlet.DEBUG_SESSION_ATTR);
         DebugData debugData = null;
         if (debugMode) {
@@ -129,6 +133,7 @@ public class UserPaymentServlet extends HttpServlet implements BaseProperties {
         
         HTML.userPayPage(response,
                          savedShoppingCart,
+                         (String) session.getAttribute(HomeServlet.W2NB_APP_SESSION_ATTR),
                          debugMode,
                          new String(invokeRequest.serializeJSONObject(JSONOutputFormats.JS_NATIVE), "UTF-8"));
     }

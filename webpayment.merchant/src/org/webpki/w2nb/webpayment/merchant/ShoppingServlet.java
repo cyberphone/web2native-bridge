@@ -46,18 +46,25 @@ public class ShoppingServlet extends HttpServlet {
     
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         HttpSession session = request.getSession(false);
+        if (session == null) {
+            ErrorServlet.sessionTimeout(response);
+            return;
+         }
         SavedShoppingCart saved_shopping_cart =
-            (session != null && session.getAttribute(UserPaymentServlet.SHOPPING_CART_SESSION_ATTR) != null) ?
+            (session.getAttribute(UserPaymentServlet.SHOPPING_CART_SESSION_ATTR) != null) ?
                 (SavedShoppingCart)session.getAttribute(UserPaymentServlet.SHOPPING_CART_SESSION_ATTR)
                                        :
                 new SavedShoppingCart();
-        if (session != null) {
-            session.removeAttribute(UserPaymentServlet.SHOPPING_CART_SESSION_ATTR);
-        }
+        session.removeAttribute(UserPaymentServlet.SHOPPING_CART_SESSION_ATTR);
         HTML.merchantPage(response, saved_shopping_cart);
     }
 
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            ErrorServlet.sessionTimeout(response);
+            return;
+         }
         HTML.merchantPage(response, new SavedShoppingCart());
     }
 }

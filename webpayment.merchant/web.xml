@@ -54,8 +54,14 @@
 
     <context-param>
         <description>Web2Native Bridge wallet name</description>
-        <param-name>w2nb_name</param-name>
-        <param-value>@w2nb-name@</param-value>
+        <param-name>w2nb_wallet</param-name>
+        <param-value>@w2nb-wallet@</param-value>
+    </context-param>
+
+    <context-param>
+        <description>Web2Native Bridge NFC Launcher name</description>
+        <param-name>w2nb_nfclauncher</param-name>
+        <param-value>@w2nb-nfclauncher@</param-value>
     </context-param>
 
     <listener>
@@ -92,6 +98,11 @@
         <servlet-class>org.webpki.w2nb.webpayment.merchant.ErrorServlet</servlet-class>
     </servlet>
 
+    <servlet>
+        <servlet-name>NFCLauncherServlet</servlet-name>
+        <servlet-class>org.webpki.w2nb.webpayment.merchant.NFCLauncherServlet</servlet-class>
+    </servlet>
+
     <servlet-mapping>
         <servlet-name>HomeServlet</servlet-name>
         <url-pattern>/home</url-pattern>
@@ -120,6 +131,11 @@
     <servlet-mapping>
         <servlet-name>ErrorServlet</servlet-name>
         <url-pattern>/error</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>NFCLauncherServlet</servlet-name>
+        <url-pattern>/nfc</url-pattern>
     </servlet-mapping>
 
     <security-constraint>
