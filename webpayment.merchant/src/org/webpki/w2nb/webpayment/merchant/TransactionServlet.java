@@ -139,7 +139,7 @@ public class TransactionServlet extends HttpServlet implements BaseProperties {
 
             // Do we have web debug mode?
             DebugData debugData = null;
-            boolean debug = UserPaymentServlet.getOption(session, HomeServlet.DEBUG_SESSION_ATTR);
+            boolean debug = UserPaymentServlet.getOption(session, HomeServlet.DEBUG_MODE_SESSION_ATTR);
             if (debug) {
                 debugData = (DebugData) session.getAttribute(UserPaymentServlet.DEBUG_DATA_SESSION_ATTR);
                 debugData.WalletInitialized = request.getParameter(UserPaymentServlet.INITMSG_FORM_ATTR).getBytes("UTF-8");

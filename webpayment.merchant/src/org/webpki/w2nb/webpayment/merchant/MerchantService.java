@@ -78,8 +78,6 @@ public class MerchantService extends InitPropertyReader implements ServletContex
     
     static final String W2NB_WALLET            = "w2nb_wallet";
     
-    static final String W2NB_NFCLAUNCHER       = "w2nb_nfclauncher";
-
     static final String USER_AUTH_SAMPLE       = "user-authorization.json";
 
     static final String SUPERCARD_AUTH_SAMPLE  = "wallet-supercard-auth.png";
@@ -101,8 +99,6 @@ public class MerchantService extends InitPropertyReader implements ServletContex
     // Web2Native Bridge constants
     static String w2nbWalletName;
     
-    static String w2nbNFCLauncherName;
-
     // Debug mode samples
     static byte[] user_authorization;
 
@@ -160,8 +156,6 @@ public class MerchantService extends InitPropertyReader implements ServletContex
             currency = Currencies.valueOf(getPropertyString(CURRENCY));
 
             w2nbWalletName = getPropertyString(W2NB_WALLET);
-
-            w2nbNFCLauncherName = getPropertyString(W2NB_NFCLAUNCHER);
 
             acquirerAuthorityUrl = getPropertyString(ACQUIRER_AUTHORITY_URL);
 

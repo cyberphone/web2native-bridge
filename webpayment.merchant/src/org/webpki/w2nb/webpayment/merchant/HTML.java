@@ -129,7 +129,7 @@ public class HTML {
                    (reserveMode ? " checked" : "") +
                    "></td><td>Reserve+Finalize Payment Mode</td></tr>" +
                    "<tr><td style=\"text-align:center\"><input type=\"checkbox\" name=\"" +
-                   HomeServlet.DEBUG_SESSION_ATTR + "\" onchange=\"document.forms.options.submit()\"" +
+                   HomeServlet.DEBUG_MODE_SESSION_ATTR + "\" onchange=\"document.forms.options.submit()\"" +
                    (debugMode ? " checked" : "") +
                    "></td><td>Debug (JSON Message Dump) Option</td></form></tr>" +
                     "<tr><td style=\"text-align:center;padding-top:15pt;padding-bottom:5pt\" colspan=\"2\"><b>Documentation</b></td></tr>" +
@@ -314,7 +314,7 @@ public class HTML {
 
     public static void userPayPage(HttpServletResponse response,
                                    SavedShoppingCart savedShoppingCart, 
-                                   String w2nbApplicationName,
+                                   String navigatorMethod,
                                    boolean debugMode,
                                    String invoke_json) throws IOException, ServletException {
         StringBuffer s = new StringBuffer(
@@ -371,20 +371,26 @@ public class HTML {
                     "    }\n" +
                     "}\n\n" +
 
-                    "function setString(message) {\n" +
+                    "function setFail(message) {\n" +
                     "    closeWallet();\n" +
-                    "    console.debug(message);\n" +
+                    "    alert(message);\n" +
                     "}\n\n" +
 
                     "function activateWallet() {\n" +
                     "    var initMode = true;\n" +
-                    "    if (!navigator.nativeConnect) {\n" +
-                    "        setString('\"navigator.nativeConnect\" not found, \\ncheck Chrome Web2Native Bridge extension settings');\n" +
+                    "    if (!navigator.")
+             .append(navigatorMethod)
+             .append(") {\n" +
+                    "        setFail('\"navigator.")
+             .append(navigatorMethod)
+             .append("\" not found, \\ncheck Chrome extension settings');\n" +
                     "        return;\n" +
                     "    }\n" +
-                    "    navigator.nativeConnect(\"")
-             .append(w2nbApplicationName)
-             .append("\",\n" +
+                    "    navigator.")
+             .append(navigatorMethod)
+             .append("('")
+             .append(MerchantService.w2nbWalletName)
+             .append("',\n" +
                     "                            ")
              .append(ExtensionPositioning.encode(ExtensionPositioning.HORIZONTAL_ALIGNMENT.Center,
                                                  ExtensionPositioning.VERTICAL_ALIGNMENT.Center,
@@ -393,13 +399,13 @@ public class HTML {
                     "        nativePort = port;\n" +
                     "        port.addMessageListener(function(message) {\n" +
                     "            if (message[\"@context\"] != \"" + BaseProperties.W2NB_WEB_PAY_CONTEXT_URI + "\") {\n" +
-                    "                setString(\"Missing or wrong \\\"@context\\\"\");\n" +
+                    "                setFail(\"Missing or wrong \\\"@context\\\"\");\n" +
                     "                return;\n" +
                     "            }\n" +
                     "            var qualifier = message[\"@qualifier\"];\n" +
                     "            if ((initMode && qualifier != \"" + Messages.WALLET_INITIALIZED.toString() + "\")  ||\n" +
                     "                (!initMode && qualifier != \"" +  Messages.PAYER_AUTHORIZATION.toString() + "\")) {\n" +  
-                    "                setString(\"Wrong or missing \\\"@qualifier\\\"\");\n" +
+                    "                setFail(\"Wrong or missing \\\"@qualifier\\\"\");\n" +
                     "                return;\n" +
                     "            }\n" +
                     "            if (initMode) {\n");
@@ -419,7 +425,7 @@ public class HTML {
                     "        });\n" +
                     "        port.addDisconnectListener(function() {\n" +
                     "            if (initMode) alert('Wallet application \"" + 
-                                    w2nbApplicationName + ".jar\" appears to be missing!');\n" +
+                                     MerchantService.w2nbWalletName + ".jar\" appears to be missing!');\n" +
                     "            nativePort = null;\n" +
                     "            document.forms.restore.submit();\n" +
                     "        });\n" +

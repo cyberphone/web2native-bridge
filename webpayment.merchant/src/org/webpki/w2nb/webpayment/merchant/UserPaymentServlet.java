@@ -97,7 +97,7 @@ public class UserPaymentServlet extends HttpServlet implements BaseProperties {
 
         // Then we round up to the nearest 25 centimes, cents, or pennies
         savedShoppingCart.roundedPaymentAmount = ((savedShoppingCart.tax + total + 24) / 25) * 25;
-        boolean debugMode = getOption(session, HomeServlet.DEBUG_SESSION_ATTR);
+        boolean debugMode = getOption(session, HomeServlet.DEBUG_MODE_SESSION_ATTR);
         DebugData debugData = null;
         if (debugMode) {
             session.setAttribute(DEBUG_DATA_SESSION_ATTR, debugData = new DebugData());
@@ -133,7 +133,7 @@ public class UserPaymentServlet extends HttpServlet implements BaseProperties {
         
         HTML.userPayPage(response,
                          savedShoppingCart,
-                         (String) session.getAttribute(HomeServlet.W2NB_APP_SESSION_ATTR),
+                         (String) session.getAttribute(HomeServlet.NAVIGATOR_METHOD_SESSION_ATTR),
                          debugMode,
                          new String(invokeRequest.serializeJSONObject(JSONOutputFormats.JS_NATIVE), "UTF-8"));
     }

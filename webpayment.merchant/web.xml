@@ -58,12 +58,6 @@
         <param-value>@w2nb-wallet@</param-value>
     </context-param>
 
-    <context-param>
-        <description>Web2Native Bridge NFC Launcher name</description>
-        <param-name>w2nb_nfclauncher</param-name>
-        <param-value>@w2nb-nfclauncher@</param-value>
-    </context-param>
-
     <listener>
         <listener-class>org.webpki.w2nb.webpayment.merchant.MerchantService</listener-class>
     </listener>

@@ -29,12 +29,12 @@ public class HomeServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
     
-    static final String RESERVE_MODE_SESSION_ATTR = "rsrvmd";
-    static final String DEBUG_SESSION_ATTR        = "debug";
-    static final String W2NB_APP_SESSION_ATTR     = "w2nb";
+    static final String RESERVE_MODE_SESSION_ATTR     = "rsrvmd";
+    static final String DEBUG_MODE_SESSION_ATTR       = "debug";
+    static final String NAVIGATOR_METHOD_SESSION_ATTR = "navmeth";
 
-    String getW2NBApplication() {
-        return MerchantService.w2nbWalletName;
+    String getNavigatorMethod() {
+        return "nativeConnect";
     }
     
     boolean checkBoxGet(HttpSession session, String name) {
@@ -53,15 +53,15 @@ public class HomeServlet extends HttpServlet {
 
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         HttpSession session = request.getSession(true);
-        session.setAttribute(W2NB_APP_SESSION_ATTR, getW2NBApplication());
+        session.setAttribute(NAVIGATOR_METHOD_SESSION_ATTR, getNavigatorMethod());
         HTML.homePage(response,
-                      checkBoxGet(session, DEBUG_SESSION_ATTR),
+                      checkBoxGet(session, DEBUG_MODE_SESSION_ATTR),
                       checkBoxGet(session, RESERVE_MODE_SESSION_ATTR));
     }
 
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         HttpSession session = request.getSession(true);
-        checkBoxSet(session, request, DEBUG_SESSION_ATTR);
+        checkBoxSet(session, request, DEBUG_MODE_SESSION_ATTR);
         checkBoxSet(session, request, RESERVE_MODE_SESSION_ATTR);
         response.sendRedirect("home");
     }
