@@ -21,7 +21,7 @@ public class NFCLauncherServlet extends HomeServlet {
     private static final long serialVersionUID = 1L;
 
     @Override
-    String getNavigatorMethod() {
-        return "tapConnect";
+    boolean isTapConnect() {
+        return true;
     }
 }

@@ -31,10 +31,10 @@ public class HomeServlet extends HttpServlet {
     
     static final String RESERVE_MODE_SESSION_ATTR     = "rsrvmd";
     static final String DEBUG_MODE_SESSION_ATTR       = "debug";
-    static final String NAVIGATOR_METHOD_SESSION_ATTR = "navmeth";
+    static final String TAP_CONNECT_MODE_SESSION_ATTR = "tapcon";
 
-    String getNavigatorMethod() {
-        return "nativeConnect";
+    boolean isTapConnect() {
+        return false;
     }
     
     boolean checkBoxGet(HttpSession session, String name) {
@@ -53,7 +53,7 @@ public class HomeServlet extends HttpServlet {
 
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         HttpSession session = request.getSession(true);
-        session.setAttribute(NAVIGATOR_METHOD_SESSION_ATTR, getNavigatorMethod());
+        session.setAttribute(TAP_CONNECT_MODE_SESSION_ATTR, isTapConnect());
         HTML.homePage(response,
                       checkBoxGet(session, DEBUG_MODE_SESSION_ATTR),
                       checkBoxGet(session, RESERVE_MODE_SESSION_ATTR));

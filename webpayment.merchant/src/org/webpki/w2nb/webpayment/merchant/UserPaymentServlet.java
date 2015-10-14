@@ -133,7 +133,7 @@ public class UserPaymentServlet extends HttpServlet implements BaseProperties {
         
         HTML.userPayPage(response,
                          savedShoppingCart,
-                         (String) session.getAttribute(HomeServlet.NAVIGATOR_METHOD_SESSION_ATTR),
+                         getOption(session, HomeServlet.TAP_CONNECT_MODE_SESSION_ATTR),
                          debugMode,
                          new String(invokeRequest.serializeJSONObject(JSONOutputFormats.JS_NATIVE), "UTF-8"));
     }
