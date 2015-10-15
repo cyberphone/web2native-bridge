@@ -167,16 +167,21 @@ public class NativeClient {
         ApplicationFrame md = new ApplicationFrame(frame.getContentPane());
         frame.pack();
 
-        // Put the extension window on top of the upper right of the calling (browser)window
-        // The alignment varies a bit between platforms :-(
-        Dimension screenDimension = Toolkit.getDefaultToolkit().getScreenSize();
-        Dimension extensionWindow = frame.getSize();
-        double factor = screenDimension.height / browserWindow.screenHeight;
-        double gutter = (browserWindow.outerWidth - browserWindow.innerWidth) / 2;
-        double x = browserWindow.x + gutter;
-        x += browserWindow.innerWidth - extensionWindow.width / factor;
-        double y = browserWindow.y + browserWindow.outerHeight - browserWindow.innerHeight - gutter;
-        frame.setLocation((int)(x * factor), (int)(y * factor));
+        if (browserWindow.screenHeight == 0) {
+            frame.setLocationRelativeTo(null);  // tapConnect invocation
+        } else {
+            // Put the extension window on top of the upper right of the calling (browser)window
+            // The alignment varies a bit between platforms :-(
+            Dimension screenDimension = Toolkit.getDefaultToolkit().getScreenSize();
+            Dimension extensionWindow = frame.getSize();
+            double factor = screenDimension.height / browserWindow.screenHeight;
+            double gutter = (browserWindow.outerWidth - browserWindow.innerWidth) / 2;
+            double x = browserWindow.x + gutter;
+            x += browserWindow.innerWidth - extensionWindow.width / factor;
+            double y = browserWindow.y + browserWindow.outerHeight - browserWindow.innerHeight - gutter;
+            frame.setLocation((int)(x * factor), (int)(y * factor));
+        }
+
         frame.setAlwaysOnTop(true);
 
         frame.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
