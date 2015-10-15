@@ -49,14 +49,16 @@ public class BrowserWindow {
 
     public BrowserWindow(String base64UrlEncodedParameters) throws IOException {
         browserWindow = JSONParser.parse(Base64URL.decode(base64UrlEncodedParameters));
-        screenWidth = browserWindow.getDouble("screenWidth");
-        screenHeight = browserWindow.getDouble("screenHeight");
-        x = browserWindow.getDouble("windowX");
-        y = browserWindow.getDouble("windowY");
-        outerWidth = browserWindow.getDouble("windowOuterWidth");
-        outerHeight = browserWindow.getDouble("windowOuterHeight");
-        innerWidth = browserWindow.getDouble("windowInnerWidth");
-        innerHeight = browserWindow.getDouble("windowInnerHeight");
+        if (browserWindow.hasProperty("screenWidth")) {
+            screenWidth = browserWindow.getDouble("screenWidth");
+            screenHeight = browserWindow.getDouble("screenHeight");
+            x = browserWindow.getDouble("windowX");
+            y = browserWindow.getDouble("windowY");
+            outerWidth = browserWindow.getDouble("windowOuterWidth");
+            outerHeight = browserWindow.getDouble("windowOuterHeight");
+            innerWidth = browserWindow.getDouble("windowInnerWidth");
+            innerHeight = browserWindow.getDouble("windowInnerHeight");
+        }
         browserWindow.checkForUnread();
     }
 

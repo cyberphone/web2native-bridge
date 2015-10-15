@@ -1019,8 +1019,8 @@ public class Wallet {
         ExtensionPositioning extensionPositioning = null;
         try {
             browserWindow = new BrowserWindow(args[3]);
-            extensionPositioning = new ExtensionPositioning(args[4]);
             logger.info("Browser window: " + browserWindow);
+            extensionPositioning = new ExtensionPositioning(args[4]);
             logger.info("Positioning arguments: " + extensionPositioning);
             if (args[2].startsWith("http")) {
                 domainName = new URL(args[2]).getHost();
@@ -1041,59 +1041,71 @@ public class Wallet {
         frame.setResizable(false);
         frame.pack();
 
-        ////////////////////////////////////////////////////////////////
-        // Positioning: Calculate coordinates in Browser resolution
-        ////////////////////////////////////////////////////////////////
-
-        // Note that Swing returns native precision
-        Dimension extensionWindow = frame.getSize();
-        logger.info("Frame=" + extensionWindow);
-
-        // We need to know the difference between Browser/Native precision
-        double factor = screenDimension.height / browserWindow.screenHeight;
-
-        // Browser border size
-        double gutter = (browserWindow.outerWidth - browserWindow.innerWidth) / 2;
-
-        // The browser window's position (modulo fixed "chrome") on the screen
-        double left = browserWindow.x + gutter;
-        double top = browserWindow.y + browserWindow.outerHeight - browserWindow.innerHeight - gutter;
-        double width = browserWindow.innerWidth;
-        double height = browserWindow.innerHeight;
-
-        // We may rather be targeting a specific HTML element on the invoking page
-        if (extensionPositioning.targetRectangle != null) {
-            left += extensionPositioning.targetRectangle.left;
-            top += extensionPositioning.targetRectangle.top;
-            width = extensionPositioning.targetRectangle.width;
-            height = extensionPositioning.targetRectangle.height;
+        double extWidth = 0;
+        double extHeight = 0;
+        if (browserWindow.screenHeight == 0) {
+            ////////////////////////////////////////////////////////////////
+            // No positioning information: Probably tapConnect invocation
+            ////////////////////////////////////////////////////////////////
+            frame.setLocationRelativeTo(null);
+        } else {
+            ////////////////////////////////////////////////////////////////
+            // Positioning: Calculate coordinates in Browser resolution
+            ////////////////////////////////////////////////////////////////
+    
+            // Note that Swing returns native precision
+            Dimension extensionWindow = frame.getSize();
+            logger.info("Frame=" + extensionWindow);
+    
+            // We need to know the difference between Browser/Native precision
+            double factor = screenDimension.height / browserWindow.screenHeight;
+    
+            // Browser border size
+            double gutter = (browserWindow.outerWidth - browserWindow.innerWidth) / 2;
+    
+            // The browser window's position (modulo fixed "chrome") on the screen
+            double left = browserWindow.x + gutter;
+            double top = browserWindow.y + browserWindow.outerHeight - browserWindow.innerHeight - gutter;
+            double width = browserWindow.innerWidth;
+            double height = browserWindow.innerHeight;
+    
+            // We may rather be targeting a specific HTML element on the invoking page
+            if (extensionPositioning.targetRectangle != null) {
+                left += extensionPositioning.targetRectangle.left;
+                top += extensionPositioning.targetRectangle.top;
+                width = extensionPositioning.targetRectangle.width;
+                height = extensionPositioning.targetRectangle.height;
+            }
+    
+            // Position the Wallet on the screen according to the caller's preferences.
+            extWidth = extensionWindow.getWidth() / factor;
+            if (extensionPositioning.horizontalAlignment == ExtensionPositioning.HORIZONTAL_ALIGNMENT.Center) {
+                left += (width - extWidth) / 2;
+            } else if (extensionPositioning.horizontalAlignment == ExtensionPositioning.HORIZONTAL_ALIGNMENT.Right) {
+                left += width - extWidth;
+            }
+            extHeight = extensionWindow.getHeight() / factor; 
+            if (extensionPositioning.verticalAlignment == ExtensionPositioning.VERTICAL_ALIGNMENT.Center) {
+                top += (height - extHeight) / 2;
+            } else if (extensionPositioning.verticalAlignment == ExtensionPositioning.VERTICAL_ALIGNMENT.Bottom) {
+                top += height - extHeight;
+            }
+            frame.setLocation((int)(left * factor), (int)(top * factor));
         }
-
-        // Position the Wallet on the screen according to the caller's preferences.
-        double extWidth = extensionWindow.getWidth() / factor;
-        if (extensionPositioning.horizontalAlignment == ExtensionPositioning.HORIZONTAL_ALIGNMENT.Center) {
-            left += (width - extWidth) / 2;
-        } else if (extensionPositioning.horizontalAlignment == ExtensionPositioning.HORIZONTAL_ALIGNMENT.Right) {
-            left += width - extWidth;
-        }
-        double extHeight = extensionWindow.getHeight() / factor; 
-        if (extensionPositioning.verticalAlignment == ExtensionPositioning.VERTICAL_ALIGNMENT.Center) {
-            top += (height - extHeight) / 2;
-        } else if (extensionPositioning.verticalAlignment == ExtensionPositioning.VERTICAL_ALIGNMENT.Bottom) {
-            top += height - extHeight;
-        }
-        frame.setLocation((int)(left * factor), (int)(top * factor));
 
         // Respond to caller to indicate that we are (almost) ready for action.
-        // We provide the Wallet's width and height data which can be used by the
-        // calling Web application to update the page for the Wallet to make
+        //
+        // We optionally provide the Wallet's width and height data which can be used
+        // by the calling Web application to update the page for the Wallet to make
         // it more look like a Web application.  Note that this measurement
         // lacks the 'px' part; you have to add it in the Web application.
         try {
-            JSONObjectWriter readyMessage = Messages.createBaseMessage(Messages.WALLET_INITIALIZED)
-                .setObject(BaseProperties.WINDOW_JSON, new JSONObjectWriter()
+            JSONObjectWriter readyMessage = Messages.createBaseMessage(Messages.WALLET_INITIALIZED);
+            if (extWidth != 0) {
+                readyMessage.setObject(BaseProperties.WINDOW_JSON)
                     .setDouble(BaseProperties.WIDTH_JSON, extWidth)
-                    .setDouble(BaseProperties.HEIGHT_JSON, extHeight));
+                    .setDouble(BaseProperties.HEIGHT_JSON, extHeight);
+            }
             logger.info("Sent to browser:\n" + readyMessage);
             stdout.writeJSONObject(readyMessage);
         } catch (Exception e) {

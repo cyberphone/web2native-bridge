@@ -62,16 +62,18 @@ public class ExtensionPositioning {
 
     public ExtensionPositioning(String base64UrlEncodedArguments) throws IOException {
         positioningArguments = JSONParser.parse(Base64URL.decode(base64UrlEncodedArguments));
-        horizontalAlignment = HORIZONTAL_ALIGNMENT.valueOf(
-                positioningArguments.getString(HORIZONTAL_ALIGNMENT_JSON));
-        verticalAlignment = VERTICAL_ALIGNMENT.valueOf(
-                positioningArguments.getString(VERTICAL_ALIGNMENT_JSON));
-        if (positioningArguments.hasProperty(TARGET_RECTANGLE_JSON)) {
-            JSONObjectReader values = positioningArguments.getObject(TARGET_RECTANGLE_JSON);
-            targetRectangle = new TargetRectangle(values.getDouble(TARGET_LEFT_JSON),
-                                                  values.getDouble(TARGET_TOP_JSON),
-                                                  values.getDouble(TARGET_WIDTH_JSON),
-                                                  values.getDouble(TARGET_HEIGHT_JSON));
+        if (positioningArguments.hasProperty(HORIZONTAL_ALIGNMENT_JSON)) {
+            horizontalAlignment = HORIZONTAL_ALIGNMENT.valueOf(
+                    positioningArguments.getString(HORIZONTAL_ALIGNMENT_JSON));
+            verticalAlignment = VERTICAL_ALIGNMENT.valueOf(
+                    positioningArguments.getString(VERTICAL_ALIGNMENT_JSON));
+            if (positioningArguments.hasProperty(TARGET_RECTANGLE_JSON)) {
+                JSONObjectReader values = positioningArguments.getObject(TARGET_RECTANGLE_JSON);
+                targetRectangle = new TargetRectangle(values.getDouble(TARGET_LEFT_JSON),
+                                                      values.getDouble(TARGET_TOP_JSON),
+                                                      values.getDouble(TARGET_WIDTH_JSON),
+                                                      values.getDouble(TARGET_HEIGHT_JSON));
+            }
         }
         positioningArguments.checkForUnread();
     }
