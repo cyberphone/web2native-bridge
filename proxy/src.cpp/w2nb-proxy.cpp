@@ -167,7 +167,7 @@ int main(int argc, char *argv[]) {
     strcat(fileName, fs);
     strcat(fileName, "logs");
     strcat(fileName, fs);
-    strcat(fileName, "last-init-application.log");
+    strcat(fileName, "w2nb-proxy-init.log");
     FILE* logFile = fopen(fileName, "w");
     fprintf(logFile, "commmand: %s\n", cmd);
 
