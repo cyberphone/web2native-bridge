@@ -37,6 +37,12 @@
 	</loadresource>
     <mkdir dir="${temp.dir}" />
     <mkdir dir="${dist.dir}/${w2nb.webwallet}" />
+    <fixcrlf srcdir="${src.dir}"
+       tab="remove"
+       tablength="4"
+       eol="lf"
+       eof="remove"
+       includes="**/*.java"/>
     <javac debug="${debug}"
            source="${javaversion}"
            target="${javaversion}"
