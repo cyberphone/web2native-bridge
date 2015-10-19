@@ -347,9 +347,13 @@ public class HTML {
          .append("</td></tr>" +
             "</table></td></tr><tr><td style=\"padding-top:10pt\"><table style=\"margin-left:auto;margin-right:auto\" class=\"tftable\"><tr><th style=\"text-align:center\">Amount to Pay</th><td style=\"text-align:right\" id=\"total\">")
          .append(price(savedShoppingCart.roundedPaymentAmount))
-         .append("</td></tr>" +
-                 "</table></td></tr>" +
-                 "<tr><td style=\"padding:20pt\" id=\"wallet\">&nbsp;</td></tr></table>" +
+         .append("</td></tr></table></td></tr><tr>");
+        if (tapConnectMode) {
+            s.append("<td align=\"center\"><img id=\"state\" src=\"images/NFC-N-Mark-Logo.svg\" style=\"height:120pt;margin-top:10pt\"></td>");
+        } else {
+            s.append("<td style=\"padding:20pt\" id=\"wallet\">&nbsp;</td>");
+        }
+        s.append("</tr></table>" +
                  "<form name=\"shoot\" method=\"POST\" action=\"transact\">" +
                  "<input type=\"hidden\" name=\"" + UserPaymentServlet.AUTHDATA_FORM_ATTR + "\" id=\"" + UserPaymentServlet.AUTHDATA_FORM_ATTR + "\">");
         if (debugMode) {
@@ -433,6 +437,7 @@ public class HTML {
            temp_string.append(
                    "        port.addConnectionListener(function(initialize) {\n" +
                    "            if (initialize) {\n" +
+                   "                document.getElementById(\"state\").src = \"images/loading-gears-animation-3.gif\";\n" +
                    "            } else {\n" +
                    "                if (initMode) console.debug('Wallet prematurely closed!');\n" +
                    "                nativePort = null;\n" +
