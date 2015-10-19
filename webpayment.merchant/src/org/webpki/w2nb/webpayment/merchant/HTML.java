@@ -349,7 +349,8 @@ public class HTML {
          .append(price(savedShoppingCart.roundedPaymentAmount))
          .append("</td></tr></table></td></tr><tr>");
         if (tapConnectMode) {
-            s.append("<td align=\"center\"><img id=\"state\" src=\"images/NFC-N-Mark-Logo.svg\" style=\"height:120pt;margin-top:10pt\"></td>");
+            s.append("<td align=\"center\"><img id=\"state\" title=\"Please tap your mobile wallet!\" " +
+                     "src=\"images/NFC-N-Mark-Logo.svg\" style=\"height:120pt;margin-top:10pt\"></td>");
         } else {
             s.append("<td style=\"padding:20pt\" id=\"wallet\">&nbsp;</td>");
         }
