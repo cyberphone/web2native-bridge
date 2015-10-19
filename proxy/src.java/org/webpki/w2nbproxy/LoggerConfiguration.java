@@ -29,6 +29,7 @@ final public class LoggerConfiguration {
     
     public static void init(Logger logger, String[] args) {
         try {
+            logger.setUseParentHandlers(false);
             FileHandler fh = new FileHandler(args[0] + File.separator + "logs" + File.separator + args[1] + ".log");
             logger.addHandler(fh);
             SimpleFormatter formatter = new SimpleFormatter();
