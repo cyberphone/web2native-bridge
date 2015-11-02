@@ -27,7 +27,8 @@ import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-import org.webpki.json.JSONAlgorithmPreferences;
+import org.webpki.crypto.AlgorithmPreferences;
+
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 
@@ -40,7 +41,7 @@ public class FinalizeRequest implements BaseProperties {
         referenceId = rd.getString(REFERENCE_ID_JSON);
         timeStamp = rd.getDateTime(TIME_STAMP_JSON);
         software = new Software(rd);
-        outerCertificatePath = rd.getSignature(JSONAlgorithmPreferences.JOSE).getCertificatePath();
+        outerCertificatePath = rd.getSignature(AlgorithmPreferences.JOSE).getCertificatePath();
         PaymentRequest paymentRequest = embeddedResponse.getPaymentRequest();
         ReserveOrDebitRequest.compareCertificatePaths(outerCertificatePath, paymentRequest);
         if (amount.compareTo(paymentRequest.getAmount()) > 0) {

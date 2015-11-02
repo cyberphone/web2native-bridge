@@ -21,7 +21,9 @@ package org.webpki.w2nb.webpayment.resources;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+
 import java.io.IOException;
+
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
@@ -31,12 +33,12 @@ import java.security.interfaces.RSAPublicKey;
 
 import java.util.EnumSet;
 
+import org.webpki.crypto.AlgorithmPreferences;
 import org.webpki.crypto.AsymSignatureAlgorithms;
 import org.webpki.crypto.CertificateUtil;
 import org.webpki.crypto.CustomCryptoProvider;
 import org.webpki.crypto.KeyAlgorithms;
 
-import org.webpki.json.JSONAlgorithmPreferences;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONOutputFormats;
 
@@ -58,6 +60,7 @@ import org.webpki.sks.test.GenKey;
 import org.webpki.sks.test.KeySpecifier;
 import org.webpki.sks.test.PINPol;
 import org.webpki.sks.test.ProvSess;
+
 import org.webpki.sks.test.SKSReferenceImplementation;
 
 import org.webpki.util.ArrayUtil;
@@ -84,9 +87,9 @@ public class InitWallet {
         KeyStoreEnumerator importedKey = new KeyStoreEnumerator(new FileInputStream(args[1]), args[2]);
         boolean rsa_flag = importedKey.getPublicKey() instanceof RSAPublicKey;
         String[] endorsed_algs = rsa_flag ?
-                new String[] {AsymSignatureAlgorithms.RSA_SHA256.getURI()} 
+                new String[] {AsymSignatureAlgorithms.RSA_SHA256.getAlgorithmId(AlgorithmPreferences.SKS)} 
                                           : 
-                new String[] {AsymSignatureAlgorithms.ECDSA_SHA256.getURI()};
+                new String[] {AsymSignatureAlgorithms.ECDSA_SHA256.getAlgorithmId(AlgorithmPreferences.SKS)};
 
         // Setup keystore (SKS)
         SKSReferenceImplementation sks = null;
@@ -151,9 +154,9 @@ public class InitWallet {
                  .setString(BaseProperties.PROVIDER_AUTHORITY_URL_JSON, args[6])
                  .setString(BaseProperties.SIGNATURE_ALGORITHM_JSON,
                          rsa_flag ?
-                    AsymSignatureAlgorithms.RSA_SHA256.getJOSEName()
+                    AsymSignatureAlgorithms.RSA_SHA256.getAlgorithmId(AlgorithmPreferences.JOSE)
                                   :
-                    AsymSignatureAlgorithms.ECDSA_SHA256.getJOSEName());
+                    AsymSignatureAlgorithms.ECDSA_SHA256.getAlgorithmId(AlgorithmPreferences.JOSE));
             PublicKey publicKey = CertificateUtil.getCertificateFromBlob(ArrayUtil.readFile(args[7])).getPublicKey();
             ow.setObject(BaseProperties.ENCRYPTION_PARAMETERS_JSON)
                   .setString(BaseProperties.DATA_ENCRYPTION_ALGORITHM_JSON, Encryption.JOSE_A128CBC_HS256_ALG_ID)
@@ -162,7 +165,7 @@ public class InitWallet {
                              Encryption.JOSE_RSA_OAEP_256_ALG_ID 
                                                            : 
                              Encryption.JOSE_ECDH_ES_ALG_ID)
-                  .setPublicKey(publicKey, JSONAlgorithmPreferences.JOSE);
+                  .setPublicKey(publicKey, AlgorithmPreferences.JOSE);
             surrogateKey.addExtension(BaseProperties.W2NB_WEB_PAY_CONTEXT_URI,
                                       SecureKeyStore.SUB_TYPE_EXTENSION,
                                       "",

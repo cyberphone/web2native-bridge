@@ -21,10 +21,10 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
+import org.webpki.crypto.AlgorithmPreferences;
 import org.webpki.crypto.AsymSignatureAlgorithms;
 import org.webpki.crypto.SignerInterface;
 
-import org.webpki.json.JSONAlgorithmPreferences;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONSignatureDecoder;
@@ -60,7 +60,7 @@ public class AuthorizationData implements BaseProperties {
                       new Date(),
                       new JSONX509Signer(signer).setSignatureAlgorithm(signatureAlgorithm)
                                                 .setSignatureCertificateAttributes(true)
-                                                .setAlgorithmPreferences(JSONAlgorithmPreferences.JOSE));
+                                                .setAlgorithmPreferences(AlgorithmPreferences.JOSE));
     }
 
     public static String formatCardNumber(String accountId) {
@@ -82,7 +82,7 @@ public class AuthorizationData implements BaseProperties {
         accountDescriptor = new AccountDescriptor(rd.getObject(PAYER_ACCOUNT_JSON));
         timeStamp = rd.getDateTime(TIME_STAMP_JSON);
         software = new Software(rd);
-        signatureDecoder = rd.getSignature(JSONAlgorithmPreferences.JOSE);
+        signatureDecoder = rd.getSignature(AlgorithmPreferences.JOSE);
         rd.checkForUnread();
     }
 

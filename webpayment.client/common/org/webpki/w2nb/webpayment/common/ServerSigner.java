@@ -24,11 +24,11 @@ import java.security.cert.X509Certificate;
 
 import java.security.interfaces.RSAPublicKey;
 
+import org.webpki.crypto.AlgorithmPreferences;
 import org.webpki.crypto.AsymSignatureAlgorithms;
 import org.webpki.crypto.SignatureWrapper;
 import org.webpki.crypto.SignerInterface;
 
-import org.webpki.json.JSONAlgorithmPreferences;
 import org.webpki.json.JSONX509Signer;
 
 public class ServerSigner extends JSONX509Signer {
@@ -55,6 +55,6 @@ public class ServerSigner extends JSONX509Signer {
         setSignatureCertificateAttributes(true);
         setSignatureAlgorithm(key.getPublicKey() instanceof RSAPublicKey ?
                   AsymSignatureAlgorithms.RSA_SHA256 : AsymSignatureAlgorithms.ECDSA_SHA256);
-        setAlgorithmPreferences(JSONAlgorithmPreferences.JOSE);
+        setAlgorithmPreferences(AlgorithmPreferences.JOSE);
     }
 }

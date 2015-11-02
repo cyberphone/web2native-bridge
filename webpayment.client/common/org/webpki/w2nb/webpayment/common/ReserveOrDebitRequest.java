@@ -26,7 +26,8 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Vector;
 
-import org.webpki.json.JSONAlgorithmPreferences;
+import org.webpki.crypto.AlgorithmPreferences;
+
 import org.webpki.json.JSONArrayReader;
 import org.webpki.json.JSONArrayWriter;
 import org.webpki.json.JSONDecoderCache;
@@ -60,7 +61,7 @@ public class ReserveOrDebitRequest implements BaseProperties {
         clientIpAddress = rd.getString(CLIENT_IP_ADDRESS_JSON);
         dateTime = rd.getDateTime(TIME_STAMP_JSON);
         software = new Software(rd);
-        outerCertificatePath = rd.getSignature(JSONAlgorithmPreferences.JOSE).getCertificatePath();
+        outerCertificatePath = rd.getSignature(AlgorithmPreferences.JOSE).getCertificatePath();
         rd.checkForUnread();
     }
 

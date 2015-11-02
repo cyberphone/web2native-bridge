@@ -72,11 +72,10 @@ import javax.swing.border.EmptyBorder;
 
 import javax.swing.plaf.metal.MetalButtonUI;
 
+import org.webpki.crypto.AlgorithmPreferences;
 import org.webpki.crypto.AsymSignatureAlgorithms;
 import org.webpki.crypto.SignerInterface;
 
-import org.webpki.json.JSONAlgorithmPreferences;
-import org.webpki.json.JSONSignatureDecoder;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONParser;
@@ -886,9 +885,8 @@ public class Wallet {
                                                  KeyGen2URIs.LOGOTYPES.CARD).getExtensionData(SecureKeyStore.SUB_TYPE_LOGOTYPE),
                                                  false),
                                     AsymSignatureAlgorithms.getAlgorithmFromID(
-                                        JSONSignatureDecoder.algorithmCheck(
                                             cardProperties.getString(BaseProperties.SIGNATURE_ALGORITHM_JSON),
-                                            JSONAlgorithmPreferences.JOSE)),
+                                            AlgorithmPreferences.JOSE),
                                     cardProperties.getString(BaseProperties.PROVIDER_AUTHORITY_URL_JSON));
                     JSONObjectReader encryptionParameters = cardProperties.getObject(BaseProperties.ENCRYPTION_PARAMETERS_JSON);
                     card.keyEncryptionAlgorithm =
@@ -907,7 +905,7 @@ public class Wallet {
                                        card.dataEncryptionAlgorithm);
                         break;
                     }
-                    card.keyEncryptionKey = encryptionParameters.getPublicKey(JSONAlgorithmPreferences.JOSE);
+                    card.keyEncryptionKey = encryptionParameters.getPublicKey(AlgorithmPreferences.JOSE);
 
                     // We found a useful card!
                     cardCollection.put(keyHandle, card);
@@ -945,7 +943,7 @@ public class Wallet {
                             @Override
                             public byte[] signData(byte[] data, AsymSignatureAlgorithms algorithm) throws IOException {
                                 return sks.signHashedData(keyHandle,
-                                                          algorithm.getURI(),
+                                                          algorithm.getAlgorithmId (AlgorithmPreferences.SKS),
                                                           null,
                                                           new String(pinText.getPassword()).getBytes("UTF-8"),
                                                           algorithm.getDigestAlgorithm().digest(data));

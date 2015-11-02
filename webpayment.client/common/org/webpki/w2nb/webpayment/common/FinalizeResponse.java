@@ -23,7 +23,7 @@ import java.security.GeneralSecurityException;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-import org.webpki.json.JSONAlgorithmPreferences;
+import org.webpki.crypto.AlgorithmPreferences;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONSignatureDecoder;
@@ -44,7 +44,7 @@ public class FinalizeResponse implements BaseProperties {
         referenceId = rd.getString(REFERENCE_ID_JSON);
         timeStamp = rd.getDateTime(TIME_STAMP_JSON);
         software = new Software(rd);
-        signatureDecoder = rd.getSignature(JSONAlgorithmPreferences.JOSE);
+        signatureDecoder = rd.getSignature(AlgorithmPreferences.JOSE);
         rd.checkForUnread();
     }
 

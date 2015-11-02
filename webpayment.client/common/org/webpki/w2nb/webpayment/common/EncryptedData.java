@@ -25,7 +25,8 @@ import java.security.interfaces.ECPublicKey;
 
 import java.util.Vector;
 
-import org.webpki.json.JSONAlgorithmPreferences;
+import org.webpki.crypto.AlgorithmPreferences;
+
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONOutputFormats;
@@ -76,12 +77,12 @@ public class EncryptedData implements BaseProperties {
         authenticatedData = encryptedKey.serializeJSONObject(JSONOutputFormats.NORMALIZED);
         keyEncryptionAlgorithm = encryptedKey.getString(ALGORITHM_JSON);
         if (isRsaKey(keyEncryptionAlgorithm)) {
-            publicKey = encryptedKey.getPublicKey(JSONAlgorithmPreferences.JOSE);
+            publicKey = encryptedKey.getPublicKey(AlgorithmPreferences.JOSE);
             encryptedKeyData = encryptedKey.getBinary(CIPHER_TEXT_JSON);
         } else {
-            publicKey = encryptedKey.getObject(STATIC_RECEIVER_KEY_JSON).getPublicKey(JSONAlgorithmPreferences.JOSE);
+            publicKey = encryptedKey.getObject(STATIC_RECEIVER_KEY_JSON).getPublicKey(AlgorithmPreferences.JOSE);
             ephemeralPublicKey = 
-                (ECPublicKey) encryptedKey.getObject(EPHEMERAL_SENDER_KEY_JSON).getPublicKey(JSONAlgorithmPreferences.JOSE);
+                (ECPublicKey) encryptedKey.getObject(EPHEMERAL_SENDER_KEY_JSON).getPublicKey(AlgorithmPreferences.JOSE);
         }
         encryptedData = rd.getBinary(CIPHER_TEXT_JSON);
     }
@@ -125,7 +126,7 @@ public class EncryptedData implements BaseProperties {
             .setString(ALGORITHM_JSON, keyEncryptionAlgorithm);
         byte[] dataEncryptionKey = null;
         if (EncryptedData.isRsaKey(keyEncryptionAlgorithm)) {
-            encryptedKey.setPublicKey(keyEncryptionKey, JSONAlgorithmPreferences.JOSE);
+            encryptedKey.setPublicKey(keyEncryptionKey, AlgorithmPreferences.JOSE);
             dataEncryptionKey = Encryption.generateDataEncryptionKey(dataEncryptionAlgorithm);
             encryptedKey.setBinary(CIPHER_TEXT_JSON,
             Encryption.rsaEncryptKey(keyEncryptionAlgorithm,
@@ -138,9 +139,9 @@ public class EncryptedData implements BaseProperties {
                                                               ephemeralKey,
                                                               keyEncryptionKey);
             encryptedKey.setObject(STATIC_RECEIVER_KEY_JSON)
-                .setPublicKey(keyEncryptionKey, JSONAlgorithmPreferences.JOSE);
+                .setPublicKey(keyEncryptionKey, AlgorithmPreferences.JOSE);
             encryptedKey.setObject(EPHEMERAL_SENDER_KEY_JSON)
-                .setPublicKey(ephemeralKey[0], JSONAlgorithmPreferences.JOSE);
+                .setPublicKey(ephemeralKey[0], AlgorithmPreferences.JOSE);
         }
         byte[] iv = Encryption.generateIV(dataEncryptionAlgorithm);
         byte[] tag = Encryption.createEmptyTag(dataEncryptionAlgorithm);

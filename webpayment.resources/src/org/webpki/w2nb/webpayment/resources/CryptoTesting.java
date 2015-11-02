@@ -17,6 +17,8 @@ import java.security.spec.ECPublicKeySpec;
 
 
 
+
+import org.webpki.crypto.AlgorithmPreferences;
 import org.webpki.crypto.CustomCryptoProvider;
 import org.webpki.crypto.KeyAlgorithms;
 
@@ -58,7 +60,8 @@ public class CryptoTesting {
     
     static KeyPair getKeyPair (String jwk) throws Exception {
         JSONObjectReader rd = JSONParser.parse(jwk);
-        KeyAlgorithms ec = KeyAlgorithms.getKeyAlgorithmFromID (rd.getString ("crv"));
+        KeyAlgorithms ec = KeyAlgorithms.getKeyAlgorithmFromID (rd.getString ("crv"),
+                                                                AlgorithmPreferences.JOSE);
         if (!ec.isECKey ()) {
             throw new IOException ("\"crv\" is not an EC type");
         }
@@ -123,7 +126,7 @@ public class CryptoTesting {
         if (!ArrayUtil.compare(p, pout)) {
             throw new IOException ("pout");
         }
-        System.out.println("ECDH");
+        System.out.println("ECDH begin");
         KeyPair bob = getKeyPair(bobKey);
         KeyPair alice = getKeyPair(aliceKey);
         if (!Base64URL.encode(Encryption.receiverKeyAgreement(Encryption.JOSE_ECDH_ES_ALG_ID,
@@ -132,5 +135,6 @@ public class CryptoTesting {
                 alice.getPrivate())).equals("hzHdlfQIAEehb8Hrd_mFRhKsKLEzPfshfXs9l6areCc")) {
             throw new IOException("Bad ECDH");
         }
+        System.out.println("ECDH success");
     }
 }

@@ -25,7 +25,8 @@ import java.security.interfaces.RSAPublicKey;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-import org.webpki.json.JSONAlgorithmPreferences;
+import org.webpki.crypto.AlgorithmPreferences;
+
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONSignatureDecoder;
@@ -46,7 +47,7 @@ public class Authority implements BaseProperties {
                 .setString(BaseProperties.KEY_ENCRYPTION_ALGORITHM_JSON, 
                              publicKey instanceof RSAPublicKey ?
                            Encryption.JOSE_RSA_OAEP_256_ALG_ID : Encryption.JOSE_ECDH_ES_ALG_ID)
-                .setPublicKey(publicKey, JSONAlgorithmPreferences.JOSE))
+                .setPublicKey(publicKey, AlgorithmPreferences.JOSE))
              .setDateTime(TIME_STAMP_JSON, new Date(), true)
             .setDateTime(BaseProperties.EXPIRES_JSON, expires, true)
             .setSignature(signer);
@@ -63,10 +64,10 @@ public class Authority implements BaseProperties {
         JSONObjectReader encryptionParameters = rd.getObject(ENCRYPTION_PARAMETERS_JSON);
         dataEncryptionAlgorithm = encryptionParameters.getString(DATA_ENCRYPTION_ALGORITHM_JSON);
         keyEncryptionAlgorithm = encryptionParameters.getString(KEY_ENCRYPTION_ALGORITHM_JSON);
-        publicKey = encryptionParameters.getPublicKey(JSONAlgorithmPreferences.JOSE);
+        publicKey = encryptionParameters.getPublicKey(AlgorithmPreferences.JOSE);
         timeStamp = rd.getDateTime(TIME_STAMP_JSON);
         expires = rd.getDateTime(EXPIRES_JSON);
-        signatureDecoder = rd.getSignature(JSONAlgorithmPreferences.JOSE);
+        signatureDecoder = rd.getSignature(AlgorithmPreferences.JOSE);
         signatureDecoder.verify(JSONSignatureTypes.X509_CERTIFICATE);
         rd.checkForUnread();
     }
