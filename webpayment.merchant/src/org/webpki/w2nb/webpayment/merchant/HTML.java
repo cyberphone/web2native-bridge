@@ -316,7 +316,7 @@ public class HTML {
                                    SavedShoppingCart savedShoppingCart, 
                                    boolean tapConnectMode,
                                    boolean debugMode,
-                                   String invoke_json) throws IOException, ServletException {
+                                   String walletRequest) throws IOException, ServletException {
         String connectMethod = tapConnectMode ? "tapConnect" : "nativeConnect";
         StringBuffer s = new StringBuffer(
             "<tr><td width=\"100%\" align=\"center\" valign=\"middle\">" +
@@ -365,7 +365,7 @@ public class HTML {
                  "</form></td></tr>");
         
         StringBuffer temp_string = new StringBuffer("\n\n\"use strict\";\n\nvar invocationData =\n")
-            .append(invoke_json)
+            .append(walletRequest)
             .append(";\n\n" +
 
                     "var nativePort = null;\n\n" +
