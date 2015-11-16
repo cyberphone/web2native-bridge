@@ -3,8 +3,6 @@
   <!-- set properties for this build -->
   <property name="src.dir" value="src"/>
   
-  <property name="cardimage.dir" location="card-images"/>
-
   <property name="temp.dir" location=".tmp"/>
   <property name="credentials" location="credentials/sks.serialized"/>
   <property name="testpage" location="../webpayment.client/test/test.html"/>
@@ -156,6 +154,7 @@
   <target name="_import">
     <property name="card.number" value="@"/>
     <property name="sks.encryption" value="@"/>
+    <property name="card.path" location="${cardimage.dir}/${card.image}"/>
     <java fork="yes"
           classname="org.webpki.w2nb.webpayment.resources.InitWallet"
           dir="${key.dir}"
@@ -174,7 +173,7 @@
         <arg value="${card.number}"/>
         <arg value="${bank.host}/webpay-bank/authority"/>
         <arg value="${sks.encryption}.cer"/>
-        <arg value="${cardimage.dir}/${card.image}"/>
+        <arg value="${card.path}"/>
     </java>
   </target>
 
@@ -351,12 +350,19 @@
     </antcall>
   </target>
   
+  <target name="_kg2kmkey">
+    <antcall target="_createcert">
+       <param name="cmd" value="-selfsigned -entity/ee -subject &quot;CN=Mybank Key Management Key1&quot; -validity/start 2010-07-10T10:00:00 -validity/end 2030-07-10T09:59:59 -out/storetype ${storetype} -out/keystore ${kg2kmkey_ec}${keyfilext} -out/storepass ${keypassword} -out/keypass ${keypassword} -ecccurve NIST_P_256 -sigalg ECDSA_SHA256 -serial 1"/>
+    </antcall>
+  </target>
+  
   <target name="createcerts">
     <antcall target="_certpaymentnetwork"/>
     <antcall target="_certacquirernetwork"/>
     <antcall target="_certmerchants"/>
     <antcall target="_clientcert"/>
     <antcall target="_authencryption"/>
+    <antcall target="_kg2kmkey"/>
     <delete>
   	  <fileset dir="${key.dir}">
   		<include name="temp*"/>

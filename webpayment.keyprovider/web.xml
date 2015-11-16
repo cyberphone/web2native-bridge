@@ -52,44 +52,28 @@
         <param-value>@server-port-map@</param-value>
     </context-param>
 
-    <context-param>
-        <description>Force media type error</description>
-        <param-name>err_media_type</param-name>
-        <param-value>@err-media-type@</param-value>
-    </context-param>
-
     <listener>
-        <listener-class>org.webpki.w2nb.webpayment.bank.BankService</listener-class>
+        <listener-class>org.webpki.w2nb.webpayment.keyprovider.KeyProviderService</listener-class>
     </listener>
 
     <servlet>
-        <servlet-name>TransactionServlet</servlet-name>
-        <servlet-class>org.webpki.w2nb.webpayment.bank.TransactionServlet</servlet-class>
+        <servlet-name>KeyProviderServlet</servlet-name>
+        <servlet-class>org.webpki.w2nb.webpayment.keyprovider.KeyProviderServlet</servlet-class>
     </servlet>
 
     <servlet>
-        <servlet-name>AuthorityPublisherServlet</servlet-name>
-        <servlet-class>org.webpki.w2nb.webpayment.bank.AuthorityPublisherServlet</servlet-class>
+        <servlet-name>KeyProviderInitServlet</servlet-name>
+        <servlet-class>org.webpki.w2nb.webpayment.keyprovider.KeyProviderInitServlet</servlet-class>
     </servlet>
 
     <servlet-mapping>
-        <servlet-name>TransactionServlet</servlet-name>
-        <url-pattern>/transact</url-pattern>
+        <servlet-name>KeyProviderServlet</servlet-name>
+        <url-pattern>/getkeys</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
-        <servlet-name>AuthorityPublisherServlet</servlet-name>
-        <url-pattern>/authority</url-pattern>
+        <servlet-name>KeyProviderInitServlet</servlet-name>
+        <url-pattern>/init</url-pattern>
     </servlet-mapping>
-
-    <security-constraint>
-      <web-resource-collection>
-        <web-resource-name>The app</web-resource-name>
-        <url-pattern>/*</url-pattern>
-      </web-resource-collection>
-      <user-data-constraint>
-        <transport-guarantee>CONFIDENTIAL</transport-guarantee>
-      </user-data-constraint>
-    </security-constraint>
 
 </web-app>

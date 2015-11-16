@@ -1,10 +1,11 @@
-<project name="Web2Native Bridge Payment Provider" default="help" basedir=".">
+<project name="Web2Native Bridge (Demo) Key Provider" default="help" basedir=".">
 
   <!-- set properties for this build -->
   <property name="src.dir" value="src"/>
-  <property name="class_war_path" value="WEB-INF/classes/org/webpki/w2nb/webpayment/bank"/>
+  <property name="packimage_dir" value="packaged-images"/>
+  <property name="class_war_path" value="WEB-INF/classes/org/webpki/w2nb/webpayment/keyprovider"/>
   
-  <property name="appcorename" value="webpay-bank"/>
+  <property name="appcorename" value="webpay-keyprovider"/>
   <property name="application" value="${appcorename}.war"/>
   
   <property name="debug" value="on"/>
@@ -45,7 +46,7 @@
   </target>
 
   <target name="_build">
-    <property name="bank.host" value="https://localhost:8442/webpay-bank"/>
+    <property name="keyprov.host" value="http://localhost:8080/webpay-keyprovider"/>
     <property name="server.port.map" value=""/>
     <property name="errormedia" value="false"/>
     <fixcrlf srcdir="${src.dir}"
@@ -65,13 +66,13 @@
     <replace file="${temp.dir}/web.xml">
       <replacefilter token="@server-port-map@" value="${server.port.map}"/>
 	  <replacefilter token="@key-password@" value="${keypassword}"/>
-	  <replacefilter token="@bank-eecert@" value="${bankkey}${keyfilext}"/>
-      <replacefilter token="@bank-decryptionkey1@" value="${encryptionkey_ec}${keyfilext}"/>
-	  <replacefilter token="@bank-decryptionkey2@" value="${encryptionkey_rsa}${keyfilext}"/>
-      <replacefilter token="@merchant-root@" value="${merchant.var.root}.cer"/>
-      <replacefilter token="@bank-host@" value="${bank.host}"/>
-      <replacefilter token="@bank-client-root@" value="${clientroot}.cer"/>
-      <replacefilter token="@err-media-type@" value="${errormedia}"/>
+      <replacefilter token="@keyprov-host@" value="${keyprov.host}"/>
+      <replacefilter token="@paycred1@"
+        value="${clientkey_ec},SUPER_CARD,6875056745552109,supercard.png,${encryptionkey_rsa}"/>
+      <replacefilter token="@paycred2@"
+        value="${clientkey_rsa},BANK_DIRECT,!8645-7800239403,bankdirect.png,${encryptionkey_ec}"/>
+      <replacefilter token="@paycred3@"
+        value="${clientkey_ec2},UNUSUAL_CARD,1111222233334444,unusualcard.png,${encryptionkey_ec}"/>
     </replace>
     <war destfile="${dist.dir}/${application}" webxml="${temp.dir}/web.xml">
       <classes dir="${temp.dir}">
@@ -119,6 +120,7 @@
        </fileset>
      </path>
      <antcall target="_build">
+       <param name="card.font" value="Arial Unicode MS"/>
        <param name="javaversion" value="1.7"/>
 
        <param name="compile.common.src.dir" value="${common.src.dir}"/>
@@ -138,8 +140,8 @@
   
   <!-- mobilepki using EJBCA plugin mode -->
   <target name="mobilepki-ejbca">
-     <echo message="Web2Native Bridge &quot;mobilepki.org&quot; Bank Plugin"/>
-     <property name="bank.host" value="https://mobilepki.org/webpay-bank"/>
+     <echo message="Web2Native Bridge &quot;mobilepki.org&quot; Key Provider Plugin"/>
+     <property name="keyprov.host" value="https://mobilepki.org/webpay-keyprovider"/>
      <property name="server.port.map" value="8442"/>
      <property file="common.properties"/>
      <property name="temp.dir" value="${ejbca.tmp.path}"/>
@@ -151,6 +153,7 @@
         <pathelement path="${ejbca.classpath}"/>
 	 </path>
      <antcall target="_build">
+       <param name="card.font" value="Arial Unicode MS"/>
        <param name="javaversion" value="1.6"/>
 
        <param name="compile.common.src.dir" value="common.src"/>
@@ -173,7 +176,7 @@
   
   <target name="localhost-ejbca">
      <echo message="Web2Native Bridge &quot;localhost&quot; Bank Plugin"/>
-     <property name="bank.host" value="https://localhost:8442/webpay-bank"/>
+     <property name="keyprov.host" value="http://localhost:8080/webpay-keyprovider"/>
      <property name="server.port.map" value=""/>
      <antcall target="mobilepki-ejbca"/>
   </target>

@@ -1,0 +1,180 @@
+/*
+ *  Copyright 2006-2015 WebPKI.org (http://webpki.org).
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ */
+
+package org.webpki.w2nb.webpayment.keyprovider;
+
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
+import java.security.interfaces.ECPrivateKey;
+import java.security.interfaces.ECPublicKey;
+import java.security.interfaces.RSAPublicKey;
+import java.security.spec.ECGenParameterSpec;
+import java.util.LinkedHashMap;
+
+import javax.crypto.Cipher;
+import javax.crypto.KeyAgreement;
+import javax.crypto.Mac;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+
+
+
+import org.webpki.crypto.KeyAlgorithms;
+import org.webpki.crypto.MACAlgorithms;
+import org.webpki.crypto.AsymSignatureAlgorithms;
+import org.webpki.crypto.SignatureWrapper;
+import org.webpki.keygen2.ServerCryptoInterface;
+import org.webpki.sks.SecureKeyStore;
+import org.webpki.util.ArrayUtil;
+import org.webpki.w2nb.webpayment.common.KeyStoreEnumerator;
+
+public class KeyGen2SoftHSM implements ServerCryptoInterface {
+
+    private static final long serialVersionUID = 1L;
+  
+    ////////////////////////////////////////////////////////////////////////////////////////
+    // Private and secret keys would in a HSM implementation be represented as handles
+    ////////////////////////////////////////////////////////////////////////////////////////
+    LinkedHashMap<PublicKey,PrivateKey> keyManagementKeys = new LinkedHashMap<PublicKey,PrivateKey> ();
+    
+    public KeyGen2SoftHSM (KeyStoreEnumerator keyStoreEnumerator) throws IOException {
+        keyManagementKeys.put (keyStoreEnumerator.getPublicKey(), keyStoreEnumerator.getPrivateKey());
+    }
+    
+    ECPrivateKey serverEcPrivateKey;
+    
+    byte[] sessionKey;
+  
+    @Override
+    public ECPublicKey generateEphemeralKey (KeyAlgorithms ephemeral_key_algorithm) throws IOException {
+        try {
+            KeyPairGenerator generator = KeyPairGenerator.getInstance ("EC", "BC");
+            ECGenParameterSpec eccgen = new ECGenParameterSpec (ephemeral_key_algorithm.getJCEName ());
+            generator.initialize (eccgen, new SecureRandom ());
+            KeyPair kp = generator.generateKeyPair();
+            serverEcPrivateKey = (ECPrivateKey) kp.getPrivate ();
+            return (ECPublicKey) kp.getPublic ();
+        } catch (GeneralSecurityException e) {
+            throw new IOException (e);
+        }
+    }
+  
+    @Override
+    public void generateAndVerifySessionKey (ECPublicKey client_ephemeral_key,
+                                             byte[] kdf_data,
+                                             byte[] attestation_arguments,
+                                             X509Certificate device_certificate,
+                                             byte[] session_attestation) throws IOException {
+        try {
+            // SP800-56A C(2, 0, ECC CDH)
+            KeyAgreement key_agreement = KeyAgreement.getInstance ("ECDH", "BC");
+            key_agreement.init (serverEcPrivateKey);
+            key_agreement.doPhase (client_ephemeral_key, true);
+            byte[] Z = key_agreement.generateSecret ();
+      
+            // The custom KDF
+            Mac mac = Mac.getInstance (MACAlgorithms.HMAC_SHA256.getJCEName ());
+            mac.init (new SecretKeySpec (Z, "RAW"));
+            sessionKey = mac.doFinal (kdf_data);
+            
+            if (device_certificate == null) {
+                // Privacy enabled mode
+                mac = Mac.getInstance (MACAlgorithms.HMAC_SHA256.getJCEName ());
+                mac.init (new SecretKeySpec (sessionKey, "RAW"));
+                byte[] sessionKey_attest = mac.doFinal (attestation_arguments);
+                
+                // Verify that the session key signature is correct
+                if (!ArrayUtil.compare (sessionKey_attest, session_attestation)) {
+                    throw new IOException ("Verify attestation failed");
+                  }
+            } else {
+                // E2ES mode
+                PublicKey device_public_key = device_certificate.getPublicKey ();
+                AsymSignatureAlgorithms signature_algorithm = device_public_key instanceof RSAPublicKey ?
+                    AsymSignatureAlgorithms.RSA_SHA256 : AsymSignatureAlgorithms.ECDSA_SHA256;
+      
+                // Verify that attestation was signed by the device key
+                if (!new SignatureWrapper (device_public_key instanceof RSAPublicKey ?
+                                                  AsymSignatureAlgorithms.RSA_SHA256 : AsymSignatureAlgorithms.ECDSA_SHA256, 
+                                           device_public_key)
+                          .update (attestation_arguments)
+                          .verify (session_attestation)) {
+                    throw new IOException ("Verify provisioning signature failed");
+                }
+            }
+        } catch (GeneralSecurityException e) {
+            throw new IOException (e);
+        }
+    }
+  
+    @Override
+    public byte[] mac (byte[] data, byte[] keyModifier) throws IOException {
+        try {
+            Mac mac = Mac.getInstance (MACAlgorithms.HMAC_SHA256.getJCEName ());
+            mac.init (new SecretKeySpec (ArrayUtil.add (sessionKey, keyModifier), "RAW"));
+            return mac.doFinal (data);
+        } catch (GeneralSecurityException e) {
+            throw new IOException (e);
+        }
+    }
+  
+    @Override
+    public byte[] encrypt (byte[] data) throws IOException {
+        try {
+            byte[] key = mac (SecureKeyStore.KDF_ENCRYPTION_KEY, new byte[0]);
+            Cipher crypt = Cipher.getInstance ("AES/CBC/PKCS5Padding");
+            byte[] iv = new byte[16];
+            new SecureRandom ().nextBytes (iv);
+            crypt.init (Cipher.ENCRYPT_MODE, new SecretKeySpec (key, "AES"), new IvParameterSpec (iv));
+            return ArrayUtil.add (iv, crypt.doFinal (data));
+        } catch (GeneralSecurityException e) {
+            throw new IOException (e);
+        }
+    }
+  
+    @Override
+    public byte[] generateNonce () throws IOException {
+        byte[] rnd = new byte[32];
+        new SecureRandom ().nextBytes (rnd);
+        return rnd;
+    }
+  
+    @Override
+    public byte[] generateKeyManagementAuthorization (PublicKey keyManagementKey, byte[] data)
+            throws IOException {
+        try {
+            return new SignatureWrapper (keyManagementKey instanceof RSAPublicKey ?
+                                               AsymSignatureAlgorithms.RSA_SHA256 : AsymSignatureAlgorithms.ECDSA_SHA256,
+                                         keyManagementKeys.get (keyManagementKey))
+                .update (data)
+                .sign ();
+        } catch (GeneralSecurityException e) {
+            throw new IOException (e);
+        }
+    }
+  
+    @Override
+    public PublicKey[] enumerateKeyManagementKeys () throws IOException {
+        return keyManagementKeys.keySet ().toArray (new PublicKey[0]);
+    }
+}
