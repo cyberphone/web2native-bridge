@@ -18,10 +18,15 @@ package org.webpki.w2nb.webpayment.keyprovider;
 
 import java.io.IOException;
 import java.io.InputStream;
+
 import java.net.URL;
+
 import java.security.PublicKey;
+
 import java.security.cert.X509Certificate;
+
 import java.util.Vector;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -30,17 +35,24 @@ import javax.servlet.ServletContextListener;
 
 import org.webpki.crypto.CertificateUtil;
 import org.webpki.crypto.CustomCryptoProvider;
+
 import org.webpki.json.JSONDecoderCache;
+
 import org.webpki.keygen2.CredentialDiscoveryResponseDecoder;
 import org.webpki.keygen2.InvocationResponseDecoder;
 import org.webpki.keygen2.KeyCreationResponseDecoder;
 import org.webpki.keygen2.ProvisioningFinalizationResponseDecoder;
 import org.webpki.keygen2.ProvisioningInitializationResponseDecoder;
+
 import org.webpki.net.HTTPSWrapper;
+
 import org.webpki.util.ArrayUtil;
+import org.webpki.util.Base64;
 import org.webpki.util.MIMETypedObject;
+
 import org.webpki.w2nb.webpayment.common.KeyStoreEnumerator;
 import org.webpki.w2nb.webpayment.common.PayerAccountTypes;
+
 import org.webpki.webutil.InitPropertyReader;
 
 public class KeyProviderService extends InitPropertyReader implements ServletContextListener {
@@ -64,6 +76,8 @@ public class KeyProviderService extends InitPropertyReader implements ServletCon
     static String keygen2EnrollmentUrl;
     
     static String bankAuthorityUrl;
+    
+    static String successImageAndMessage;
     
     static Integer serverPortMapping;
 
@@ -98,6 +112,16 @@ public class KeyProviderService extends InitPropertyReader implements ServletCon
         initProperties (event);
         try {
             CustomCryptoProvider.forcedLoad (false);
+
+            ////////////////////////////////////////////////////////////////////////////////////////////
+            // A common string for browser enrollments
+            ////////////////////////////////////////////////////////////////////////////////////////////
+            successImageAndMessage = new StringBuffer("<img src=\"data:image/png;base64,")
+                .append(new Base64(false).getBase64StringFromBinary(
+                    ArrayUtil.getByteArrayFromInputStream(
+                        event.getServletContext().getResourceAsStream("/images/certandkey.png"))))
+                .append("\" title=\"Certificate and Private Key\"><br>&nbsp;" +
+                        "<br><b>Enrollment Succeeded!</b>").toString();
 
             ////////////////////////////////////////////////////////////////////////////////////////////
             // KeyGen2
@@ -152,7 +176,7 @@ public class KeyProviderService extends InitPropertyReader implements ServletCon
             }
 
             ////////////////////////////////////////////////////////////////////////////////////////////
-            // Get TLS server certificate
+            // Get TLS server certificate (if necessary)
             ////////////////////////////////////////////////////////////////////////////////////////////
             if (keygen2EnrollmentUrl.startsWith("https")) {
                 new Thread() {

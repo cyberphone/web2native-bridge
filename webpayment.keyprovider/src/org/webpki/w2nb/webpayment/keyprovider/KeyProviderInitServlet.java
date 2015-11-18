@@ -46,11 +46,6 @@ public class KeyProviderInitServlet extends HttpServlet {
     
     static final String KEYGEN2_SESSION_ATTR           = "keygen2";
 
-    static final int SUCCESS_MESSAGE = 0;
-    static final int ERROR_MESSAGE = 1;
-    static final int PARAM_MESSAGE = 2;
-    static final int ABORT_MESSAGE = 4;
-    
     static final String INIT_TAG = "init";     // Note: This is currently also a part of the KeyGen2 client!
     static final String ABORT_TAG = "abort";
     static final String PARAM_TAG = "msg";
