@@ -34,10 +34,12 @@ import java.util.logging.Logger;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 import java.security.cert.CertStore;
 import java.security.cert.Certificate;
 import java.security.cert.CollectionCertStoreParameters;
+import java.security.interfaces.RSAPublicKey;
 import java.net.URLEncoder;
 import java.net.InetAddress;
 import java.net.Inet4Address;
@@ -48,7 +50,10 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
+import org.webpki.crypto.AlgorithmPreferences;
+import org.webpki.crypto.AsymSignatureAlgorithms;
 import org.webpki.crypto.KeyStoreReader;
 import org.webpki.crypto.CertificateUtil;
 import org.webpki.crypto.KeyAlgorithms;
@@ -71,13 +76,19 @@ import org.webpki.sks.Grouping;
 import org.webpki.sks.AppUsage;
 import org.webpki.sks.PassphraseFormat;
 import org.webpki.sks.PatternRestriction;
+import org.webpki.sks.SecureKeyStore;
 import org.webpki.util.ArrayUtil;
 import org.webpki.util.Base64;
 import org.webpki.util.Base64URL;
+import org.webpki.util.MIMETypedObject;
+import org.webpki.w2nb.webpayment.common.AccountDescriptor;
 import org.webpki.w2nb.webpayment.common.BaseProperties;
+import org.webpki.w2nb.webpayment.common.Encryption;
+import org.webpki.webutil.ServletUtil;
 import org.webpki.json.JSONDecoderCache;
 import org.webpki.json.JSONEncoder;
 import org.webpki.json.JSONDecoder;
+import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONOutputFormats;
 
 
@@ -134,130 +145,154 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
                                           null);
         pinPolicy.setGrouping (Grouping.SHARED);
     
-        for (KeyGen2Config.KeyConfiguration key_entry : keygen2_config.getConfiguredKeys ())
-          {
-            ServerState.Key key = keygen2State.createKey (key_entry.getAppUsage (),
-                                                          new KeySpecifier (key_entry.getAlgorithm ()),
+        for (KeyProviderService.PaymentCredential paymentCredential : KeyProviderService.paymentCredentials) {
+            ServerState.Key key = keygen2State.createKey (AppUsage.SIGNATURE,
+                                                          new KeySpecifier (KeyAlgorithms.NIST_P_256),
                                                           pinPolicy);
-            if (key_entry.getKeyID () != null)
-              {
-                key.setID (key_entry.getKeyID ());
-              }
-            key.setFriendlyName (enrollment_object.getUserData ().getFriendlyName ());
-          }
+            AsymSignatureAlgorithms signAlg =
+                paymentCredential.signatureKey.getPublicKey() instanceof RSAPublicKey ?
+                    AsymSignatureAlgorithms.RSA_SHA256 : AsymSignatureAlgorithms.ECDSA_SHA256;
+            key.setEndorsedAlgorithms(new String[]{signAlg.getAlgorithmId(AlgorithmPreferences.SKS)});
+            key.setCertificatePath(paymentCredential.signatureKey.getCertificatePath());
+            key.setPrivateKey(paymentCredential.signatureKey.getPrivateKey().getEncoded());
+
+            JSONObjectWriter ow = new JSONObjectWriter()
+                .setObject(BaseProperties.PAYER_ACCOUNT_JSON, 
+                           new AccountDescriptor(paymentCredential.accountType,
+                                                 paymentCredential.accountId).write())
+                .setBoolean(BaseProperties.CARD_FORMAT_ACCOUNT_ID_JSON,
+                            paymentCredential.cardFormatted)
+                .setString(BaseProperties.PROVIDER_AUTHORITY_URL_JSON,
+                           KeyProviderService.bankAuthorityUrl)
+                .setString(BaseProperties.SIGNATURE_ALGORITHM_JSON,
+                           signAlg.getAlgorithmId(AlgorithmPreferences.JOSE))
+                .setObject(BaseProperties.ENCRYPTION_PARAMETERS_JSON)
+                    .setString(BaseProperties.DATA_ENCRYPTION_ALGORITHM_JSON,
+                               Encryption.JOSE_A128CBC_HS256_ALG_ID)
+                    .setString(BaseProperties.KEY_ENCRYPTION_ALGORITHM_JSON,
+                               paymentCredential.encryptionKey instanceof RSAPublicKey ?
+                                   Encryption.JOSE_RSA_OAEP_256_ALG_ID 
+                                                          : 
+                                   Encryption.JOSE_ECDH_ES_ALG_ID)
+                    .setPublicKey(paymentCredential.encryptionKey, AlgorithmPreferences.JOSE);
+           key.addExtension(BaseProperties.W2NB_WEB_PAY_CONTEXT_URI,
+                            ow.serializeJSONObject(JSONOutputFormats.NORMALIZED));
+
+           key.addLogotype(KeyGen2URIs.LOGOTYPES.CARD, paymentCredential.cardImage);
+        }
     
-        return keygen2JSONBody (new KeyCreationRequestEncoder (keygen2State, keygen2EnrollmentUrl));
+        keygen2JSONBody (response, 
+                         new KeyCreationRequestEncoder (keygen2State,
+                                                        KeyProviderService.keygen2EnrollmentUrl));
       }
 
     String certificateData (X509Certificate certificate) {
         return ", Subject='" + certificate.getSubjectX500Principal ().getName () +
                "', Serial=" + certificate.getSerialNumber ();
     }
+    @Override
+    public void doPost(HttpServletRequest request, HttpServletResponse response)
+           throws IOException, ServletException {
+        executeRequest(request, response, null, false);
+    }
 
-    HTTPResponseWrapper getKeyGen2Operation (KeyGen2OperationRequest request_object)
-      {
+    void executeRequest(HttpServletRequest request,
+                        HttpServletResponse response,
+                        String versionMacro,
+                        boolean init)
+         throws IOException, ServletException {
         String keygen2EnrollmentUrl = KeyProviderService.keygen2EnrollmentUrl;
+        HttpSession session = request.getSession(false);
         try
           {
             ////////////////////////////////////////////////////////////////////////////////////////////
             // Check that the request is properly authenticated
             ////////////////////////////////////////////////////////////////////////////////////////////
-            EnrollmentObject enrollment_object = EnrollmentDB.getEnrollmentObject (request_object.getEnrollID ());
-            if (enrollment_object == null)
-              {
-                return returnKeyGen2Error ("Enrollment ID not found");
-              }
-            ServerState keygen2State = enrollment_object.getKeyGen2State ();
-            if (keygen2State == null)
-              {
-                return returnKeyGen2Error ("Server state missing");
-              }
+            if (session == null) {
+                throw new IOException("Session timed out");
+             }
+            ServerState keygen2State =
+                (ServerState) session.getAttribute(KeyProviderInitServlet.KEYGEN2_SESSION_ATTR);
+            if (keygen2State == null) {
+                throw new IOException("Server state missing");
+            }
             ////////////////////////////////////////////////////////////////////////////////////////////
             // Check if it is the first (trigger) message from the client
             ////////////////////////////////////////////////////////////////////////////////////////////
-            if (request_object.getJSONData () == null)
-              {
-                if (keygen2_config.granted_versions != null)
-                  {
+            if (init) {
+                if (KeyProviderService.grantedVersions != null) {
                     boolean found = false;;
-                    for (String version : keygen2_config.granted_versions)
-                      {
-                        if (version.equals (request_object.getWebPKIVersion ()))
-                          {
+                    for (String version : KeyProviderService.grantedVersions) {
+                        if (version.equals(versionMacro)) {
                             found = true;
                             break;
                           }
-                      }
-                    if (!found)
-                      {
-                        enrollment_object.setEnrollmentStatus (EnrollmentStatus.ABORTED);
-                        return returnKeyGen2Error ("Wrong version of WebPKI, you need to update");
-                      }
-                  }
-                InvocationRequestEncoder invocation_request =
-                    new InvocationRequestEncoder (keygen2State,
-                                                  keygen2EnrollmentUrl,
-                                                  request_object.getEnrollID () + "#" + enrollment_object.getChallenge ());
-                invocation_request.setAbortUrl (keygen2EnrollmentUrl + "?" + ABORT_TAG + "=" + enrollment_object.getChallenge ());
-                keygen2State.addImageAttributesQuery (KeyGen2URIs.LOGOTYPES.LIST);                
-                if (keygen2_config.isPrivacyEnabled ())
-                  {
-                    keygen2State.setPrivacyEnabled (true);
-                  }
-                if (keygen2_config.getEphemeralKeyAlgorithm () != null)
-                  {
-                    keygen2State.setEphemeralKeyAlgorithm (keygen2_config.getEphemeralKeyAlgorithm ());
-                  }
-                return keygen2JSONBody (invocation_request);
+                    }
+                    if (!found) {
+                        throw new IOException("Wrong version of WebPKI, you need to update");
+                    }
+                }
+                InvocationRequestEncoder invocationRequest =
+                    new InvocationRequestEncoder(keygen2State,
+                                                 keygen2EnrollmentUrl,
+                                                 null);
+                invocationRequest.setAbortUrl(keygen2EnrollmentUrl +
+                                                  "?" +
+                                                  KeyProviderInitServlet.ABORT_TAG +
+                                                  "=true");
+                keygen2State.addImageAttributesQuery(KeyGen2URIs.LOGOTYPES.LIST);
+                keygen2JSONBody(response, invocationRequest);
+                session.setAttribute(KeyProviderInitServlet.KEYGEN2_SESSION_ATTR, keygen2State);
+                return;
               }
 
             ////////////////////////////////////////////////////////////////////////////////////////////
             // It should be a genuine KeyGen2 response.  Note that the order is verified!
             ////////////////////////////////////////////////////////////////////////////////////////////
-            if (keygen2_config.isDebug ())
-              {
-                log.info ("Received message:\n" + new String (request_object.getJSONData (), "UTF-8"));
-              }
-            JSONDecoder json_object = KeyProviderService.keygen2JSONCache.parse (request_object.getJSONData ());
+            byte[] jsonData = ServletUtil.getData(request);
+            if (!request.getContentType().equals(JSON_CONTENT_TYPE)) {
+                throw new IOException("Wrong \"Content-Type\": " + request.getContentType());
+            }
+            if (KeyProviderService.isDebug()) {
+                log.info("Received message:\n" + new String(jsonData, "UTF-8"));
+            }
+            JSONDecoder jsonObject = KeyProviderService.keygen2JSONCache.parse (jsonData);
             switch (keygen2State.getProtocolPhase ())
               {
                 case INVOCATION:
-                  InvocationResponseDecoder invocation_response = (InvocationResponseDecoder) json_object;
+                  InvocationResponseDecoder invocation_response = (InvocationResponseDecoder) jsonObject;
                   keygen2State.update (invocation_response);
 
                   // Now we really start doing something
-                  enrollment_object.setEnrollmentStatus (EnrollmentStatus.IN_PROGRESS);
-
-                  ProvisioningInitializationRequestEncoder provisioning_init_request =
-                      new ProvisioningInitializationRequestEncoder (keygen2State, keygen2EnrollmentUrl, 1000, (short)50);
-                  // Note that a null KMK is allowed here...
-                  provisioning_init_request.setKeyManagementKey (keygen2_config.getKeyManagementPublicKey ());
-                  return keygen2JSONBody (provisioning_init_request);
+                  ProvisioningInitializationRequestEncoder provisioningInitRequest =
+                      new ProvisioningInitializationRequestEncoder(keygen2State,
+                                                                   keygen2EnrollmentUrl,
+                                                                   1000,
+                                                                   (short)50);
+                  provisioningInitRequest.setKeyManagementKey(
+                          KeyProviderService.keyManagemenentKey.getPublicKey ());
+                  keygen2JSONBody (response, provisioningInitRequest);
+                  break;
 
                 case PROVISIONING_INITIALIZATION:
-                  ProvisioningInitializationResponseDecoder provisioning_init_response = (ProvisioningInitializationResponseDecoder) json_object;
+                  ProvisioningInitializationResponseDecoder provisioning_init_response = (ProvisioningInitializationResponseDecoder) jsonObject;
                   keygen2State.update (provisioning_init_response, getTLSCertificate ());
 
-                  if (!keygen2_config.isPrivacyEnabled ())
+                  log.info("Device Certificate=" + certificateData (keygen2State.getDeviceCertificate ()));
+                  String expected_dev_id = enrollment_object.getOptionalAuthData ();
+                  if (expected_dev_id != null)
                     {
-                      log.info ("Device Certificate, Enrollment ID=" + enrollment_object.getEnrollID () + 
-                                certificateData (keygen2State.getDeviceCertificate ()));
-                      enrollment_object.processDeviceCertificatePlaceholders (keygen2State.getDeviceCertificate ());
-                      String expected_dev_id = enrollment_object.getOptionalAuthData ();
-                      if (expected_dev_id != null)
+                      String actual_dev_id = keygen2State.getDeviceIDString (keygen2_config.useLongDeviceID ());
+                      if (expected_dev_id.equals (actual_dev_id))
                         {
-                          String actual_dev_id = keygen2State.getDeviceIDString (keygen2_config.useLongDeviceID ());
-                          if (expected_dev_id.equals (actual_dev_id))
-                            {
-                              log.info ("KeyGen2, Enrollment ID=" + enrollment_object.getEnrollID () + ", Device ID=" + actual_dev_id + " Successfully Authenticated");
-                            }
-                          else
-                            {
-                              log.info ("KeyGen2 failure, Enrollment ID=" + enrollment_object.getEnrollID () +
-                                        ", Device ID mismatch, Expected=" + expected_dev_id + ", Received=" + actual_dev_id);
-                              enrollment_object.setEnrollmentStatus (EnrollmentStatus.ABORTED);
-                              return returnKeyGen2Error ("Expected Device ID:\n" + expected_dev_id + "\n\nReceived Device ID:\n" + actual_dev_id);
-                            }
+                          log.info ("KeyGen2, Enrollment ID=" + enrollment_object.getEnrollID () + ", Device ID=" + actual_dev_id + " Successfully Authenticated");
+                        }
+                      else
+                        {
+                          log.info ("KeyGen2 failure, Enrollment ID=" + enrollment_object.getEnrollID () +
+                                    ", Device ID mismatch, Expected=" + expected_dev_id + ", Received=" + actual_dev_id);
+                          enrollment_object.setEnrollmentStatus (EnrollmentStatus.ABORTED);
+                          return returnKeyGen2Error ("Expected Device ID:\n" + expected_dev_id + "\n\nReceived Device ID:\n" + actual_dev_id);
                         }
                     }
 
@@ -268,10 +303,11 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
                       cred_disc_request.addLookupDescriptor (keygen2_config.getKeyManagementPublicKey ());
                       return keygen2JSONBody (cred_disc_request);
                     }
-                  return requestKeyGen2KeyCreation (keygen2State, enrollment_object);
+                  requestKeyGen2KeyCreation (response, keygen2State);
+                  break;
 
                 case CREDENTIAL_DISCOVERY:
-                  CredentialDiscoveryResponseDecoder cred_disc_response = (CredentialDiscoveryResponseDecoder) json_object;
+                  CredentialDiscoveryResponseDecoder cred_disc_response = (CredentialDiscoveryResponseDecoder) jsonObject;
                   keygen2State.update (cred_disc_response);
                   for (CredentialDiscoveryResponseDecoder.LookupResult lookup_result : cred_disc_response.getLookupResults ())
                     {
@@ -285,10 +321,11 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
                           log.info ("Deleting key, Enrollment ID=" + enrollment_object.getEnrollID () + certificateData (end_entity_certificate));
                         }
                     }
-                  return requestKeyGen2KeyCreation (keygen2State, enrollment_object);
+                  requestKeyGen2KeyCreation (response, keygen2State);
+                  break;
 
                 case KEY_CREATION:
-                  KeyCreationResponseDecoder key_creation_response = (KeyCreationResponseDecoder) json_object;
+                  KeyCreationResponseDecoder key_creation_response = (KeyCreationResponseDecoder) jsonObject;
                   keygen2State.update (key_creation_response);
                   Iterator <KeyGen2Config.KeyConfiguration> key_config_iterator = keygen2_config.getConfiguredKeys ().iterator ();
                   for (ServerState.Key key : keygen2State.getKeys ())
@@ -358,17 +395,21 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
                         }
                     }
 
-                  return keygen2JSONBody (new ProvisioningFinalizationRequestEncoder (keygen2State, keygen2EnrollmentUrl));
+                  keygen2JSONBody (response,
+                                   new ProvisioningFinalizationRequestEncoder (keygen2State,
+                                                                               keygen2EnrollmentUrl));
+                  break;
 
                 case PROVISIONING_FINALIZATION:
-                  ProvisioningFinalizationResponseDecoder prov_final_response = (ProvisioningFinalizationResponseDecoder) json_object;
+                  ProvisioningFinalizationResponseDecoder prov_final_response = (ProvisioningFinalizationResponseDecoder) jsonObject;
                   keygen2State.update (prov_final_response);
                   log.info ("Successful KeyGen2 run, Enrollment ID=" + enrollment_object.getEnrollID () + ", Device ID=" + keygen2State.getDeviceIDString (keygen2_config.useLongDeviceID ()));
 
                   ////////////////////////////////////////////////////////////////////////////////////////////
                   // We are done, return an HTTP redirect taking the client out of its KeyGen2 mode
                   ////////////////////////////////////////////////////////////////////////////////////////////
-                  return new HTTPResponseWrapper (keygen2EnrollmentUrl);
+                  response.sendRedirect(keygen2EnrollmentUrl);
+                  return;
 
                 default:
                   throw new IOException ("Unxepected state");
@@ -392,13 +433,17 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
           }
       }
 
-    HTTPResponseWrapper getKeyGen2Error (KeyGen2ErrorRequest request_object)
-      {
-        return returnKeyGen2Error (request_object.getErrorMessage ());
-      }
 
     @Override
-    public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+    public void doGet(HttpServletRequest request, HttpServletResponse response)
+           throws IOException, ServletException {
+        if (request.getParameter(KeyProviderInitServlet.INIT_TAG) != null) {
+            executeRequest(request,
+                           response,
+                           request.getParameter(KeyProviderInitServlet.ANDROID_WEBPKI_VERSION_TAG),
+                           true);
+            return;
+        }
         StringBuffer html = new StringBuffer ("<tr><td width=\"100%\" align=\"center\" valign=\"middle\">");
         switch (request_object.getMessageType ()) {
             case KeyProviderInitServlet.SUCCESS_MESSAGE:

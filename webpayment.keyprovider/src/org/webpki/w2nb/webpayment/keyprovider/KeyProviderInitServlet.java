@@ -107,7 +107,7 @@ public class KeyProviderInitServlet extends HttpServlet {
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         HttpSession session = request.getSession(true);
         session.setAttribute(KEYGEN2_SESSION_ATTR,
-                             new ServerState(new KeyGen2SoftHSM (KeyProviderService.keygen2KeyManagemenentKey)));
+                             new ServerState(new KeyGen2SoftHSM(KeyProviderService.keyManagemenentKey)));
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // The following is the actual contract between an issuing server and a KeyGen2 client.
@@ -119,10 +119,12 @@ public class KeyProviderInitServlet extends HttpServlet {
         ////////////////////////////////////////////////////////////////////////////////////////////
         String url = "webpkiproxy://keygen2?cookie=JSESSIONID%3D" +
                      session.getId() +
-                     "&url=" + URLEncoder.encode (KeyProviderService.keygen2EnrollmentUrl + "?" +
-                     INIT_TAG + "=" + Base64URL.generateURLFriendlyRandom (8) +
+                     "&url=" + URLEncoder.encode(KeyProviderService.keygen2EnrollmentUrl + "?" +
+                     INIT_TAG + "=" + Base64URL.generateURLFriendlyRandom(8) +
                      (KeyProviderService.grantedVersions == null ? "" : "&" + ANDROID_WEBPKI_VERSION_TAG + "=" + ANDROID_WEBPKI_VERSION_MACRO), "UTF-8");
-        output(response, getHTML (null, "onload=\"document.location.href='" + url + "'\"" ,
-                                        "<tr><td width=\"100%\" align=\"center\" valign=\"middle\"><b>Please wait while enrollment plugin starts...</b></td></tr>"));
+        output(response, 
+               getHTML(null,
+                       "onload=\"document.location.href='" + url + "'\"" ,
+                          "<tr><td width=\"100%\" align=\"center\" valign=\"middle\"><b>Please wait while enrollment plugin starts...</b></td></tr>"));
     }
 }
