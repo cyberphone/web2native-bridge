@@ -53,9 +53,8 @@ public class KeyProviderInitServlet extends HttpServlet {
 
     static final String HTML_INIT = 
             "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\">"+
-            "<html><head><link rel=\"shortcut icon\" href=\"favicon.ico\">"+
-            "<meta name=\"viewport\" content=\"initial-scale=1.0\"/>" +
-            "<title>Mobile Device Certificate Enrollment</title>"+
+            "<html><head><meta name=\"viewport\" content=\"initial-scale=1.0\"/>" +
+            "<title>Payment Credential Enrollment</title>"+
             "<style type=\"text/css\">html {overflow:auto} html, body {margin:0px;padding:0px;height:100%} "+
             "body {font-size:8pt;color:#000000;font-family:verdana,arial;background-color:white} "+
             "h2 {font-weight:bold;font-size:12pt;color:#000000;font-family:arial,verdana,helvetica} "+
