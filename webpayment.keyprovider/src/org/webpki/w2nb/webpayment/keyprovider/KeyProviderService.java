@@ -19,12 +19,17 @@ package org.webpki.w2nb.webpayment.keyprovider;
 import java.io.IOException;
 import java.io.InputStream;
 
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+
 import java.net.URL;
 
 import java.security.PublicKey;
 
 import java.security.cert.X509Certificate;
 
+import java.util.Enumeration;
 import java.util.Vector;
 
 import java.util.logging.Level;
@@ -100,9 +105,43 @@ public class KeyProviderService extends InitPropertyReader implements ServletCon
     static Vector<PaymentCredential> paymentCredentials = new Vector<PaymentCredential>();
 
     InputStream getResource(String name) throws IOException {
-        return this.getClass().getResourceAsStream(name);
+        InputStream is = this.getClass().getResourceAsStream(name);
+        if (is == null) {
+            throw new IOException("Resource fail for: " + name);
+        }
+        return is;
     }
-    
+
+    String getURL (String inUrl) throws IOException {
+        URL url = new URL(inUrl);
+        if (!url.getHost().equals("localhost")) {
+            return inUrl;
+        }
+        String autoHost = null;
+        Enumeration<NetworkInterface> network_interfaces = NetworkInterface.getNetworkInterfaces();
+        int foundAddresses = 0;
+        while (network_interfaces.hasMoreElements()) {
+            NetworkInterface network_interface = network_interfaces.nextElement();
+            if (network_interface.isUp() && !network_interface.isVirtual() && !network_interface.isLoopback() &&
+                network_interface.getDisplayName().indexOf("VMware") < 0) {  // Well.... 
+                Enumeration<InetAddress> inet_addresses = network_interface.getInetAddresses();
+                while (inet_addresses.hasMoreElements()) {
+                    InetAddress inet_address = inet_addresses.nextElement();
+                    if (inet_address instanceof Inet4Address) {
+                        foundAddresses++;
+                        autoHost = inet_address.getHostAddress();
+                    }
+                }
+            }
+        }
+        if (foundAddresses != 1) throw new IOException("Couldn't determine network interface");
+        logger.info("Host automagically set to: " + autoHost);
+        return new URL(url.getProtocol(),
+                       autoHost,
+                       url.getPort(),
+                       url.getFile()).toExternalForm();
+    }
+
     @Override
     public void contextDestroyed(ServletContextEvent event) {
     }
@@ -162,8 +201,11 @@ public class KeyProviderService extends InitPropertyReader implements ServletCon
                     }
                 };
                 paymentCredential.encryptionKey =
-                    CertificateUtil.getCertificateFromBlob(ArrayUtil.readFile(arguments[4])).getPublicKey();
+                    CertificateUtil.getCertificateFromBlob(
+                        ArrayUtil.getByteArrayFromInputStream(getResource(arguments[4]))).getPublicKey();
             }
+
+            bankAuthorityUrl = getPropertyString(BANK_HOST);
 
             ////////////////////////////////////////////////////////////////////////////////////////////
             // SKS key management key
@@ -174,6 +216,11 @@ public class KeyProviderService extends InitPropertyReader implements ServletCon
             if (getPropertyString(SERVER_PORT_MAP).length () > 0) {
                 serverPortMapping = getPropertyInt(SERVER_PORT_MAP);
             }
+
+            ////////////////////////////////////////////////////////////////////////////////////////////
+            // Get KeyGen2 protocol entry
+            ////////////////////////////////////////////////////////////////////////////////////////////
+            keygen2EnrollmentUrl = getURL(getPropertyString(KEYPROV_HOST)) + "/getkeys";
 
             ////////////////////////////////////////////////////////////////////////////////////////////
             // Get TLS server certificate (if necessary)
@@ -195,6 +242,7 @@ public class KeyProviderService extends InitPropertyReader implements ServletCon
                             }
                             wrapper.makeGetRequest(url);
                             tlsCertificate = wrapper.getServerCertificate();
+                            logger.info("TLS cert: " + tlsCertificate.getSubjectX500Principal().getName());
                         } catch (Exception e) {
                             logger.log(Level.SEVERE, "********\n" + e.getMessage() + "\n********", e);
                         }

@@ -122,8 +122,10 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
             key.setEndorsedAlgorithms(new String[]{signAlg.getAlgorithmId(AlgorithmPreferences.SKS)});
             key.setCertificatePath(paymentCredential.signatureKey.getCertificatePath());
             key.setPrivateKey(paymentCredential.signatureKey.getPrivateKey().getEncoded());
+            key.setFriendlyName("Account " + paymentCredential.accountId);
 
-            JSONObjectWriter ow = new JSONObjectWriter()
+            key.addExtension(BaseProperties.W2NB_WEB_PAY_CONTEXT_URI,
+                             new JSONObjectWriter()
                 .setObject(BaseProperties.PAYER_ACCOUNT_JSON, 
                            new AccountDescriptor(paymentCredential.accountType,
                                                  paymentCredential.accountId).write())
@@ -133,7 +135,7 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
                            KeyProviderService.bankAuthorityUrl)
                 .setString(BaseProperties.SIGNATURE_ALGORITHM_JSON,
                            signAlg.getAlgorithmId(AlgorithmPreferences.JOSE))
-                .setObject(BaseProperties.ENCRYPTION_PARAMETERS_JSON)
+                .setObject(BaseProperties.ENCRYPTION_PARAMETERS_JSON, new JSONObjectWriter()
                     .setString(BaseProperties.DATA_ENCRYPTION_ALGORITHM_JSON,
                                Encryption.JOSE_A128CBC_HS256_ALG_ID)
                     .setString(BaseProperties.KEY_ENCRYPTION_ALGORITHM_JSON,
@@ -141,9 +143,8 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
                                    Encryption.JOSE_RSA_OAEP_256_ALG_ID 
                                                           : 
                                    Encryption.JOSE_ECDH_ES_ALG_ID)
-                    .setPublicKey(paymentCredential.encryptionKey, AlgorithmPreferences.JOSE);
-           key.addExtension(BaseProperties.W2NB_WEB_PAY_CONTEXT_URI,
-                            ow.serializeJSONObject(JSONOutputFormats.NORMALIZED));
+                    .setPublicKey(paymentCredential.encryptionKey, AlgorithmPreferences.JOSE))
+                             .serializeJSONObject(JSONOutputFormats.NORMALIZED));
 
            key.addLogotype(KeyGen2URIs.LOGOTYPES.CARD, paymentCredential.cardImage);
         }
@@ -209,7 +210,6 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
                                                   "=true");
                 keygen2State.addImageAttributesQuery(KeyGen2URIs.LOGOTYPES.LIST);
                 keygen2JSONBody(response, invocationRequest);
-                session.setAttribute(KeyProviderInitServlet.KEYGEN2_SESSION_ATTR, keygen2State);
                 return;
               }
 
@@ -238,7 +238,7 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
                   provisioningInitRequest.setKeyManagementKey(
                           KeyProviderService.keyManagemenentKey.getPublicKey());
                   keygen2JSONBody(response, provisioningInitRequest);
-                  break;
+                  return;
 
                 case PROVISIONING_INITIALIZATION:
                   ProvisioningInitializationResponseDecoder provisioningInitResponse = (ProvisioningInitializationResponseDecoder) jsonObject;
@@ -250,7 +250,7 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
                   credentiaDiscoveryRequest.addLookupDescriptor(
                       KeyProviderService.keyManagemenentKey.getPublicKey());
                   keygen2JSONBody(response, credentiaDiscoveryRequest);
-                  break;
+                  return;
 
                 case CREDENTIAL_DISCOVERY:
                   CredentialDiscoveryResponseDecoder credentiaDiscoveryResponse = (CredentialDiscoveryResponseDecoder) jsonObject;
@@ -266,7 +266,7 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
                       }
                   }
                   requestKeyGen2KeyCreation(response, keygen2State);
-                  break;
+                  return;
 
                 case KEY_CREATION:
                   KeyCreationResponseDecoder keyCreationResponse = (KeyCreationResponseDecoder) jsonObject;
@@ -274,7 +274,7 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
                   keygen2JSONBody(response,
                                   new ProvisioningFinalizationRequestEncoder(keygen2State,
                                                                              keygen2EnrollmentUrl));
-                  break;
+                  return;
 
                 case PROVISIONING_FINALIZATION:
                   ProvisioningFinalizationResponseDecoder provisioningFinalResponse =
@@ -285,15 +285,12 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
                   ////////////////////////////////////////////////////////////////////////////////////////////
                   // We are done, return an HTTP redirect taking the client out of its KeyGen2 mode
                   ////////////////////////////////////////////////////////////////////////////////////////////
-                  session.invalidate();
                   response.sendRedirect(keygen2EnrollmentUrl);
                   return;
 
                 default:
                   throw new IOException("Unxepected state");
             }
-            session.setAttribute(KeyProviderInitServlet.KEYGEN2_SESSION_ATTR, keygen2State);
-            
         } catch (Exception e) {
             if (session != null) {
                 session.invalidate();
@@ -338,7 +335,13 @@ public class KeyProviderServlet extends HttpServlet implements BaseProperties {
             log.info("KeyGen2 run aborted by the user");
             html.append("<b>Aborted by the user!</b>");
         } else {
-            html.append(KeyProviderService.successImageAndMessage);
+            HttpSession session = request.getSession(false);
+            if (session == null) {
+                html.append("<b>You need to restart the session</b>");
+            } else {
+                session.invalidate();
+                html.append(KeyProviderService.successImageAndMessage);
+            }
         }
         KeyProviderInitServlet.output(response, 
                                       KeyProviderInitServlet.getHTML(null,

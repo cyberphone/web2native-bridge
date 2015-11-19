@@ -11,45 +11,45 @@
     </context-param>
  
     <context-param>
-        <description>Bank EE Certificate</description>
-        <param-name>bank_eecert</param-name>
-        <param-value>@bank-eecert@</param-value>
-    </context-param>
-
-    <context-param>
         <description>Bank Host</description>
         <param-name>bank_host</param-name>
         <param-value>@bank-host@</param-value>
     </context-param>
-    
-    <context-param>
-        <description>Bank Decryption Key #1</description>
-        <param-name>bank_decryptionkey1</param-name>
-        <param-value>@bank-decryptionkey1@</param-value>
-    </context-param>
 
     <context-param>
-        <description>Bank Decryption Key #2</description>
-        <param-name>bank_decryptionkey2</param-name>
-        <param-value>@bank-decryptionkey2@</param-value>
-    </context-param>
-
-    <context-param>
-        <description>Merchant Network Root Certificate</description>
-        <param-name>merchant_root</param-name>
-        <param-value>@merchant-root@</param-value>
-    </context-param>
-
-    <context-param>
-        <description>Bank Client Root</description>
-        <param-name>bank_client_root</param-name>
-        <param-value>@bank-client-root@</param-value>
+        <description>Key Provider Host</description>
+        <param-name>keyprov_host</param-name>
+        <param-value>@keyprov-host@</param-value>
     </context-param>
 
     <context-param>
         <description>Server Port Mapping (may be undefined)</description>
         <param-name>server_port_map</param-name>
         <param-value>@server-port-map@</param-value>
+    </context-param>
+
+    <context-param>
+        <description>Payment Credential</description>
+        <param-name>paycred1</param-name>
+        <param-value>@paycred1@</param-value>
+    </context-param>
+
+    <context-param>
+        <description>Payment Credential</description>
+        <param-name>paycred2</param-name>
+        <param-value>@paycred2@</param-value>
+    </context-param>
+
+    <context-param>
+        <description>Payment Credential</description>
+        <param-name>paycred3</param-name>
+        <param-value>@paycred3@</param-value>
+    </context-param>
+
+    <context-param>
+        <description>Key Management Key</description>
+        <param-name>keyprov_kmk</param-name>
+        <param-value>@keyprov-kmk@</param-value>
     </context-param>
 
     <listener>
