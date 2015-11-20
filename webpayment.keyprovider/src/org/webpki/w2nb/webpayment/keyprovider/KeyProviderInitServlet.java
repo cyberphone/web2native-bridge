@@ -99,6 +99,16 @@ public class KeyProviderInitServlet extends HttpServlet {
     
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        output(response, 
+               getHTML(null,
+                       null,
+                       "<tr><td width=\"100%\" align=\"center\" valign=\"middle\"><form method=\"POST\">" +
+                       "<p><b>This Web-application enrolls payment credentials for the wallet</b></p>" +
+                       "<input type=\"submit\" value=\"Click to start!\"></form></td></tr>"));
+    }
+
+    @Override
+    public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         HttpSession session = request.getSession(true);
         session.setAttribute(KEYGEN2_SESSION_ATTR,
                              new ServerState(new KeyGen2SoftHSM(KeyProviderService.keyManagemenentKey)));

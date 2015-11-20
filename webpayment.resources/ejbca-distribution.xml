@@ -10,6 +10,7 @@
     <ant dir="../webpayment.acquirer" target="zip-distribution"/>
     <ant dir="../webpayment.bank" target="zip-distribution"/>
     <ant dir="../webpayment.merchant" target="zip-distribution"/>
+    <ant dir="../webpayment.keyprovider" target="zip-distribution"/>
   </target>
    
 </project>
