@@ -22,7 +22,6 @@ import java.io.InputStream;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
-
 import java.net.URL;
 
 import java.security.PublicKey;
@@ -64,6 +63,10 @@ public class KeyProviderService extends InitPropertyReader implements ServletCon
 
     static Logger logger = Logger.getLogger(KeyProviderService.class.getCanonicalName());
     
+    static final String LOGOTYPE              = "logotype";
+
+    static final String VERSION_CHECK         = "version_check";
+
     static final String KEYSTORE_PASSWORD     = "key_password";
 
     static final String BANK_HOST             = "bank_host";
@@ -103,6 +106,8 @@ public class KeyProviderService extends InitPropertyReader implements ServletCon
     }
 
     static Vector<PaymentCredential> paymentCredentials = new Vector<PaymentCredential>();
+
+    public static String logotype;
 
     InputStream getResource(String name) throws IOException {
         InputStream is = this.getClass().getResourceAsStream(name);
@@ -152,6 +157,19 @@ public class KeyProviderService extends InitPropertyReader implements ServletCon
         try {
             CustomCryptoProvider.forcedLoad (false);
 
+            ////////////////////////////////////////////////////////////////////////////////////////////
+            // Logotype
+            ////////////////////////////////////////////////////////////////////////////////////////////
+            logotype = new String(
+                ArrayUtil.getByteArrayFromInputStream(getResource(getPropertyString(LOGOTYPE))), "UTF-8");
+
+                ////////////////////////////////////////////////////////////////////////////////////////////
+            // Optional check
+            ////////////////////////////////////////////////////////////////////////////////////////////
+            if (getPropertyString(VERSION_CHECK).length() != 0) {
+                grantedVersions = getPropertyStringList(VERSION_CHECK);
+            }
+ 
             ////////////////////////////////////////////////////////////////////////////////////////////
             // A common string for browser enrollments
             ////////////////////////////////////////////////////////////////////////////////////////////

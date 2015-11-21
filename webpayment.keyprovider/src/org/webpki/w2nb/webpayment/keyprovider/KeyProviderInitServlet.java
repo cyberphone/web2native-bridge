@@ -67,10 +67,6 @@ public class KeyProviderInitServlet extends HttpServlet {
             ".smalltext {font-size:6pt;font-family:verdana,arial} "+
             "button {font-weight:normal;font-size:8pt;font-family:verdana,arial;padding-top:2px;padding-bottom:2px} "+
             ".headline {font-weight:bolder;font-size:10pt;font-family:arial,verdana} "+
-            ".dbTR {border-width:1px 1px 1px 0;border-style:solid;border-color:black;padding:4px} "+
-            ".dbTL {border-width:1px 1px 1px 1px;border-style:solid;border-color:black;padding:4px} "+
-            ".dbNL {border-width:0 1px 1px 1px;border-style:solid;border-color:black;padding:4px} "+
-            ".dbNR {border-width:0 1px 1px 0;border-style:solid;border-color:black;padding:4px} "+
             "</style>";
 
     static String getHTML(String javascript, String bodyscript, String box) {
@@ -84,8 +80,11 @@ public class KeyProviderInitServlet extends HttpServlet {
             s.append(' ').append(bodyscript);
         }
         s.append(
-                ">" +
-                "<table cellapdding=\"0\" cellspacing=\"0\" width=\"100%\" height=\"100%\">")
+                "><div style=\"cursor:pointer;padding:2pt 0 0 0;position:absolute;top:15pt;left:15pt;z-index:5;visibility:visible;width:100pt;" +
+                "height:47pt;border-width:1px;border-style:solid;border-color:black;box-shadow:3pt 3pt 3pt #D0D0D0\"" +
+                " onclick=\"document.location.href='http://webpki.org'\" title=\"Home of WebPKI.org\">")
+         .append (KeyProviderService.logotype)
+         .append ("</div><table cellapdding=\"0\" cellspacing=\"0\" width=\"100%\" height=\"100%\">")
                 .append(box).append("</table></body></html>");
         return s.toString();
     }

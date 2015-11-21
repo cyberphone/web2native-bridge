@@ -23,9 +23,23 @@
     </module>
 </application>]]></string>
   </resources>
-
   <property name="ejbca-app-xml-mod" refid="w2nb_application.xml"/>
 
+    <resources id="security.external">
+<string><![CDATA[
+    <security-constraint>
+      <web-resource-collection>
+        <web-resource-name>The app</web-resource-name>
+        <url-pattern>/*</url-pattern>
+      </web-resource-collection>
+      <user-data-constraint>
+        <transport-guarantee>CONFIDENTIAL</transport-guarantee>
+      </user-data-constraint>
+    </security-constraint>
+]]></string>
+    </resources> 
+  <property name="security.internal" refid="security.external"/> 
+    
   <condition property="storetype" value="PKCS12" else="JKS">
     <matches pattern=".*\.p12$" string="${keyfilext}"/>
   </condition>
@@ -46,6 +60,8 @@
   </target>
 
   <target name="_build">
+    <property name="plugin.ejbca.ant.custom.logon.version-check" value=""/>
+    <property name="security.actual" value=""/>
     <property name="keyprov.host" value="http://localhost:8080/webpay-keyprovider"/>
     <property name="server.port.map" value=""/>
     <property name="errormedia" value="false"/>
@@ -64,10 +80,13 @@
            classpath="${compile.classpath}"
            includeAntRuntime="false"/>
     <replace file="${temp.dir}/web.xml">
+      <replacefilter token="@logotype@" value="${logotype.file}"/>
       <replacefilter token="@server-port-map@" value="${server.port.map}"/>
 	  <replacefilter token="@key-password@" value="${keypassword}"/>
       <replacefilter token="@keyprov-host@" value="${keyprov.host}"/>
       <replacefilter token="@bank-host@" value="https://mobilepki.org/webpay-bank/authority"/>
+      <replacefilter token="@version-check@" value="${plugin.ejbca.ant.custom.logon.version-check}"/>
+      <replacefilter token="@security@" value="${security.actual}"/>
       <replacefilter token="@paycred1@"
         value="${clientkey_ec}${keyfilext},SUPER_CARD,6875056745552109,supercard.png,${encryptionkey_rsa}.cer"/>
       <replacefilter token="@paycred2@"
@@ -98,6 +117,7 @@
          <include name="${kg2kmkey_ec}${keyfilext}"/>
       </zipfileset>
       <zipfileset dir="${zip.card-images.dir}" prefix="${class_war_path}"/>
+      <zipfileset dir="${zip.logotype.dir}" prefix="${class_war_path}"/>
       <fileset dir="web"/>
     </war>
   </target>
@@ -138,6 +158,8 @@
 
        <param name="zip.card-images.dir" value="${cardimage.dir}"/>
        
+       <param name="zip.logotype.dir" value="${logotype.dir}"/>
+       
        <param name="merchant.var.root" value="${merchant_root}"/>
      </antcall>
      <copy file="${dist.dir}/${application}" todir="${env.CATALINA_HOME}/webapps" overwrite="true" preservelastmodified="true"/>
@@ -146,6 +168,7 @@
   <!-- mobilepki using EJBCA plugin mode -->
   <target name="mobilepki-ejbca">
      <echo message="Web2Native Bridge &quot;mobilepki.org&quot; Key Provider Plugin"/>
+     <property name="security.actual" value="${security.internal}"/>
      <property name="keyprov.host" value="https://mobilepki.org/webpay-keyprovider"/>
      <property name="server.port.map" value="8442"/>
      <property file="common.properties"/>
@@ -171,6 +194,8 @@
        <param name="zip.key.dir" value="keys"/>
        
        <param name="zip.card-images.dir" value="card-images"/>
+
+       <param name="zip.logotype.dir" value="logotype"/>
        
        <param name="merchant.var.root" value="${merchantroot}"/>
      </antcall>
@@ -184,6 +209,7 @@
      <echo message="Web2Native Bridge &quot;localhost&quot; Key Provider Plugin"/>
      <property name="keyprov.host" value="http://localhost:8080/webpay-keyprovider"/>
      <property name="server.port.map" value=""/>
+     <property name="security.actual" value=""/>
      <antcall target="mobilepki-ejbca"/>
   </target>
   
@@ -214,6 +240,7 @@
       <zipfileset dir="${common.src.dir}" prefix="${appcorename}/common.src"/>
       <zipfileset dir="${key.dir}" prefix="${appcorename}/keys"/>
       <zipfileset dir="${cardimage.dir}" prefix="${appcorename}/card-images"/>
+      <zipfileset dir="${logotype.dir}" prefix="${appcorename}/logotype"/>
       <zipfileset file="../webpayment.resources/common.properties" prefix="${appcorename}"/>
     </zip>
     <checksum file="${dd}/${appcorename}.zip" fileext=".SHA1" algorithm="sha1" forceOverwrite="yes"/>

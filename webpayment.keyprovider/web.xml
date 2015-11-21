@@ -5,6 +5,18 @@
     version="2.4">
 
     <context-param>
+        <description>Version Check</description>
+        <param-name>logotype</param-name>
+        <param-value>@logotype@</param-value>
+    </context-param>
+
+    <context-param>
+        <description>Version Check</description>
+        <param-name>version_check</param-name>
+        <param-value>@version-check@</param-value>
+    </context-param>
+
+    <context-param>
         <description>Key Password</description>
         <param-name>key_password</param-name>
         <param-value>@key-password@</param-value>
@@ -75,5 +87,5 @@
         <servlet-name>KeyProviderInitServlet</servlet-name>
         <url-pattern>/init</url-pattern>
     </servlet-mapping>
-
+@security@
 </web-app>
