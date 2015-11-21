@@ -20,9 +20,9 @@ import java.io.IOException;
 
 public enum PayerAccountTypes {
 
-    SUPER_CARD   (true,  "https://supercard.com",  "SuperCard"), 
-    BANK_DIRECT  (false, "https://bankdirect.net", "Bank Direct"),
-    UNUSUAL_CARD (false, "https://usualcard.com",  "UnusualCard");
+    SUPER_CARD   (true,  "https://supercard.com",   "SuperCard"), 
+    BANK_DIRECT  (false, "https://bankdirect.net",  "Bank Direct"),
+    UNUSUAL_CARD (false, "https://unusualcard.com", "UnusualCard");
 
     boolean acquirerBased;  // True => card processor model, false = > 3 or 4 corner distributed model
     String typeUri;            // A brand URI
