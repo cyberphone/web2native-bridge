@@ -371,93 +371,93 @@ public class HTML {
                     "var nativePort = null;\n\n" +
 
                     "function closeWallet() {\n" +
-                    "    if (nativePort) {\n" +
-                    "        nativePort.disconnect();\n" +
-                    "        nativePort = null;\n" +
-                    "    }\n" +
+                    "  if (nativePort) {\n" +
+                    "    nativePort.disconnect();\n" +
+                    "    nativePort = null;\n" +
+                    "  }\n" +
                     "}\n\n" +
 
                     "function setFail(message) {\n" +
-                    "    closeWallet();\n" +
-                    "    alert(message);\n" +
+                    "  closeWallet();\n" +
+                    "  alert(message);\n" +
                     "}\n\n" +
 
                     "function activateWallet() {\n" +
-                    "    var initMode = true;\n" +
-                    "    if (!navigator.")
+                    "  var initMode = true;\n" +
+                    "  if (!navigator.")
              .append(connectMethod)
              .append(") {\n" +
-                    "        setFail('\"navigator.")
+                    "    setFail('\"navigator.")
              .append(connectMethod)
              .append("\" not found, \\ncheck Chrome extension settings');\n" +
-                    "        return;\n" +
-                    "    }\n" +
-                    "    navigator.")
+                    "    return;\n" +
+                    "  }\n" +
+                    "  navigator.")
              .append(connectMethod)
              .append("('")
              .append(MerchantService.w2nbWalletName)
              .append("'");
         if (!tapConnectMode) {
-            temp_string.append(",\n                            ")
+            temp_string.append(",\n                          ")
              .append(ExtensionPositioning.encode(ExtensionPositioning.HORIZONTAL_ALIGNMENT.Center,
                                                  ExtensionPositioning.VERTICAL_ALIGNMENT.Center,
                                                  "wallet"));
         }
         temp_string.append(").then(function(port) {\n" +
-                    "        nativePort = port;\n" +
-                    "        port.addMessageListener(function(message) {\n" +
-                    "            if (message[\"@context\"] != \"" + BaseProperties.W2NB_WEB_PAY_CONTEXT_URI + "\") {\n" +
-                    "                setFail(\"Missing or wrong \\\"@context\\\"\");\n" +
-                    "                return;\n" +
-                    "            }\n" +
-                    "            var qualifier = message[\"@qualifier\"];\n" +
-                    "            if ((initMode && qualifier != \"" + Messages.WALLET_INITIALIZED.toString() + "\")  ||\n" +
-                    "                (!initMode && qualifier != \"" +  Messages.PAYER_AUTHORIZATION.toString() + "\")) {\n" +  
-                    "                setFail(\"Wrong or missing \\\"@qualifier\\\"\");\n" +
-                    "                return;\n" +
-                    "            }\n" +
-                    "            if (initMode) {\n");
+                    "    nativePort = port;\n" +
+                    "    port.addMessageListener(function(message) {\n" +
+                    "      if (message[\"@context\"] != \"" + BaseProperties.W2NB_WEB_PAY_CONTEXT_URI + "\") {\n" +
+                    "        setFail(\"Missing or wrong \\\"@context\\\"\");\n" +
+                    "        return;\n" +
+                    "      }\n" +
+                    "      var qualifier = message[\"@qualifier\"];\n" +
+                    "      if ((initMode && qualifier != \"" + Messages.WALLET_INITIALIZED.toString() + "\")  ||\n" +
+                    "          (!initMode && qualifier != \"" +  Messages.PAYER_AUTHORIZATION.toString() + "\")) {\n" +  
+                    "        setFail(\"Wrong or missing \\\"@qualifier\\\"\");\n" +
+                    "        return;\n" +
+                    "      }\n" +
+                    "      if (initMode) {\n");
        if (debugMode) {
            temp_string.append(
-                    "                document.getElementById(\"" + UserPaymentServlet.INITMSG_FORM_ATTR + "\").value = JSON.stringify(message);\n");
+                    "        document.getElementById(\"" + UserPaymentServlet.INITMSG_FORM_ATTR + "\").value = JSON.stringify(message);\n");
        }
        if (!tapConnectMode) {
            temp_string.append(
-                    "                document.getElementById(\"wallet\").style.height = message." + 
+                    "        document.getElementById(\"wallet\").style.height = message." + 
                                          BaseProperties.WINDOW_JSON + "." + BaseProperties.HEIGHT_JSON + " + 'px';\n");
        }
        temp_string.append(
-                    "                initMode = false;\n" +
-                    "                nativePort.postMessage(invocationData);\n" +
-                    "            } else {\n" +
-                    "                document.getElementById(\"" + UserPaymentServlet.AUTHDATA_FORM_ATTR + "\").value = JSON.stringify(message);\n" +
-                    "                document.forms.shoot.submit();\n" +
-                    "            }\n"+
-                    "        });\n");
+                    "        initMode = false;\n" +
+                    "        nativePort.postMessage(invocationData);\n" +
+                    "      } else {\n" +
+                    "        document.getElementById(\"" + UserPaymentServlet.AUTHDATA_FORM_ATTR + "\").value = JSON.stringify(message);\n" +
+                    "        document.forms.shoot.submit();\n" +
+                    "      }\n"+
+                    "    });\n");
        if (tapConnectMode) {
            temp_string.append(
-                   "        port.addConnectionListener(function(initialize) {\n" +
-                   "            if (initialize) {\n" +
-                   "                document.getElementById(\"state\").src = \"images/loading-gears-animation-3.gif\";\n" +
-                   "            } else {\n" +
-                   "                if (initMode) console.debug('Wallet prematurely closed!');\n" +
-                   "                nativePort = null;\n" +
-                   "                document.forms.restore.submit();\n" +
-                   "            }\n" +
-                   "        });\n");
+                   "    port.addConnectionListener(function(initialize) {\n" +
+                   "      if (initialize) {\n" +
+                   "        document.getElementById(\"state\").src = \"images/loading-gears-animation-3.gif\";\n" +
+                   "      } else {\n" +
+                   "        if (initMode) console.debug('Wallet prematurely closed!');\n" +
+                   "        nativePort = null;\n" +
+                   "        document.forms.restore.submit();\n" +
+                   "      }\n" +
+                   "    });\n");
        } else {
            temp_string.append(
-                    "        port.addDisconnectListener(function() {\n" +
-                    "            if (initMode) alert('Wallet application \"" + 
+                    "    port.addDisconnectListener(function() {\n" +
+                    "      if (initMode) alert('Wallet application \"" + 
                                      MerchantService.w2nbWalletName + ".jar\" appears to be missing!');\n" +
-                    "            nativePort = null;\n" +
-                    "            document.forms.restore.submit();\n" +
-                    "        });\n");
+                    "      nativePort = null;\n" +
+                    "      document.forms.restore.submit();\n" +
+                    "    });\n");
        }
        temp_string.append(
-                    "    }, function(err) {\n" +
-                    "        console.debug(err);\n" +
-                    "    });\n" +
+                    "  }, function(err) {\n" +
+                    "    console.debug(err);\n" +
+                    "  });\n" +
                     "}\n\n");
 
        if (!tapConnectMode) {
@@ -466,7 +466,7 @@ public class HTML {
 
        temp_string.append(
                     "window.addEventListener(\"beforeunload\", function(event) {\n" +
-                    "    closeWallet();\n" +
+                    "  closeWallet();\n" +
                     "});\n\n");
         HTML.output(response, HTML.getHTML(temp_string.toString(),
                               "onload=\"activateWallet()\"",

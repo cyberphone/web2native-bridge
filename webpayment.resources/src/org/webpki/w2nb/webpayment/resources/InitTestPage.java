@@ -106,11 +106,11 @@ public class InitTestPage implements BaseProperties {
               "  for (var n = 0; n < rawString.length; n++) {\n" +
               "    var c = rawString.charAt(n);\n" +
               "    if (c == \"<\") {\n" +
-              "        c = \"&lt;\";\n" +
+              "      c = \"&lt;\";\n" +
               "    } else if (c == \">\") {\n" +
-              "        c = \"&gt;\";\n" + 
+              "      c = \"&gt;\";\n" + 
               "    } else if  (c == \"&\") {\n" +
-              "        c = \"&amp;\";\n" +
+              "      c = \"&amp;\";\n" +
               "    }\n" +
               "    text += c;\n" +
               "  }\n" +
@@ -194,7 +194,7 @@ public class InitTestPage implements BaseProperties {
               "      }\n" +
               "      var qualifier = message[\"@qualifier\"];\n" +
               "      if ((initMode && qualifier != \"" + Messages.WALLET_INITIALIZED.toString() + "\" ) ||\n" +
-              "        (!initMode && qualifier != \"" + Messages.PAYER_AUTHORIZATION.toString() + "\")) {\n" +  
+              "          (!initMode && qualifier != \"" + Messages.PAYER_AUTHORIZATION.toString() + "\")) {\n" +  
               "        setString(\"Wrong or missing \\\"@qualifier\\\"\");\n" +
               "        closeExtension();\n" +
               "        return;\n" +

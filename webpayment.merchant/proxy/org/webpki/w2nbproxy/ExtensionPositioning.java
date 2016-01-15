@@ -88,18 +88,18 @@ public class ExtensionPositioning {
     
     public static final String SET_EXTENSION_POSITION_FUNCTION_TEXT =
             "function setExtensionPosition(hAlign, vAlign, optionalId) {\n" +
-            "    var result = {" + HORIZONTAL_ALIGNMENT_JSON + ":hAlign, " +
+            "  var result = {" + HORIZONTAL_ALIGNMENT_JSON + ":hAlign, " +
                                    VERTICAL_ALIGNMENT_JSON + ":vAlign}\n" +
-            "    if (optionalId) {\n" +
-            "        var input = document.getElementById(optionalId).getBoundingClientRect();\n" +
-            "        var rectangle = {};\n" +
-            "        rectangle." + TARGET_LEFT_JSON + " = input." + TARGET_LEFT_JSON + ";\n" +
-            "        rectangle." + TARGET_TOP_JSON + " = input." + TARGET_TOP_JSON + ";\n" +
-            "        rectangle." + TARGET_WIDTH_JSON + " = input." + TARGET_WIDTH_JSON + ";\n" +
-            "        rectangle." + TARGET_HEIGHT_JSON + " = input." + TARGET_HEIGHT_JSON + ";\n" +
-            "        result." + TARGET_RECTANGLE_JSON + " = rectangle;\n" +
-            "    }\n" +
-            "    return result;\n" +
+            "  if (optionalId) {\n" +
+            "    var input = document.getElementById(optionalId).getBoundingClientRect();\n" +
+            "    var rectangle = {};\n" +
+            "    rectangle." + TARGET_LEFT_JSON + " = input." + TARGET_LEFT_JSON + ";\n" +
+            "    rectangle." + TARGET_TOP_JSON + " = input." + TARGET_TOP_JSON + ";\n" +
+            "    rectangle." + TARGET_WIDTH_JSON + " = input." + TARGET_WIDTH_JSON + ";\n" +
+            "    rectangle." + TARGET_HEIGHT_JSON + " = input." + TARGET_HEIGHT_JSON + ";\n" +
+            "    result." + TARGET_RECTANGLE_JSON + " = rectangle;\n" +
+            "  }\n" +
+            "  return result;\n" +
             "}\n";
 
     @Override
