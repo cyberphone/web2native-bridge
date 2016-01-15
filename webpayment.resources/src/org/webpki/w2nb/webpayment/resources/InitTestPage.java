@@ -102,19 +102,19 @@ public class InitTestPage implements BaseProperties {
               "\"use strict\";\n\n" +
 
               "function setString(rawString) {\n" +
-              "    var text = \"\";\n" +
-              "    for (var n = 0; n < rawString.length; n++) {\n" +
-              "        var c = rawString.charAt(n);\n" +
-              "        if (c == \"<\") {\n" +
-              "            c = \"&lt;\";\n" +
-              "        } else if (c == \">\") {\n" +
-              "            c = \"&gt;\";\n" + 
-              "        } else if  (c == \"&\") {\n" +
-              "            c = \"&amp;\";\n" +
-              "        }\n" +
-              "        text += c;\n" +
+              "  var text = \"\";\n" +
+              "  for (var n = 0; n < rawString.length; n++) {\n" +
+              "    var c = rawString.charAt(n);\n" +
+              "    if (c == \"<\") {\n" +
+              "        c = \"&lt;\";\n" +
+              "    } else if (c == \">\") {\n" +
+              "        c = \"&gt;\";\n" + 
+              "    } else if  (c == \"&\") {\n" +
+              "        c = \"&amp;\";\n" +
               "    }\n" +
-              "    document.getElementById(\"response\").innerHTML = text;\n" +
+              "    text += c;\n" +
+              "  }\n" +
+              "  document.getElementById(\"response\").innerHTML = text;\n" +
               "}\n\n" +
     
               "var nativePort = null;\n\n" +
@@ -151,114 +151,114 @@ public class InitTestPage implements BaseProperties {
         write("var badMessageRequest = {\"hi\":\"there!\"};\n\n" +
 
               "function closeExtension() {\n" +
-              "    if (nativePort) {\n" +
-              "        nativePort.disconnect();\n" +
-              "        nativePort = null;\n" +
-              "    }\n" +
+              "  if (nativePort) {\n" +
+              "    nativePort.disconnect();\n" +
+              "    nativePort = null;\n" +
+              "  }\n" +
               "}\n\n" +
 
               "function sendMessageConditional(message) {\n" +
-              "    if (nativePort) {\n" +
-              "        nativePort.postMessage(message);\n" +
-              "    }\n" +
+              "  if (nativePort) {\n" +
+              "    nativePort.postMessage(message);\n" +
+              "  }\n" +
               "}\n\n" +
 
               "function activateExtension() {\n" +
-              "    if (nativePort) {\n" +
-              "        closeExtension();\n" +
-              "    }\n" +
-              "    setString(\"\");\n" +
-              "    var initMode = true;\n" +
-              "    var test = document.forms.shoot.test.value;\n" +
-              "    if (!navigator.nativeConnect) {\n" +
-              "        alert('\"navigator.nativeConnect\" not found, \\ncheck Chrome Web2Native Bridge extension settings');\n" +
-              "        return;\n" +
-              "    }\n" +
-              "    navigator.nativeConnect(\"");
+              "  if (nativePort) {\n" +
+              "    closeExtension();\n" +
+              "  }\n" +
+              "  setString(\"\");\n" +
+              "  var initMode = true;\n" +
+              "  var test = document.forms.shoot.test.value;\n" +
+              "  if (!navigator.nativeConnect) {\n" +
+              "    alert('\"navigator.nativeConnect\" not found, \\ncheck Chrome Web2Native Bridge extension settings');\n" +
+              "    return;\n" +
+              "  }\n" +
+              "  navigator.nativeConnect(\"");
         write(args[3]);
         write("\",\n" +
-              "                            document.getElementById(\"positionWallet\").checked ?\n" +
-              "                                ");
+              "                          document.getElementById(\"positionWallet\").checked ?\n" +
+              "                            ");
         write(ExtensionPositioning.encode(ExtensionPositioning.HORIZONTAL_ALIGNMENT.Right,
                                           ExtensionPositioning.VERTICAL_ALIGNMENT.Top, "wallet"));
         write(" :\n" +
-              "                                ");
+              "                            ");
         write(ExtensionPositioning.encode(ExtensionPositioning.HORIZONTAL_ALIGNMENT.Center,
                                           ExtensionPositioning.VERTICAL_ALIGNMENT.Center, null));
         write(").then(function(port) {\n" +
-              "        nativePort = port;\n" +
-              "        port.addMessageListener(function(message) {\n" +
-              "            if (message[\"@context\"] != \"" + BaseProperties.W2NB_WEB_PAY_CONTEXT_URI + "\") {\n" +
-              "                setString(\"Missing or wrong \\\"@context\\\"\");\n" +
-              "                return;\n" +
-              "            }\n" +
-              "            var qualifier = message[\"@qualifier\"];\n" +
-              "            if ((initMode && qualifier != \"" + Messages.WALLET_INITIALIZED.toString() + "\" ) ||\n" +
-              "                (!initMode && qualifier != \"" + Messages.PAYER_AUTHORIZATION.toString() + "\")) {\n" +  
-              "                setString(\"Wrong or missing \\\"@qualifier\\\"\");\n" +
-              "                closeExtension();\n" +
-              "                return;\n" +
-              "            }\n" +
-              "            if (initMode) {\n" +
-              "                initMode = false;\n" +
-              "                if (document.getElementById(\"positionWallet\").checked) {\n" +
-              "                    document.getElementById(\"wallet\").style.width = message." + WINDOW_JSON + "." + WIDTH_JSON + " + 'px';\n" +
-              "                    document.getElementById(\"wallet\").style.height = message." + WINDOW_JSON + "." + HEIGHT_JSON + " + 'px';\n" +
-              "                }\n" +
-              "                if (test == \"" + TESTS.Normal + "\") {\n" +
-              "                    sendMessageConditional(normalRequest);\n" +
-              "                } else if (test == \"" + TESTS.Slow + "\") {\n" +
-              "                    setTimeout(function() {\n" +
-              "                        sendMessageConditional(normalRequest);\n" +
-              "                    }, 2000);\n" +
-              "                } else if (test == \"" + TESTS.Scroll + "\") {\n" +
-              "                    sendMessageConditional(scrollMatchingRequest);\n" +
-              "                } else if (test == \"" + TESTS.NonMatching + "\") {\n" +
-              "                    sendMessageConditional(nonMatchingRequest);\n" +
-              "                } else if (test == \"" + TESTS.Timeout + "\") {\n" +
-              "                    setTimeout(function() {\n" +
-              "                        sendMessageConditional(normalRequest);\n" +
-              "                    }, 20000);\n" +
-              "                } else if (test == \"" + TESTS.Syntax + "\") {\n" +
-              "                    sendMessageConditional(badMessageRequest);\n" +
-              "                } else if (test == \"" + TESTS.Signature + "\") {\n" +
-              "                    sendMessageConditional(badSignatureRequest);\n" +
-              "                } else {\n" +
-              "                    alert(\"Not implemented: \" + test);\n" +
-              "                }\n" +
-              "            } else {\n" +
-              "                setTimeout(function() {\n" +
-              "                    setString(JSON.stringify(message));\n" +
-              "                    closeExtension();\n" +
-              "                }, 1000);\n" +
-              "            }\n"+
-              "        });\n" +
-              "        port.addDisconnectListener(function() {\n" +
-              "            if (nativePort) {\n" +
-              "                setString(\"Application Unexpectedly disconnected\");\n" +
-              "            }\n" +
-              "            nativePort = null;\n" +
-              "        });\n" +
-              "    }, function(err) {\n" +
-              "        console.debug(err);\n" +
+              "    nativePort = port;\n" +
+              "    port.addMessageListener(function(message) {\n" +
+              "      if (message[\"@context\"] != \"" + BaseProperties.W2NB_WEB_PAY_CONTEXT_URI + "\") {\n" +
+              "        setString(\"Missing or wrong \\\"@context\\\"\");\n" +
+              "        return;\n" +
+              "      }\n" +
+              "      var qualifier = message[\"@qualifier\"];\n" +
+              "      if ((initMode && qualifier != \"" + Messages.WALLET_INITIALIZED.toString() + "\" ) ||\n" +
+              "        (!initMode && qualifier != \"" + Messages.PAYER_AUTHORIZATION.toString() + "\")) {\n" +  
+              "        setString(\"Wrong or missing \\\"@qualifier\\\"\");\n" +
+              "        closeExtension();\n" +
+              "        return;\n" +
+              "      }\n" +
+              "      if (initMode) {\n" +
+              "        initMode = false;\n" +
+              "        if (document.getElementById(\"positionWallet\").checked) {\n" +
+              "          document.getElementById(\"wallet\").style.width = message." + WINDOW_JSON + "." + WIDTH_JSON + " + 'px';\n" +
+              "          document.getElementById(\"wallet\").style.height = message." + WINDOW_JSON + "." + HEIGHT_JSON + " + 'px';\n" +
+              "        }\n" +
+              "        if (test == \"" + TESTS.Normal + "\") {\n" +
+              "          sendMessageConditional(normalRequest);\n" +
+              "        } else if (test == \"" + TESTS.Slow + "\") {\n" +
+              "          setTimeout(function() {\n" +
+              "            sendMessageConditional(normalRequest);\n" +
+              "          }, 2000);\n" +
+              "        } else if (test == \"" + TESTS.Scroll + "\") {\n" +
+              "          sendMessageConditional(scrollMatchingRequest);\n" +
+              "        } else if (test == \"" + TESTS.NonMatching + "\") {\n" +
+              "          sendMessageConditional(nonMatchingRequest);\n" +
+              "        } else if (test == \"" + TESTS.Timeout + "\") {\n" +
+              "          setTimeout(function() {\n" +
+              "            sendMessageConditional(normalRequest);\n" +
+              "          }, 20000);\n" +
+              "        } else if (test == \"" + TESTS.Syntax + "\") {\n" +
+              "          sendMessageConditional(badMessageRequest);\n" +
+              "        } else if (test == \"" + TESTS.Signature + "\") {\n" +
+              "          sendMessageConditional(badSignatureRequest);\n" +
+              "        } else {\n" +
+              "          alert(\"Not implemented: \" + test);\n" +
+              "        }\n" +
+              "      } else {\n" +
+              "        setTimeout(function() {\n" +
+              "          setString(JSON.stringify(message));\n" +
+              "          closeExtension();\n" +
+              "        }, 1000);\n" +
+              "      }\n"+
               "    });\n" +
+              "    port.addDisconnectListener(function() {\n" +
+              "      if (nativePort) {\n" +
+              "        setString(\"Application Unexpectedly disconnected\");\n" +
+              "      }\n" +
+              "      nativePort = null;\n" +
+              "    });\n" +
+              "  }, function(err) {\n" +
+              "    console.debug(err);\n" +
+              "  });\n" +
               "}\n\n" +
 
               "window.addEventListener(\"beforeunload\", function(event) {\n" +
-              "    closeExtension();\n" +
+              "  closeExtension();\n" +
               "});\n\n" +
               
               "var targetWidth;\n" +
               "var targetHeight;\n" +
               "function getTargetDimensions() {\n" +
-              "    targetWidth = document.getElementById(\"wallet\").style.width;\n" +
-              "    targetHeight = document.getElementById(\"wallet\").style.height;\n" +
+              "  targetWidth = document.getElementById(\"wallet\").style.width;\n" +
+              "  targetHeight = document.getElementById(\"wallet\").style.height;\n" +
               "}\n\n" +
               
               "function setTargetState() {\n" +
-              "    document.getElementById(\"wallet\").style.visibility = document.getElementById(\"positionWallet\").checked ? 'visible' : 'hidden';\n" +
-              "    document.getElementById(\"wallet\").style.width = targetWidth;\n" +
-              "    document.getElementById(\"wallet\").style.height = targetHeight;\n" +
+              "  document.getElementById(\"wallet\").style.visibility = document.getElementById(\"positionWallet\").checked ? 'visible' : 'hidden';\n" +
+              "  document.getElementById(\"wallet\").style.width = targetWidth;\n" +
+              "  document.getElementById(\"wallet\").style.height = targetHeight;\n" +
               "}\n\n" +
               
               ExtensionPositioning.SET_EXTENSION_POSITION_FUNCTION_TEXT + "\n" +
