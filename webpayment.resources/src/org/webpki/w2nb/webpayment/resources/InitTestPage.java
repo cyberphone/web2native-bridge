@@ -70,7 +70,7 @@ public class InitTestPage implements BaseProperties {
         write(utf8.getBytes("UTF-8"));
     }
     static void write(JSONObjectWriter json) throws Exception {
-        write(json.serializeJSONObject(JSONOutputFormats.JS_NATIVE));
+        write(json.serializeJSONObject(JSONOutputFormats.PRETTY_JS_NATIVE));
     }
 
     public static void main(String[] args) throws Exception {

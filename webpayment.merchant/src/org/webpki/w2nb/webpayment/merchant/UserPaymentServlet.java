@@ -135,7 +135,7 @@ public class UserPaymentServlet extends HttpServlet implements BaseProperties {
                          savedShoppingCart,
                          getOption(session, HomeServlet.TAP_CONNECT_MODE_SESSION_ATTR),
                          debugMode,
-                         new String(invokeRequest.serializeJSONObject(JSONOutputFormats.JS_NATIVE), "UTF-8"));
+                         new String(invokeRequest.serializeJSONObject(JSONOutputFormats.PRETTY_JS_NATIVE), "UTF-8"));
     }
 
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
