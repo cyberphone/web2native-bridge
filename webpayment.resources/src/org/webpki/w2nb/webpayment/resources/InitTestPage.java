@@ -97,7 +97,7 @@ public class InitTestPage implements BaseProperties {
                                   signer);
         // Header
         write("<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><title>Payment Agent (Wallet) Tester</title>"
-              + "</head><body onload=\"getTargetDimensions()\"><script>\n\n" +
+              + "</head>\n<body onload=\"getTargetDimensions()\"><script>\n\n" +
 
               "\"use strict\";\n\n" +
 
@@ -118,7 +118,7 @@ public class InitTestPage implements BaseProperties {
               "}\n\n" +
     
               "var nativePort = null;\n\n" +
-              "var normalRequest =\n");
+              "var normalRequest = ");
 
         // The payment request is wrapped in an unsigned wallet invocation message
         write(Messages.createBaseMessage(Messages.WALLET_REQUEST)
@@ -284,7 +284,7 @@ public class InitTestPage implements BaseProperties {
               "<div id=\"response\" style=\"font-family:courier;font-size:10pt;word-wrap:break-word;width:800pt\"></div>\n" +
               "<div id=\"wallet\" style=\"position:absolute;top:50px;background:yellow;" +
               "right:50px;z-index:5;visibility:hidden\">The wallet should launch in this<br>corner and update width+height</div>" +
-              "</body></html>\n");
+              "\n</body></html>");
         fos.close();
     }
 }

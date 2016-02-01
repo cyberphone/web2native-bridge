@@ -364,7 +364,7 @@ public class HTML {
                  "<form name=\"restore\" method=\"POST\" action=\"shop\">" +
                  "</form></td></tr>");
         
-        StringBuffer temp_string = new StringBuffer("\n\n\"use strict\";\n\nvar invocationData =\n")
+        StringBuffer temp_string = new StringBuffer("\n\n\"use strict\";\n\nvar invocationData = ")
             .append(walletRequest)
             .append(";\n\n" +
 
