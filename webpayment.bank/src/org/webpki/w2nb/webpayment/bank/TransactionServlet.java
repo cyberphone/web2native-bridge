@@ -34,6 +34,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.webpki.json.JSONAsymKeyVerifier;
 import org.webpki.json.JSONDecoderCache;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
@@ -44,6 +45,7 @@ import org.webpki.net.HTTPSWrapper;
 
 import org.webpki.util.ISODateTime;
 
+import org.webpki.w2nb.webpayment.common.CertificatePathCompare;
 import org.webpki.w2nb.webpayment.common.PayerAccountTypes;
 import org.webpki.w2nb.webpayment.common.Authority;
 import org.webpki.w2nb.webpayment.common.BaseProperties;
@@ -93,15 +95,15 @@ public class TransactionServlet extends HttpServlet implements BaseProperties {
 
     JSONObjectWriter processReserveOrDebitRequest(JSONObjectReader payeeRequest)
     throws IOException, GeneralSecurityException {
-        // Read the attested and encrypted request
-       ReserveOrDebitRequest attestedEncryptedRequest = new ReserveOrDebitRequest(payeeRequest);
+        // Read the by the user and merchant attested payment request
+       ReserveOrDebitRequest attestedPaymentRequest = new ReserveOrDebitRequest(payeeRequest);
 
        // Decrypt the encrypted user authorization
        AuthorizationData authorizationData =
-               attestedEncryptedRequest.getDecryptedAuthorizationRequest(BankService.decryptionKeys);
+               attestedPaymentRequest.getDecryptedAuthorizationData(BankService.decryptionKeys);
 
        // The merchant is the only entity who can provide the client's IP address
-       String clientIpAddress = attestedEncryptedRequest.getClientIpAddress();
+       String clientIpAddress = attestedPaymentRequest.getClientIpAddress();
 
        // Client IP could be used for risk-based authentication, here it is only logged
        logger.info("Client address: " + clientIpAddress);
@@ -110,10 +112,11 @@ public class TransactionServlet extends HttpServlet implements BaseProperties {
        authorizationData.getSignatureDecoder().verify(BankService.clientRoot);
 
        // Get the embedded (counter-signed) payment request
-       PaymentRequest paymentRequest = authorizationData.getPaymentRequest();
+       PaymentRequest paymentRequest = attestedPaymentRequest.getPaymentRequest();
 
-       // Verify that the merchant's signature belongs to a valid merchant trust network
-       paymentRequest.getSignatureDecoder().verify(BankService.merchantRoot);
+       // Verify that the merchant's signature belongs to a for us known merchant
+       // To simply things we only recognize a single merchant...
+       paymentRequest.getSignatureDecoder().verify(new JSONAsymKeyVerifier(BankService.merchantKey));
        
        // We need to separate credit-card and account-2-account payments
        boolean acquirerBased = PayerAccountTypes.fromTypeUri(authorizationData.getAccountDescriptor().getAccountType()).isAcquirerBased();
@@ -126,7 +129,7 @@ public class TransactionServlet extends HttpServlet implements BaseProperties {
 
        // Sorry but you don't appear to have a million bucks :-)
        if (!acquirerBased && paymentRequest.getAmount().compareTo(new BigDecimal("1000000.00")) >= 0) {
-           return ReserveOrDebitResponse.encode(attestedEncryptedRequest.isDirectDebit(),
+           return ReserveOrDebitResponse.encode(attestedPaymentRequest.isDirectDebit(),
                                                 new ErrorReturn(ErrorReturn.ERRORS.INSUFFICIENT_FUNDS));
        }
 
@@ -134,7 +137,7 @@ public class TransactionServlet extends HttpServlet implements BaseProperties {
        AccountDescriptor payeeAccount = null;
        JSONObjectWriter encryptedCardData = null;
        if (acquirerBased) {
-           String authorityUrl = attestedEncryptedRequest.getAcquirerAuthorityUrl();
+           String authorityUrl = attestedPaymentRequest.getAcquirerAuthorityUrl();
            HTTPSWrapper wrap = new HTTPSWrapper();
            wrap.setTimeout(TIMEOUT_FOR_REQUEST);
            wrap.setRequireSuccess(true);
@@ -156,10 +159,10 @@ public class TransactionServlet extends HttpServlet implements BaseProperties {
                                                     authority.getKeyEncryptionAlgorithm());
         } else {
             // We simply take the first account in the list
-            payeeAccount = attestedEncryptedRequest.getPayeeAccountDescriptors()[0];
+            payeeAccount = attestedPaymentRequest.getPayeeAccountDescriptors()[0];
         }
 
-       return ReserveOrDebitResponse.encode(attestedEncryptedRequest,
+       return ReserveOrDebitResponse.encode(attestedPaymentRequest,
                                             paymentRequest,
                                             authorizationData.getAccountDescriptor(),
                                             encryptedCardData,
@@ -177,8 +180,8 @@ public class TransactionServlet extends HttpServlet implements BaseProperties {
         ReserveOrDebitResponse embeddedResponse = payeeFinalizationRequest.getEmbeddedResponse();
 
         // Verify that the provider's signature really belongs to us
-        ReserveOrDebitRequest.compareCertificatePaths(embeddedResponse.getSignatureDecoder().getCertificatePath(),
-                                                      BankService.bankCertificatePath);
+        CertificatePathCompare.compareCertificatePaths(embeddedResponse.getSignatureDecoder().getCertificatePath(),
+                                                       BankService.bankCertificatePath);
 
         //////////////////////////////////////////////////////////////////////////////
         // Since we don't have a real bank we simply return success...              //

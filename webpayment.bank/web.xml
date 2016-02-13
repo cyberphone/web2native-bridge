@@ -35,9 +35,9 @@
     </context-param>
 
     <context-param>
-        <description>Merchant Network Root Certificate</description>
-        <param-name>merchant_root</param-name>
-        <param-value>@merchant-root@</param-value>
+        <description>Merchant Key</description>
+        <param-name>merchant_key</param-name>
+        <param-value>@merchant-key@</param-value>
     </context-param>
 
     <context-param>

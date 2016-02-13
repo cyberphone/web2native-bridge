@@ -28,6 +28,7 @@ public class PayerAuthorization implements BaseProperties {
     
     public PayerAuthorization(JSONObjectReader rd) throws IOException {
         EncryptedData.parse(Messages.parseBaseMessage(Messages.PAYER_AUTHORIZATION, rd).getObject(AUTHORIZATION_DATA_JSON));
+        paymentRequest = new PaymentRequest(rd.getObject(PAYMENT_REQUEST_JSON));
         authorityUrl = rd.getString(PROVIDER_AUTHORITY_URL_JSON);
         accountType = PayerAccountTypes.fromTypeUri(rd.getString(ACCOUNT_TYPE_JSON));
         rd.checkForUnread();
@@ -43,20 +44,26 @@ public class PayerAuthorization implements BaseProperties {
         return accountType;
     }
 
-    public static JSONObjectWriter encode(JSONObjectWriter unencryptedRequest,
+    PaymentRequest paymentRequest;
+    public PaymentRequest getPaymentRequest() {
+        return paymentRequest;
+    }
+
+    public static JSONObjectWriter encode(PaymentRequest paymentRequest,
+                                          JSONObjectWriter unencryptedAuthorizationData,
                                           String authorityUrl,
                                           String accountType,
                                           String dataEncryptionAlgorithm,
                                           PublicKey keyEncryptionKey,
                                           String keyEncryptionAlgorithm) throws IOException, GeneralSecurityException {
-        JSONObjectWriter encryptedRequest = Messages.createBaseMessage(Messages.PAYER_AUTHORIZATION)
+        return Messages.createBaseMessage(Messages.PAYER_AUTHORIZATION)
             .setString(PROVIDER_AUTHORITY_URL_JSON, authorityUrl)
-            .setString(ACCOUNT_TYPE_JSON, accountType);
-        encryptedRequest.setObject(AUTHORIZATION_DATA_JSON,
-                                   EncryptedData.encode(unencryptedRequest,
-                                                        dataEncryptionAlgorithm,
-                                                        keyEncryptionKey,
-                                                        keyEncryptionAlgorithm));
-        return encryptedRequest;
+            .setString(ACCOUNT_TYPE_JSON, accountType)
+            .setObject(PAYMENT_REQUEST_JSON, paymentRequest.root)
+            .setObject(AUTHORIZATION_DATA_JSON,
+                       EncryptedData.encode(unencryptedAuthorizationData,
+                                            dataEncryptionAlgorithm,
+                                            keyEncryptionKey,
+                                            keyEncryptionAlgorithm));
     }
 }

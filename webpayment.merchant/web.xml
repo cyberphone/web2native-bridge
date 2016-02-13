@@ -5,15 +5,15 @@
     version="2.4">
 
     <context-param>
-        <description>Key Password</description>
+        <description>Merchant Key Password</description>
         <param-name>key_password</param-name>
         <param-value>@key-password@</param-value>
     </context-param>
  
     <context-param>
-        <description>Merchant EE Certificate</description>
-        <param-name>merchant_eecert</param-name>
-        <param-value>@merchant-eecert@</param-value>
+        <description>Merchant Key</description>
+        <param-name>merchant_key</param-name>
+        <param-value>@merchant-key@</param-value>
     </context-param>
 
     <context-param>

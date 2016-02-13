@@ -41,7 +41,9 @@ public class AuthorizationData implements BaseProperties {
                                           Date timeStamp,
                                           JSONX509Signer signer) throws IOException {
         return new JSONObjectWriter()
-            .setObject(PAYMENT_REQUEST_JSON, paymentRequest.root)
+            .setObject(REQUEST_HASH_JSON, new JSONObjectWriter()
+                .setString(ALGORITHM_JSON, RequestHash.JOSE_SHA_256_ALG_ID)
+                .setBinary(VALUE_JSON, paymentRequest.getRequestHash()))
             .setString(DOMAIN_NAME_JSON, domainName)
             .setObject(PAYER_ACCOUNT_JSON, accountDescriptor.write())
             .setDateTime(TIME_STAMP_JSON, timeStamp, false)
@@ -77,7 +79,7 @@ public class AuthorizationData implements BaseProperties {
     }
 
     public AuthorizationData(JSONObjectReader rd) throws IOException {
-        paymentRequest = new PaymentRequest(rd.getObject(PAYMENT_REQUEST_JSON));
+        requestHash = RequestHash.parse(rd);
         domainName = rd.getString(DOMAIN_NAME_JSON);
         accountDescriptor = new AccountDescriptor(rd.getObject(PAYER_ACCOUNT_JSON));
         timeStamp = rd.getDateTime(TIME_STAMP_JSON);
@@ -86,9 +88,9 @@ public class AuthorizationData implements BaseProperties {
         rd.checkForUnread();
     }
 
-    PaymentRequest paymentRequest;
-    public PaymentRequest getPaymentRequest() {
-        return paymentRequest;
+    byte[] requestHash;
+    public byte[] getRequestHash() {
+        return requestHash;
     }
 
     String domainName;

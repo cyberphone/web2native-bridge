@@ -68,7 +68,7 @@
 	  <replacefilter token="@bank-eecert@" value="${bankkey}${keyfilext}"/>
       <replacefilter token="@bank-decryptionkey1@" value="${encryptionkey_ec}${keyfilext}"/>
 	  <replacefilter token="@bank-decryptionkey2@" value="${encryptionkey_rsa}${keyfilext}"/>
-      <replacefilter token="@merchant-root@" value="${merchant.var.root}.cer"/>
+      <replacefilter token="@merchant-key@" value="${merchantkey}.cer"/>
       <replacefilter token="@bank-host@" value="${bank.host}"/>
       <replacefilter token="@bank-client-root@" value="${clientroot}.cer"/>
       <replacefilter token="@err-media-type@" value="${errormedia}"/>
@@ -91,7 +91,7 @@
          <include name="${encryptionkey_ec}${keyfilext}"/>
          <include name="${bankkey}${keyfilext}"/>
          <include name="${clientroot}.cer"/>
-         <include name="${merchant.var.root}.cer"/>
+         <include name="${merchantkey}.cer"/>
       </zipfileset>
       <fileset dir="web"/>
     </war>

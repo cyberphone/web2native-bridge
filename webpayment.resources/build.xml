@@ -299,20 +299,14 @@
     </antcall>
   </target>
 
-  <target name="_certmerchants">
+  <target name="_merchantkey">
     <antcall target="_createcert">
-       <param name="cmd" value="-selfsigned -entity/ca -subject &quot;CN=Merchant Network Root CA1, C=US&quot; -validity/start 2010-07-10T10:00:00 -validity/end 2030-07-10T09:59:59 -out/storetype ${storetype} -out/keystore ${merchantroot}${keyfilext} -out/storepass ${keypassword} -out/keypass ${keypassword} -keysize 4096 -sigalg RSA_SHA512 -serial 1"/>
+       <param name="cmd" value="-selfsigned -subject &quot;CN=Demo Merchant Key, C=US&quot; -validity/start 2010-07-10T10:00:00 -validity/end 2030-07-10T09:59:59 -out/storetype ${storetype} -out/keystore ${merchantkey}${keyfilext} -out/storepass ${keypassword} -out/keypass ${keypassword} -ecccurve NIST_P_256 -sigalg ECDSA_SHA256 -serial 1"/>
     </antcall>
     <antcall target="_getroot">
-       <param name="rootfile" value="${merchantroot}"/>
+       <param name="rootfile" value="${merchantkey}"/>
     </antcall>
-    <antcall target="_createcert">
-       <param name="cmd" value="-ca/keypass ${keypassword} -ca/storetype ${storetype} -ca/storepass ${keypassword} -ca/keystore ${merchantroot}${keyfilext} -entity/ca -subject &quot;CN=Merchant Network Sub CA5, C=DE&quot; -validity/start 2012-07-10T10:00:00 -validity/end 2025-07-10T09:59:59 -out/storetype ${storetype} -out/keystore temp-subca${keyfilext} -out/storepass ${keypassword} -out/keypass ${keypassword} -keysize 2048 -sigalg RSA_SHA512 -serial 5"/>
-    </antcall>
-    <antcall target="_createcert">
-       <param name="cmd" value=" -ca/addpath all -ca/keypass ${keypassword} -ca/storetype ${storetype} -ca/storepass ${keypassword} -ca/keystore temp-subca${keyfilext} -entity/ee -extension/ku digitalSignature -subject &quot;CN=Demo Merchant, serialNumber=896325, C=DE&quot; -validity/start 2014-01-01T00:00:00 -validity/end 2020-07-10T09:59:59 -out/storetype ${storetype} -out/keystore ${merchantkey}${keyfilext} -out/storepass ${keypassword} -out/keypass ${keypassword}  -sigalg RSA_SHA256 -keysize 2048"/>
-    </antcall>
-  </target>
+    </target>
 
   <target name="_clientcert">
     <antcall target="_createcert">
@@ -359,7 +353,7 @@
   <target name="createcerts">
     <antcall target="_certpaymentnetwork"/>
     <antcall target="_certacquirernetwork"/>
-    <antcall target="_certmerchants"/>
+    <antcall target="_merchantkey"/>
     <antcall target="_clientcert"/>
     <antcall target="_authencryption"/>
     <antcall target="_kg2kmkey"/>

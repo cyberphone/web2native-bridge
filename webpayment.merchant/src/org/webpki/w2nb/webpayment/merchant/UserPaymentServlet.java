@@ -39,6 +39,7 @@ import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONParser;
 
 import org.webpki.w2nb.webpayment.common.BaseProperties;
+import org.webpki.w2nb.webpayment.common.Payee;
 import org.webpki.w2nb.webpayment.common.PayerAccountTypes;
 import org.webpki.w2nb.webpayment.common.Expires;
 import org.webpki.w2nb.webpayment.common.Messages;
@@ -106,7 +107,7 @@ public class UserPaymentServlet extends HttpServlet implements BaseProperties {
 
         String currReferenceId = getReferenceId();
         JSONObjectWriter paymentRequest =
-            PaymentRequest.encode("Demo Merchant",
+            PaymentRequest.encode(Payee.encode("Demo Merchant","86344"),
                                   new BigDecimal(BigInteger.valueOf(savedShoppingCart.roundedPaymentAmount), 2),
                                   MerchantService.currency,
                                   currReferenceId,

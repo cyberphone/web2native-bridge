@@ -20,6 +20,8 @@ public interface BaseProperties {
     String WINDOW_JSON                       = "window";
     String HEIGHT_JSON                       = "height";
     String WIDTH_JSON                        = "width";
+    String COMMON_NAME_JSON                  = "commonName";
+    String NAME_JSON                         = "name";
     String PAYMENT_REQUEST_JSON              = "paymentRequest";
     String ACQUIRER_AUTHORITY_URL_JSON       = "acquirerAuthorityUrl";  // For CreditCard payments
     String PAYEE_ACCOUNTS_JSON               = "payeeAccounts";         // For Account2Account payments

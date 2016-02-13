@@ -21,12 +21,14 @@ import java.io.InputStream;
 
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
+import java.security.PublicKey;
 
 import java.security.cert.X509Certificate;
 
 import java.security.interfaces.RSAPublicKey;
 
 import java.util.Vector;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -48,7 +50,7 @@ import org.webpki.w2nb.webpayment.common.DecryptionKeyHolder;
 import org.webpki.w2nb.webpayment.common.Encryption;
 import org.webpki.w2nb.webpayment.common.Expires;
 import org.webpki.w2nb.webpayment.common.KeyStoreEnumerator;
-import org.webpki.w2nb.webpayment.common.ServerSigner;
+import org.webpki.w2nb.webpayment.common.ServerX509Signer;
 
 import org.webpki.webutil.InitPropertyReader;
 
@@ -63,7 +65,7 @@ public class BankService extends InitPropertyReader implements ServletContextLis
     static final String DECRYPTION_KEY1       = "bank_decryptionkey1";
     static final String DECRYPTION_KEY2       = "bank_decryptionkey2";
     
-    static final String MERCHANT_ROOT         = "merchant_root";
+    static final String MERCHANT_KEY          = "merchant_key";
 
     static final String CLIENT_ROOT           = "bank_client_root";
     
@@ -73,11 +75,11 @@ public class BankService extends InitPropertyReader implements ServletContextLis
     
     static Vector<DecryptionKeyHolder> decryptionKeys = new Vector<DecryptionKeyHolder>();
     
-    static JSONX509Verifier merchantRoot;
+    static PublicKey merchantKey;
     
     static JSONX509Verifier clientRoot;
     
-    static ServerSigner bankKey;
+    static ServerX509Signer bankKey;
     
     static X509Certificate[] bankCertificatePath;
     
@@ -126,9 +128,10 @@ public class BankService extends InitPropertyReader implements ServletContextLis
             KeyStoreEnumerator bankcreds = new KeyStoreEnumerator(getResource(BANK_EECERT),
                                                                   getPropertyString(KEYSTORE_PASSWORD));
             bankCertificatePath = bankcreds.getCertificatePath();
-            bankKey = new ServerSigner(bankcreds);
-            
-            merchantRoot = getRoot(MERCHANT_ROOT);
+            bankKey = new ServerX509Signer(bankcreds);
+
+            merchantKey = CertificateUtil.getCertificateFromBlob (
+                ArrayUtil.getByteArrayFromInputStream (getResource(MERCHANT_KEY))).getPublicKey();
             clientRoot = getRoot(CLIENT_ROOT);
 
             addDecryptionKey(DECRYPTION_KEY1);

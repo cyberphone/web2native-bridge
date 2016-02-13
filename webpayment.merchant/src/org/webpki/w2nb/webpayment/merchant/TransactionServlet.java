@@ -21,8 +21,8 @@ import java.io.IOException;
 import java.net.URL;
 
 import java.security.GeneralSecurityException;
-
 import java.util.logging.Level;
+
 import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
@@ -41,6 +41,7 @@ import org.webpki.net.HTTPSWrapper;
 
 import org.webpki.util.ArrayUtil;
 
+import org.webpki.w2nb.webpayment.common.CertificatePathCompare;
 import org.webpki.w2nb.webpayment.common.ErrorReturn;
 import org.webpki.w2nb.webpayment.common.PayerAccountTypes;
 import org.webpki.w2nb.webpayment.common.Authority;
@@ -49,6 +50,7 @@ import org.webpki.w2nb.webpayment.common.AuthorizationData;
 import org.webpki.w2nb.webpayment.common.Expires;
 import org.webpki.w2nb.webpayment.common.FinalizeResponse;
 import org.webpki.w2nb.webpayment.common.AccountDescriptor;
+import org.webpki.w2nb.webpayment.common.PaymentRequest;
 import org.webpki.w2nb.webpayment.common.RequestHash;
 import org.webpki.w2nb.webpayment.common.ReserveOrDebitResponse;
 import org.webpki.w2nb.webpayment.common.ReserveOrDebitRequest;
@@ -149,6 +151,12 @@ public class TransactionServlet extends HttpServlet implements BaseProperties {
             // Decode the user's authorization.  The encrypted data is only parsed for correctness
             PayerAuthorization payerAuthorization = new PayerAuthorization(userAuthorization);
 
+            // Get the original payment request
+            PaymentRequest paymentRequest = payerAuthorization.getPaymentRequest();
+            if (!ArrayUtil.compare(requestHash, paymentRequest.getRequestHash())) {
+                throw new IOException("Incorrect \"" + REQUEST_HASH_JSON + "\"");
+            }
+
             // Lookup indicated authority (Payment Provider)
             urlHolder.setUrl(payerAuthorization.getAuthorityUrl());
 
@@ -185,14 +193,13 @@ public class TransactionServlet extends HttpServlet implements BaseProperties {
 
             // Attest the user's encrypted authorization to show "intent"
             JSONObjectWriter providerRequest =
-                ReserveOrDebitRequest.encode(directDebit, 
-                                             userAuthorization.getObject(AUTHORIZATION_DATA_JSON),
-                                             requestHash,
+                ReserveOrDebitRequest.encode(directDebit,
                                              payerAuthorization.getAccountType(),
-                                             (String)session.getAttribute(UserPaymentServlet.REQUEST_REFID_SESSION_ATTR),
+                                             userAuthorization.getObject(AUTHORIZATION_DATA_JSON),
+                                             request.getRemoteAddr(),
+                                             paymentRequest,
                                              acquirerBased ? MerchantService.acquirerAuthorityUrl : null,
                                              acquirerBased ? null : accounts,
-                                             request.getRemoteAddr(),
                                              directDebit ? null : Expires.inMinutes(30),
                                              MerchantService.merchantKey);
             urlHolder.setUrl(providerAuthority.getTransactionUrl());
@@ -306,9 +313,9 @@ public class TransactionServlet extends HttpServlet implements BaseProperties {
         }
 
         // Check signature origins
-        ReserveOrDebitRequest.compareCertificatePaths(bankResponse.isAccount2Account() ?
+        CertificatePathCompare.compareCertificatePaths(bankResponse.isAccount2Account() ?
                                                 bankResponse.getSignatureDecoder().getCertificatePath()
-                                                                                       :
+                                                                                        :
                                                 acquirerAuthority.getSignatureDecoder().getCertificatePath(),                                         
                                                       finalizeResponse.getSignatureDecoder().getCertificatePath());
 

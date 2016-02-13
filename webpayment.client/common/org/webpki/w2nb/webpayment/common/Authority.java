@@ -38,7 +38,7 @@ public class Authority implements BaseProperties {
                                           String transactionUrl,
                                           PublicKey publicKey,
                                           Date expires,
-                                          ServerSigner signer) throws IOException {
+                                          ServerX509Signer signer) throws IOException {
         return Messages.createBaseMessage(Messages.AUTHORITY)
             .setString(AUTHORITY_URL_JSON, authorityUrl)
             .setString(TRANSACTION_URL_JSON, transactionUrl)

@@ -18,31 +18,22 @@ package org.webpki.w2nb.webpayment.common;
 
 import java.io.IOException;
 
-import org.webpki.json.JSONObjectReader;
-import org.webpki.json.JSONObjectWriter;
+import java.security.cert.X509Certificate;
 
-public class Software implements BaseProperties {
-
-    String name;
-    String version;
+public class CertificatePathCompare {
     
-    public Software (JSONObjectReader rd) throws IOException {
-        rd = rd.getObject(SOFTWARE_JSON);
-        name = rd.getString(NAME_JSON);
-        version = rd.getString(VERSION_JSON);
+    private CertificatePathCompare() {}
+    
+    private static void assertTrue(boolean assertion) throws IOException {
+        if (!assertion) {
+            throw new IOException("Outer and inner certificate paths differ");
+        }
     }
 
-    public String getSoftwareName() {
-        return name;
-    }
-
-    public String getSoftwareVersion() {
-        return version;
-    }
-
-    public static JSONObjectWriter encode(String name, String version) throws IOException {
-        return new JSONObjectWriter()
-            .setString(NAME_JSON, name)
-            .setString(VERSION_JSON, version);
+    public static void compareCertificatePaths(X509Certificate[] outer, X509Certificate[] inner) throws IOException {
+        assertTrue(inner.length == outer.length);
+        for (int q = 0; q < inner.length; q++) {
+            assertTrue(outer[q].equals(inner[q]));
+        }
     }
 }

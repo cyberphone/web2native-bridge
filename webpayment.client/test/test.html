@@ -26,28 +26,28 @@ var normalRequest = {
   "@qualifier": "WalletRequest",
   acceptedAccountTypes: ["https://nosuchcard.com","https://supercard.com","https://bankdirect.net"],
   paymentRequest: {
-    payee: "Demo Merchant",
+    payee: {
+      commonName: "Demo Merchant",
+      id: "86344"
+    },
     amount: "306.25",
     currency: "USD",
     referenceId: "#6100004",
-    timeStamp: "2016-02-01T05:20:06Z",
+    timeStamp: "2016-02-13T08:25:33Z",
     expires: "2030-09-14T00:00:00Z",
     software: {
       id: "WebPKI.org - Merchant",
       version: "1.00"
     },
     signature: {
-      algorithm: "RS256",
-      signerCertificate: {
-        issuer: "CN=Merchant Network Sub CA5,C=DE",
-        serialNumber: "1441094186933",
-        subject: "CN=Demo Merchant,2.5.4.5=#1306383936333235,C=DE"
+      algorithm: "ES256",
+      publicKey: {
+        type: "EC",
+        curve: "P-256",
+        x: "CVbFCW2qqTb2m0NvtRtz4365y6Xik0eFxKs91ckMPZE",
+        y: "IpydfYgaqCztDdOPxQk_TB5ka0FHUtujyZgxFd06fUw"
       },
-      certificatePath: [
-        "MIIDQzCCAiugAwIBAgIGAU-H6De1MA0GCSqGSIb3DQEBCwUAMDAxCzAJBgNVBAYTAkRFMSEwHwYDVQQDExhNZXJjaGFudCBOZXR3b3JrIFN1YiBDQTUwHhcNMTQwMTAxMDAwMDAwWhcNMjAwNzEwMDk1OTU5WjA2MQswCQYDVQQGEwJERTEPMA0GA1UEBRMGODk2MzI1MRYwFAYDVQQDEw1EZW1vIE1lcmNoYW50MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAy0lVrJ30-0jiqZrQ_tL-O5DPmqCmlcVTj1bHU7Azv2b4YElzencTP2pjuUaDibm_d4D02GGxV6SzJgZ-_wPqxzbTaxiN6ZEp4JYC0WHoe5dh_l7StvER69DrP3UZM9RCxLZ_3dEzVnE5rGPjeZ02XtwJIEkRKQxKsYZQW8-uRMKn1ybzsPwrmRKtPPaCoMQ_7G5DndUIxc8s-G2KsBEqWYTgM6Dj2GrTrKh9rFrSIGPpVQFgXu48JPL1gilcwXG2P4TvroqrBRw5HSfr2rXvnanr8OP31BopOhUVpRdVm-SfHZS472qEixuLF5A6p6UX7xvV2sdkcFY7go6HeyFDaQIDAQABo10wWzAJBgNVHRMEAjAAMA4GA1UdDwEB_wQEAwIHgDAdBgNVHQ4EFgQUQMLX3CAGV-n8gX98cYDD55VYrZgwHwYDVR0jBBgwFoAUQZ_PsUyXJsf7guLGKkexvn9YEIAwDQYJKoZIhvcNAQELBQADggEBAITR6pF83UiXp0qvgklQVRI0Zfl18mZVAAXCaPwgU8ls6H-tmejrloatYhFQNDuqWHaAEqG5GUThguvKMsCK74qPrwxMRTyBK5jtFrBDsTocRMawYROjGxMKjX5MFcgLQOwL0XGMQ8oKuEXR6xedISUgomPaK_laGsuR1F7KJynYqRQIbX3ka70dOpKjL4pGm6lZbW_t9hBb08D5-d_qoXZ1jVtLDyPxjTTnwRCFsPznXBC1tfihACw-9jf-xp7k1lb-i6gMMkp_odH083HNhrwf31D2OVoB9vRPGu2Ove38jU1CBXPj3u039Jm6xmlfFGZ6mIfSYE9dFF-4t2reH0s",
-        "MIIEPzCCAiegAwIBAgIBBTANBgkqhkiG9w0BAQ0FADAxMQswCQYDVQQGEwJVUzEiMCAGA1UEAxMZTWVyY2hhbnQgTmV0d29yayBSb290IENBMTAeFw0xMjA3MTAxMDAwMDBaFw0yNTA3MTAwOTU5NTlaMDAxCzAJBgNVBAYTAkRFMSEwHwYDVQQDExhNZXJjaGFudCBOZXR3b3JrIFN1YiBDQTUwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCIcpRA-IGxkbLZjrLiUBFl76Tkwsd6qRrCj-ef9i9sCQfwfYrDM7zbTnQPPctqh0dBH7LytrmlZeAvVvu7ExY7DyDq-h_nOR_GvXdUptiCxkVOIxIyF9PEMhwfM25MKlLMlCbNGlYmyF_dJbK4cMv9wakrUOpf9rEPyscH1iThaE8ZB08JmcS9qP0suvxVfVzKCdrHoak75ooXfBWKsTcDuRLtEWAoviaEE3Ba8df38wvfw-DySq7_h-L8o2te6n316LuhR65SNuyygTn2WBgmOxBRONuLelUGkswidynORTArs0bdcJHDv3rbeFxkF65RyccdCHUNIsR-deBSOFOxAgMBAAGjYzBhMA8GA1UdEwEB_wQFMAMBAf8wDgYDVR0PAQH_BAQDAgEGMB0GA1UdDgQWBBRBn8-xTJcmx_uC4sYqR7G-f1gQgDAfBgNVHSMEGDAWgBQxOGv571adz9C05QHM9zbpMcdEoDANBgkqhkiG9w0BAQ0FAAOCAgEAW0HW317Kh1jJN5GNulBBq_hZ2NH51E_FgcLuta4AoP_ljgZNeE7agZL8l8q_ZXKG_D3d1rF0tj1qhMeDhjf-V1mUT0GKcVZgigy38_55dCUE7rk4VSioxzc3yJUaIYsZVYZSeFmdv5T2P65XfKUv8jKSuIEiO8PT7UpTpKFH2vMxpyAKfaoTi0R-ICAIK1eeEaIOJN1bTrL1Pkb4dp-9FCcuRCwPgGY7hNXcQruMaDcQnSYgCpe0tBmNRq5UZkJ5w0bYZ--iPPKER9em--C31zXTJQklT7I94PA5u0Q-BSCleP0UDeyoT2Mm3emGyfTfQEOXAEeS2aMHVjV1syZkacThTigzCn8G3_RlXX9AL49kHP37lWKCU7yRke3V1jy8yVGozk6LwvD9B5KAZuf8ARyX_ePiGHCl1kqHafpYE_xL8jYhk3d15xMMj0BgMmEvhiqYNDgtEe78Buqxv4_iuoni6rUP_BqS8Ct5b2QWMQSqgjxhFX6riNnZhP3aX4iGiCfP1Gog-BPuTM5iNbZDIfY6M9SOkUrYnzFIIWDzpNWJ8v7asJbkV5K1YoQkjA12zffOksnl9LZxpbPIz1ZGavQM2Sf5ZRuoi858H4fEWIE1ZiSye6OvKJWpOXWYqH2GmCH-RSQWUAliio9-k4nmkFNL57ztqqXSo2RcvAcWlOg"
-      ],
-      value: "bubXEFwrH_IgiT7-Pva_AzCze3Nq0PxVoQO_f1EUdTkAfz45vMsBiORrVrumyckalzlqUK_CKA6sS7ceagaV1sSdCaY8V-dOH7hG1xVG11eSfFrmgfqfcaEmHl_o8k9o5Ak73esP5ipFAtLU59DLHlpwDfKcRI5FN8mn9oamI78AVomk73ojtAfHT-PEgxKA8CxbJqCLR6to718fJrClVqHGv5NHA0rejC4AKVmt_DpQKkVl4zkbieHQjGPbKUNspwk16AJode9zX-JExvmEjXlwgv_S4ndZsb2WPVdeWw9rpdFfPKDrV8PXV__8jQwBeB0IkG7R1V5DEZrMTEXnbA"
+      value: "XNEXhhm569h-YCBrhryeYJz8LzttTtK7KSZSwy73s8V-CsLNrAzqqS-HVPB1Agn25UV9G865pL8ulykdP7y2Yg"
     }
   }
 };
@@ -90,7 +90,7 @@ function activateExtension() {
     alert('"navigator.nativeConnect" not found, \ncheck Chrome Web2Native Bridge extension settings');
     return;
   }
-  navigator.nativeConnect("org.webpki.webpay.wallet2",
+  navigator.nativeConnect("org.webpki.webpay.wallet3",
                           document.getElementById("positionWallet").checked ?
                             setExtensionPosition("Right", "Top", "wallet") :
                             setExtensionPosition("Center", "Center")).then(function(port) {

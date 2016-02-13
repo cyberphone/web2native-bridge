@@ -30,7 +30,7 @@ import org.webpki.json.JSONSignatureDecoder;
 
 public class FinalizeResponse implements BaseProperties {
     
-    public static final String SOFTWARE_ID      = "WebPKI.org - Bank";
+    public static final String SOFTWARE_NAME    = "WebPKI.org - Bank";
     public static final String SOFTWARE_VERSION = "1.00";
 
     public FinalizeResponse(JSONObjectReader rd) throws IOException, GeneralSecurityException {
@@ -89,7 +89,7 @@ public class FinalizeResponse implements BaseProperties {
 
     public static JSONObjectWriter encode(FinalizeRequest finalizeRequest,
                                           String referenceId, 
-                                          ServerSigner signer)
+                                          ServerX509Signer signer)
     throws IOException, GeneralSecurityException {
         return Messages.createBaseMessage(Messages.FINALIZE_RESPONSE)
             .setObject(REQUEST_HASH_JSON, new JSONObjectWriter()
@@ -98,7 +98,7 @@ public class FinalizeResponse implements BaseProperties {
                            RequestHash.getRequestHash(new JSONObjectWriter(finalizeRequest.root))))
             .setString(REFERENCE_ID_JSON, referenceId)
             .setDateTime(TIME_STAMP_JSON, new Date(), true)
-            .setObject(SOFTWARE_JSON, Software.encode (SOFTWARE_ID, SOFTWARE_VERSION))
+            .setObject(SOFTWARE_JSON, Software.encode (SOFTWARE_NAME, SOFTWARE_VERSION))
             .setSignature(signer);
     }
 }

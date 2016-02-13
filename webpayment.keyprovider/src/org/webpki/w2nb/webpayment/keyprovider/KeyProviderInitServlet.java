@@ -98,16 +98,6 @@ public class KeyProviderInitServlet extends HttpServlet {
     
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        output(response, 
-               getHTML(null,
-                       null,
-                       "<tr><td width=\"100%\" align=\"center\" valign=\"middle\"><form method=\"POST\">" +
-                       "<p><b>This Web-application enrolls payment credentials for the wallet</b></p>" +
-                       "<input type=\"submit\" value=\"Click to start!\"></form></td></tr>"));
-    }
-
-    @Override
-    public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         HttpSession session = request.getSession(true);
         session.setAttribute(KEYGEN2_SESSION_ATTR,
                              new ServerState(new KeyGen2SoftHSM(KeyProviderService.keyManagemenentKey)));
@@ -120,14 +110,17 @@ public class KeyProviderInitServlet extends HttpServlet {
         // The "init" element on the bootstrap URL is a local Mobile RA convention.
         // The purpose of the random element is suppressing caching of bootstrap data.
         ////////////////////////////////////////////////////////////////////////////////////////////
-        String url = "webpkiproxy://keygen2?cookie=JSESSIONID%3D" +
+        String extra = "cookie=JSESSIONID%3D" +
                      session.getId() +
                      "&url=" + URLEncoder.encode(KeyProviderService.keygen2EnrollmentUrl + "?" +
                      INIT_TAG + "=" + Base64URL.generateURLFriendlyRandom(8) +
                      (KeyProviderService.grantedVersions == null ? "" : "&" + ANDROID_WEBPKI_VERSION_TAG + "=" + ANDROID_WEBPKI_VERSION_MACRO), "UTF-8");
         output(response, 
                getHTML(null,
-                       "onload=\"document.location.href='" + url + "'\"" ,
-                          "<tr><td width=\"100%\" align=\"center\" valign=\"middle\"><b>Please wait while enrollment plugin starts...</b></td></tr>"));
+                       null,
+                       "<tr><td width=\"100%\" align=\"center\" valign=\"middle\">" +
+                       "<a href=\"intent://keygen2?" + extra +
+                       "#Intent;scheme=webpkiproxy;" +
+                       "package=org.webpki.mobile.android;end\">Start KeyGen2</a></td></tr>"));
     }
 }

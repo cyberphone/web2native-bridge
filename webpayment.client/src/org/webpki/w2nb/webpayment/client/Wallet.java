@@ -279,7 +279,7 @@ public class Wallet {
         JTextField amountField;
         JTextField payeeField;
         String amountString;
-        String payeeString;
+        String payeeCommonName;
         JPasswordField pinText;
         JButton selectedCardImage;
         JLabel selectedCardNumber;
@@ -641,7 +641,7 @@ public class Wallet {
                         ", KeyEncryptionKey=" + selectedCard.keyEncryptionKey);
             this.keyHandle = keyHandle;
             amountField.setText("\u200a" + amountString);
-            payeeField.setText("\u200a" + payeeString);
+            payeeField.setText("\u200a" + payeeCommonName);
             selectedCardImage.setIcon(selectedCard.cardIcon);
             selectedCardImage.setPressedIcon(selectedCard.cardIcon);
             selectedCardNumber.setText(formatAccountId(selectedCard));
@@ -814,7 +814,7 @@ public class Wallet {
                                 // Primary information to the user...
                                 amountString = paymentRequest.getCurrency()
                                     .convertAmountToString(paymentRequest.getAmount());
-                                payeeString = paymentRequest.getPayee();
+                                payeeCommonName = paymentRequest.getPayee().getCommonName();
 
                                 // Enumerate keys but only go for those who are intended for
                                 // Web Payments (according to our fictitious payment schemes...)
@@ -930,7 +930,7 @@ public class Wallet {
                 try {
                     // User authorizations are always signed by a key that only needs to be
                     // understood by the issuing Payment Provider (bank).
-                    resultMessage = AuthorizationData.encode(
+                    JSONObjectWriter authorizationData = AuthorizationData.encode(
                         paymentRequest,
                         domainName,
                         selectedCard.accountDescriptor,
@@ -949,12 +949,13 @@ public class Wallet {
                                                           algorithm.getDigestAlgorithm().digest(data));
                             }
                         });
-                    logger.info("Authorization before encryption:\n" + resultMessage);
+                    logger.info("Authorization before encryption:\n" + authorizationData);
 
                     // Since user authorizations are pushed through the Payees they must be encrypted in order
                     // to not leak user information to Payees.  Only the proper Payment Provider can decrypt
                     // and process user authorizations.
-                    resultMessage = PayerAuthorization.encode(resultMessage,
+                    resultMessage = PayerAuthorization.encode(paymentRequest,
+                                                              authorizationData,
                                                               selectedCard.authorityUrl,
                                                               selectedCard.accountDescriptor.getAccountType(),
                                                               selectedCard.dataEncryptionAlgorithm,

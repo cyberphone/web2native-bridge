@@ -34,7 +34,7 @@ import org.webpki.json.JSONX509Signer;
 
 public class ReserveOrDebitResponse implements BaseProperties {
     
-    public static final String SOFTWARE_ID      = "WebPKI.org - Bank";
+    public static final String SOFTWARE_NAME    = "WebPKI.org - Bank";
     public static final String SOFTWARE_VERSION = "1.00";
 
     private static JSONObjectWriter header(boolean directDebit) throws IOException {
@@ -78,7 +78,7 @@ public class ReserveOrDebitResponse implements BaseProperties {
             wr.setDateTime(EXPIRES_JSON, request.expires.getTime(), true);
         }
         return wr.setDateTime(TIME_STAMP_JSON, new Date(), true)
-                 .setObject(SOFTWARE_JSON, Software.encode(SOFTWARE_ID, SOFTWARE_VERSION))
+                 .setObject(SOFTWARE_JSON, Software.encode(SOFTWARE_NAME, SOFTWARE_VERSION))
                  .setSignature (signer);
     }
 

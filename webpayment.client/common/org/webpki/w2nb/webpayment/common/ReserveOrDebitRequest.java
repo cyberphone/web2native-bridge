@@ -19,8 +19,7 @@ package org.webpki.w2nb.webpayment.common;
 import java.io.IOException;
 
 import java.security.GeneralSecurityException;
-
-import java.security.cert.X509Certificate;
+import java.security.PublicKey;
 
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -40,11 +39,12 @@ public class ReserveOrDebitRequest implements BaseProperties {
     
     public ReserveOrDebitRequest(JSONObjectReader rd) throws IOException {
         directDebit = rd.getString(JSONDecoderCache.QUALIFIER_JSON).equals(Messages.DIRECT_DEBIT_REQUEST.toString());
-        encryptedData = EncryptedData.parse(Messages.parseBaseMessage(directDebit ?
-            Messages.DIRECT_DEBIT_REQUEST : Messages.RESERVE_FUNDS_REQUEST, rd).getObject(AUTHORIZATION_DATA_JSON));
-        requestHash = RequestHash.parse(rd);
+        Messages.parseBaseMessage(directDebit ?
+                Messages.DIRECT_DEBIT_REQUEST : Messages.RESERVE_FUNDS_REQUEST, rd);
         accountType = PayerAccountTypes.fromTypeUri(rd.getString(ACCOUNT_TYPE_JSON));
-        referenceId = rd.getString(REFERENCE_ID_JSON);
+        encryptedAuthorizationData = EncryptedData.parse(rd.getObject(AUTHORIZATION_DATA_JSON));
+        clientIpAddress = rd.getString(CLIENT_IP_ADDRESS_JSON);
+        paymentRequest = new PaymentRequest(rd.getObject(PAYMENT_REQUEST_JSON));
         if (!directDebit) {
             expires = rd.getDateTime(EXPIRES_JSON);
         }
@@ -58,26 +58,21 @@ public class ReserveOrDebitRequest implements BaseProperties {
             } while (ar.hasMore());
         }
         this.accounts = accounts.toArray(new AccountDescriptor[0]);
-        clientIpAddress = rd.getString(CLIENT_IP_ADDRESS_JSON);
         dateTime = rd.getDateTime(TIME_STAMP_JSON);
         software = new Software(rd);
-        outerCertificatePath = rd.getSignature(AlgorithmPreferences.JOSE).getCertificatePath();
+        outerPublicKey = rd.getSignature(AlgorithmPreferences.JOSE).getPublicKey();
         rd.checkForUnread();
     }
 
-    byte[] requestHash;
-    
     PayerAccountTypes accountType;
-    
-    String referenceId;
     
     GregorianCalendar dateTime;
 
     Software software;
     
-    X509Certificate[] outerCertificatePath;
+    PublicKey outerPublicKey;
     
-    EncryptedData encryptedData;
+    EncryptedData encryptedAuthorizationData;
 
     AccountDescriptor[] accounts;
     public AccountDescriptor[] getPayeeAccountDescriptors() {
@@ -104,25 +99,27 @@ public class ReserveOrDebitRequest implements BaseProperties {
         return clientIpAddress;
     }
 
+    PaymentRequest paymentRequest;
+    public PaymentRequest getPaymentRequest() {
+        return paymentRequest;
+    }
+
     public static JSONObjectWriter encode(boolean directDebit,
-                                          JSONObjectReader encryptedRequest,
-                                          byte[] requestHash,
                                           PayerAccountTypes accountType,
-                                          String referenceId,
+                                          JSONObjectReader encryptedAuthorizationData,
+                                          String clientIpAddress,
+                                          PaymentRequest paymentRequest,
                                           String acquirerAuthorityUrl,
                                           AccountDescriptor[] accounts,
-                                          String clientIpAddress,
                                           Date expires,
-                                          ServerSigner signer)
+                                          ServerAsymKeySigner signer)
         throws IOException, GeneralSecurityException {
         JSONObjectWriter wr = Messages.createBaseMessage(directDebit ?
                                        Messages.DIRECT_DEBIT_REQUEST : Messages.RESERVE_FUNDS_REQUEST)
-            .setObject(AUTHORIZATION_DATA_JSON, encryptedRequest)
-            .setObject(REQUEST_HASH_JSON, new JSONObjectWriter()
-                                              .setString(ALGORITHM_JSON, RequestHash.JOSE_SHA_256_ALG_ID)
-                                              .setBinary(VALUE_JSON, requestHash))
             .setString(ACCOUNT_TYPE_JSON, accountType.getTypeUri())
-            .setString(REFERENCE_ID_JSON, referenceId);
+            .setObject(AUTHORIZATION_DATA_JSON, encryptedAuthorizationData)
+            .setString(CLIENT_IP_ADDRESS_JSON, clientIpAddress)
+            .setObject(PAYMENT_REQUEST_JSON, paymentRequest.root);
         if (directDebit || acquirerAuthorityUrl == null) {
             JSONArrayWriter aw = wr.setArray(PAYEE_ACCOUNTS_JSON);
             for (AccountDescriptor account : accounts) {
@@ -132,7 +129,6 @@ public class ReserveOrDebitRequest implements BaseProperties {
             zeroTest(PAYEE_ACCOUNTS_JSON, accounts);
             wr.setString(ACQUIRER_AUTHORITY_URL_JSON, acquirerAuthorityUrl);
         }
-        wr.setString(CLIENT_IP_ADDRESS_JSON, clientIpAddress);
         if (directDebit) {
             zeroTest(EXPIRES_JSON, expires);
             zeroTest(ACQUIRER_AUTHORITY_URL_JSON, acquirerAuthorityUrl);
@@ -140,9 +136,9 @@ public class ReserveOrDebitRequest implements BaseProperties {
             wr.setDateTime(EXPIRES_JSON, expires, true);
         }
         wr.setDateTime(TIME_STAMP_JSON, new Date(), true)
-          .setObject(SOFTWARE_JSON, Software.encode (PaymentRequest.SOFTWARE_ID,
+          .setObject(SOFTWARE_JSON, Software.encode (PaymentRequest.SOFTWARE_NAME,
                                                      PaymentRequest.SOFTWARE_VERSION))
-            .setSignature(signer);
+          .setSignature(signer);
         return wr;
     }
 
@@ -152,34 +148,20 @@ public class ReserveOrDebitRequest implements BaseProperties {
         }
     }
 
-    private static void assertTrue(boolean assertion) throws IOException {
-        if (!assertion) {
-            throw new IOException("Outer and inner certificate paths differ");
+    public static void comparePublicKeys(PublicKey publicKey, PaymentRequest paymentRequest) throws IOException {
+        if (!publicKey.equals(paymentRequest.getSignatureDecoder().getPublicKey())) {
+            throw new IOException("Outer and inner public key differ");
         }
     }
 
-    public static void compareCertificatePaths(X509Certificate[] outer, X509Certificate[] inner) throws IOException {
-        assertTrue(inner.length == outer.length);
-        for (int q = 0; q < inner.length; q++) {
-            assertTrue(outer[q].equals(inner[q]));
-        }
-    }
-
-    public static void compareCertificatePaths(X509Certificate[] outer, PaymentRequest paymentRequest) throws IOException {
-        compareCertificatePaths(outer, paymentRequest.signatureDecoder.getCertificatePath());
-    }
-
-    public AuthorizationData getDecryptedAuthorizationRequest(Vector<DecryptionKeyHolder> decryptionKeys)
+    public AuthorizationData getDecryptedAuthorizationData(Vector<DecryptionKeyHolder> decryptionKeys)
     throws IOException, GeneralSecurityException {
-        AuthorizationData genericAuthorizationRequest =
-            new AuthorizationData(encryptedData.getDecryptedData(decryptionKeys));
-        compareCertificatePaths(outerCertificatePath, genericAuthorizationRequest.paymentRequest);
-        if (!ArrayUtil.compare(requestHash, genericAuthorizationRequest.paymentRequest.getRequestHash())) {
+        AuthorizationData authorizationData =
+            new AuthorizationData(encryptedAuthorizationData.getDecryptedData(decryptionKeys));
+        comparePublicKeys (outerPublicKey, paymentRequest);
+        if (!ArrayUtil.compare(authorizationData.getRequestHash(), paymentRequest.getRequestHash())) {
             throw new IOException("Non-matching \"" + REQUEST_HASH_JSON + "\" value");
         }
-        if (!referenceId.equals(genericAuthorizationRequest.paymentRequest.getReferenceId())) {
-            throw new IOException("Non-matching \"" + REFERENCE_ID_JSON + "\" value");
-        }
-        return genericAuthorizationRequest;
+        return authorizationData;
     }
 }

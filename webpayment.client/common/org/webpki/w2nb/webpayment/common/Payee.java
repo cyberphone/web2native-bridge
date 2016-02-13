@@ -21,28 +21,26 @@ import java.io.IOException;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 
-public class Software implements BaseProperties {
+public class Payee implements BaseProperties {
 
-    String name;
-    String version;
-    
-    public Software (JSONObjectReader rd) throws IOException {
-        rd = rd.getObject(SOFTWARE_JSON);
-        name = rd.getString(NAME_JSON);
-        version = rd.getString(VERSION_JSON);
-    }
-
-    public String getSoftwareName() {
-        return name;
-    }
-
-    public String getSoftwareVersion() {
-        return version;
-    }
-
-    public static JSONObjectWriter encode(String name, String version) throws IOException {
+    public static JSONObjectWriter encode(String commonName, String id) throws IOException {
         return new JSONObjectWriter()
-            .setString(NAME_JSON, name)
-            .setString(VERSION_JSON, version);
+            .setString(COMMON_NAME_JSON, commonName)
+            .setString(ID_JSON, id);
+    }
+
+    String commonName;
+    public String getCommonName() {
+        return commonName;
+    }
+
+    String id;
+    public String getId() {
+        return id;
+    }
+
+    public Payee(JSONObjectReader rd) throws IOException {
+        commonName = rd.getString(COMMON_NAME_JSON);
+        id = rd.getString(ID_JSON);
     }
 }

@@ -46,7 +46,7 @@ import org.webpki.w2nb.webpayment.common.DecryptionKeyHolder;
 import org.webpki.w2nb.webpayment.common.Encryption;
 import org.webpki.w2nb.webpayment.common.Expires;
 import org.webpki.w2nb.webpayment.common.KeyStoreEnumerator;
-import org.webpki.w2nb.webpayment.common.ServerSigner;
+import org.webpki.w2nb.webpayment.common.ServerX509Signer;
 
 import org.webpki.webutil.InitPropertyReader;
 
@@ -72,7 +72,7 @@ public class AcquirerService extends InitPropertyReader implements ServletContex
 
     static JSONX509Verifier paymentRoot;
 
-    static ServerSigner acquirerKey;
+    static ServerX509Signer acquirerKey;
     
     static String merchantDN;
     
@@ -110,8 +110,8 @@ public class AcquirerService extends InitPropertyReader implements ServletContex
          try {
             CustomCryptoProvider.forcedLoad (false);
 
-            acquirerKey = new ServerSigner(new KeyStoreEnumerator(getResource(ACQUIRER_EECERT),
-                                                                  getPropertyString(KEYSTORE_PASSWORD)));
+            acquirerKey = new ServerX509Signer(new KeyStoreEnumerator(getResource(ACQUIRER_EECERT),
+                                                                      getPropertyString(KEYSTORE_PASSWORD)));
             
             merchantRoot = getRoot(MERCHANT_ROOT);
             paymentRoot = getRoot(PAYMENT_ROOT);

@@ -19,40 +19,36 @@ package org.webpki.w2nb.webpayment.common;
 import java.io.IOException;
 
 import java.security.GeneralSecurityException;
-
-import java.security.cert.X509Certificate;
+import java.security.PublicKey;
 
 import java.security.interfaces.RSAPublicKey;
 
 import org.webpki.crypto.AlgorithmPreferences;
 import org.webpki.crypto.AsymSignatureAlgorithms;
 import org.webpki.crypto.SignatureWrapper;
-import org.webpki.crypto.SignerInterface;
+import org.webpki.crypto.AsymKeySignerInterface;
 
-import org.webpki.json.JSONX509Signer;
+import org.webpki.json.JSONAsymKeySigner;
 
-public class ServerSigner extends JSONX509Signer {
+public class ServerAsymKeySigner extends JSONAsymKeySigner {
     
     private static final long serialVersionUID = 1L;
 
-    public ServerSigner(final KeyStoreEnumerator key) throws IOException {
-        super(new SignerInterface() {
-            @Override
-            public X509Certificate[] getCertificatePath() throws IOException {
-                return key.getCertificatePath();
-            }
+    public ServerAsymKeySigner(final KeyStoreEnumerator key) throws IOException {
+        super(new AsymKeySignerInterface() {
             @Override
             public byte[] signData(byte[] data, AsymSignatureAlgorithms algorithm) throws IOException {
                 try {
-                    return new SignatureWrapper(algorithm, key.getPrivateKey())
-                        .update(data)
-                        .sign();
+                    return new SignatureWrapper(algorithm, key.getPrivateKey()).update(data).sign();
                 } catch (GeneralSecurityException e) {
                     throw new IOException (e);
                 }
             }
+            @Override
+            public PublicKey getPublicKey() throws IOException {
+                return key.getPublicKey();
+            }
         });
-        setSignatureCertificateAttributes(true);
         setSignatureAlgorithm(key.getPublicKey() instanceof RSAPublicKey ?
                   AsymSignatureAlgorithms.RSA_SHA256 : AsymSignatureAlgorithms.ECDSA_SHA256);
         setAlgorithmPreferences(AlgorithmPreferences.JOSE);

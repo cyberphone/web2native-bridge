@@ -29,33 +29,33 @@ import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONSignatureDecoder;
 import org.webpki.json.JSONSignatureTypes;
-import org.webpki.json.JSONX509Signer;
+import org.webpki.json.JSONAsymKeySigner;
 
 public class PaymentRequest implements BaseProperties {
     
-    public static final String SOFTWARE_ID      = "WebPKI.org - Merchant";
+    public static final String SOFTWARE_NAME    = "WebPKI.org - Merchant";
     public static final String SOFTWARE_VERSION = "1.00";
 
-    public static JSONObjectWriter encode(String payee,
+    public static JSONObjectWriter encode(JSONObjectWriter payee,
                                           BigDecimal amount,
                                           Currencies currency,
                                           String referenceId,
                                           Date expires,
-                                          JSONX509Signer x509Signer) throws IOException {
+                                          JSONAsymKeySigner signer) throws IOException {
         return new JSONObjectWriter()
-            .setString(PAYEE_JSON, payee)
+            .setObject(PAYEE_JSON, payee)
             .setBigDecimal(AMOUNT_JSON, amount)
             .setString(CURRENCY_JSON, currency.toString())
             .setString(REFERENCE_ID_JSON, referenceId)
             .setDateTime(TIME_STAMP_JSON, new Date(), true)
             .setDateTime(EXPIRES_JSON, expires, true)
-            .setObject(SOFTWARE_JSON, Software.encode (SOFTWARE_ID, SOFTWARE_VERSION))
-            .setSignature(x509Signer);
+            .setObject(SOFTWARE_JSON, Software.encode (SOFTWARE_NAME, SOFTWARE_VERSION))
+            .setSignature(signer);
     }
 
     public PaymentRequest(JSONObjectReader rd) throws IOException {
         root = rd;
-        payee = rd.getString(PAYEE_JSON);
+        payee = new Payee(rd.getObject(PAYEE_JSON));
         amount = rd.getBigDecimal(AMOUNT_JSON);
         try {
             currency = Currencies.valueOf(rd.getString(CURRENCY_JSON));
@@ -67,7 +67,7 @@ public class PaymentRequest implements BaseProperties {
         expires = rd.getDateTime(EXPIRES_JSON);
         software = new Software(rd);
         signatureDecoder = rd.getSignature(AlgorithmPreferences.JOSE);
-        signatureDecoder.verify(JSONSignatureTypes.X509_CERTIFICATE);
+        signatureDecoder.verify(JSONSignatureTypes.ASYMMETRIC_KEY);
         rd.checkForUnread();
     }
 
@@ -77,8 +77,8 @@ public class PaymentRequest implements BaseProperties {
     }
 
     
-    String payee;
-    public String getPayee() {
+    Payee payee;
+    public Payee getPayee() {
         return payee;
     }
 

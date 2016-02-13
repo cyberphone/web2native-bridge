@@ -21,8 +21,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 
 import java.security.GeneralSecurityException;
-
-import java.security.cert.X509Certificate;
+import java.security.PublicKey;
 
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -41,9 +40,9 @@ public class FinalizeRequest implements BaseProperties {
         referenceId = rd.getString(REFERENCE_ID_JSON);
         timeStamp = rd.getDateTime(TIME_STAMP_JSON);
         software = new Software(rd);
-        outerCertificatePath = rd.getSignature(AlgorithmPreferences.JOSE).getCertificatePath();
+        outerPublicKey = rd.getSignature(AlgorithmPreferences.JOSE).getPublicKey();
         PaymentRequest paymentRequest = embeddedResponse.getPaymentRequest();
-        ReserveOrDebitRequest.compareCertificatePaths(outerCertificatePath, paymentRequest);
+        ReserveOrDebitRequest.comparePublicKeys(outerPublicKey, paymentRequest);
         if (amount.compareTo(paymentRequest.getAmount()) > 0) {
             throw new IOException("Final amount must be less or equal to reserved amount");
         }
@@ -54,7 +53,7 @@ public class FinalizeRequest implements BaseProperties {
 
     Software software;
     
-    X509Certificate[] outerCertificatePath;
+    PublicKey outerPublicKey;
     
     JSONObjectReader root;
     
@@ -76,14 +75,14 @@ public class FinalizeRequest implements BaseProperties {
     public static JSONObjectWriter encode(ReserveOrDebitResponse providerResponse,
                                           BigDecimal amount,  // Less or equal the reserved amount
                                           String referenceId,
-                                          ServerSigner signer)
+                                          ServerAsymKeySigner signer)
     throws IOException, GeneralSecurityException {
         return Messages.createBaseMessage(Messages.FINALIZE_REQUEST)
             .setBigDecimal(AMOUNT_JSON, amount)
             .setObject(PROVIDER_AUTHORIZATION_JSON, providerResponse.root)
             .setString(REFERENCE_ID_JSON, referenceId)
             .setDateTime(TIME_STAMP_JSON, new Date(), true)
-            .setObject(SOFTWARE_JSON, Software.encode (PaymentRequest.SOFTWARE_ID,
+            .setObject(SOFTWARE_JSON, Software.encode (PaymentRequest.SOFTWARE_NAME,
                                                        PaymentRequest.SOFTWARE_VERSION))
             .setSignature(signer);
     }

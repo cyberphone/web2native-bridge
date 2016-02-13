@@ -50,7 +50,7 @@ import org.webpki.w2nb.webpayment.common.PayerAccountTypes;
 import org.webpki.w2nb.webpayment.common.Currencies;
 import org.webpki.w2nb.webpayment.common.KeyStoreEnumerator;
 import org.webpki.w2nb.webpayment.common.ProtectedAccountData;
-import org.webpki.w2nb.webpayment.common.ServerSigner;
+import org.webpki.w2nb.webpayment.common.ServerAsymKeySigner;
 
 import org.webpki.webutil.InitPropertyReader;
 
@@ -64,7 +64,7 @@ public class MerchantService extends InitPropertyReader implements ServletContex
 
     static final String PAYMENT_ROOT           = "payment_root";
     
-    static final String MERCHANT_EECERT        = "merchant_eecert";
+    static final String MERCHANT_KEY           = "merchant_key";
     
     static final String ACQUIRER_AUTHORITY_URL = "acquirer_authority_url";
 
@@ -86,7 +86,7 @@ public class MerchantService extends InitPropertyReader implements ServletContex
 
     static JSONX509Verifier paymentRoot;
     
-    static ServerSigner merchantKey;
+    static ServerAsymKeySigner merchantKey;
     
     static String acquirerAuthorityUrl;
 
@@ -142,8 +142,8 @@ public class MerchantService extends InitPropertyReader implements ServletContex
                 serverPortMapping = getPropertyInt(SERVER_PORT_MAP);
             }
 
-            merchantKey = new ServerSigner(new KeyStoreEnumerator(getResource(MERCHANT_EECERT),
-                                                                  getPropertyString(KEYSTORE_PASSWORD)));
+            merchantKey = new ServerAsymKeySigner(new KeyStoreEnumerator(getResource(MERCHANT_KEY),
+                                                                         getPropertyString(KEYSTORE_PASSWORD)));
 
             paymentRoot = getRoot(PAYMENT_ROOT);
 
@@ -163,8 +163,8 @@ public class MerchantService extends InitPropertyReader implements ServletContex
                 jsonMediaType = "text/html";
             }
 
-            new AuthorizationData(JSONParser.parse(user_authorization =
-                    ArrayUtil.getByteArrayFromInputStream (this.getClass().getResourceAsStream(USER_AUTH_SAMPLE))));
+//            new AuthorizationData(JSONParser.parse(user_authorization =
+//                    ArrayUtil.getByteArrayFromInputStream (this.getClass().getResourceAsStream(USER_AUTH_SAMPLE))));
 
             wallet_supercard_auth = getImageDataURI(SUPERCARD_AUTH_SAMPLE);
 
