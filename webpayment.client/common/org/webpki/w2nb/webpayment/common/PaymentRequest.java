@@ -20,6 +20,8 @@ import java.io.IOException;
 
 import java.math.BigDecimal;
 
+import java.security.PublicKey;
+
 import java.util.Date;
 import java.util.GregorianCalendar;
 
@@ -27,8 +29,6 @@ import org.webpki.crypto.AlgorithmPreferences;
 
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
-import org.webpki.json.JSONSignatureDecoder;
-import org.webpki.json.JSONSignatureTypes;
 import org.webpki.json.JSONAsymKeySigner;
 
 public class PaymentRequest implements BaseProperties {
@@ -36,14 +36,14 @@ public class PaymentRequest implements BaseProperties {
     public static final String SOFTWARE_NAME    = "WebPKI.org - Merchant";
     public static final String SOFTWARE_VERSION = "1.00";
 
-    public static JSONObjectWriter encode(JSONObjectWriter payee,
+    public static JSONObjectWriter encode(Payee payee,
                                           BigDecimal amount,
                                           Currencies currency,
                                           String referenceId,
                                           Date expires,
                                           JSONAsymKeySigner signer) throws IOException {
         return new JSONObjectWriter()
-            .setObject(PAYEE_JSON, payee)
+            .setObject(PAYEE_JSON, payee.writeObject())
             .setBigDecimal(AMOUNT_JSON, amount)
             .setString(CURRENCY_JSON, currency.toString())
             .setString(REFERENCE_ID_JSON, referenceId)
@@ -66,8 +66,7 @@ public class PaymentRequest implements BaseProperties {
         dateTime = rd.getDateTime(TIME_STAMP_JSON);
         expires = rd.getDateTime(EXPIRES_JSON);
         software = new Software(rd);
-        signatureDecoder = rd.getSignature(AlgorithmPreferences.JOSE);
-        signatureDecoder.verify(JSONSignatureTypes.ASYMMETRIC_KEY);
+        publicKey = rd.getSignature(AlgorithmPreferences.JOSE).getPublicKey();
         rd.checkForUnread();
     }
 
@@ -113,9 +112,9 @@ public class PaymentRequest implements BaseProperties {
     }
 
     
-    JSONSignatureDecoder signatureDecoder;
-    public JSONSignatureDecoder getSignatureDecoder() {
-        return signatureDecoder;
+    PublicKey publicKey;
+    public PublicKey getPublicKey() {
+        return publicKey;
     }
 
     JSONObjectReader root;

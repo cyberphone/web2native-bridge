@@ -4,7 +4,6 @@
   <property name="src.dir" value="src"/>
   
   <property name="temp.dir" location=".tmp"/>
-  <property name="credentials" location="credentials/sks.serialized"/>
   <property name="testpage" location="../webpayment.client/test/test.html"/>
   
   <property file="../webpayment.resources/common.properties"/>
@@ -155,6 +154,8 @@
     <property name="card.number" value="@"/>
     <property name="sks.encryption" value="@"/>
     <property name="card.path" location="${cardimage.dir}/${card.image}"/>
+    <property name="sks.path" location="${credentials.dir}/${credentials_store}"/>
+    <property name="db.path" location="${credentials.dir}/${credentials_db}"/>
     <java fork="yes"
           classname="org.webpki.w2nb.webpayment.resources.InitWallet"
           dir="${key.dir}"
@@ -165,7 +166,8 @@
              </fileset>
              <pathelement location="${temp.dir}"/>
         </classpath>
-        <arg value="${credentials}"/>
+        <arg value="${sks.path}"/>
+        <arg value="${db.path}"/>
         <arg value="${sks.certificate}${keyfilext}"/>
         <arg value="${keypassword}"/>
         <arg value="${sks.pin}"/>
@@ -178,7 +180,8 @@
   </target>
 
   <target name="initwallet">
-    <delete file="${credentials}"/>
+    <delete file="${credentials.dir}/${credentials_store}"/>
+    <delete file="${credentials.dir}/${credentials_db}"/>
     <delete dir="${temp.dir}"/>
     <mkdir dir="${temp.dir}"/>
     <javac debug="${debug}"
@@ -190,31 +193,31 @@
            includeAntRuntime="false">
     </javac>
     <antcall target="_import">
-       <param name="sks.certificate" value="${clientkey_ec}"/>
+       <param name="sks.certificate" value="${clientkey_super}"/>
        <param name="sks.pin" value="1234"/>
        <param name="card.type" value="SUPER_CARD"/>
-       <param name="card.number" value="6875056745552109"/>
+       <param name="card.number" value="${account_id_super}"/>
        <param name="card.image" value="supercard.png"/>
-       <param name="sks.encryption" value="${encryptionkey_rsa}"/>
+       <param name="sks.encryption" value="${encryptionkey_ec}"/>
     </antcall>
     <antcall target="_import">
-       <param name="sks.certificate" value="${clientkey_rsa}"/>
+       <param name="sks.certificate" value="${clientkey_bankdir}"/>
        <param name="sks.pin" value="1234"/>
        <param name="card.type" value="BANK_DIRECT"/>
-       <param name="card.number" value="!8645-7800239403"/>
+       <param name="card.number" value="!${account_id_bankdir}"/>
        <param name="card.image" value="bankdirect.png"/>
        <param name="sks.encryption" value="${encryptionkey_ec}"/>
      </antcall>
      <antcall target="_import">
-       <param name="sks.certificate" value="${clientkey_ec_other}"/>
+       <param name="sks.certificate" value="${clientkey_other}"/>
        <param name="sks.pin" value="1234"/>
        <param name="card.type" value="@"/>
      </antcall>
      <antcall target="_import">
-       <param name="sks.certificate" value="${clientkey_ec2}"/>
+       <param name="sks.certificate" value="${clientkey_unusual}"/>
        <param name="sks.pin" value="1234"/>
        <param name="card.type" value="UNUSUAL_CARD"/>
-       <param name="card.number" value="1111222233334444"/>
+       <param name="card.number" value="${account_id_unusual}"/>
        <param name="card.image" value="unusualcard.png"/>
        <param name="sks.encryption" value="${encryptionkey_ec}"/>
      </antcall>
@@ -308,24 +311,18 @@
     </antcall>
     </target>
 
-  <target name="_clientcert">
+  <target name="_clientkeys">
     <antcall target="_createcert">
-       <param name="cmd" value="-selfsigned -entity/ca -subject &quot;CN=Mybank Client Root CA1, C=US&quot; -validity/start 2010-07-10T10:00:00 -validity/end 2030-07-10T09:59:59 -out/storetype ${storetype} -out/keystore ${clientroot}${keyfilext} -out/storepass ${keypassword} -out/keypass ${keypassword} -keysize 4096 -sigalg RSA_SHA512 -serial 1"/>
-    </antcall>
-    <antcall target="_getroot">
-       <param name="rootfile" value="${clientroot}"/>
+       <param name="cmd" value="-selfsigned -entity/ee -extension/ku digitalSignature -subject &quot;CN=Luke Skywalker, serialNumber=95673522&quot; -validity/start 2012-07-10T10:00:00 -validity/end 2025-07-10T09:59:59 -out/storetype ${storetype} -out/keystore ${clientkey_bankdir}${keyfilext} -out/storepass ${keypassword} -out/keypass ${keypassword} -ecccurve NIST_P_256 -sigalg ECDSA_SHA256"/>
     </antcall>
     <antcall target="_createcert">
-       <param name="cmd" value="-ca/keypass ${keypassword} -ca/storetype ${storetype} -ca/storepass ${keypassword} -ca/keystore ${clientroot}${keyfilext} -entity/ee -extension/ku digitalSignature -subject &quot;CN=Luke Skywalker, serialNumber=95673522&quot; -validity/start 2012-07-10T10:00:00 -validity/end 2025-07-10T09:59:59 -out/storetype ${storetype} -out/keystore ${clientkey_rsa}${keyfilext} -out/storepass ${keypassword} -out/keypass ${keypassword} -keysize 2048 -sigalg RSA_SHA512"/>
+       <param name="cmd" value="-selfsigned -entity/ee -extension/ku digitalSignature -subject &quot;CN=Luke Skywalker, serialNumber=95673522&quot; -validity/start 2012-07-10T10:00:00 -validity/end 2025-07-10T09:59:59 -out/storetype ${storetype} -out/keystore ${clientkey_super}${keyfilext} -out/storepass ${keypassword} -out/keypass ${keypassword} -ecccurve NIST_P_256 -sigalg ECDSA_SHA256"/>
     </antcall>
     <antcall target="_createcert">
-       <param name="cmd" value="-ca/keypass ${keypassword} -ca/storetype ${storetype} -ca/storepass ${keypassword} -ca/keystore ${clientroot}${keyfilext} -entity/ee -extension/ku digitalSignature -subject &quot;CN=Luke Skywalker, serialNumber=95673522&quot; -validity/start 2012-07-10T10:00:00 -validity/end 2025-07-10T09:59:59 -out/storetype ${storetype} -out/keystore ${clientkey_ec}${keyfilext} -out/storepass ${keypassword} -out/keypass ${keypassword} -ecccurve NIST_P_256 -sigalg RSA_SHA512"/>
+       <param name="cmd" value="-selfsigned -entity/ee -extension/ku digitalSignature -subject &quot;CN=Luke Skywalker, serialNumber=95673522&quot; -validity/start 2012-07-10T10:00:00 -validity/end 2025-07-10T09:59:59 -out/storetype ${storetype} -out/keystore ${clientkey_unusual}${keyfilext} -out/storepass ${keypassword} -out/keypass ${keypassword} -ecccurve NIST_P_256 -sigalg ECDSA_SHA256"/>
     </antcall>
     <antcall target="_createcert">
-       <param name="cmd" value="-ca/keypass ${keypassword} -ca/storetype ${storetype} -ca/storepass ${keypassword} -ca/keystore ${clientroot}${keyfilext} -entity/ee -extension/ku digitalSignature -subject &quot;CN=Luke Skywalker, serialNumber=95673522&quot; -validity/start 2012-07-10T10:00:00 -validity/end 2025-07-10T09:59:59 -out/storetype ${storetype} -out/keystore ${clientkey_ec2}${keyfilext} -out/storepass ${keypassword} -out/keypass ${keypassword} -ecccurve NIST_P_521 -sigalg RSA_SHA512"/>
-    </antcall>
-    <antcall target="_createcert">
-       <param name="cmd" value="-ca/keypass ${keypassword} -ca/storetype ${storetype} -ca/storepass ${keypassword} -ca/keystore ${clientroot}${keyfilext} -entity/ee -extension/ku digitalSignature -subject &quot;CN=Luke Skywalker, serialNumber=95673522&quot; -validity/start 2012-07-10T10:00:00 -validity/end 2025-07-10T09:59:59 -out/storetype ${storetype} -out/keystore ${clientkey_ec_other}${keyfilext} -out/storepass ${keypassword} -out/keypass ${keypassword} -ecccurve NIST_P_256 -sigalg RSA_SHA512"/>
+       <param name="cmd" value="-selfsigned -entity/ee -extension/ku digitalSignature -subject &quot;CN=Luke Skywalker, serialNumber=95673522&quot; -validity/start 2012-07-10T10:00:00 -validity/end 2025-07-10T09:59:59 -out/storetype ${storetype} -out/keystore ${clientkey_other}${keyfilext} -out/storepass ${keypassword} -out/keypass ${keypassword} -ecccurve NIST_P_256 -sigalg ECDSA_SHA256"/>
     </antcall>
   </target>
 
@@ -354,7 +351,7 @@
     <antcall target="_certpaymentnetwork"/>
     <antcall target="_certacquirernetwork"/>
     <antcall target="_merchantkey"/>
-    <antcall target="_clientcert"/>
+    <antcall target="_clientkeys"/>
     <antcall target="_authencryption"/>
     <antcall target="_kg2kmkey"/>
     <delete>

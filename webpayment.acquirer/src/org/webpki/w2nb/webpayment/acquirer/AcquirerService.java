@@ -112,11 +112,13 @@ public class AcquirerService extends InitPropertyReader implements ServletContex
 
             acquirerKey = new ServerX509Signer(new KeyStoreEnumerator(getResource(ACQUIRER_EECERT),
                                                                       getPropertyString(KEYSTORE_PASSWORD)));
-            
+//TODO
+/*
             merchantRoot = getRoot(MERCHANT_ROOT);
+            merchantDN = getPropertyString(MERCHANT_DN);
+*/
             paymentRoot = getRoot(PAYMENT_ROOT);
 
-            merchantDN = getPropertyString(MERCHANT_DN);
 
             addDecryptionKey(DECRYPTION_KEY1);
             addDecryptionKey(DECRYPTION_KEY2);

@@ -55,8 +55,8 @@ public interface BaseProperties {
     String DOMAIN_NAME_JSON                  = "domainName";
     String ENCRYPTED_DATA_JSON               = "encryptedData";
     String ENCRYPTED_KEY_JSON                = "encryptedKey";
-    String STATIC_RECEIVER_KEY_JSON          = "staticReceiverKey";
-    String EPHEMERAL_SENDER_KEY_JSON         = "ephemeralSenderKey";
+    String STATIC_KEY_JSON                   = "staticKey";
+    String EPHEMERAL_KEY_JSON                = "ephemeralKey";
     String SIGNATURE_ALGORITHM_JSON          = "signatureAlgorithm";
     String KEY_ENCRYPTION_ALGORITHM_JSON     = "keyEncryptionAlgorithm";     // For acquirer encryption key
     String DATA_ENCRYPTION_ALGORITHM_JSON    = "dataEncryptionAlgorithm";    //    -"-

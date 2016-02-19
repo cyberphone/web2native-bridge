@@ -18,17 +18,13 @@ package org.webpki.w2nb.webpayment.bank;
 
 import java.io.IOException;
 import java.io.InputStream;
-
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.PublicKey;
-
 import java.security.cert.X509Certificate;
-
 import java.security.interfaces.RSAPublicKey;
-
+import java.util.LinkedHashMap;
 import java.util.Vector;
-
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -38,12 +34,12 @@ import javax.servlet.ServletContextListener;
 import org.webpki.crypto.CertificateUtil;
 import org.webpki.crypto.CustomCryptoProvider;
 import org.webpki.crypto.KeyStoreVerifier;
-
+import org.webpki.json.JSONArrayReader;
+import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONOutputFormats;
+import org.webpki.json.JSONParser;
 import org.webpki.json.JSONX509Verifier;
-
 import org.webpki.util.ArrayUtil;
-
 import org.webpki.w2nb.webpayment.common.Authority;
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.DecryptionKeyHolder;
@@ -51,7 +47,6 @@ import org.webpki.w2nb.webpayment.common.Encryption;
 import org.webpki.w2nb.webpayment.common.Expires;
 import org.webpki.w2nb.webpayment.common.KeyStoreEnumerator;
 import org.webpki.w2nb.webpayment.common.ServerX509Signer;
-
 import org.webpki.webutil.InitPropertyReader;
 
 public class BankService extends InitPropertyReader implements ServletContextListener {
@@ -67,7 +62,7 @@ public class BankService extends InitPropertyReader implements ServletContextLis
     
     static final String MERCHANT_KEY          = "merchant_key";
 
-    static final String CLIENT_ROOT           = "bank_client_root";
+    static final String ACCOUNT_DB            = "bank_account_db";
     
     static final String ERR_MEDIA             = "err_media_type";
 
@@ -77,7 +72,7 @@ public class BankService extends InitPropertyReader implements ServletContextLis
     
     static PublicKey merchantKey;
     
-    static JSONX509Verifier clientRoot;
+    static LinkedHashMap<String,AccountEntry> accountDb = new LinkedHashMap<String,AccountEntry>();
     
     static ServerX509Signer bankKey;
     
@@ -132,7 +127,17 @@ public class BankService extends InitPropertyReader implements ServletContextLis
 
             merchantKey = CertificateUtil.getCertificateFromBlob (
                 ArrayUtil.getByteArrayFromInputStream (getResource(MERCHANT_KEY))).getPublicKey();
-            clientRoot = getRoot(CLIENT_ROOT);
+
+            JSONArrayReader accounts = JSONParser.parse(
+                                          ArrayUtil.getByteArrayFromInputStream (getResource(ACCOUNT_DB))
+                                                       ).getJSONArrayReader();
+            while (accounts.hasMore()) {
+                JSONObjectReader account = accounts.getObject();
+                accountDb.put(account.getObject(BaseProperties.PAYER_ACCOUNT_JSON).getString(BaseProperties.ID_JSON), 
+                    new AccountEntry(account.getPublicKey(),
+                                     account.getObject(BaseProperties.PAYER_ACCOUNT_JSON)
+                                         .getString(BaseProperties.TYPE_JSON)));
+            }
 
             addDecryptionKey(DECRYPTION_KEY1);
             addDecryptionKey(DECRYPTION_KEY2);

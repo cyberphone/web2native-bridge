@@ -41,9 +41,9 @@
     </context-param>
 
     <context-param>
-        <description>Bank Client Root</description>
-        <param-name>bank_client_root</param-name>
-        <param-value>@bank-client-root@</param-value>
+        <description>Bank Accounts</description>
+        <param-name>bank_account_db</param-name>
+        <param-value>@bank-account-db@</param-value>
     </context-param>
 
     <context-param>

@@ -108,16 +108,32 @@ public class TransactionServlet extends HttpServlet implements BaseProperties {
        // Client IP could be used for risk-based authentication, here it is only logged
        logger.info("Client address: " + clientIpAddress);
 
-       // Verify that the outer signature (the user's) matches the bank's client root
-       authorizationData.getSignatureDecoder().verify(BankService.clientRoot);
+       // Verify that the there is an account matching the received public key
+       String accountId = authorizationData.getAccountDescriptor().getAccountId();
+       String accountType = authorizationData.getAccountDescriptor().getAccountType();
+       AccountEntry account = BankService.accountDb.get(accountId);
+       if (account == null) {
+           logger.info("No such account ID: " + accountId);
+           throw new IOException("No such user account ID");
+       }
+       if (!account.type.equals(accountType)) {
+           logger.info("Wrong account type: " + accountType + " for account ID: " + accountId);
+           throw new IOException("Wrong user account type");
+       }
+       if (!account.publicKey.equals(authorizationData.getPublicKey())) {
+           logger.info("Wrong public key for account ID: " + accountId);
+           throw new IOException("Wrong user public key");
+       }
 
        // Get the embedded (counter-signed) payment request
        PaymentRequest paymentRequest = attestedPaymentRequest.getPaymentRequest();
 
        // Verify that the merchant's signature belongs to a for us known merchant
        // To simply things we only recognize a single merchant...
-       paymentRequest.getSignatureDecoder().verify(new JSONAsymKeyVerifier(BankService.merchantKey));
-       
+       if (!paymentRequest.getPublicKey().equals(BankService.merchantKey)) {
+           throw new IOException("Unknown merchant");
+       }
+
        // We need to separate credit-card and account-2-account payments
        boolean acquirerBased = PayerAccountTypes.fromTypeUri(authorizationData.getAccountDescriptor().getAccountType()).isAcquirerBased();
        logger.info("Kind of operation: " + (acquirerBased ? "credit-card" : "account-2-account"));

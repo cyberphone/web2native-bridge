@@ -5,7 +5,6 @@
   <property name="temp.dir" location=".tmp" />
   <property name="src.dir" value="src"/>
   <property name="image.dir" value="images"/>
-  <property name="credentials.dir" value="../webpayment.resources/credentials"/>
   <property name="client.package.dir" value="org/webpki/w2nb/webpayment/client"/>
   <property name="dist.dir" value="../proxy/install/apps"/>
   <property name="javaversion" value="1.7" />
@@ -58,7 +57,9 @@
         <exclude name="**/DecryptionKeyHolder.class"/>
       </fileset>
       <zipfileset dir="${image.dir}" prefix="${client.package.dir}"/>
-      <zipfileset dir="${credentials.dir}" prefix="${client.package.dir}"/>
+      <zipfileset dir="${credentials.dir}" prefix="${client.package.dir}">
+        <include name="${credentials_store}"/>
+      </zipfileset>
       <manifest>
         <attribute name="Main-Class" value="${java.dotted.path}.Wallet"/>
         <attribute name="Class-path" value="../../libs/webpki.org-libext-1.00.jar ../../libs/proxy-support.jar ../../libs/bcprov-jdk16-145.jar"/>

@@ -1,59 +1,26 @@
 {
-  "paymentRequest": 
-    {
-      "payee": "Demo Merchant",
-      "amount": "94617.00",
-      "currency": "USD",
-      "referenceId": "#1000001",
-      "timeStamp": "2015-09-18T15:36:40Z",
-      "expires": "2015-09-18T16:07:00Z",
-      "software": 
-        {
-          "id": "WebPKI.org - Merchant",
-          "version": "1.00"
-        },
-      "signature": 
-        {
-          "algorithm": "RS256",
-          "signerCertificate": 
-            {
-              "issuer": "CN=Merchant Network Sub CA5,C=DE",
-              "serialNumber": "1441094186933",
-              "subject": "CN=Demo Merchant,2.5.4.5=#1306383936333235,C=DE"
-            },
-          "certificatePath": 
-            [
-              "MIIDQzCCAiugAwIBAgIGAU-H6De1MA0GCSqGSIb3DQEBCwUAMDAxCzAJBgNVBAYTAkRFMSEwHwYDVQQDExhNZXJjaGFudCBOZXR3b3JrIFN1YiBDQTUwHhcNMTQwMTAxMDAwMDAwWhcNMjAwNzEwMDk1OTU5WjA2MQswCQYDVQQGEwJERTEPMA0GA1UEBRMGODk2MzI1MRYwFAYDVQQDEw1EZW1vIE1lcmNoYW50MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAy0lVrJ30-0jiqZrQ_tL-O5DPmqCmlcVTj1bHU7Azv2b4YElzencTP2pjuUaDibm_d4D02GGxV6SzJgZ-_wPqxzbTaxiN6ZEp4JYC0WHoe5dh_l7StvER69DrP3UZM9RCxLZ_3dEzVnE5rGPjeZ02XtwJIEkRKQxKsYZQW8-uRMKn1ybzsPwrmRKtPPaCoMQ_7G5DndUIxc8s-G2KsBEqWYTgM6Dj2GrTrKh9rFrSIGPpVQFgXu48JPL1gilcwXG2P4TvroqrBRw5HSfr2rXvnanr8OP31BopOhUVpRdVm-SfHZS472qEixuLF5A6p6UX7xvV2sdkcFY7go6HeyFDaQIDAQABo10wWzAJBgNVHRMEAjAAMA4GA1UdDwEB_wQEAwIHgDAdBgNVHQ4EFgQUQMLX3CAGV-n8gX98cYDD55VYrZgwHwYDVR0jBBgwFoAUQZ_PsUyXJsf7guLGKkexvn9YEIAwDQYJKoZIhvcNAQELBQADggEBAITR6pF83UiXp0qvgklQVRI0Zfl18mZVAAXCaPwgU8ls6H-tmejrloatYhFQNDuqWHaAEqG5GUThguvKMsCK74qPrwxMRTyBK5jtFrBDsTocRMawYROjGxMKjX5MFcgLQOwL0XGMQ8oKuEXR6xedISUgomPaK_laGsuR1F7KJynYqRQIbX3ka70dOpKjL4pGm6lZbW_t9hBb08D5-d_qoXZ1jVtLDyPxjTTnwRCFsPznXBC1tfihACw-9jf-xp7k1lb-i6gMMkp_odH083HNhrwf31D2OVoB9vRPGu2Ove38jU1CBXPj3u039Jm6xmlfFGZ6mIfSYE9dFF-4t2reH0s",
-              "MIIEPzCCAiegAwIBAgIBBTANBgkqhkiG9w0BAQ0FADAxMQswCQYDVQQGEwJVUzEiMCAGA1UEAxMZTWVyY2hhbnQgTmV0d29yayBSb290IENBMTAeFw0xMjA3MTAxMDAwMDBaFw0yNTA3MTAwOTU5NTlaMDAxCzAJBgNVBAYTAkRFMSEwHwYDVQQDExhNZXJjaGFudCBOZXR3b3JrIFN1YiBDQTUwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCIcpRA-IGxkbLZjrLiUBFl76Tkwsd6qRrCj-ef9i9sCQfwfYrDM7zbTnQPPctqh0dBH7LytrmlZeAvVvu7ExY7DyDq-h_nOR_GvXdUptiCxkVOIxIyF9PEMhwfM25MKlLMlCbNGlYmyF_dJbK4cMv9wakrUOpf9rEPyscH1iThaE8ZB08JmcS9qP0suvxVfVzKCdrHoak75ooXfBWKsTcDuRLtEWAoviaEE3Ba8df38wvfw-DySq7_h-L8o2te6n316LuhR65SNuyygTn2WBgmOxBRONuLelUGkswidynORTArs0bdcJHDv3rbeFxkF65RyccdCHUNIsR-deBSOFOxAgMBAAGjYzBhMA8GA1UdEwEB_wQFMAMBAf8wDgYDVR0PAQH_BAQDAgEGMB0GA1UdDgQWBBRBn8-xTJcmx_uC4sYqR7G-f1gQgDAfBgNVHSMEGDAWgBQxOGv571adz9C05QHM9zbpMcdEoDANBgkqhkiG9w0BAQ0FAAOCAgEAW0HW317Kh1jJN5GNulBBq_hZ2NH51E_FgcLuta4AoP_ljgZNeE7agZL8l8q_ZXKG_D3d1rF0tj1qhMeDhjf-V1mUT0GKcVZgigy38_55dCUE7rk4VSioxzc3yJUaIYsZVYZSeFmdv5T2P65XfKUv8jKSuIEiO8PT7UpTpKFH2vMxpyAKfaoTi0R-ICAIK1eeEaIOJN1bTrL1Pkb4dp-9FCcuRCwPgGY7hNXcQruMaDcQnSYgCpe0tBmNRq5UZkJ5w0bYZ--iPPKER9em--C31zXTJQklT7I94PA5u0Q-BSCleP0UDeyoT2Mm3emGyfTfQEOXAEeS2aMHVjV1syZkacThTigzCn8G3_RlXX9AL49kHP37lWKCU7yRke3V1jy8yVGozk6LwvD9B5KAZuf8ARyX_ePiGHCl1kqHafpYE_xL8jYhk3d15xMMj0BgMmEvhiqYNDgtEe78Buqxv4_iuoni6rUP_BqS8Ct5b2QWMQSqgjxhFX6riNnZhP3aX4iGiCfP1Gog-BPuTM5iNbZDIfY6M9SOkUrYnzFIIWDzpNWJ8v7asJbkV5K1YoQkjA12zffOksnl9LZxpbPIz1ZGavQM2Sf5ZRuoi858H4fEWIE1ZiSye6OvKJWpOXWYqH2GmCH-RSQWUAliio9-k4nmkFNL57ztqqXSo2RcvAcWlOg"
-            ],
-          "value": "xs_zodC-8D7LghH7DA0GB-yExSS3z4zFxSiMDaJTE7IS9O72V7xNaVO7ufRfjzQr5BRN6vSLVnOIFlhAZdp9tIdwsM5p_QBB07pZVPFtmkalqRgSwbChVi2dpMYesvnRd4iOaY9SL6aXbIcJv83cGh_9PYN77K90SUr8d1txmopzP3FxudhaeOCkKUTVCFulbt04YngQJvk_8CUI9gMJZPzm2DytNa4YumJ2tNu0jdAbZvvw0om2EAusgO3Y9BBR2hfgr8yIj7LYpXfOGcS1urHklADEKG6uIoty55tffL80XmYXMoWMzxZL4q_-h4zmkUMGsZiBvEl2ixlas5v-1Q"
-        }
+  "requestHash": {
+    "algorithm": "S256",
+    "value": "Rwf6Le39NkfowF6tCW_Fqv9L55lprWQ73-BYRfbJANg"
+  },
+  "domainName": "localhost",
+  "payerAccount": {
+    "type": "https://bankdirect.net",
+    "id": "8645-7800239403"
+  },
+  "timeStamp": "2016-02-17T22:25:59+01:00",
+  "software": {
+    "name": "WebPKI.org - Wallet",
+    "version": "1.00"
+  },
+  "signature": {
+    "algorithm": "ES256",
+    "publicKey": {
+      "type": "EC",
+      "curve": "P-256",
+      "x": "U64Cl00RUFDtw9dtBSFGr0UB0ihS1zZ3VJY4eWJUDcE",
+      "y": "RN9sSaX9b7k2_Z5SPeYoa9GDiiUEHmznljWn4oQFjiw"
     },
-  "domainName": "test.webpki.org",
-  "payerAccount": 
-    {
-      "type": "https://supercard.com",
-      "id": "6875056745552109"
-    },
-  "timeStamp": "2015-09-18T17:36:47+02:00",
-  "software": 
-    {
-      "id": "WebPKI.org - Wallet",
-      "version": "1.00"
-    },
-  "signature": 
-    {
-      "algorithm": "ES256",
-      "signerCertificate": 
-        {
-          "issuer": "CN=Mybank Client Root CA1,C=US",
-          "serialNumber": "1441094196317",
-          "subject": "CN=Luke Skywalker,2.5.4.5=#13083935363733353232"
-        },
-      "certificatePath": 
-        [
-          "MIIDbDCCAVSgAwIBAgIGAU-H6FxdMA0GCSqGSIb3DQEBDQUAMC4xCzAJBgNVBAYTAlVTMR8wHQYDVQQDExZNeWJhbmsgQ2xpZW50IFJvb3QgQ0ExMB4XDTEyMDcxMDEwMDAwMFoXDTI1MDcxMDA5NTk1OVowLDERMA8GA1UEBRMIOTU2NzM1MjIxFzAVBgNVBAMTDkx1a2UgU2t5d2Fsa2VyMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEKm4hWDwges7k2oXQC2KNBJ-3HueGY4QTo0ZrUgrPxrkisnKqybLtqVV3ZvRkeTuyn4LxX89SQnYrl_ULJ7OE1KNdMFswCQYDVR0TBAIwADAOBgNVHQ8BAf8EBAMCB4AwHQYDVR0OBBYEFI_CXdyGEYIrtl44bNDDgE9vtImsMB8GA1UdIwQYMBaAFMa51cklW3eU7r-Z5RWNQ01n_v_jMA0GCSqGSIb3DQEBDQUAA4ICAQCJHBihANnE0WN5vPpjRPHgvri_LsWGFeXMfBVichKV0HlB9WubCWM_saOw-UqujfajJg2bzBvDznxoSlelGMUh9150DYjJIsgGG4uWeg1ajFkxlwkEmi2K-WV385Z484Otar0gP3hkrKSvHE1YJjhka8CNVEZMedVB6XVSK1DIumjX9OuezN9pdaSLjwhr-C_C-WKPDvdqXgU_Um89x01aiFwDyW10tuH03EKf-Wr9Hw_-ld6vSu8J5bj1Bf49tS0p87BNU55RksVO8Gqldj1w193Y_B9JGxIV6WK01C6-uDMwXAHZ6wKQbqedsAqSrbP1dR7tIXt_64aShAx1WCAdjja0SP4OWvlXLXweWJVDD3v3tdYiJqUaY7PMrQ604eE1y4PsU4W8znaWC2K9Lkk5Hig3F1kXWw9m2A1eQdGkXUj9tMnugIqPzDOdoiuA41wALnYdDCIHe0A9wJfS62EsrgvHKBixwNOivlqVvmFSG0pykVxJYe-UbqYIb0kBHP-ttCWhReznafOKs6wckxyWRAaSieqtfgZu68AWigNurtXv_vGjx04ZBMrHFLHLJQDZT-5GIPafLycRGg5Cco7p3EhDBZLoz1rykcJVJKrDGtPAPlY1q_AiFTCcU3psCWVnQZtw2A-BZqDBtQ9IhKPuwNxsTTzrsi_P6phhMZSojw"
-        ],
-      "value": "4gudFTnLpzOEREPkWWSdfXiVjttOw8KbjLh7L1stq6egfZzwEBNFoDLq86zYa3_OODM3yUKiQII4ektMUFMXHA"
-    }
+    "value": "vpo_1-Ki8sY5pY4BdsOKdLZllH4efxnlxeHpomlhpkrfYFAvKRIGOX31MFQT1DtrX9QEImulE-U6JvleIvNzJw"
+  }
 }

@@ -80,9 +80,9 @@ public class EncryptedData implements BaseProperties {
             publicKey = encryptedKey.getPublicKey(AlgorithmPreferences.JOSE);
             encryptedKeyData = encryptedKey.getBinary(CIPHER_TEXT_JSON);
         } else {
-            publicKey = encryptedKey.getObject(STATIC_RECEIVER_KEY_JSON).getPublicKey(AlgorithmPreferences.JOSE);
+            publicKey = encryptedKey.getObject(STATIC_KEY_JSON).getPublicKey(AlgorithmPreferences.JOSE);
             ephemeralPublicKey = 
-                (ECPublicKey) encryptedKey.getObject(EPHEMERAL_SENDER_KEY_JSON).getPublicKey(AlgorithmPreferences.JOSE);
+                (ECPublicKey) encryptedKey.getObject(EPHEMERAL_KEY_JSON).getPublicKey(AlgorithmPreferences.JOSE);
         }
         encryptedData = rd.getBinary(CIPHER_TEXT_JSON);
     }
@@ -138,9 +138,9 @@ public class EncryptedData implements BaseProperties {
                                                               dataEncryptionAlgorithm,
                                                               ephemeralKey,
                                                               keyEncryptionKey);
-            encryptedKey.setObject(STATIC_RECEIVER_KEY_JSON)
+            encryptedKey.setObject(STATIC_KEY_JSON)
                 .setPublicKey(keyEncryptionKey, AlgorithmPreferences.JOSE);
-            encryptedKey.setObject(EPHEMERAL_SENDER_KEY_JSON)
+            encryptedKey.setObject(EPHEMERAL_KEY_JSON)
                 .setPublicKey(ephemeralKey[0], AlgorithmPreferences.JOSE);
         }
         byte[] iv = Encryption.generateIV(dataEncryptionAlgorithm);

@@ -86,14 +86,15 @@ public class TransactionServlet extends HttpServlet implements BaseProperties {
             // The original request contains some required data like currency
             PaymentRequest paymentRequest = embeddedResponse.getPaymentRequest();
 
-            // Verify that the merchant's signature belongs to a valid merchant trust network
-            paymentRequest.getSignatureDecoder().verify(AcquirerService.merchantRoot);
-
             // Verify that the merchant is one of our customers.  Simplistic "database": a single customer
+//TODO
+/*
+            paymentRequest.getSignatureDecoder().verify(AcquirerService.merchantRoot);
             String merchantDn = paymentRequest.getSignatureDecoder().getCertificatePath()[0].getSubjectX500Principal().getName();
             if (!merchantDn.equals(AcquirerService.merchantDN)) {
                 throw new IOException ("Unknown merchant: " + merchantDn);
             }
+*/
 
             ////////////////////////////////////////////////////////////////////////////
             // We got an authentic request.  Now we need to check available funds etc.//

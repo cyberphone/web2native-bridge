@@ -221,9 +221,6 @@ public class TransactionServlet extends HttpServlet implements BaseProperties {
             if (bankResponse.isDirectDebit() != directDebit) {
                 throw new IOException("Response debit/reserve mode doesn't match request");
             }
-            if (!bankResponse.getAccountType().equals(payerAuthorization.getAccountType().getTypeUri())) {
-                throw new IOException("Response account type doesn't match request");
-            }
 
             // In addition to hard errors, there are a few "normal" errors which preferably would
             // be dealt with in more user-oriented fashion.
@@ -233,6 +230,10 @@ public class TransactionServlet extends HttpServlet implements BaseProperties {
                 }
                 HTML.paymentError(response, debug, bankResponse.getErrorReturn());
                 return;
+            }
+
+            if (!bankResponse.getAccountType().equals(payerAuthorization.getAccountType().getTypeUri())) {
+                throw new IOException("Response account type doesn't match request");
             }
 
             // No error return, then we can verify the response fully

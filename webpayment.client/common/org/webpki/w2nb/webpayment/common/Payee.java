@@ -23,7 +23,12 @@ import org.webpki.json.JSONObjectWriter;
 
 public class Payee implements BaseProperties {
 
-    public static JSONObjectWriter encode(String commonName, String id) throws IOException {
+    public Payee(String commonName, String id) throws IOException {
+        this.commonName = commonName;
+        this.id = id;
+    }
+
+    public JSONObjectWriter writeObject() throws IOException {
         return new JSONObjectWriter()
             .setString(COMMON_NAME_JSON, commonName)
             .setString(ID_JSON, id);

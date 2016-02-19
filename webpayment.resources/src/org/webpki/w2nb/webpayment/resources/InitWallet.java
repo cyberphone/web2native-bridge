@@ -21,16 +21,11 @@ package org.webpki.w2nb.webpayment.resources;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-
 import java.io.IOException;
-
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-
 import java.security.PublicKey;
-
 import java.security.interfaces.RSAPublicKey;
-
 import java.util.EnumSet;
 
 import org.webpki.crypto.AlgorithmPreferences;
@@ -38,33 +33,30 @@ import org.webpki.crypto.AsymSignatureAlgorithms;
 import org.webpki.crypto.CertificateUtil;
 import org.webpki.crypto.CustomCryptoProvider;
 import org.webpki.crypto.KeyAlgorithms;
-
+import org.webpki.json.JSONArrayWriter;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONOutputFormats;
-
+import org.webpki.json.JSONParser;
 import org.webpki.keygen2.KeyGen2URIs;
-
 import org.webpki.sks.AppUsage;
 import org.webpki.sks.BiometricProtection;
 import org.webpki.sks.DeleteProtection;
 import org.webpki.sks.EnumeratedKey;
 import org.webpki.sks.ExportProtection;
+import org.webpki.sks.Extension;
 import org.webpki.sks.Grouping;
 import org.webpki.sks.InputMethod;
 import org.webpki.sks.PassphraseFormat;
 import org.webpki.sks.PatternRestriction;
+import org.webpki.sks.SKSException;
 import org.webpki.sks.SecureKeyStore;
-
 import org.webpki.sks.test.Device;
 import org.webpki.sks.test.GenKey;
 import org.webpki.sks.test.KeySpecifier;
 import org.webpki.sks.test.PINPol;
 import org.webpki.sks.test.ProvSess;
-
 import org.webpki.sks.test.SKSReferenceImplementation;
-
 import org.webpki.util.ArrayUtil;
-
 import org.webpki.w2nb.webpayment.common.AccountDescriptor;
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.PayerAccountTypes;
@@ -74,17 +66,17 @@ import org.webpki.w2nb.webpayment.common.KeyStoreEnumerator;
 public class InitWallet {
 
     public static void main(String[] args) throws Exception {
-        if (args.length != 9) {
+        if (args.length != 10) {
             System.out.println("\nUsage: " +
                                InitWallet.class.getCanonicalName() +
-                               "sksFile clientCertFile certFilePassword pin accountType/@ accountId" +
+                               "sksFile userDb clientCertFile certFilePassword pin accountType/@ accountId" +
                                " authorityUrl keyEncryptionKey imageFile");
             System.exit(-3);
         }
         CustomCryptoProvider.forcedLoad(true);
         
         // Read importedKey/certificate to be imported
-        KeyStoreEnumerator importedKey = new KeyStoreEnumerator(new FileInputStream(args[1]), args[2]);
+        KeyStoreEnumerator importedKey = new KeyStoreEnumerator(new FileInputStream(args[2]), args[3]);
         boolean rsa_flag = importedKey.getPublicKey() instanceof RSAPublicKey;
         String[] endorsed_algs = rsa_flag ?
                 new String[] {AsymSignatureAlgorithms.RSA_SHA256.getAlgorithmId(AlgorithmPreferences.SKS)} 
@@ -126,7 +118,7 @@ public class InitWallet {
                                              SecureKeyStore.ALGORITHM_KEY_ATTEST_1,
                                              null /* server_seed */,
                                              pin_policy, 
-                                             args[3] /* PIN value */,
+                                             args[4] /* PIN value */,
                                              BiometricProtection.NONE /* biometric_protection */,
                                              ExportProtection.NON_EXPORTABLE /* export_policy */,
                                              DeleteProtection.NONE /* delete_policy */,
@@ -138,9 +130,9 @@ public class InitWallet {
         surrogateKey.setCertificatePath(importedKey.getCertificatePath());
         surrogateKey.setPrivateKey(importedKey.getPrivateKey());
         JSONObjectWriter ow = null;
-        if (!args[4].equals("@")) {
-            PayerAccountTypes accountType = PayerAccountTypes.valueOf(args[4]);
-            String accountId = args[5];
+        if (!args[5].equals("@")) {
+            PayerAccountTypes accountType = PayerAccountTypes.valueOf(args[5]);
+            String accountId = args[6];
             boolean cardFormatted = true;
             if (accountId.startsWith("!")) {
                 cardFormatted = false;
@@ -151,13 +143,13 @@ public class InitWallet {
                             new AccountDescriptor(accountType.getTypeUri(),
                                                   accountId).write())
                  .setBoolean(BaseProperties.CARD_FORMAT_ACCOUNT_ID_JSON, cardFormatted)
-                 .setString(BaseProperties.PROVIDER_AUTHORITY_URL_JSON, args[6])
+                 .setString(BaseProperties.PROVIDER_AUTHORITY_URL_JSON, args[7])
                  .setString(BaseProperties.SIGNATURE_ALGORITHM_JSON,
                          rsa_flag ?
                     AsymSignatureAlgorithms.RSA_SHA256.getAlgorithmId(AlgorithmPreferences.JOSE)
                                   :
                     AsymSignatureAlgorithms.ECDSA_SHA256.getAlgorithmId(AlgorithmPreferences.JOSE));
-            PublicKey publicKey = CertificateUtil.getCertificateFromBlob(ArrayUtil.readFile(args[7])).getPublicKey();
+            PublicKey publicKey = CertificateUtil.getCertificateFromBlob(ArrayUtil.readFile(args[8])).getPublicKey();
             ow.setObject(BaseProperties.ENCRYPTION_PARAMETERS_JSON)
                   .setString(BaseProperties.DATA_ENCRYPTION_ALGORITHM_JSON, Encryption.JOSE_A128CBC_HS256_ALG_ID)
                   .setString(BaseProperties.KEY_ENCRYPTION_ALGORITHM_JSON,
@@ -173,7 +165,7 @@ public class InitWallet {
             surrogateKey.addExtension(KeyGen2URIs.LOGOTYPES.CARD,
                                       SecureKeyStore.SUB_TYPE_LOGOTYPE,
                                       "image/png",
-                                      ArrayUtil.readFile(args[8]));
+                                      ArrayUtil.readFile(args[9]));
         }
         sess.closeSession();
         
@@ -181,6 +173,27 @@ public class InitWallet {
         ObjectOutputStream oos = new ObjectOutputStream (new FileOutputStream(args[0]));
         oos.writeObject (sks);
         oos.close ();
+
+        // Write the database
+        JSONArrayWriter aw = new JSONArrayWriter();
+        ek = new EnumeratedKey();
+        while ((ek = sks.enumerateKeys(ek.getKeyHandle())) != null) {
+            Extension ext = null;
+            try {
+                ext = sks.getExtension(ek.getKeyHandle(),
+                                       BaseProperties.W2NB_WEB_PAY_CONTEXT_URI);
+            } catch (SKSException e) {
+                if (e.getError() == SKSException.ERROR_OPTION) {
+                    continue;
+                }
+                throw new Exception(e);
+            }
+            aw.setObject()
+              .setObject(BaseProperties.PAYER_ACCOUNT_JSON,
+                         JSONParser.parse(ext.getExtensionData(SecureKeyStore.SUB_TYPE_EXTENSION)).getObject(BaseProperties.PAYER_ACCOUNT_JSON))
+              .setPublicKey(sks.getKeyAttributes(ek.getKeyHandle()).getCertificatePath()[0].getPublicKey());
+        }
+        ArrayUtil.writeFile(args[1], aw.serializeJSONArray(JSONOutputFormats.PRETTY_PRINT));
 
         // Report
         System.out.println("Imported Subject: " +

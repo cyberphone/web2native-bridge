@@ -48,8 +48,6 @@ import java.net.URL;
 import java.security.PublicKey;
 import java.security.Security;
 
-import java.security.cert.X509Certificate;
-
 import java.util.LinkedHashMap;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -74,7 +72,7 @@ import javax.swing.plaf.metal.MetalButtonUI;
 
 import org.webpki.crypto.AlgorithmPreferences;
 import org.webpki.crypto.AsymSignatureAlgorithms;
-import org.webpki.crypto.SignerInterface;
+import org.webpki.crypto.AsymKeySignerInterface;
 
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
@@ -935,10 +933,10 @@ public class Wallet {
                         domainName,
                         selectedCard.accountDescriptor,
                         selectedCard.signatureAlgorithm,
-                        new SignerInterface () {
+                        new AsymKeySignerInterface () {
                             @Override
-                            public X509Certificate[] getCertificatePath() throws IOException {
-                                return sks.getKeyAttributes(keyHandle).getCertificatePath();
+                            public PublicKey getPublicKey() throws IOException {
+                                return sks.getKeyAttributes(keyHandle).getCertificatePath()[0].getPublicKey();
                             }
                             @Override
                             public byte[] signData(byte[] data, AsymSignatureAlgorithms algorithm) throws IOException {

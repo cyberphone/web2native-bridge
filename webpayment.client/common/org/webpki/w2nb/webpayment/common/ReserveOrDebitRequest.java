@@ -149,7 +149,7 @@ public class ReserveOrDebitRequest implements BaseProperties {
     }
 
     public static void comparePublicKeys(PublicKey publicKey, PaymentRequest paymentRequest) throws IOException {
-        if (!publicKey.equals(paymentRequest.getSignatureDecoder().getPublicKey())) {
+        if (!publicKey.equals(paymentRequest.getPublicKey())) {
             throw new IOException("Outer and inner public key differ");
         }
     }

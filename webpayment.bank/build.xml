@@ -70,7 +70,7 @@
 	  <replacefilter token="@bank-decryptionkey2@" value="${encryptionkey_rsa}${keyfilext}"/>
       <replacefilter token="@merchant-key@" value="${merchantkey}.cer"/>
       <replacefilter token="@bank-host@" value="${bank.host}"/>
-      <replacefilter token="@bank-client-root@" value="${clientroot}.cer"/>
+      <replacefilter token="@bank-account-db@" value="${credentials_db}"/>
       <replacefilter token="@err-media-type@" value="${errormedia}"/>
     </replace>
     <war destfile="${dist.dir}/${application}" webxml="${temp.dir}/web.xml">
@@ -92,6 +92,9 @@
          <include name="${bankkey}${keyfilext}"/>
          <include name="${clientroot}.cer"/>
          <include name="${merchantkey}.cer"/>
+      </zipfileset>
+      <zipfileset dir="${zip.credentials.dir}" prefix="${class_war_path}">
+         <include name="${credentials_db}"/>
       </zipfileset>
       <fileset dir="web"/>
     </war>
@@ -130,6 +133,8 @@
        <param name="zip.util.lib.dir" value="${utils.lib.dir}"/>
        
        <param name="zip.key.dir" value="${key.dir}"/>
+
+       <param name="zip.credentials.dir" value="${credentials.dir}"/>
        
        <param name="merchant.var.root" value="${merchant_root}"/>
      </antcall>
@@ -163,6 +168,8 @@
        
        <param name="zip.key.dir" value="keys"/>
 
+       <param name="zip.credentials.dir" value="credentials"/>
+       
        <param name="merchant.var.root" value="${merchantroot}"/>
      </antcall>
      <!-- Update application.xml -->
@@ -204,6 +211,9 @@
       </zipfileset>
       <zipfileset dir="${common.src.dir}" prefix="${appcorename}/common.src"/>
       <zipfileset dir="${key.dir}" prefix="${appcorename}/keys"/>
+      <zipfileset dir="${credentials.dir}" prefix="${appcorename}/credentials">
+        <include name="${credentials_db}"/>
+      </zipfileset>
       <zipfileset file="../webpayment.resources/common.properties" prefix="${appcorename}"/>
     </zip>
     <checksum file="${dd}/${appcorename}.zip" fileext=".SHA1" algorithm="sha1" forceOverwrite="yes"/>

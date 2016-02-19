@@ -21,14 +21,15 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
+import java.security.PublicKey;
+
 import org.webpki.crypto.AlgorithmPreferences;
 import org.webpki.crypto.AsymSignatureAlgorithms;
-import org.webpki.crypto.SignerInterface;
+import org.webpki.crypto.AsymKeySignerInterface;
 
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
-import org.webpki.json.JSONSignatureDecoder;
-import org.webpki.json.JSONX509Signer;
+import org.webpki.json.JSONAsymKeySigner;
 
 public class AuthorizationData implements BaseProperties {
 
@@ -39,7 +40,7 @@ public class AuthorizationData implements BaseProperties {
                                           String domainName,
                                           AccountDescriptor accountDescriptor,
                                           Date timeStamp,
-                                          JSONX509Signer signer) throws IOException {
+                                          JSONAsymKeySigner signer) throws IOException {
         return new JSONObjectWriter()
             .setObject(REQUEST_HASH_JSON, new JSONObjectWriter()
                 .setString(ALGORITHM_JSON, RequestHash.JOSE_SHA_256_ALG_ID)
@@ -55,14 +56,14 @@ public class AuthorizationData implements BaseProperties {
                                           String domainName,
                                           AccountDescriptor accountDescriptor,
                                           AsymSignatureAlgorithms signatureAlgorithm,
-                                          SignerInterface signer) throws IOException {
+                                          AsymKeySignerInterface signer) throws IOException {
         return encode(paymentRequest,
                       domainName,
                       accountDescriptor,
                       new Date(),
-                      new JSONX509Signer(signer).setSignatureAlgorithm(signatureAlgorithm)
-                                                .setSignatureCertificateAttributes(true)
-                                                .setAlgorithmPreferences(AlgorithmPreferences.JOSE));
+                      new JSONAsymKeySigner(signer)
+                          .setSignatureAlgorithm(signatureAlgorithm)
+                          .setAlgorithmPreferences(AlgorithmPreferences.JOSE));
     }
 
     public static String formatCardNumber(String accountId) {
@@ -84,7 +85,7 @@ public class AuthorizationData implements BaseProperties {
         accountDescriptor = new AccountDescriptor(rd.getObject(PAYER_ACCOUNT_JSON));
         timeStamp = rd.getDateTime(TIME_STAMP_JSON);
         software = new Software(rd);
-        signatureDecoder = rd.getSignature(AlgorithmPreferences.JOSE);
+        publicKey = rd.getSignature(AlgorithmPreferences.JOSE).getPublicKey();
         rd.checkForUnread();
     }
 
@@ -113,8 +114,8 @@ public class AuthorizationData implements BaseProperties {
         return software;
     }
 
-    JSONSignatureDecoder signatureDecoder;
-    public JSONSignatureDecoder getSignatureDecoder() {
-        return signatureDecoder;
+    PublicKey publicKey;
+    public PublicKey getPublicKey() {
+        return publicKey;
     }
 }

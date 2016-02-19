@@ -163,8 +163,8 @@ public class MerchantService extends InitPropertyReader implements ServletContex
                 jsonMediaType = "text/html";
             }
 
-//            new AuthorizationData(JSONParser.parse(user_authorization =
-//                    ArrayUtil.getByteArrayFromInputStream (this.getClass().getResourceAsStream(USER_AUTH_SAMPLE))));
+            new AuthorizationData(JSONParser.parse(user_authorization =
+                    ArrayUtil.getByteArrayFromInputStream (this.getClass().getResourceAsStream(USER_AUTH_SAMPLE))));
 
             wallet_supercard_auth = getImageDataURI(SUPERCARD_AUTH_SAMPLE);
 
