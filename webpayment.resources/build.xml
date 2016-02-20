@@ -5,9 +5,10 @@
   
   <property name="temp.dir" location=".tmp"/>
   <property name="testpage" location="../webpayment.client/test/test.html"/>
+  <property name="jcspaper" location="docs/jsonsignatures.html"/>
   
   <property file="../webpayment.resources/common.properties"/>
-  
+    
   <condition property="bank.host" value="https://localhost:8442" else="https://mobilepki.org">
     <isset property="localhost"/>
   </condition>
@@ -29,7 +30,7 @@
   </path>
   
   <target name="help">
-      <echo message="cryptotest createcerts initwallet [-Dlocalhost=0] inittestpage svg-test svg-pushmode svg-pullmode svg-play -Dplayclass [-Dplayfilter]"/>
+      <echo message="cryptotest createcerts initwallet [-Dlocalhost=0] inittestpage jcspaper svg-test svg-pushmode svg-pullmode svg-play -Dplayclass [-Dplayfilter]"/>
   </target>
  
   <target name="inittestpage">
@@ -58,6 +59,37 @@
         <arg value="${merchantkey}${keyfilext}"/>
         <arg value="${keypassword}"/>
         <arg value="${w2nb.webwallet}"/>
+    </java>
+  </target>
+
+  <target name="jcspaper">
+    <property name="logotype" location="${logotype.dir}/${logotype.file}"/>
+    <delete file="${jcspaper}"/>
+    <delete dir="${temp.dir}"/>
+    <mkdir dir="${temp.dir}"/>
+    <javac debug="${debug}"
+           source="${javaversion}"
+           target="${javaversion}"
+           srcdir="${src.dir}:${common.src.dir}"
+           destdir="${temp.dir}" 
+           classpathref="compile.classpath"
+           includeAntRuntime="false">
+    </javac>
+    <java fork="yes"
+          classname="org.webpki.w2nb.webpayment.resources.JCSPaper"
+          dir="${key.dir}"
+          failonerror="true">
+        <classpath>
+             <fileset dir="${common.lib.dir}">
+                <include name="*.jar"/>
+             </fileset>
+             <pathelement location="${temp.dir}"/>
+        </classpath>
+        <arg value="${jcspaper}"/>
+        <arg value="${logotype}"/>
+        <arg value="${merchantkey}${keyfilext}"/>
+        <arg value="${bankkey}${keyfilext}"/>
+        <arg value="${keypassword}"/>
     </java>
   </target>
 

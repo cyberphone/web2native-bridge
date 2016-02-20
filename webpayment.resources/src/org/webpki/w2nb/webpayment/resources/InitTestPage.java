@@ -89,7 +89,7 @@ public class InitTestPage implements BaseProperties {
 
         // Create signed payment request
         JSONObjectWriter standardRequest = 
-            PaymentRequest.encode(Payee.encode("Demo Merchant","86344"),
+            PaymentRequest.encode(new Payee("Demo Merchant","86344"),
                                   new BigDecimal("306.25"),
                                   Currencies.USD,
                                   "#6100004",
