@@ -102,35 +102,58 @@ public class JCSPaper implements BaseProperties {
         ServerX509Signer authorizationSigner = new ServerX509Signer(authorizationKey);
 
         // Header
-        write("<!DOCTYPE html><html><head><title>JSON Signatures</title><style type=\"text/css\">\n" +
+        write("<!DOCTYPE html><html><head><title>JSON Signatures</title>" +
+              "<meta http-equiv=Content-Type content=\"text/html; charset=utf-8\">" +
+              "<style type=\"text/css\">\n" +
               "body {font-size:8pt;color:#000000;font-family:verdana,arial;background-color:white;margin:10pt}\n" +
-              "h2 {font-weight:bold;font-size:12pt;color:#000000;font-family:arial,verdana,helvetica}\n" +
-              "h3 {font-weight:bold;font-size:11pt;color:#000000;font-family:arial,verdana,helvetica}\n" +
               "a {font-weight:bold;font-size:8pt;color:blue;font-family:arial,verdana;text-decoration:none}\n" +
               "table {border-spacing:0;border-collapse: collapse;box-shadow:3pt 3pt 3pt #D0D0D0}\n" +
               "td {border-color:black;border-style:solid;border-width:1px;" +
               "padding:2pt 4pt 2pt 4pt;font-size:8pt;font-family:verdana,arial;text-align:center}\n" +
-              "div.json {word-wrap:break-word;width:800pt;background:#F8F8F8;border-width:1px;border-style:solid;border-color:grey;padding:10pt;box-shadow:3pt 3pt 3pt #D0D0D0}\n" +
-              ".smalltext {font-size:6pt;font-family:verdana,arial}\n" +
+              "div.json {margin-top:8pt;margin-bottom:15pt;word-wrap:break-word;width:800pt;background:#F8F8F8;border-width:1px;border-style:solid;border-color:grey;padding:10pt;box-shadow:3pt 3pt 3pt #D0D0D0}\n" +
+              "div.text {width:800pt}\n" +
+              "div.header {font-size:12pt;margin-top:15pt;margin-bottom:8pt;font-family:arial,verdana}\n" +
+              "code {font-size:9pt;font-family:'Courier New',Courier}\n" +
               "</style></head><body>" +
               "<div style=\"cursor:pointer;padding:2pt 0 0 0;width:100pt;height:47pt;border-width:1px;" +
               "border-style:solid;border-color:black;box-shadow:3pt 3pt 3pt #D0D0D0\" " +
               "onclick=\"document.location.href='http://webpki.org'\" title=\"Home of WebPKI.org\">");
         write(ArrayUtil.readFile(args[1]));
-        write("</div><div style=\"width:800pt;text-align:center\"><h2>JSON Signatures</h2></div>" +
-           "<div style=\"width:800pt;text-align:center\">" +
-           "<table style=\"margin-left:auto;margin-right:auto\"><tr><td><span style=\"" + STYLE_MSG + "\">&nbsp;<br>" + AUTHORIZATION + "</span>" +
+        write("</div><div class=\"text\" style=\"margin-top:30pt;margin-bottom:20pt;text-align:center;font-size:20pt;font-family:'Times New Roman',Serif\">JSON Signatures</div>" +
+           "<div class=\"text\" style=\"margin-bottom:5pt\">" +
+           "Signing of " + JSON() + " data essentially comes in two flavors:" +
+           "<ul><li>&quot;Freezing&quot; the data and put it in a specific signature container. " + 
+           RFC7515() + " (JSON Web Signature) represents such a specification.</li>" +
+           "<li>Canonicalize the data and add a signature to it.</li></ul>" +
+           "This document briefly outlines an example of the latter called " + JCS() + " (JSON Cleartext Signature). " +
+           "<p>Due to the fact that there is currently no generally accepted canonicalization method for JSON, JCS builds on " +
+           "a much simpler concept (&quot;Predictable Serialization&quot;) " +
+           "which did not become fully practical until " + ECMASCRIPT() + " V6 was launched. " +
+           "ECMAScript in short says that JSON (and JavaScript) property order <i>must " +
+           "be respected</i> during parsing and serialization which eliminates canonicalization entirely " +
+           "and enables the creation of &quot;Crypto&nbsp;Safe&quot; JSON objects that can travel securely " +
+           "through different systems without getting corrupted.</p>" +
+           "</div><div class=\"header\">Background<br></div>" +
+           "<div class=\"text\">" +
+           "Although JCS is not tied to any specific application, it grew from the needs of the " +
+           "payment industry where &quot;Stacked&quot; signed messages begin to play an important role. " +
+           "Below is a (fictitious) example of such a scheme, where one message embeds another (inner) message:" +
+           "</div><div class=\"text\" style=\"text-align:center\">" +
+           "<table style=\"margin-left:auto;margin-right:auto;margin-top:10pt;margin-bottom:20pt\"><tr><td><span style=\"" + STYLE_MSG + "\">&nbsp;<br>" + AUTHORIZATION + "</span>" +
               "<table style=\"margin:15pt\"><tr><td style=\"padding:10pt 15pt 10pt 15pt;" + STYLE_MSG + "\">" + PAYMENT_REQUEST + "</td></tr>" +
                 "<tr><td style=\"" + STYLE_KEY + "\">Public Key</td></tr>" +
                  "<tr><td style=\"" + STYLE_SIGNATURE + "\">Signature</td></tr>" +
                "</table></td></tr>" +
                 "<tr><td style=\"" + STYLE_KEY + "\">X.509 Certificate Path</td></tr>" +
                 "<tr><td style=\"" + STYLE_SIGNATURE + "\">Signature</td></tr>" +
-           "</table></div><div class=\"json\">");
+           "</table></div><div class=\"text\">" +
+           "This scheme could be expressed in JCS like the following (note that the <code>@context</code> and <code>@qualifier</code> properties " +
+           "<i>are not a part of JCS</i>, but serve as a possible way to assign a type to a JSON object):" +
+           "</div><div class=\"json\">");
         JSONObjectWriter paymentRequest = new JSONObjectWriter();
         paymentRequest.setString(JSONDecoderCache.CONTEXT_JSON, CONTEXT);
         paymentRequest.setString(JSONDecoderCache.QUALIFIER_JSON, PAYMENT_REQUEST);
-        paymentRequest.setObject(PAYEE_JSON, new Payee("Demo Merchant", "1209").writeObject());
+        paymentRequest.setObject(PAYEE_JSON, new Payee("Demo Merchant", "1209000").writeObject());
         paymentRequest.setString(AMOUNT_JSON, "235.50");
         paymentRequest.setString(CURRENCY_JSON, "USD");
         paymentRequest.setString(REFERENCE_ID_JSON, "05630753");
@@ -161,32 +184,61 @@ public class JCSPaper implements BaseProperties {
         joseAuthorization.setObject(PAYMENT_REQUEST_JSON, joseSignedPaymentRequest);
         writer.setSignature(authorizationSigner);
         write(writer.serializeJSONObject(JSONOutputFormats.PRETTY_HTML));
-        write("</div>");
- 
-        write("</div>HI<div class=\"json\">");
+        write("</div><div class=\"text\">" +
+              "The example above would if converted to " + RFC7515() + " be slightly more convoluted " +
+               "since data must be Base64-encoded (which was a core rationale for developing JCS):" +
+              "</div><div class=\"json\">");
         JSONObjectWriter joseAuthorizationHeader = new JSONObjectWriter()
             .setString(JOSE_ALG, AsymSignatureAlgorithms.ECDSA_SHA256.getAlgorithmId(AlgorithmPreferences.JOSE));
         JSONArrayWriter aw = joseAuthorizationHeader.setArray(JOSE_X5C);
         for (X509Certificate cert : authorizationKey.getCertificatePath()) {
             aw.setString(new Base64(false).getBase64StringFromBinary(cert.getEncoded()));
         }
-        writer = jws(joseAuthorization,
-                     joseAuthorizationHeader,
-                     authorizationKey);
-        JSONObjectReader verifier = JSONParser.parse(writer.toString());
+        JSONObjectWriter joseWriter = jws(joseAuthorization,
+                                          joseAuthorizationHeader,
+                                          authorizationKey);
+        JSONObjectReader verifier = JSONParser.parse(joseWriter.toString());
         checkJws (verifier);
         checkJws(JSONParser.parse(verifier.getBinary(JOSE_PAYLOAD)).getObject(PAYMENT_REQUEST_JSON));
-        write(writer.serializeJSONObject(JSONOutputFormats.PRETTY_HTML));
-        write("</div>");
-
-        write("<div class=\"json\">");
+        write(joseWriter.serializeJSONObject(JSONOutputFormats.PRETTY_HTML));
+        System.out.println("JCS=" + writer.serializeJSONObject(JSONOutputFormats.NORMALIZED).length +
+                           " JWS=" + joseWriter.serializeJSONObject(JSONOutputFormats.NORMALIZED).length);
+        write("</div><div class=\"text\">"+
+              "Since " + JCS() + " is compatible with " + ECMASCRIPT() + ", you can also use " +
+               " JCS signatures in browsers. The following shows how the <code>" + PAYMENT_REQUEST +
+               "</code> message could be featured inside of an HTML5 document:" +
+        
+             "</div><div class=\"json\">");
         String jsPaymentRequest = paymentRequest.serializeToString(JSONOutputFormats.PRETTY_HTML);
+        jsPaymentRequest = jsPaymentRequest.replaceAll("(^\\{<br>)", "$1&nbsp;&nbsp;&nbsp;&nbsp;<span style=\"color:#008000\">//&nbsp;The&nbsp;Data</span><br>");
         jsPaymentRequest = jsPaymentRequest.replaceAll("(&quot;)(<span style=\"color:#C00000\">)([a-z A-Z]+)(<\\/span>)(&quot;)", "$2$3$4");
-        write("<span style=\"color:orange\">var</span>&nbsp;<span style=\"color:#00A000\">" +
+        jsPaymentRequest = jsPaymentRequest.replaceAll("(<br>&nbsp;&nbsp;&nbsp;&nbsp;)(<span style=\"color:#C00000\">)(signature)", "$1<span style=\"color:#008000\">//&nbsp;The&nbsp;Signature</span>$1$2$3");
+        write("<span style=\"color:orange\">var</span>&nbsp;<span style=\"color:purple\">" +
               PAYMENT_REQUEST_JSON + "</span>&nbsp;=&nbsp;" + jsPaymentRequest.replaceAll("<br>}", "<br>};"));
-        write("</div>");
-        write("</body></html>");
+        write("</div>" +
+              "V0.6, A.Rundgren, 2016-02-22" +
+              "</body></html>");
         fos.close();
+    }
+
+    static String link(String name, String url) {
+        return "<a href=\"" + url + "\" target=\"_blank\" title=\"" + name + "\">" + name + "</a>";
+    }
+ 
+    private static String RFC7515() {
+        return link("RFC7515", "https://tools.ietf.org/rfc/rfc7515.txt");
+    }
+
+    private static String JSON() {
+        return link("JSON", "https://tools.ietf.org/rfc/rfc7159.txt");
+    }
+
+    static String ECMASCRIPT() {
+         return link("ECMAScript", "http://www.ecma-international.org/ecma-262/6.0/ECMA-262.pdf");
+    }
+
+    static String JCS() {
+        return link("JCS", "https://cyberphone.github.io/openkeystore/resources/docs/jcs.html");
     }
 
     static void checkJws(JSONObjectReader jws) throws Exception {
@@ -214,7 +266,7 @@ public class JCSPaper implements BaseProperties {
         }
         protectedHeader.checkForUnread();
         if (!new SignatureWrapper(AsymSignatureAlgorithms.ECDSA_SHA256, publicKey)
-                     .update ((jws.getString(JOSE_PAYLOAD) + "." + jws.getString(JOSE_PROTECTED)).getBytes("UTF-8"))
+                     .update ((jws.getString(JOSE_PROTECTED) + "." + jws.getString(JOSE_PAYLOAD)).getBytes("UTF-8"))
                      .verify (jws.getBinary(JOSE_SIGNATURE))) {
             throw new IOException ("Verify");
         }
@@ -231,7 +283,7 @@ public class JCSPaper implements BaseProperties {
         signature.setBinary(JOSE_SIGNATURE,
                              new SignatureWrapper(AsymSignatureAlgorithms.ECDSA_SHA256,
                                                   signatureKey.getPrivateKey())
-                                 .update((reader.getString(JOSE_PAYLOAD) + "." + reader.getString(JOSE_PROTECTED)).getBytes("UTF-8"))
+                                 .update((reader.getString(JOSE_PROTECTED) + "." + reader.getString(JOSE_PAYLOAD)).getBytes("UTF-8"))
                                  .sign());
         return signature;
     }
