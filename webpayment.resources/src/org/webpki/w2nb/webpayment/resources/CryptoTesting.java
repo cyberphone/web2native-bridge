@@ -15,8 +15,14 @@ import java.security.spec.ECPoint;
 import java.security.spec.ECPrivateKeySpec;
 import java.security.spec.ECPublicKeySpec;
 
+import javax.crypto.KeyAgreement;
 
-
+import org.webpki.asn1.ASN1OctetString;
+import org.webpki.asn1.ASN1Sequence;
+import org.webpki.asn1.BaseASN1Object;
+import org.webpki.asn1.CompositeContextSpecific;
+import org.webpki.asn1.DerDecoder;
+import org.webpki.asn1.ParseUtil;
 
 import org.webpki.crypto.AlgorithmPreferences;
 import org.webpki.crypto.CustomCryptoProvider;
@@ -26,12 +32,18 @@ import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONParser;
 
 import org.webpki.util.ArrayUtil;
+import org.webpki.util.Base64;
 import org.webpki.util.Base64URL;
 import org.webpki.util.DebugFormatter;
 
 import org.webpki.w2nb.webpayment.common.Encryption;
 
 public class CryptoTesting {
+    
+    static final String ECDH_RESULT_WITHOUT_KDF = "SzFxLgluXyC07Pl5D9jMfIt-LIrZC9qByyJPYsDnuaY";
+    static final String ECDH_RESULT_WITH_KDF    = "hzHdlfQIAEehb8Hrd_mFRhKsKLEzPfshfXs9l6areCc";
+
+    static StringBuffer js = new StringBuffer();
 
     static final String aliceKey = 
         "{\"kty\":\"EC\"," +
@@ -71,7 +83,30 @@ public class CryptoTesting {
         return new KeyPair (publicKey, privateKey);
     }
     
+    static byte[] createPKCS8PrivateKey(byte[]publicKey, byte[]privateKey) throws IOException {
+        ASN1Sequence pkcs8 = ParseUtil.sequence(DerDecoder.decode(privateKey));
+        ASN1Sequence inner = ParseUtil.sequence(DerDecoder.decode(ParseUtil.octet(pkcs8.get(2))));
+        return new ASN1Sequence(new BaseASN1Object[]{pkcs8.get(0), pkcs8.get(1),
+                new ASN1OctetString(new ASN1Sequence(new BaseASN1Object[]{
+                                     inner.get(0),
+                                     inner.get(1),
+                                     inner.get(2), 
+                                     new CompositeContextSpecific(1, 
+                                             DerDecoder.decode(publicKey).get(1))}).encode())}).encode();
+    }
+    
+    static void createPEM(String string, byte[] encoded) {
+        js.append("const ECHD_TEST_" + string + "_KEY = \n" +
+                  "'-----BEGIN " + string + " KEY-----\\\n")
+          .append(new Base64(true).getBase64StringFromBinary(encoded).replace("\r\n", "\\\n"))
+          .append("\\\n-----END " + string + " KEY-----';\n\n");
+    }
+
     public static void main(String[] args) throws Exception {
+        if (args.length != 1) {
+            System.out.println("Missing: outputfile");
+            System.exit(3);
+        }
         CustomCryptoProvider.forcedLoad(true);
         System.out.println("Content Encryption");
         byte[] k = DebugFormatter.getByteArrayFromHex("000102030405060708090a0b0c0d0e0f" +
@@ -132,9 +167,34 @@ public class CryptoTesting {
         if (!Base64URL.encode(Encryption.receiverKeyAgreement(Encryption.JOSE_ECDH_ES_ALG_ID,
                 Encryption.JOSE_A128CBC_HS256_ALG_ID,
                 (ECPublicKey) bob.getPublic(),
-                alice.getPrivate())).equals("hzHdlfQIAEehb8Hrd_mFRhKsKLEzPfshfXs9l6areCc")) {
+                alice.getPrivate())).equals(ECDH_RESULT_WITH_KDF)) {
             throw new IOException("Bad ECDH");
         }
+        ECPublicKey[] ephemeral = new ECPublicKey[1];
+        if (!ArrayUtil.compare(
+            Encryption.senderKeyAgreement(Encryption.JOSE_ECDH_ES_ALG_ID,
+                                          Encryption.JOSE_A128CBC_HS256_ALG_ID,
+                                          ephemeral,
+                                          alice.getPublic()),
+            Encryption.receiverKeyAgreement(Encryption.JOSE_ECDH_ES_ALG_ID,
+                                            Encryption.JOSE_A128CBC_HS256_ALG_ID,
+                                            ephemeral[0],
+                                            alice.getPrivate()))) {
+            throw new IOException("Bad ECDH");
+        }
+        KeyAgreement keyAgreement = KeyAgreement.getInstance("ECDH", "BC");
+        keyAgreement.init(alice.getPrivate());
+        keyAgreement.doPhase(bob.getPublic(), true);
+        if (!Base64URL.encode(keyAgreement.generateSecret()).equals(ECDH_RESULT_WITHOUT_KDF)) {
+            throw new IOException("Bad ECDH");
+        }
+        js.append("// ECDH test data\n\n" +
+                  "const ECDH_RESULT_WITH_KDF    = '" + ECDH_RESULT_WITH_KDF + "';\n" +
+                  "const ECDH_RESULT_WITHOUT_KDF = '" + ECDH_RESULT_WITHOUT_KDF + "';\n\n");
+        createPEM("PRIVATE", createPKCS8PrivateKey(alice.getPublic().getEncoded(),
+                                                   alice.getPrivate().getEncoded()));
+        createPEM("PUBLIC", bob.getPublic().getEncoded());
+        ArrayUtil.writeFile(args[0], js.toString().getBytes("UTF-8"));
         System.out.println("ECDH success");
     }
 }

@@ -1,6 +1,7 @@
 /bin/
 .tmp
 /credentials/
+/nodejscryptotest/
 /svg-gen/play
 /svg-filters/play
 /src/org/webpki/tools/svg/test/play

@@ -6,6 +6,7 @@
   <property name="temp.dir" location=".tmp"/>
   <property name="testpage" location="../webpayment.client/test/test.html"/>
   <property name="jcspaper" location="docs/jsonsignatures.html"/>
+  <property name="nodejscryptotest.dir" location="nodejscryptotest"/>
   
   <property file="../webpayment.resources/common.properties"/>
     
@@ -258,6 +259,8 @@
   <target name="cryptotest">
     <delete dir="${temp.dir}"/>
     <mkdir dir="${temp.dir}"/>
+    <delete dir="${nodejscryptotest.dir}"/>
+    <mkdir dir="${nodejscryptotest.dir}"/>
     <javac debug="${debug}"
            source="${javaversion}"
            target="${javaversion}"
@@ -275,6 +278,7 @@
              </fileset>
              <pathelement location="${temp.dir}"/>
         </classpath>
+        <arg value="${nodejscryptotest.dir}/ecdh.js"/>
     </java>
   </target>
   
