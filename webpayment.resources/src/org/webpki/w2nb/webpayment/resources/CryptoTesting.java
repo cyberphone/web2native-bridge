@@ -139,19 +139,6 @@ public class CryptoTesting {
 
         byte[] t = DebugFormatter.getByteArrayFromHex("652c3fa36b0a7c5b3219fab3a30bc1c4");
 
-        byte[] tout = new byte[16];
-        byte[] eout = Encryption.contentEncryption(Encryption.JOSE_A128CBC_HS256_ALG_ID,
-                                                   k,
-                                                   p,
-                                                   iv,
-                                                   a,
-                                                   tout);
-        if (!ArrayUtil.compare(t, tout)) {
-            throw new IOException ("tout");
-        }
-        if (!ArrayUtil.compare(e, eout)) {
-            throw new IOException ("eout");
-        }
         byte[] pout = Encryption.contentDecryption(Encryption.JOSE_A128CBC_HS256_ALG_ID,
                                                    k,
                                                    e,
@@ -159,7 +146,20 @@ public class CryptoTesting {
                                                    a,
                                                    t);
         if (!ArrayUtil.compare(p, pout)) {
-            throw new IOException ("pout");
+            throw new IOException ("pout 1");
+        }
+        Encryption.AuthEncResult aer = Encryption.contentEncryption(Encryption.JOSE_A128CBC_HS256_ALG_ID,
+                                                                    k,
+                                                                    p,
+                                                                    a);
+        pout = Encryption.contentDecryption(Encryption.JOSE_A128CBC_HS256_ALG_ID,
+                                            k,
+                                            aer.getCipherText(),
+                                            aer.getIv(),
+                                            a,
+                                            aer.getTag());
+        if (!ArrayUtil.compare(p, pout)) {
+            throw new IOException ("pout 2");
         }
         System.out.println("ECDH begin");
         KeyPair bob = getKeyPair(bobKey);

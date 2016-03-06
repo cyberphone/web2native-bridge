@@ -143,18 +143,15 @@ public class EncryptedData implements BaseProperties {
             encryptedKey.setObject(EPHEMERAL_KEY_JSON)
                 .setPublicKey(ephemeralKey[0], AlgorithmPreferences.JOSE);
         }
-        byte[] iv = Encryption.generateIV(dataEncryptionAlgorithm);
-        byte[] tag = Encryption.createEmptyTag(dataEncryptionAlgorithm);
-        byte[] cipherText = Encryption.contentEncryption(dataEncryptionAlgorithm,
-                                                         dataEncryptionKey,
-                                                         unencryptedData.serializeJSONObject(JSONOutputFormats.NORMALIZED),
-                                                         iv,
-                                                         encryptedKey.serializeJSONObject(JSONOutputFormats.NORMALIZED),
-                                                         tag);
+        Encryption.AuthEncResult result =
+            Encryption.contentEncryption(dataEncryptionAlgorithm,
+                                         dataEncryptionKey,
+                                         unencryptedData.serializeJSONObject(JSONOutputFormats.NORMALIZED),
+                                         encryptedKey.serializeJSONObject(JSONOutputFormats.NORMALIZED));
         encryptedData.setString(ALGORITHM_JSON, dataEncryptionAlgorithm)
-                     .setBinary(IV_JSON, iv)
-                     .setBinary(TAG_JSON, tag)
-                     .setBinary(CIPHER_TEXT_JSON, cipherText);
+                     .setBinary(IV_JSON, result.getIv())
+                     .setBinary(TAG_JSON, result.getTag())
+                     .setBinary(CIPHER_TEXT_JSON, result.getCipherText());
         return encryptionObject;
     }
 }

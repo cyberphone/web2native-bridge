@@ -90,31 +90,44 @@ public final class Encryption {
         return cipher.doFinal(data);
     }
 
-    public static byte[] contentEncryption(String dataEncryptionAlgorithm,
-                                           byte[] key,
-                                           byte[] plainText,
-                                           byte[] iv,
-                                           byte[] authenticatedData,
-                                           byte[] tagOutput) throws GeneralSecurityException {
+    public static class AuthEncResult {
+        private byte[] iv;
+        byte[] tag;
+        byte[] cipherText;
+        
+        private AuthEncResult(byte[] iv, byte[] tag, byte[] cipherText) {
+            this.iv = iv;
+            this.tag = tag;
+            this.cipherText = cipherText;
+        }
+        
+        public byte[] getTag() {
+            return tag;
+        }
+
+        public byte[] getIv() {
+            return iv;
+        }
+
+        public byte[] getCipherText() {
+            return cipherText;
+        }
+    }
+    
+    public static AuthEncResult contentEncryption(String dataEncryptionAlgorithm,
+                                                  byte[] key,
+                                                  byte[] plainText,
+                                                  byte[] authenticatedData) throws GeneralSecurityException {
+        byte[] iv = new byte[16];
+        new SecureRandom().nextBytes (iv);
         byte[] cipherText = aesCore(Cipher.ENCRYPT_MODE, key, iv, plainText, dataEncryptionAlgorithm);
-        System.arraycopy(getTag(key, cipherText, iv, authenticatedData), 0, tagOutput, 0, 16);
-        return cipherText;
+        return new AuthEncResult(iv, getTag(key, cipherText, iv, authenticatedData), cipherText);
     }
 
     public static byte[] generateDataEncryptionKey(String dataEncryptionAlgorithm) {
         byte[] dataEncryptionKey = new byte[32];
         new SecureRandom().nextBytes (dataEncryptionKey);
         return dataEncryptionKey;
-    }
-
-    public static byte[] generateIV(String dataEncryptionAlgorithm) {
-        byte[] iv = new byte[16];
-        new SecureRandom().nextBytes (iv);
-        return iv;
-    }
-
-    public static byte[] createEmptyTag(String dataEncryptionAlgorithm) {
-        return new byte[16];
     }
 
     public static byte[] contentDecryption(String dataEncryptionAlgorithm,
