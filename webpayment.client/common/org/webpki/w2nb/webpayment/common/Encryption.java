@@ -67,7 +67,9 @@ public final class Encryption {
         mac.update(iv);
         mac.update(cipherText);
         mac.update(al);
-        return mac.doFinal();
+        byte[] tag = new byte[16];
+        System.arraycopy(mac.doFinal(), 0, tag, 0, 16);
+        return tag;
     }
 
     private static byte[] aesCore(int mode, byte[] key, byte[] iv, byte[] data, String dataEncryptionAlgorithm)
@@ -135,8 +137,8 @@ public final class Encryption {
                                            byte[] cipherText,
                                            byte[] iv,
                                            byte[] authenticatedData,
-                                           byte[] tagInput) throws GeneralSecurityException {
-        if (!ArrayUtil.compare(tagInput, getTag(key, cipherText, iv, authenticatedData), 0, 16)) {
+                                           byte[] tag) throws GeneralSecurityException {
+        if (!ArrayUtil.compare(tag, getTag(key, cipherText, iv, authenticatedData))) {
             throw new GeneralSecurityException("Authentication error on algorithm: " + dataEncryptionAlgorithm);
         }
         return aesCore(Cipher.DECRYPT_MODE, key, iv, cipherText, dataEncryptionAlgorithm);
