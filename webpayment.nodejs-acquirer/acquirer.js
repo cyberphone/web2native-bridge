@@ -28,6 +28,10 @@ const fs = require("fs");
 const ByteArray = require('webpki.org').ByteArray;
 const JCS = require('webpki.org').JCS;
 const JsonUtil = require('webpki.org').JsonUtil;
+const Logging = require('webpki.org').Logging;
+
+const logger = new Logging.Logger(__filename);
+logger.info('Initializing...');
 
 function transact(jsonObject) {
   // Just some demo/test for now...
@@ -97,7 +101,7 @@ https.createServer(options, (request, response) => {
     request.on('end', () => {
       try {
         var jsonIn = input.toString();
-        console.log('Received message [' + request.url + ']:\n' + jsonIn);
+        logger.info('Received message [' + request.url + ']:\n' + jsonIn);
         var jsonOut = JSON.stringify(jsonProcessors[pathname](JSON.parse(jsonIn)));
         console.log('Sent message [' + request.url + ']:\n' + jsonOut);
         var output = ByteArray.stringToUTF8(jsonOut);
@@ -106,7 +110,7 @@ https.createServer(options, (request, response) => {
         response.write(new Buffer(output));
         response.end();
       } catch (e) {
-        console.log(e.stack)
+        logger.error(e.stack)
         serverError(response, e.message);
       }
     });
@@ -119,4 +123,4 @@ https.createServer(options, (request, response) => {
   }
 }).listen(parseInt(port, 10));
 
-console.log('Acquirer server running at http://localhost:' + port + ', ^C to shutdown');
+logger.info('Acquirer server running at http://localhost:' + port + ', ^C to shutdown');
