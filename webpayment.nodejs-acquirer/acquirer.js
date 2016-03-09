@@ -32,9 +32,9 @@ const JsonUtil = require('webpki.org').JsonUtil;
 function transact(jsonObject) {
   // Just some demo/test for now...
   var reader = new JsonUtil.ObjectReader(jsonObject);
-  reader.getString('now');
+  reader.getDateTime('now');
   reader.getString('escapeMe');
-//  reader.scanItem('signature');
+  reader.scanItem('signature');
   reader.checkForUnread();
   var verifier = new JCS.Verifier();
   verifier.decodeSignature(jsonObject);
@@ -75,8 +75,8 @@ function serverError(response, message) {
 
 https.createServer(options, (request, response) => {
   if (request.method == 'GET') {
-    response.writeHead(200, {"Content-Type": "text/plain"});
-    response.write("This server is usually only processing POSTed JSON data...");
+    response.writeHead(200, {'Content-Type': 'text/plain'});
+    response.write('This server is usually only processing POSTed JSON data...');
     response.end();
     return;
   }
@@ -119,4 +119,4 @@ https.createServer(options, (request, response) => {
   }
 }).listen(parseInt(port, 10));
 
-console.log("Static file server running at\n  => http://localhost:" + port + "/\nCTRL + C to shutdown");
+console.log('Acquirer server running at http://localhost:' + port + ', ^C to shutdown');
