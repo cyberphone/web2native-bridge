@@ -1,4 +1,24 @@
+/*
+ *  Copyright 2006-2016 WebPKI.org (http://webpki.org).
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ */
+ 
 'use strict';
+
+// This is a node.js version of the "Acquirer" server used in the Web2Native Bridge
+// proof-of-concept payment system.
 
 const https = require("https");
 const url = require("url");
@@ -7,13 +27,14 @@ const fs = require("fs");
 
 const ByteArray = require('webpki.org').ByteArray;
 const JCS = require('webpki.org').JCS;
-const JSONReader = require('webpki.org').JSONReader;
+const JsonUtil = require('webpki.org').JsonUtil;
 
 function transact(jsonObject) {
-  var reader = new JSONReader.JSONReader(jsonObject);
+  // Just some demo/test for now...
+  var reader = new JsonUtil.ObjectReader(jsonObject);
   reader.getString('now');
   reader.getString('escapeMe');
-  reader.getObject('signature');
+//  reader.scanItem('signature');
   reader.checkForUnread();
   var verifier = new JCS.Verifier();
   verifier.decodeSignature(jsonObject);
@@ -21,8 +42,8 @@ function transact(jsonObject) {
 }
 
 function trust(jsonObject) {
-  if (jsonObject !==undefined) {
-    throw new TypeError('fisk');
+  if (jsonObject !== undefined) {
+    throw new TypeError('not implemented');
   }
   return {};
 }
@@ -85,7 +106,8 @@ https.createServer(options, (request, response) => {
         response.write(new Buffer(output));
         response.end();
       } catch (e) {
-        serverError(response, e.toString());
+        console.log(e.stack)
+        serverError(response, e.message);
       }
     });
   } else {
