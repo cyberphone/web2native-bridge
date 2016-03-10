@@ -20,18 +20,19 @@
 // This is a node.js version of the "Acquirer" server used in the Web2Native Bridge
 // proof-of-concept payment system.
 
-const https = require("https");
-const url = require("url");
-const path = require("path");
-const fs = require("fs");
+const Https = require("https");
+const Url = require("url");
+const Fs = require("fs");
 
 const ByteArray = require('webpki.org').ByteArray;
-const JCS = require('webpki.org').JCS;
+const Jcs = require('webpki.org').Jcs;
 const JsonUtil = require('webpki.org').JsonUtil;
 const Logging = require('webpki.org').Logging;
 
 const logger = new Logging.Logger(__filename);
 logger.info('Initializing...');
+
+const homePage = Fs.readFileSync(__dirname + '/index.html');
 
 function transact(jsonObject) {
   // Just some demo/test for now...
@@ -40,7 +41,7 @@ function transact(jsonObject) {
   reader.getString('escapeMe');
   reader.scanItem('signature');
   reader.checkForUnread();
-  var verifier = new JCS.Verifier();
+  var verifier = new Jcs.Verifier();
   verifier.decodeSignature(jsonObject);
   return {t:8};
 }
@@ -62,8 +63,8 @@ const port = 8888;
 const APPLICATION_JSON = 'application/json';
 
 const options = {
-  key: fs.readFileSync('config/tlskeys/localhost.key.pem'),
-  cert: fs.readFileSync('config/tlskeys/localhost.cert.pem')
+  key: Fs.readFileSync('config/tlskeys/localhost.key.pem'),
+  cert: Fs.readFileSync('config/tlskeys/localhost.cert.pem')
 };
 
 function serverError(response, message) {
@@ -77,10 +78,10 @@ function serverError(response, message) {
   response.end();
 }
 
-https.createServer(options, (request, response) => {
+Https.createServer(options, (request, response) => {
   if (request.method == 'GET') {
-    response.writeHead(200, {'Content-Type': 'text/plain'});
-    response.write('This server is usually only processing POSTed JSON data...');
+    response.writeHead(200, {'Content-Type': 'text/html'});
+    response.write(homePage);
     response.end();
     return;
   }
@@ -92,7 +93,7 @@ https.createServer(options, (request, response) => {
     serverError(response, 'Content type must be: ' + APPLICATION_JSON);
     return;
   }
-  var pathname = url.parse(request.url).pathname;
+  var pathname = Url.parse(request.url).pathname;
   if (pathname in jsonProcessors) {
     var input = new Buffer(0);
     request.on('data', (chunk) => {
@@ -104,7 +105,7 @@ https.createServer(options, (request, response) => {
         logger.info('Received message [' + request.url + ']:\n' + jsonIn);
         var jsonOut = JSON.stringify(jsonProcessors[pathname](JSON.parse(jsonIn)));
         console.log('Sent message [' + request.url + ']:\n' + jsonOut);
-        var output = ByteArray.stringToUTF8(jsonOut);
+        var output = ByteArray.stringToUtf8(jsonOut);
         response.writeHead(200, {'Content-Type': APPLICATION_JSON,
                                  'Content-Length': output.length});
         response.write(new Buffer(output));
