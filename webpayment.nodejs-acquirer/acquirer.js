@@ -20,9 +20,14 @@
 // This is a node.js version of the "Acquirer" server used in the Web2Native Bridge
 // proof-of-concept payment system.
 
-const Https = require("https");
-const Url = require("url");
-const Fs = require("fs");
+const Https = require('https');
+const Url = require('url');
+const Fs = require('fs');
+
+const Keys = require('webpki.org').Keys;
+
+const Config = require('./config/config');
+const ServerCertificateSigner = require('./common/servercertificatesigner');
 
 const ByteArray = require('webpki.org').ByteArray;
 const Jcs = require('webpki.org').Jcs;
@@ -43,7 +48,7 @@ function transact(jsonObject) {
   reader.checkForUnread();
   var verifier = new Jcs.Verifier();
   verifier.decodeSignature(jsonObject);
-  return {t:8};
+  return serverCertificateSigner.sign({t:8});
 }
 
 function trust(jsonObject) {
@@ -53,20 +58,32 @@ function trust(jsonObject) {
   return {};
 }
 
-var jsonProcessors = {
+var jsonPostProcessors = {
    '/transact' : transact,
    '/trust' : trust
 };
 
-const port = 8888;
+var jsonGetProcessors = {
+   '/authority' : trust
+};
 
 const APPLICATION_JSON = 'application/json';
 
+function readFile(path) {
+  return Fs.readFileSync(path);
+}
+
 const options = {
-  key: Fs.readFileSync('config/tlskeys/localhost.key.pem'),
-  cert: Fs.readFileSync('config/tlskeys/localhost.cert.pem')
+  key: readFile(Config.tlskeys.keyFile),
+  cert: readFile(Config.tlskeys.certFile)
 };
 
+var keyData = readFile(Config.ownkeys.certAndKeyFile);
+
+const serverCertificateSigner =
+  new ServerCertificateSigner(Keys.createPrivateKeyFromPem(keyData),
+                              Keys.createCertificatesFromPem(keyData));
+  
 function serverError(response, message) {
   if (message === undefined || typeof message != 'string') {
     message = 'Unrecoverable error message';
@@ -78,11 +95,26 @@ function serverError(response, message) {
   response.end();
 }
 
+function returnJsonData(request, response, jsonObject) {
+  var jsonOut = JSON.stringify(jsonObject);
+  console.log('Sent message [' + request.url + ']:\n' + jsonOut);
+  var output = ByteArray.stringToUtf8(jsonOut);
+  response.writeHead(200, {'Content-Type': APPLICATION_JSON,
+                           'Content-Length': output.length});
+  response.write(new Buffer(output));
+  response.end();
+}
+
 Https.createServer(options, (request, response) => {
+  var pathname = Url.parse(request.url).pathname;
   if (request.method == 'GET') {
-    response.writeHead(200, {'Content-Type': 'text/html'});
-    response.write(homePage);
-    response.end();
+    if (pathname in jsonGetProcessors) {
+      returnJsonData(request, response, jsonGetProcessors[pathname]());
+    } else {
+      response.writeHead(200, {'Content-Type': 'text/html'});
+      response.write(homePage);
+      response.end();
+    }
     return;
   }
   if (request.method != 'POST') {
@@ -93,8 +125,7 @@ Https.createServer(options, (request, response) => {
     serverError(response, 'Content type must be: ' + APPLICATION_JSON);
     return;
   }
-  var pathname = Url.parse(request.url).pathname;
-  if (pathname in jsonProcessors) {
+  if (pathname in jsonPostProcessors) {
     var input = new Buffer(0);
     request.on('data', (chunk) => {
       input = Buffer.concat([input, chunk]);
@@ -103,13 +134,7 @@ Https.createServer(options, (request, response) => {
       try {
         var jsonIn = input.toString();
         logger.info('Received message [' + request.url + ']:\n' + jsonIn);
-        var jsonOut = JSON.stringify(jsonProcessors[pathname](JSON.parse(jsonIn)));
-        console.log('Sent message [' + request.url + ']:\n' + jsonOut);
-        var output = ByteArray.stringToUtf8(jsonOut);
-        response.writeHead(200, {'Content-Type': APPLICATION_JSON,
-                                 'Content-Length': output.length});
-        response.write(new Buffer(output));
-        response.end();
+        returnJsonData(request, response, jsonPostProcessors[pathname](JSON.parse(jsonIn)));
       } catch (e) {
         logger.error(e.stack)
         serverError(response, e.message);
@@ -122,6 +147,7 @@ Https.createServer(options, (request, response) => {
     response.write(pathname);
     response.end();
   }
-}).listen(parseInt(port, 10));
+}).listen(parseInt(
+   Config.host.indexOf(':') < 0 ? 443 : Config.host.substring(Config.host.indexOf(':') + 1), 10));
 
-logger.info('Acquirer server running at http://localhost:' + port + ', ^C to shutdown');
+logger.info('Acquirer server running at https://' + Config.host + ', ^C to shutdown');
