@@ -33,31 +33,11 @@ const Authority = require('./common/authorityobject');
 const Expires = require('./common/expires');
 
 const ByteArray = require('webpki.org').ByteArray;
-const Jcs = require('webpki.org').Jcs;
 const JsonUtil = require('webpki.org').JsonUtil;
 const Logging = require('webpki.org').Logging;
 
 const logger = new Logging.Logger(__filename);
 logger.info('Initializing...');
-
-function transact(jsonObject) {
-  // Just some demo/test for now...
-  var reader = new JsonUtil.ObjectReader(jsonObject);
-  reader.getDateTime('now');
-  reader.getString('escapeMe');
-  reader.scanItem('signature');
-  reader.checkForUnread();
-  var verifier = new Jcs.Verifier();
-  verifier.decodeSignature(jsonObject);
-  return serverCertificateSigner.sign({t:8});
-}
-
-function trust(jsonObject) {
-  if (jsonObject !== undefined) {
-    throw new TypeError('not implemented');
-  }
-  return {};
-}
 
 
 /////////////////////////////////
@@ -71,16 +51,34 @@ function readFile(path) {
 const homePage = readFile(__dirname + '/index.html');
 
 const jsonPostProcessors = {
-   '/transact' : transact,
-   '/trust' : trust
+
+  transact : function(reader) {
+    // Just some demo/test for now...
+    reader.getDateTime('now');
+    reader.getString('escapeMe');
+    reader.getSignature();
+    reader.checkForUnread();
+    return serverCertificateSigner.sign({t:8});
+  }
+
 };
 
 const jsonGetProcessors = {
-   '/authority' : function() {
-     return authorityData;
-   }
+
+  authority : function() {
+    return authorityData;
+  }
+
 };
 
+var port = Url.parse(Config.host).port;
+if (port == null) {
+  port = 443;
+}
+var applicationPath = Url.parse(Config.host).path;
+if (applicationPath == '/') {
+  applicationPath = '';
+}
 
 /////////////////////////////////
 // Initiate cryptographic keys
@@ -137,6 +135,10 @@ function returnJsonData(request, response, jsonObject) {
 
 Https.createServer(options, (request, response) => {
   var pathname = Url.parse(request.url).pathname;
+  logger.info('url=' + pathname);
+  if (pathname.startsWith(applicationPath + '/')) {
+    pathname = pathname.substring(applicationPath.length + 1);
+  }
   if (request.method == 'GET') {
     if (pathname in jsonGetProcessors) {
       returnJsonData(request, response, jsonGetProcessors[pathname]());
@@ -164,7 +166,9 @@ Https.createServer(options, (request, response) => {
       try {
         var jsonIn = input.toString();
         logger.info('Received message [' + request.url + ']:\n' + jsonIn);
-        returnJsonData(request, response, jsonPostProcessors[pathname](JSON.parse(jsonIn)));
+        returnJsonData(request, 
+                       response,
+                       jsonPostProcessors[pathname](new JsonUtil.ObjectReader(JSON.parse(jsonIn))));
       } catch (e) {
         logger.error(e.stack)
         serverError(response, e.message);
@@ -177,7 +181,6 @@ Https.createServer(options, (request, response) => {
     response.write(pathname);
     response.end();
   }
-}).listen(parseInt(
-   Config.host.lastIndexOf(':') < 7 ? 443 : Config.host.substring(Config.host.lastIndexOf(':') + 1), 10));
+}).listen(port, 10);
 
 logger.info('Acquirer server running at ' + Config.host + ', ^C to shutdown');
