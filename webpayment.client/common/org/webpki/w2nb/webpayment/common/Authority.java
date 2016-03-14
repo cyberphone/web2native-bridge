@@ -48,7 +48,7 @@ public class Authority implements BaseProperties {
                              publicKey instanceof RSAPublicKey ?
                            Encryption.JOSE_RSA_OAEP_256_ALG_ID : Encryption.JOSE_ECDH_ES_ALG_ID)
                 .setPublicKey(publicKey, AlgorithmPreferences.JOSE))
-             .setDateTime(TIME_STAMP_JSON, new Date(), true)
+            .setDateTime(TIME_STAMP_JSON, new Date(), true)
             .setDateTime(BaseProperties.EXPIRES_JSON, expires, true)
             .setSignature(signer);
     }

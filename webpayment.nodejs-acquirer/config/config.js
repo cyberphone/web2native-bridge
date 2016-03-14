@@ -15,21 +15,25 @@
  *
  */
  
- 'use strict';
+'use strict';
 
 // Configuration parameters fo the "Acquirer" server
 
 var config = {};
 
-config.host = 'localhost:8888';
+config.host = 'https://localhost:8888';
 
-config.tlskeys = {
+config.tlsKeys = {
   keyFile:  __dirname + '/tlskeys/localhost.key.pem',
   certFile: __dirname + '/tlskeys/localhost.cert.pem'
 };
 
-config.ownkeys = {
-  certAndKeyFile:  __dirname + '/ownkeys/acquirer.cert-and-key.pem',
+config.ownKeys = {
+  certAndKey      :  __dirname + '/ownkeys/acquirer.cert-and-key.pem',
+  rsaEncryptionKey: __dirname + '/ownkeys/acquirer.rsa-enc-key.pem',
+  ecEncryptionKey : __dirname + '/ownkeys/acquirer.ec-enc-key.pem'
 };
+
+config.trustAnchors = __dirname + '/trustanchors/paymentnetworks.pem';
 
 module.exports = config;

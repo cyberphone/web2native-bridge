@@ -15,7 +15,7 @@
  *
  */
  
- 'use strict';
+'use strict';
 
 // Holder for server signature keys
 

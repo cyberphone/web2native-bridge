@@ -8,6 +8,7 @@
   <property name="jcspaper" location="docs/jsonsignatures.html"/>
   <property name="nodejscryptotest.dir" location="nodejscryptotest"/>
   <property name="nodejs.ownkeys.dir" location="config/ownkeys"/>
+  <property name="nodejs.trustanchors.dir" location="config/trustanchors"/>
   
   <property file="../webpayment.resources/common.properties"/>
     
@@ -371,8 +372,23 @@
   <target name="importkeys">
     <antcall target="_exportkey">
        <param name="nodejs.file" value="${nodejs.ownkeys.dir}/acquirer.cert-and-key.pem"/>
-       <param name="original.file" value="${acquirerencryptionkey_ec}${keyfilext}"/>
+       <param name="original.file" value="${acquirersignaturekey}${keyfilext}"/>
        <param name="qualifiers" value="certificate private"/>
+    </antcall>
+    <antcall target="_exportkey">
+       <param name="nodejs.file" value="${nodejs.ownkeys.dir}/acquirer.rsa-enc-key.pem"/>
+       <param name="original.file" value="${acquirerencryptionkey_rsa}${keyfilext}"/>
+       <param name="qualifiers" value="private"/>
+    </antcall>
+    <antcall target="_exportkey">
+       <param name="nodejs.file" value="${nodejs.ownkeys.dir}/acquirer.ec-enc-key.pem"/>
+       <param name="original.file" value="${acquirerencryptionkey_ec}${keyfilext}"/>
+       <param name="qualifiers" value="private"/>
+    </antcall>
+    <antcall target="_exportkey">
+       <param name="nodejs.file" value="${nodejs.trustanchors.dir}/paymentnetworks.pem"/>
+       <param name="original.file" value="${paymentroot}${keyfilext}"/>
+       <param name="qualifiers" value="certificate"/>
     </antcall>
 <!-- 
     <antcall target="_getroot">
