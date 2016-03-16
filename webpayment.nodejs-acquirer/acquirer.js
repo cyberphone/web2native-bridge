@@ -59,6 +59,14 @@ const jsonPostProcessors = {
     reader.getSignature();
     reader.checkForUnread();
     return serverCertificateSigner.sign({t:8});
+  },
+  
+  bug : function(reader) {
+    // Just some demo/test for now...
+    reader.getInt('\u20ac\u00e5\u00f6k');
+    reader.getSignature();
+    reader.checkForUnread();
+    return serverCertificateSigner.sign({t:8});
   }
 
 };
@@ -135,7 +143,6 @@ function returnJsonData(request, response, jsonObject) {
 
 Https.createServer(options, (request, response) => {
   var pathname = Url.parse(request.url).pathname;
-  logger.info('url=' + pathname);
   if (pathname.startsWith(applicationPath + '/')) {
     pathname = pathname.substring(applicationPath.length + 1);
   }
@@ -149,6 +156,7 @@ Https.createServer(options, (request, response) => {
     }
     return;
   }
+  request.setEncoding('utf8');
   if (request.method != 'POST') {
     serverError(response, '"POST" method expected');
     return;
@@ -158,13 +166,12 @@ Https.createServer(options, (request, response) => {
     return;
   }
   if (pathname in jsonPostProcessors) {
-    var input = new Buffer(0);
+    var jsonIn = '';
     request.on('data', (chunk) => {
-      input = Buffer.concat([input, chunk]);
+      jsonIn += chunk;
     });
     request.on('end', () => {
       try {
-        var jsonIn = input.toString();
         logger.info('Received message [' + request.url + ']:\n' + jsonIn);
         returnJsonData(request, 
                        response,
