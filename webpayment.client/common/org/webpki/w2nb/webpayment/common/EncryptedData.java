@@ -142,15 +142,15 @@ public class EncryptedData {
                                      dataEncryptionKey,
                                      keyEncryptionKey));
         } else {
-            ECPublicKey[] ephemeralKey = new ECPublicKey[1];
-            dataEncryptionKey = Encryption.senderKeyAgreement(keyEncryptionAlgorithm,
-                                                              dataEncryptionAlgorithm,
-                                                              ephemeralKey,
-                                                              keyEncryptionKey);
+            Encryption.EcdhSenderResult result =
+                Encryption.senderKeyAgreement(keyEncryptionAlgorithm,
+                                              dataEncryptionAlgorithm,
+                                              keyEncryptionKey);
+            dataEncryptionKey = result.getSharedSecret();
             encryptedKey.setObject(STATIC_KEY_JSON)
                 .setPublicKey(keyEncryptionKey, AlgorithmPreferences.JOSE);
             encryptedKey.setObject(EPHEMERAL_KEY_JSON)
-                .setPublicKey(ephemeralKey[0], AlgorithmPreferences.JOSE);
+                .setPublicKey(result.getEphemeralKey(), AlgorithmPreferences.JOSE);
         }
         Encryption.AuthEncResult result =
             Encryption.contentEncryption(dataEncryptionAlgorithm,

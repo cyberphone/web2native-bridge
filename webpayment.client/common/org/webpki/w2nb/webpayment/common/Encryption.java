@@ -115,6 +115,24 @@ public final class Encryption {
             return cipherText;
         }
     }
+
+    public static class EcdhSenderResult {
+        private byte[] sharedSecret;
+        private ECPublicKey ephemeralKey;
+        
+        private EcdhSenderResult(byte[] sharedSecret, ECPublicKey ephemeralKey) {
+            this.sharedSecret = sharedSecret;
+            this.ephemeralKey = ephemeralKey;
+        }
+
+        public byte[] getSharedSecret() {
+            return sharedSecret;
+        }
+
+        public ECPublicKey getEphemeralKey() {
+            return ephemeralKey;
+        }
+    }
     
     public static AuthEncResult contentEncryption(String dataEncryptionAlgorithm,
                                                   byte[] key,
@@ -193,19 +211,18 @@ public final class Encryption {
         return messageDigest.digest();
     }
 
-    public static byte[] senderKeyAgreement(String keyEncryptionAlgorithm,
-                                            String dataEncryptionAlgorithm,
-                                            ECPublicKey[] generatedEphemeralKey,
-                                            PublicKey staticKey) throws GeneralSecurityException, IOException {
+    public static EcdhSenderResult senderKeyAgreement(String keyEncryptionAlgorithm,
+                                                      String dataEncryptionAlgorithm,
+                                                      PublicKey staticKey) throws GeneralSecurityException, IOException {
         KeyPairGenerator generator = KeyPairGenerator.getInstance("EC", "BC");
         ECGenParameterSpec eccgen = new ECGenParameterSpec(KeyAlgorithms.getKeyAlgorithm(staticKey).getJCEName());
         generator.initialize (eccgen, new SecureRandom());
         KeyPair keyPair = generator.generateKeyPair();
-        generatedEphemeralKey[0] = (ECPublicKey) keyPair.getPublic();
-        return receiverKeyAgreement(keyEncryptionAlgorithm,
-                                    dataEncryptionAlgorithm,
-                                    (ECPublicKey)staticKey,
-                                    keyPair.getPrivate());
+        return new EcdhSenderResult(receiverKeyAgreement(keyEncryptionAlgorithm,
+                                                         dataEncryptionAlgorithm,
+                                                         (ECPublicKey)staticKey,
+                                                         keyPair.getPrivate()),
+                                    (ECPublicKey) keyPair.getPublic());
     }
 
     public static boolean permittedKeyEncryptionAlgorithm(String algorithm) {

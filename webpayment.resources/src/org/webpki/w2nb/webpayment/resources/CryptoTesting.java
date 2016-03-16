@@ -170,15 +170,14 @@ public class CryptoTesting {
                 alice.getPrivate())).equals(ECDH_RESULT_WITH_KDF)) {
             throw new IOException("Bad ECDH");
         }
-        ECPublicKey[] ephemeral = new ECPublicKey[1];
-        if (!ArrayUtil.compare(
+        Encryption.EcdhSenderResult ecdhRes = 
             Encryption.senderKeyAgreement(Encryption.JOSE_ECDH_ES_ALG_ID,
                                           Encryption.JOSE_A128CBC_HS256_ALG_ID,
-                                          ephemeral,
-                                          alice.getPublic()),
+                                          alice.getPublic());
+        if (!ArrayUtil.compare(ecdhRes.getSharedSecret(),
             Encryption.receiverKeyAgreement(Encryption.JOSE_ECDH_ES_ALG_ID,
                                             Encryption.JOSE_A128CBC_HS256_ALG_ID,
-                                            ephemeral[0],
+                                            ecdhRes.getEphemeralKey(),
                                             alice.getPrivate()))) {
             throw new IOException("Bad ECDH");
         }
