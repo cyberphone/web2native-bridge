@@ -44,6 +44,7 @@ import org.webpki.util.Base64URL;
 
 import org.webpki.w2nb.webpayment.common.BaseProperties;
 import org.webpki.w2nb.webpayment.common.Messages;
+import org.webpki.w2nb.webpayment.common.EncryptedData;
 import org.webpki.w2nb.webpayment.common.Version;
 
 class DebugPrintout implements BaseProperties {
@@ -112,10 +113,10 @@ class DebugPrintout implements BaseProperties {
                     rewriter.setupForRewrite(JSONSignatureDecoder.VALUE_JSON);
                     rewriter.setString(JSONSignatureDecoder.VALUE_JSON, getShortenedB64(value, 64));
                 }
-            } else if (property.equals(CIPHER_TEXT_JSON)) {
-                byte[] cipherText = jsonTree.getBinary(CIPHER_TEXT_JSON);
-                rewriter.setupForRewrite(CIPHER_TEXT_JSON);
-                rewriter.setString(CIPHER_TEXT_JSON, getShortenedB64(cipherText, 64));
+            } else if (property.equals(EncryptedData.CIPHER_TEXT_JSON)) {
+                byte[] cipherText = jsonTree.getBinary(EncryptedData.CIPHER_TEXT_JSON);
+                rewriter.setupForRewrite(EncryptedData.CIPHER_TEXT_JSON);
+                rewriter.setString(EncryptedData.CIPHER_TEXT_JSON, getShortenedB64(cipherText, 64));
             } else if (property.equals(JSONSignatureDecoder.N_JSON)) {
                 byte[] n = jsonTree.getBinary(JSONSignatureDecoder.N_JSON);
                 rewriter.setupForRewrite(JSONSignatureDecoder.N_JSON);

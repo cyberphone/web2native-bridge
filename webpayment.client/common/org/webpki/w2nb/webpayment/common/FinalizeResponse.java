@@ -93,8 +93,8 @@ public class FinalizeResponse implements BaseProperties {
     throws IOException, GeneralSecurityException {
         return Messages.createBaseMessage(Messages.FINALIZE_RESPONSE)
             .setObject(REQUEST_HASH_JSON, new JSONObjectWriter()
-                .setString(ALGORITHM_JSON, RequestHash.JOSE_SHA_256_ALG_ID)
-                .setBinary(VALUE_JSON, 
+                .setString(JSONSignatureDecoder.ALGORITHM_JSON, RequestHash.JOSE_SHA_256_ALG_ID)
+                .setBinary(JSONSignatureDecoder.VALUE_JSON, 
                            RequestHash.getRequestHash(new JSONObjectWriter(finalizeRequest.root))))
             .setString(REFERENCE_ID_JSON, referenceId)
             .setDateTime(TIME_STAMP_JSON, new Date(), true)

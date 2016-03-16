@@ -30,6 +30,7 @@ import org.webpki.crypto.AsymKeySignerInterface;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONAsymKeySigner;
+import org.webpki.json.JSONSignatureDecoder;
 
 public class AuthorizationData implements BaseProperties {
 
@@ -43,8 +44,8 @@ public class AuthorizationData implements BaseProperties {
                                           JSONAsymKeySigner signer) throws IOException {
         return new JSONObjectWriter()
             .setObject(REQUEST_HASH_JSON, new JSONObjectWriter()
-                .setString(ALGORITHM_JSON, RequestHash.JOSE_SHA_256_ALG_ID)
-                .setBinary(VALUE_JSON, paymentRequest.getRequestHash()))
+                .setString(JSONSignatureDecoder.ALGORITHM_JSON, RequestHash.JOSE_SHA_256_ALG_ID)
+                .setBinary(JSONSignatureDecoder.VALUE_JSON, paymentRequest.getRequestHash()))
             .setString(DOMAIN_NAME_JSON, domainName)
             .setObject(PAYER_ACCOUNT_JSON, accountDescriptor.write())
             .setDateTime(TIME_STAMP_JSON, timeStamp, false)

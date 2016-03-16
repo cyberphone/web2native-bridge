@@ -27,6 +27,7 @@ import java.util.Vector;
 
 import org.webpki.crypto.AlgorithmPreferences;
 
+import org.webpki.json.JSONSignatureDecoder;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONOutputFormats;
@@ -40,7 +41,15 @@ import org.webpki.json.JSONParser;
 // The supported algorithms are though JOSE compatible including their names. //
 ////////////////////////////////////////////////////////////////////////////////
 
-public class EncryptedData implements BaseProperties {
+public class EncryptedData {
+
+    public static final String ENCRYPTED_DATA_JSON  = "encryptedData";
+    public static final String ENCRYPTED_KEY_JSON   = "encryptedKey";
+    public static final String STATIC_KEY_JSON      = "staticKey";
+    public static final String EPHEMERAL_KEY_JSON   = "ephemeralKey";
+    public static final String IV_JSON              = "iv";
+    public static final String TAG_JSON             = "tag";
+    public static final String CIPHER_TEXT_JSON     = "cipherText";
 
     private PublicKey publicKey;
 
@@ -70,12 +79,12 @@ public class EncryptedData implements BaseProperties {
 
     private EncryptedData(JSONObjectReader encryptionObject) throws IOException {
         JSONObjectReader rd = encryptionObject.getObject(ENCRYPTED_DATA_JSON);
-        dataEncryptionAlgorithm = rd.getString(ALGORITHM_JSON);
+        dataEncryptionAlgorithm = rd.getString(JSONSignatureDecoder.ALGORITHM_JSON);
         iv = rd.getBinary(IV_JSON);
         tag = rd.getBinary(TAG_JSON);
         JSONObjectReader encryptedKey = rd.getObject(ENCRYPTED_KEY_JSON);
         authenticatedData = encryptedKey.serializeJSONObject(JSONOutputFormats.NORMALIZED);
-        keyEncryptionAlgorithm = encryptedKey.getString(ALGORITHM_JSON);
+        keyEncryptionAlgorithm = encryptedKey.getString(JSONSignatureDecoder.ALGORITHM_JSON);
         if (isRsaKey(keyEncryptionAlgorithm)) {
             publicKey = encryptedKey.getPublicKey(AlgorithmPreferences.JOSE);
             encryptedKeyData = encryptedKey.getBinary(CIPHER_TEXT_JSON);
@@ -123,7 +132,7 @@ public class EncryptedData implements BaseProperties {
         JSONObjectWriter encryptionObject = new JSONObjectWriter();
         JSONObjectWriter encryptedData = encryptionObject.setObject(ENCRYPTED_DATA_JSON);
         JSONObjectWriter encryptedKey = encryptedData.setObject(ENCRYPTED_KEY_JSON)
-            .setString(ALGORITHM_JSON, keyEncryptionAlgorithm);
+            .setString(JSONSignatureDecoder.ALGORITHM_JSON, keyEncryptionAlgorithm);
         byte[] dataEncryptionKey = null;
         if (EncryptedData.isRsaKey(keyEncryptionAlgorithm)) {
             encryptedKey.setPublicKey(keyEncryptionKey, AlgorithmPreferences.JOSE);
@@ -148,7 +157,7 @@ public class EncryptedData implements BaseProperties {
                                          dataEncryptionKey,
                                          unencryptedData.serializeJSONObject(JSONOutputFormats.NORMALIZED),
                                          encryptedKey.serializeJSONObject(JSONOutputFormats.NORMALIZED));
-        encryptedData.setString(ALGORITHM_JSON, dataEncryptionAlgorithm)
+        encryptedData.setString(JSONSignatureDecoder.ALGORITHM_JSON, dataEncryptionAlgorithm)
                      .setBinary(IV_JSON, result.getIv())
                      .setBinary(TAG_JSON, result.getTag())
                      .setBinary(CIPHER_TEXT_JSON, result.getCipherText());
