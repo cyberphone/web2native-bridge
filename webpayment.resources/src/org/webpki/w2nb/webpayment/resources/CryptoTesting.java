@@ -6,6 +6,7 @@ import java.math.BigInteger;
 
 import java.security.KeyFactory;
 import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 
@@ -14,6 +15,8 @@ import java.security.interfaces.ECPublicKey;
 import java.security.spec.ECPoint;
 import java.security.spec.ECPrivateKeySpec;
 import java.security.spec.ECPublicKeySpec;
+
+import java.util.Vector;
 
 import javax.crypto.KeyAgreement;
 
@@ -29,6 +32,7 @@ import org.webpki.crypto.CustomCryptoProvider;
 import org.webpki.crypto.KeyAlgorithms;
 
 import org.webpki.json.JSONObjectReader;
+import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONParser;
 
 import org.webpki.util.ArrayUtil;
@@ -36,6 +40,8 @@ import org.webpki.util.Base64;
 import org.webpki.util.Base64URL;
 import org.webpki.util.DebugFormatter;
 
+import org.webpki.w2nb.webpayment.common.DecryptionKeyHolder;
+import org.webpki.w2nb.webpayment.common.EncryptedData;
 import org.webpki.w2nb.webpayment.common.Encryption;
 
 public class CryptoTesting {
@@ -180,6 +186,29 @@ public class CryptoTesting {
                                             ecdhRes.getEphemeralKey(),
                                             alice.getPrivate()))) {
             throw new IOException("Bad ECDH");
+        }
+        KeyPairGenerator mallet = KeyPairGenerator.getInstance("RSA", "BC");
+        mallet.initialize(2048);
+        KeyPair malletKeys = mallet.generateKeyPair();
+        Vector<DecryptionKeyHolder> decryptionKeys = new Vector<DecryptionKeyHolder>();
+        decryptionKeys.add(new DecryptionKeyHolder(alice.getPublic(), alice.getPrivate(), Encryption.JOSE_ECDH_ES_ALG_ID));
+        decryptionKeys.add(new DecryptionKeyHolder(bob.getPublic(), bob.getPrivate(), Encryption.JOSE_ECDH_ES_ALG_ID));
+        decryptionKeys.add(new DecryptionKeyHolder(malletKeys.getPublic(), malletKeys.getPrivate(), Encryption.JOSE_RSA_OAEP_256_ALG_ID));
+
+        JSONObjectReader unEncJson = JSONParser.parse("{\"hi\":\"\\u20ac\\u00e5\\u00f6k\"}");
+        String encJson = EncryptedData.encode(new JSONObjectWriter(unEncJson),
+                                              Encryption.JOSE_A128CBC_HS256_ALG_ID,
+                                              bob.getPublic(),
+                                              Encryption.JOSE_ECDH_ES_ALG_ID).toString();
+        if (!unEncJson.toString().equals(EncryptedData.parse(JSONParser.parse(encJson)).getDecryptedData(decryptionKeys).toString())) {
+            throw new IOException("Bad JOSE ECDH");
+        }
+        encJson = EncryptedData.encode(new JSONObjectWriter(unEncJson),
+                                       Encryption.JOSE_A128CBC_HS256_ALG_ID,
+                                       malletKeys.getPublic(),
+                                       Encryption.JOSE_RSA_OAEP_256_ALG_ID).toString();
+        if (!unEncJson.toString().equals(EncryptedData.parse(JSONParser.parse(encJson)).getDecryptedData(decryptionKeys).toString())) {
+            throw new IOException("Bad JOSE ECDH");
         }
         KeyAgreement keyAgreement = KeyAgreement.getInstance("ECDH", "BC");
         keyAgreement.init(alice.getPrivate());
