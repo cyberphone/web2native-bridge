@@ -25,21 +25,26 @@ public enum Currencies {
     USD ("$\u200a",       true,  2), 
     EUR ("\u2009\u20ac",  false, 2),
     GBP ("\u00a3\u200a",  true,  2);
-    
+
     public String symbol;
     public boolean symbolFirst;
     int decimals;
-    
+
     Currencies (String symbol, boolean symbolFirst, int decimals) {
         this.symbol = symbol;
         this.symbolFirst = symbolFirst;
         this.decimals = decimals;
     }
 
-    public String convertAmountToString(BigDecimal amount) throws IOException {
+    public BigDecimal checkDecimals(BigDecimal amount) throws IOException {
         if (amount.scale() != decimals) {
             throw new IOException("Incorrect decimals");
         }
+        return amount;
+    }
+
+    public String convertAmountToString(BigDecimal amount) throws IOException {
+        checkDecimals(amount);
         return symbolFirst ? symbol + amount.toPlainString() : amount.toPlainString() + symbol;
     }
 }

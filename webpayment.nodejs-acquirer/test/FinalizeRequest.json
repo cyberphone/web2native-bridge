@@ -1,0 +1,6 @@
+{
+    "@context": "http://xmlns.webpki.org/webpay/v1",
+    "@qualifier": "FinalizeRequest",
+    "amount": "94599.00"
+
+}

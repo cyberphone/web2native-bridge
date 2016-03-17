@@ -1,0 +1,14 @@
+{
+  "now": "2015-01-12T09:22:36Z",
+  "escapeMe": "\u20ac$\u000F\u000aA'\u0042\u0022\u005c\\\"\/",
+    "signature": {
+        "algorithm": "ES256",
+        "publicKey": {
+            "type": "EC",
+            "curve": "P-256",
+            "x": "vlYxD4dtFJOp1_8_QUcieWCW-4KrLMmFL2rpkY1bQDs",
+            "y": "fxEF70yJenP3SPHM9hv-EnvhG6nXr3_S-fDqoj-F6yM"
+        },
+        "value": "1rx2q9SqnMk45AcByTlGkQkJSPBMex4L3C1Vrp1vbyiSWHxyjeaNNJErKt4R79-3kT566IMg0YK3PFeLGumb2Q"
+    }
+}

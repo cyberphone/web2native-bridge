@@ -1,0 +1,13 @@
+{
+    "€åök": 6,
+    "signature": {
+        "algorithm": "ES256",
+        "publicKey": {
+            "type": "EC",
+            "curve": "P-256",
+            "x": "vlYxD4dtFJOp1_8_QUcieWCW-4KrLMmFL2rpkY1bQDs",
+            "y": "fxEF70yJenP3SPHM9hv-EnvhG6nXr3_S-fDqoj-F6yM"
+        },
+        "value": "RhPtorJkDixkFUnEwZIJhlS1wFt-qLhblfiv0Q1SJGSVsFZuWDzpuS2yURI2JZ7-dBpxNCs--nmDEPvBmJnohA"
+    }
+}

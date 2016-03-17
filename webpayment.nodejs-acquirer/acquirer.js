@@ -31,6 +31,7 @@ const ServerCertificateSigner = require('./common/servercertificatesigner');
 const BaseProperties = require('./common/baseproperties');
 const Authority = require('./common/authorityobject');
 const Expires = require('./common/expires');
+const FinalizeRequest = require('./common/finalizerequest');
 
 const ByteArray = require('webpki.org').ByteArray;
 const JsonUtil = require('webpki.org').JsonUtil;
@@ -51,22 +52,28 @@ function readFile(path) {
 const homePage = readFile(__dirname + '/index.html');
 
 const jsonPostProcessors = {
-
-  transact : function(reader) {
+ 
+  // To be used with "test/sample.json"  
+  sample : function(reader) {
     // Just some demo/test for now...
     reader.getDateTime('now');
     reader.getString('escapeMe');
     reader.getSignature();
-    reader.checkForUnread();
     return serverCertificateSigner.sign({t:8});
   },
-  
-  bug : function(reader) {
+
+  // To be used with "test/utf8.json"  
+  utf8 : function(reader) {
     // Just some demo/test for now...
     reader.getInt('\u20ac\u00e5\u00f6k');
     reader.getSignature();
-    reader.checkForUnread();
     return serverCertificateSigner.sign({t:8});
+  },
+
+  transact : function(reader) {
+    var finalizeRequest = new FinalizeRequest(reader);
+    logger.info(finalizeRequest.getAmount().toString());
+    return {yeah:true};
   }
 
 };
@@ -141,6 +148,15 @@ function returnJsonData(request, response, jsonObject) {
   response.end();
 }
 
+function noSuchFileResponse(response, request) {
+    var message = 'No such file: ' + request.url;
+    response.writeHead(404, {'Connection'    : 'close',
+                             'Content-Type'  : 'text/plain',
+                             'Content-Length': message.length});
+    response.write(message);
+    response.end();
+ }
+
 Https.createServer(options, (request, response) => {
   var pathname = Url.parse(request.url).pathname;
   if (pathname.startsWith(applicationPath + '/')) {
@@ -149,10 +165,12 @@ Https.createServer(options, (request, response) => {
   if (request.method == 'GET') {
     if (pathname in jsonGetProcessors) {
       returnJsonData(request, response, jsonGetProcessors[pathname]());
-    } else {
+    } else if (pathname == '') {
       response.writeHead(200, {'Content-Type': 'text/html'});
       response.write(homePage);
       response.end();
+    } else {
+      noSuchFileResponse(response, request);
     }
     return;
   }
@@ -161,11 +179,11 @@ Https.createServer(options, (request, response) => {
     serverError(response, '"POST" method expected');
     return;
   }
-  if (request.headers['content-type'] != BaseProperties.JSON_CONTENT_TYPE) {
-    serverError(response, 'Content type must be: ' + BaseProperties.JSON_CONTENT_TYPE);
-    return;
-  }
   if (pathname in jsonPostProcessors) {
+    if (request.headers['content-type'] != BaseProperties.JSON_CONTENT_TYPE) {
+      serverError(response, 'Content type must be: ' + BaseProperties.JSON_CONTENT_TYPE);
+      return;
+    }
     var jsonIn = '';
     request.on('data', (chunk) => {
       jsonIn += chunk;
@@ -173,20 +191,17 @@ Https.createServer(options, (request, response) => {
     request.on('end', () => {
       try {
         logger.info('Received message [' + request.url + ']:\n' + jsonIn);
-        returnJsonData(request, 
-                       response,
-                       jsonPostProcessors[pathname](new JsonUtil.ObjectReader(JSON.parse(jsonIn))));
+        var reader = new JsonUtil.ObjectReader(JSON.parse(jsonIn));
+        var result = jsonPostProcessors[pathname](reader);
+        reader.checkForUnread();
+        returnJsonData(request, response, result);
       } catch (e) {
         logger.error(e.stack)
         serverError(response, e.message);
       }
     });
   } else {
-    response.writeHead(404, {'Connection'    : 'close',
-                             'Content-Type'  : 'text/plain',
-                             'Content-Length': pathname.length});
-    response.write(pathname);
-    response.end();
+    noSuchFileResponse(response, request);
   }
 }).listen(port, 10);
 
