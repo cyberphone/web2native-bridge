@@ -25,13 +25,18 @@ const Url = require('url');
 const Fs = require('fs');
 
 const Keys = require('webpki.org').Keys;
+const Jcs = require('webpki.org').Jcs;
 
 const Config = require('./config/config');
-const ServerCertificateSigner = require('./common/servercertificatesigner');
-const BaseProperties = require('./common/baseproperties');
-const Authority = require('./common/authorityobject');
-const Expires = require('./common/expires');
-const FinalizeRequest = require('./common/finalizerequest');
+const ServerCertificateSigner = require('./common/ServerCertificateSigner');
+const BaseProperties = require('./common/BaseProperties');
+const Authority = require('./common/AuthorityObject');
+const Expires = require('./common/Expires');
+const FinalizeRequest = require('./common/FinalizeRequest');
+const PaymentRequest = require('./common/PaymentRequest');
+const Currencies = require('./common/Currencies');
+const Payee = require('./common/Payee');
+const Big = require('./contributed/big/big');
 
 const ByteArray = require('webpki.org').ByteArray;
 const JsonUtil = require('webpki.org').JsonUtil;
@@ -73,7 +78,19 @@ const jsonPostProcessors = {
   transact : function(reader) {
     var finalizeRequest = new FinalizeRequest(reader);
     logger.info(finalizeRequest.getAmount().toString());
-    return {yeah:true};
+    function x() {
+      this.privateKey = encryptionKeys[0];
+    }
+    x.prototype.sign = function(jsonObject) {
+      var signer = new Jcs.Signer(this.privateKey);
+      return signer.sign(jsonObject);
+    };
+    return PaymentRequest.encode(Payee.init('Demo Merchant','#126740'),
+                                 new Big('3450.75'),
+                                 new Currencies('USD'),
+                                 '68005',
+                                 Expires.inMinutes(30),
+                                 new x()).getRootObject();
   }
 
 };
@@ -191,10 +208,9 @@ Https.createServer(options, (request, response) => {
     request.on('end', () => {
       try {
         logger.info('Received message [' + request.url + ']:\n' + jsonIn);
-        var reader = new JsonUtil.ObjectReader(JSON.parse(jsonIn));
-        var result = jsonPostProcessors[pathname](reader);
-        reader.checkForUnread();
-        returnJsonData(request, response, result);
+        returnJsonData(request,
+                       response,
+                       jsonPostProcessors[pathname](new JsonUtil.ObjectReader(JSON.parse(jsonIn))));
       } catch (e) {
         logger.error(e.stack)
         serverError(response, e.message);
