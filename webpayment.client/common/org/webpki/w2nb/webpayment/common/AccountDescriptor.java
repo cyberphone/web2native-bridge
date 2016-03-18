@@ -59,7 +59,7 @@ public class AccountDescriptor implements BaseProperties {
         this.optionalFields = optionalFields.toArray(new String[0]);
     }
 
-    public JSONObjectWriter write() throws IOException {
+    public JSONObjectWriter writeObject() throws IOException {
         JSONObjectWriter wr = new JSONObjectWriter()
             .setString(TYPE_JSON, type)
             .setString(ID_JSON, id);

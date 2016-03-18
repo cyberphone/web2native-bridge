@@ -65,7 +65,7 @@ public class ReserveOrDebitResponse implements BaseProperties {
             .setString(ACCOUNT_TYPE_JSON, accountDescriptor.getAccountType())
             .setString(ACCOUNT_REFERENCE_JSON, accountReference.toString());
         if (encryptedAccountData == null) {
-            wr.setObject(PAYEE_ACCOUNT_JSON, payeeAccount.write());
+            wr.setObject(PAYEE_ACCOUNT_JSON, payeeAccount.writeObject());
         } else {
             if (directDebit) {
                 throw new IOException("\""+ PROTECTED_ACCOUNT_DATA_JSON + "\" not applicable for directDebit");

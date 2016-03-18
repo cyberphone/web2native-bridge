@@ -47,7 +47,7 @@ public class AuthorizationData implements BaseProperties {
                 .setString(JSONSignatureDecoder.ALGORITHM_JSON, RequestHash.JOSE_SHA_256_ALG_ID)
                 .setBinary(JSONSignatureDecoder.VALUE_JSON, paymentRequest.getRequestHash()))
             .setString(DOMAIN_NAME_JSON, domainName)
-            .setObject(PAYER_ACCOUNT_JSON, accountDescriptor.write())
+            .setObject(PAYER_ACCOUNT_JSON, accountDescriptor.writeObject())
             .setDateTime(TIME_STAMP_JSON, timeStamp, false)
             .setObject(SOFTWARE_JSON, Software.encode(SOFTWARE_ID, SOFTWARE_VERSION))
             .setSignature (signer);
