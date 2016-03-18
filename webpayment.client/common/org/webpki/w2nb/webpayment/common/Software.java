@@ -32,11 +32,11 @@ public class Software implements BaseProperties {
         version = rd.getString(VERSION_JSON);
     }
 
-    public String getSoftwareName() {
+    public String getName() {
         return name;
     }
 
-    public String getSoftwareVersion() {
+    public String getVersion() {
         return version;
     }
 

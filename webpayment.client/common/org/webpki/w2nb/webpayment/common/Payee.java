@@ -23,9 +23,14 @@ import org.webpki.json.JSONObjectWriter;
 
 public class Payee implements BaseProperties {
 
-    public Payee(String commonName, String id) throws IOException {
-        this.commonName = commonName;
-        this.id = id;
+
+    private Payee() {}
+    
+    public static Payee init(String commonName, String id) throws IOException {
+        Payee payee = new Payee();
+        payee.commonName = commonName;
+        payee.id = id;
+        return payee;
     }
 
     public JSONObjectWriter writeObject() throws IOException {

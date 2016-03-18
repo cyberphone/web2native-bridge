@@ -107,7 +107,7 @@ public class UserPaymentServlet extends HttpServlet implements BaseProperties {
 
         String currReferenceId = getReferenceId();
         JSONObjectWriter paymentRequest =
-            PaymentRequest.encode(new Payee("Demo Merchant","86344"),
+            PaymentRequest.encode(Payee.init("Demo Merchant","86344"),
                                   new BigDecimal(BigInteger.valueOf(savedShoppingCart.roundedPaymentAmount), 2),
                                   MerchantService.currency,
                                   currReferenceId,
