@@ -123,7 +123,7 @@ public class ReserveOrDebitRequest implements BaseProperties {
         if (directDebit || acquirerAuthorityUrl == null) {
             JSONArrayWriter aw = wr.setArray(PAYEE_ACCOUNTS_JSON);
             for (AccountDescriptor account : accounts) {
-                aw.setObject(account.write());
+                aw.setObject(account.writeObject());
             }
         } else {
             zeroTest(PAYEE_ACCOUNTS_JSON, accounts);

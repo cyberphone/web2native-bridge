@@ -20,6 +20,7 @@
 // RequestHash object
 
 const Jcs = require('webpki.org').Jcs;
+const Hash = require('webpki.org').Hash;
 
 const BaseProperties = require('./BaseProperties');
 
@@ -29,7 +30,7 @@ const RequestHash = {
 
   getRequestHash : function(input) {
     if (input instanceof Uint8Array) {
-      return HashAlgorithms.SHA256.digest(request);
+      return Hash.hashBinary('SHA256', input);
     }
     return RequestHash.getRequestHash(input.getNormalizedData());
   },

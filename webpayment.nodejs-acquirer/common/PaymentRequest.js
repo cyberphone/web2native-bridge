@@ -75,7 +75,7 @@ PaymentRequest.SOFTWARE_NAME    = 'WebPKI.org - Merchant';
 PaymentRequest.SOFTWARE_VERSION = '1.00';
   
 PaymentRequest.prototype.getRequestHash = function() {
-  return RequestHash.getRequestHash(new JSONObjectWriter(root));
+  return RequestHash.getRequestHash(root);
 };
 
 PaymentRequest.encode = function(payee,
@@ -92,7 +92,7 @@ PaymentRequest.encode = function(payee,
     .setDateTime(BaseProperties.TIME_STAMP_JSON, new Date())
     .setDateTime(BaseProperties.EXPIRES_JSON, expires)
     .setObject(BaseProperties.SOFTWARE_JSON,
-               Software.encode (PaymentRequest.SOFTWARE_NAME, PaymentRequest.SOFTWARE_VERSION))
+               Software.encode(PaymentRequest.SOFTWARE_NAME, PaymentRequest.SOFTWARE_VERSION))
     .setSignature(signer);
 };
 
