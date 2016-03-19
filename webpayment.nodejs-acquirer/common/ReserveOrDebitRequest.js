@@ -1,11 +1,11 @@
 /*
- *  Copyright 2006-2015 WebPKI.org (http://webpki.org).
+ *  Copyright 2006-2016 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
  *  You may obtain a copy of the License at
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  *  Unless required by applicable law or agreed to in writing, software
  *  distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,154 +14,129 @@
  *  limitations under the License.
  *
  */
-package org.webpki.w2nb.webpayment.common;
-NOT READY!!!!!!!!!!!!!!!!!!!!!!!!!!!
-import java.io.IOException;
+ 
+'use strict';
 
-import java.security.GeneralSecurityException;
-import java.security.PublicKey;
+// ReserveOrDebitRequest object
 
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.Vector;
+const JsonUtil = require('webpki.org').JsonUtil;
+const EncryptedData = require('webpki.org').EncryptedData;
+const ByteArray = require('webpki.org').ByteArray;
 
-import org.webpki.crypto.AlgorithmPreferences;
-
-import org.webpki.json.JSONArrayReader;
-import org.webpki.json.JSONArrayWriter;
-import org.webpki.json.JSONDecoderCache;
-import org.webpki.json.JSONObjectReader;
-import org.webpki.json.JSONObjectWriter;
-
-import org.webpki.util.ArrayUtil;
-
-public class ReserveOrDebitRequest implements BaseProperties {
-  
-  public ReserveOrDebitRequest(JSONObjectReader rd) throws IOException {
-  directDebit = rd.getString(JSONDecoderCache.QUALIFIER_JSON).equals(Messages.DIRECT_DEBIT_REQUEST.toString());
-  Messages.parseBaseMessage(directDebit ?
-    Messages.DIRECT_DEBIT_REQUEST : Messages.RESERVE_FUNDS_REQUEST, rd);
-  accountType = PayerAccountTypes.fromTypeUri(rd.getString(ACCOUNT_TYPE_JSON));
-  encryptedAuthorizationData = EncryptedData.parse(rd.getObject(AUTHORIZATION_DATA_JSON));
-  clientIpAddress = rd.getString(CLIENT_IP_ADDRESS_JSON);
-  paymentRequest = new PaymentRequest(rd.getObject(PAYMENT_REQUEST_JSON));
-  if (!directDebit) {
-    expires = rd.getDateTime(EXPIRES_JSON);
+const BaseProperties = require('./BaseProperties');
+const Messages = require('./Messages');
+const AccountDescriptor = require('./AccountDescriptor');
+const PaymentRequest = require('./PaymentRequest');
+const Software = require('./Software');
+ 
+function ReserveOrDebitRequest(rd) {
+  this.directDebit = rd.getString(Messages.QUALIFIER_JSON) == Messages.DIRECT_DEBIT_REQUEST;
+  Messages.parseBaseMessage(this.directDebit ?
+               Messages.DIRECT_DEBIT_REQUEST : Messages.RESERVE_FUNDS_REQUEST, rd);
+  this.accountType = PayerAccountTypes.fromTypeUri(rd.getString(BaseProperties.ACCOUNT_TYPE_JSON));
+  this.encryptedAuthorizationData = EncryptedData.parse(rd.getObject(BaseProperties.AUTHORIZATION_DATA_JSON));
+  this.clientIpAddress = rd.getString(BaseProperties.CLIENT_IP_ADDRESS_JSON);
+  this.paymentRequest = new PaymentRequest(rd.getObject(BaseProperties.PAYMENT_REQUEST_JSON));
+  if (!this.directDebit) {
+    this.expires = rd.getDateTime(BaseProperties.EXPIRES_JSON);
   }
-  Vector<AccountDescriptor> accounts = new Vector<AccountDescriptor> ();
-  if (!directDebit && rd.hasProperty(ACQUIRER_AUTHORITY_URL_JSON)) {
-    acquirerAuthorityUrl = rd.getString(ACQUIRER_AUTHORITY_URL_JSON);
+  this.accounts = [];
+  if (!directDebit && rd.hasProperty(BaseProperties.ACQUIRER_AUTHORITY_URL_JSON)) {
+    this.acquirerAuthorityUrl = rd.getString(BaseProperties.ACQUIRER_AUTHORITY_URL_JSON);
   } else {
-    JSONArrayReader ar = rd.getArray(PAYEE_ACCOUNTS_JSON);
+    var ar = rd.getArray(BaseProperties.PAYEE_ACCOUNTS_JSON);
     do {
-    accounts.add(new AccountDescriptor(ar.getObject()));
+      this.accounts.push(new AccountDescriptor(ar.getObject()));
     } while (ar.hasMore());
   }
-  this.accounts = accounts.toArray(new AccountDescriptor[0]);
-  dateTime = rd.getDateTime(TIME_STAMP_JSON);
-  software = new Software(rd);
-  outerPublicKey = rd.getSignature(AlgorithmPreferences.JOSE).getPublicKey();
+  this.dateTime = rd.getDateTime(BaseProperties.TIME_STAMP_JSON);
+  this.software = new Software(rd);
+  this.outerPublicKey = rd.getSignature().getPublicKey();
   rd.checkForUnread();
-  }
+}
 
-  PayerAccountTypes accountType;
-  
-  GregorianCalendar dateTime;
+ReserveOrDebitRequest.prototype.getPayeeAccountDescriptors = function() {
+  return this.accounts;
+};
 
-  Software software;
-  
-  PublicKey outerPublicKey;
-  
-  EncryptedData encryptedAuthorizationData;
+ReserveOrDebitRequest.prototype.getExpires = function() {
+  return this.expires;
+};
 
-  AccountDescriptor[] accounts;
-  public AccountDescriptor[] getPayeeAccountDescriptors() {
-  return accounts;
-  }
+ReserveOrDebitRequest.prototype.isDirectDebit = function() {
+  return this.directDebit;
+};
 
-  GregorianCalendar expires;
-  public GregorianCalendar getExpires() {
-  return expires;
-  }
-
-  boolean directDebit;
-  public boolean isDirectDebit() {
-  return directDebit;
-  }
-
-  String acquirerAuthorityUrl;
-  public String getAcquirerAuthorityUrl() {
-  return acquirerAuthorityUrl;
-  }
+ReserveOrDebitRequest.prototype.getAcquirerAuthorityUrl = function() {
+  return this.acquirerAuthorityUrl;
+};
  
-  String clientIpAddress;
-  public String getClientIpAddress() {
-  return clientIpAddress;
-  }
+ReserveOrDebitRequest.prototype.getClientIpAddress = function() {
+  return this.clientIpAddress;
+};
 
-  PaymentRequest paymentRequest;
-  public PaymentRequest getPaymentRequest() {
-  return paymentRequest;
-  }
+ReserveOrDebitRequest.prototype.getPaymentRequest = function() {
+  return this.paymentRequest;
+};
 
-  public static JSONObjectWriter encode(boolean directDebit,
-            PayerAccountTypes accountType,
-            JSONObjectReader encryptedAuthorizationData,
-            String clientIpAddress,
-            PaymentRequest paymentRequest,
-            String acquirerAuthorityUrl,
-            AccountDescriptor[] accounts,
-            Date expires,
-            ServerAsymKeySigner signer)
-  throws IOException, GeneralSecurityException {
-  JSONObjectWriter wr = Messages.createBaseMessage(directDebit ?
-           Messages.DIRECT_DEBIT_REQUEST : Messages.RESERVE_FUNDS_REQUEST)
-    .setString(ACCOUNT_TYPE_JSON, accountType.getTypeUri())
-    .setObject(AUTHORIZATION_DATA_JSON, encryptedAuthorizationData)
-    .setString(CLIENT_IP_ADDRESS_JSON, clientIpAddress)
-    .setObject(PAYMENT_REQUEST_JSON, paymentRequest.root);
+ReserveOrDebitRequest.encode = function(directDebit,
+                                        accountType,
+                                        encryptedAuthorizationData,
+                                        clientIpAddress,
+                                        paymentRequest,
+                                        acquirerAuthorityUrl,
+                                        accounts,
+                                        expires,
+                                        signer) {
+  var wr = Messages.createBaseMessage(directDebit ?
+                    Messages.DIRECT_DEBIT_REQUEST : Messages.RESERVE_FUNDS_REQUEST)
+    .setString(BaseProperties.ACCOUNT_TYPE_JSON, accountType.getTypeUri())
+    .setObject(BaseProperties.AUTHORIZATION_DATA_JSON, encryptedAuthorizationData)
+    .setString(BaseProperties.CLIENT_IP_ADDRESS_JSON, clientIpAddress)
+    .setObject(BaseProperties.PAYMENT_REQUEST_JSON, paymentRequest.root);
   if (directDebit || acquirerAuthorityUrl == null) {
-    JSONArrayWriter aw = wr.setArray(PAYEE_ACCOUNTS_JSON);
-    for (AccountDescriptor account : accounts) {
-    aw.setObject(account.writeObject());
+    var aw = wr.setArray(BaseProperties.PAYEE_ACCOUNTS_JSON);
+    for (var q = 0; q < accounts.length; q++) {
+      aw.setObject(accounts[q].writeObject());
     }
   } else {
-    zeroTest(PAYEE_ACCOUNTS_JSON, accounts);
-    wr.setString(ACQUIRER_AUTHORITY_URL_JSON, acquirerAuthorityUrl);
+    ReserveOrDebitRequest.zeroTest(BaseProperties.PAYEE_ACCOUNTS_JSON, accounts);
+    wr.setString(BaseProperties.ACQUIRER_AUTHORITY_URL_JSON, acquirerAuthorityUrl);
   }
   if (directDebit) {
-    zeroTest(EXPIRES_JSON, expires);
-    zeroTest(ACQUIRER_AUTHORITY_URL_JSON, acquirerAuthorityUrl);
+    ReserveOrDebitRequest.zeroTest(BaseProperties.EXPIRES_JSON, expires);
+    ReserveOrDebitRequest.zeroTest(BaseProperties.ACQUIRER_AUTHORITY_URL_JSON, acquirerAuthorityUrl);
   } else {
-    wr.setDateTime(EXPIRES_JSON, expires, true);
+    wr.setDateTime(BaseProperties.EXPIRES_JSON, expires);
   }
-  wr.setDateTime(TIME_STAMP_JSON, new Date(), true)
-    .setObject(SOFTWARE_JSON, Software.encode (PaymentRequest.SOFTWARE_NAME,
-               PaymentRequest.SOFTWARE_VERSION))
+  wr.setDateTime(BaseProperties.TIME_STAMP_JSON, new Date())
+    .setObject(BaseProperties.SOFTWARE_JSON, Software.encode(PaymentRequest.SOFTWARE_NAME,
+                                                             PaymentRequest.SOFTWARE_VERSION))
     .setSignature(signer);
   return wr;
-  }
+};
 
-  static void zeroTest(String name, Object object) throws IOException {
+ReserveOrDebitRequest.zeroTest = function(name, object) {
   if (object != null) {
-    throw new IOException("Argument error, parameter \"" + name + "\" must be \"null\"");
+    throw new TypeError('Argument error, parameter "' + name + '" must be "null"');
   }
-  }
+};
 
-  public static void comparePublicKeys(PublicKey publicKey, PaymentRequest paymentRequest) throws IOException {
+ReserveOrDebitRequest.comparePublicKeys = function(publicKey, paymentRequest) {
   if (!publicKey.equals(paymentRequest.getPublicKey())) {
-    throw new IOException("Outer and inner public key differ");
+    throw new TypeError('Outer and inner public key differ');
   }
-  }
+};
 
-  public AuthorizationData getDecryptedAuthorizationData(Vector<DecryptionKeyHolder> decryptionKeys)
-  throws IOException, GeneralSecurityException {
-  AuthorizationData authorizationData =
-    new AuthorizationData(encryptedAuthorizationData.getDecryptedData(decryptionKeys));
-  comparePublicKeys (outerPublicKey, paymentRequest);
-  if (!ArrayUtil.compare(authorizationData.getRequestHash(), paymentRequest.getRequestHash())) {
-    throw new IOException("Non-matching \"" + REQUEST_HASH_JSON + "\" value");
+ReserveOrDebitRequest.prototype.getDecryptedAuthorizationData = function(decryptionKeys) {
+  var authorizationData =
+    new AuthorizationData(this.encryptedAuthorizationData.getDecryptedData(decryptionKeys));
+  comparePublicKeys (this.outerPublicKey, this.paymentRequest);
+  if (!ByteArray.equals(authorizationData.getRequestHash(), this.paymentRequest.getRequestHash())) {
+    throw new TypeError('Non-matching "' + BaseProperties.REQUEST_HASH_JSON + '" value');
   }
   return authorizationData;
-  }
-}
+};
+
+
+module.exports = ReserveOrDebitRequest;

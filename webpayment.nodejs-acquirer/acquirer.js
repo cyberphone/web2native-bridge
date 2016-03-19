@@ -86,6 +86,7 @@ const jsonPostProcessors = {
 
   transact : function(reader) {
     var finalizeRequest = new FinalizeRequest(reader);
+    logger.info(finalizeRequest.getEmbeddedResponse().getProtectedAccountData(encryptionKeys).toString());
     logger.info(finalizeRequest.getAmount().toString());
     function x() {
       this.privateKey = encryptionKeys[0];

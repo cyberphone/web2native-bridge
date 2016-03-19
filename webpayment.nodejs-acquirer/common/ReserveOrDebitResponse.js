@@ -25,6 +25,7 @@ const EncryptedData = require('webpki.org').EncryptedData;
 const BaseProperties = require('./BaseProperties');
 const Messages = require('./Messages');
 const AccountDescriptor = require('./AccountDescriptor');
+const ProtectedAccountData = require('./ProtectedAccountData');
 const PaymentRequest = require('./PaymentRequest');
 const Software = require('./Software');
 

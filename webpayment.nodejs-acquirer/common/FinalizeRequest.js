@@ -26,6 +26,7 @@ const Messages = require('./Messages');
 const Software = require('./Software');
 const Big = require('../contributed/big/big');
 const ReserveOrDebitResponse = require('./ReserveOrDebitResponse');
+const ReserveOrDebitRequest = require('./ReserveOrDebitRequest');
 
 function FinalizeRequest(rd) {
   this.root = Messages.parseBaseMessage(Messages.FINALIZE_REQUEST, rd);
