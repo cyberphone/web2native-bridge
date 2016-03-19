@@ -20,6 +20,7 @@ import java.io.IOException;
 
 import java.security.GeneralSecurityException;
 
+import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 
 // For transferring status for which is related to the payer's account
@@ -52,6 +53,10 @@ public class ErrorReturn implements BaseProperties {
         return error.clearText;
     }
 
+    public int getErrorCode() {
+        return error.errorCode;
+    }
+
     private String optionalDescription;
     public String getOptionalDescription() {
         return optionalDescription;
@@ -62,21 +67,23 @@ public class ErrorReturn implements BaseProperties {
         return optionalDescription == null ? wr : wr.setString(DESCRIPTION_JSON, optionalDescription);
     }
 
-    public ErrorReturn(ERRORS error, String optionalDescription) {
-        this.error = error;
-        this.optionalDescription = optionalDescription;
-    }
-
-    ErrorReturn(int errorCode, String optionalDescription) throws IOException {
-        this.optionalDescription = optionalDescription;
+    ErrorReturn(JSONObjectReader rd) throws IOException {
+        this.optionalDescription = rd.getStringConditional(DESCRIPTION_JSON);
+        int errorCode = rd.getInt(ERROR_CODE_JSON);
         for (ERRORS error : ERRORS.values()) {
             if (error.errorCode == errorCode) {
                 this.error = error;
+                rd.checkForUnread();
                 return;
             }
         }
         throw new IOException("Unknown \"" + ERROR_CODE_JSON + "\": " + errorCode);
-     }
+    }
+
+    public ErrorReturn(ERRORS error, String optionalDescription) {
+        this.error = error;
+        this.optionalDescription = optionalDescription;
+    }
 
     public ErrorReturn(ERRORS error) {
         this(error, null);

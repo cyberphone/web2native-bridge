@@ -36,8 +36,7 @@ public class FinalizeResponse implements BaseProperties {
     public FinalizeResponse(JSONObjectReader rd) throws IOException, GeneralSecurityException {
         Messages.parseBaseMessage(Messages.FINALIZE_RESPONSE, rd);
         if (rd.hasProperty(ERROR_CODE_JSON)) {
-            errorReturn = new ErrorReturn(rd.getInt(ERROR_CODE_JSON), rd.getStringConditional(DESCRIPTION_JSON));
-            rd.checkForUnread();
+            errorReturn = new ErrorReturn(rd);
             return;
         }
         requestHash = RequestHash.parse(rd);

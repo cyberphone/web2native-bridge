@@ -91,8 +91,7 @@ public class ReserveOrDebitResponse implements BaseProperties {
         root = Messages.parseBaseMessage(directDebit ?
                       Messages.DIRECT_DEBIT_RESPONSE : Messages.RESERVE_FUNDS_RESPONSE, rd);
         if (rd.hasProperty(ERROR_CODE_JSON)) {
-            errorReturn = new ErrorReturn(rd.getInt(ERROR_CODE_JSON), rd.getStringConditional(DESCRIPTION_JSON));
-            rd.checkForUnread();
+            errorReturn = new ErrorReturn(rd);
             return;
         }
         paymentRequest = new PaymentRequest(rd.getObject(PAYMENT_REQUEST_JSON));
