@@ -23,24 +23,23 @@ const JsonUtil = require('webpki.org').JsonUtil;
 
 const BaseProperties = require('./BaseProperties');
 const Messages = require('./Messages');
-const Currencies = require('./Currencies');
+const Software = require('./Software');
 const Big = require('../contributed/big/big');
+const ReserveOrDebitResponse = require('./ReserveOrDebitResponse');
 
 function FinalizeRequest(rd) {
   this.root = Messages.parseBaseMessage(Messages.FINALIZE_REQUEST, rd);
-  this.amount = new Big(new Currencies('USD').checkAmountSyntax(rd.getString(BaseProperties.AMOUNT_JSON)));
- /*
   this.embeddedResponse = new ReserveOrDebitResponse(rd.getObject(BaseProperties.PROVIDER_AUTHORIZATION_JSON));
+  this.amount = new Big(this.embeddedResponse.getPaymentRequest().getCurrency().checkAmountSyntax(rd.getString(BaseProperties.AMOUNT_JSON)));
   this.referenceId = rd.getString(BaseProperties.REFERENCE_ID_JSON);
   this.timeStamp = rd.getDateTime(BaseProperties.TIME_STAMP_JSON);
   this.software = new Software(rd);
   var outerPublicKey = rd.getSignature().getPublicKey();
-  this.paymentRequest = embeddedResponse.getPaymentRequest();
+  this.paymentRequest = this.embeddedResponse.getPaymentRequest();
   ReserveOrDebitRequest.comparePublicKeys(outerPublicKey, this.paymentRequest);
-  if (this.amount.compareTo(this.paymentRequest.getAmount()) > 0) {
+  if (this.amount.cmp(this.paymentRequest.getAmount()) > 0) {
     throw new TypeError('Final amount must be less or equal to reserved amount');
   }
-*/
   rd.checkForUnread();
 }
 

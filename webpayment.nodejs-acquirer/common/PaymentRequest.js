@@ -24,6 +24,7 @@ const JsonUtil = require('webpki.org').JsonUtil;
 const BaseProperties = require('./BaseProperties');
 const Currencies = require('./Currencies');
 const Software = require('./Software');
+const Payee = require('./Payee');
 const Big = require('../contributed/big/big');
 
 function PaymentRequest(rd) {

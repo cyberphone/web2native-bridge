@@ -20,18 +20,20 @@
 // ReserveOrDebitResponse object
 
 const JsonUtil = require('webpki.org').JsonUtil;
+const EncryptedData = require('webpki.org').EncryptedData;
 
 const BaseProperties = require('./BaseProperties');
 const Messages = require('./Messages');
+const AccountDescriptor = require('./AccountDescriptor');
+const PaymentRequest = require('./PaymentRequest');
+const Software = require('./Software');
 
 function ReserveOrDebitResponse(rd) {
   this.directDebit = rd.getString(Messages.QUALIFIER_JSON) == Messages.DIRECT_DEBIT_RESPONSE;
   this.root = Messages.parseBaseMessage(this.directDebit ?
                           Messages.DIRECT_DEBIT_RESPONSE : Messages.RESERVE_FUNDS_RESPONSE, rd);
   if (rd.hasProperty(BaseProperties.ERROR_CODE_JSON)) {
-    this.errorReturn = new ErrorReturn(rd.getInt(BaseProperties.ERROR_CODE_JSON),
-                                       rd.getStringConditional(BaseProperties.DESCRIPTION_JSON));
-    rd.checkForUnread();
+    this.errorReturn = new ErrorReturn(rd);
     return;
   }
   this.paymentRequest = new PaymentRequest(rd.getObject(BaseProperties.PAYMENT_REQUEST_JSON));
@@ -114,11 +116,13 @@ ReserveOrDebitResponse.prototype.getSignatureDecoder = function() {
 ReserveOrDebitResponse.SOFTWARE_NAME    = 'WebPKI.org - Bank';
 ReserveOrDebitResponse.SOFTWARE_VERSION = '1.00';
 
+/*
+
   private static JSONObjectWriter header(boolean directDebit) throws IOException {
   return Messages.createBaseMessage(directDebit ?
        Messages.DIRECT_DEBIT_RESPONSE : Messages.RESERVE_FUNDS_RESPONSE);
   }
-/*
+
   public static JSONObjectWriter encode(boolean directDebit,
             ErrorReturn errorReturn) throws IOException, GeneralSecurityException {
   return errorReturn.write(header(directDebit));

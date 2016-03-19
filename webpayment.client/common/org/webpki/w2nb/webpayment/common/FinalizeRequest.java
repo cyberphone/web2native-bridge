@@ -36,7 +36,7 @@ public class FinalizeRequest implements BaseProperties {
     public FinalizeRequest(JSONObjectReader rd) throws IOException, GeneralSecurityException {
         root = Messages.parseBaseMessage(Messages.FINALIZE_REQUEST, rd);
         embeddedResponse = new ReserveOrDebitResponse(rd.getObject(PROVIDER_AUTHORIZATION_JSON));
-        amount = embeddedResponse.paymentRequest.getCurrency().checkDecimals(rd.getBigDecimal(AMOUNT_JSON));
+        amount = embeddedResponse.getPaymentRequest().getCurrency().checkDecimals(rd.getBigDecimal(AMOUNT_JSON));
         referenceId = rd.getString(REFERENCE_ID_JSON);
         timeStamp = rd.getDateTime(TIME_STAMP_JSON);
         software = new Software(rd);

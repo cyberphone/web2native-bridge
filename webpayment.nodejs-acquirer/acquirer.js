@@ -32,6 +32,7 @@ const ServerCertificateSigner = require('./common/ServerCertificateSigner');
 const BaseProperties = require('./common/BaseProperties');
 const Authority = require('./common/AuthorityObject');
 const Expires = require('./common/Expires');
+const ErrorReturn = require('./common/ErrorReturn');
 const FinalizeRequest = require('./common/FinalizeRequest');
 const PaymentRequest = require('./common/PaymentRequest');
 const Currencies = require('./common/Currencies');
@@ -73,6 +74,14 @@ const jsonPostProcessors = {
     reader.getInt('\u20ac\u00e5\u00f6k');
     reader.getSignature();
     return serverCertificateSigner.sign({t:8});
+  },
+  
+  error : function(reader) {
+    var errorReturn = new ErrorReturn(reader);
+    errorReturn = new ErrorReturn(ErrorReturn.BLOCKED_ACCOUNT,"extra");
+    var wr = new JsonUtil.ObjectWriter();
+    errorReturn.write(wr);
+    return wr.getRootObject();
   },
 
   transact : function(reader) {
