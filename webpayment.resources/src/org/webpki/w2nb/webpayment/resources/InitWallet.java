@@ -141,7 +141,7 @@ public class InitWallet {
             ow = new JSONObjectWriter()
                  .setObject(BaseProperties.PAYER_ACCOUNT_JSON, 
                             new AccountDescriptor(accountType.getTypeUri(),
-                                                  accountId).write())
+                                                  accountId).writeObject())
                  .setBoolean(BaseProperties.CARD_FORMAT_ACCOUNT_ID_JSON, cardFormatted)
                  .setString(BaseProperties.PROVIDER_AUTHORITY_URL_JSON, args[7])
                  .setString(BaseProperties.SIGNATURE_ALGORITHM_JSON,
