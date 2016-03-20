@@ -1,5 +1,5 @@
 /*
- *  Copyright 2006-2015 WebPKI.org (http://webpki.org).
+ *  Copyright 2006-2016 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -44,24 +44,24 @@ public class PaymentRequest implements BaseProperties {
                                           JSONAsymKeySigner signer) throws IOException {
         return new JSONObjectWriter()
             .setObject(PAYEE_JSON, payee.writeObject())
-            .setBigDecimal(AMOUNT_JSON, currency.checkDecimals(amount))
+            .setBigDecimal(AMOUNT_JSON, amount, currency.getDecimals())
             .setString(CURRENCY_JSON, currency.toString())
             .setString(REFERENCE_ID_JSON, referenceId)
             .setDateTime(TIME_STAMP_JSON, new Date(), true)
             .setDateTime(EXPIRES_JSON, expires, true)
-            .setObject(SOFTWARE_JSON, Software.encode (SOFTWARE_NAME, SOFTWARE_VERSION))
+            .setObject(SOFTWARE_JSON, Software.encode(SOFTWARE_NAME, SOFTWARE_VERSION))
             .setSignature(signer);
     }
 
     public PaymentRequest(JSONObjectReader rd) throws IOException {
         root = rd;
         payee = new Payee(rd.getObject(PAYEE_JSON));
-        amount = rd.getBigDecimal(AMOUNT_JSON);
         try {
             currency = Currencies.valueOf(rd.getString(CURRENCY_JSON));
         } catch (Exception e) {
             throw new IOException(e);
         }
+        amount = rd.getBigDecimal(AMOUNT_JSON, currency.getDecimals());
         referenceId = rd.getString(REFERENCE_ID_JSON);
         dateTime = rd.getDateTime(TIME_STAMP_JSON);
         expires = rd.getDateTime(EXPIRES_JSON);

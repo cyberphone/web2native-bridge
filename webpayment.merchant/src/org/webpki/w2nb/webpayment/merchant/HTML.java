@@ -1,5 +1,5 @@
 /*
- *  Copyright 2006-2015 WebPKI.org (http://webpki.org).
+ *  Copyright 2006-2016 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -490,7 +490,7 @@ public class HTML {
                  "<tr><td style=\"text-align:center\">")
          .append(paymentRequest.getReferenceId())
          .append("</td><td style=\"text-align:center\">")
-         .append(paymentRequest.getCurrency().convertAmountToString(paymentRequest.getAmount()))
+         .append(paymentRequest.getCurrency().amountToDisplayString(paymentRequest.getAmount()))
          .append("</td><td style=\"text-align:center\">")
          .append(accountType.getCommonName())
          .append("</td><td style=\"text-align:center\">")

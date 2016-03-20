@@ -24,14 +24,14 @@ const JsonUtil = require('webpki.org').JsonUtil;
 const BaseProperties = require('./BaseProperties');
 const Messages = require('./Messages');
 const Software = require('./Software');
-const Big = require('../contributed/big/big');
 const ReserveOrDebitResponse = require('./ReserveOrDebitResponse');
 const ReserveOrDebitRequest = require('./ReserveOrDebitRequest');
 
 function FinalizeRequest(rd) {
   this.root = Messages.parseBaseMessage(Messages.FINALIZE_REQUEST, rd);
   this.embeddedResponse = new ReserveOrDebitResponse(rd.getObject(BaseProperties.PROVIDER_AUTHORIZATION_JSON));
-  this.amount = new Big(this.embeddedResponse.getPaymentRequest().getCurrency().checkAmountSyntax(rd.getString(BaseProperties.AMOUNT_JSON)));
+  this.amount = rd.getBigDecimal(BaseProperties.AMOUNT_JSON,
+                                 this.embeddedResponse.getPaymentRequest().getCurrency().getDecimals());
   this.referenceId = rd.getString(BaseProperties.REFERENCE_ID_JSON);
   this.timeStamp = rd.getDateTime(BaseProperties.TIME_STAMP_JSON);
   this.software = new Software(rd);
@@ -61,7 +61,9 @@ FinalizeRequest.encode = function(providerResponse,
                                   referenceId,
                                   signer) {
   return Messages.createBaseMessage(Messages.FINALIZE_REQUEST)
-    .setBigDecimal(BaseProperties.AMOUNT_JSON, amount)
+    .setBigDecimal(BaseProperties.AMOUNT_JSON,
+                   amount,
+                   providerResponse.getPaymentRequest().getCurrency().getDecimals())
     .setObject(BaseProperties.PROVIDER_AUTHORIZATION_JSON, providerResponse.root)
     .setString(BaseProperties.REFERENCE_ID_JSON, referenceId)
     .setDateTime(BaseProperties.TIME_STAMP_JSON, new Date(), true)

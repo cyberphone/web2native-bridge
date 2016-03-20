@@ -25,13 +25,12 @@ const BaseProperties = require('./BaseProperties');
 const Currencies = require('./Currencies');
 const Software = require('./Software');
 const Payee = require('./Payee');
-const Big = require('../contributed/big/big');
 
 function PaymentRequest(rd) {
   this.root = rd;
   this.payee = new Payee(rd.getObject(BaseProperties.PAYEE_JSON));
   this.currency = new Currencies(rd.getString(BaseProperties.CURRENCY_JSON));
-  this.amount = new Big(this.currency.checkAmountSyntax(rd.getString(BaseProperties.AMOUNT_JSON)));
+  this.amount = rd.getBigDecimal(BaseProperties.AMOUNT_JSON, this.currency.getDecimals());
   this.referenceId = rd.getString(BaseProperties.REFERENCE_ID_JSON);
   this.dateTime = rd.getDateTime(BaseProperties.TIME_STAMP_JSON);
   this.expires = rd.getDateTime(BaseProperties.EXPIRES_JSON);
@@ -87,7 +86,7 @@ PaymentRequest.encode = function(payee,
                                  signer) {
   return new JsonUtil.ObjectWriter()
     .setObject(BaseProperties.PAYEE_JSON, payee.writeObject())
-    .setString(BaseProperties.AMOUNT_JSON, currency.checkAmountSyntax(amount.toString()))
+    .setBigDecimal(BaseProperties.AMOUNT_JSON, amount, currency.getDecimals())
     .setString(BaseProperties.CURRENCY_JSON, currency.toString())
     .setString(BaseProperties.REFERENCE_ID_JSON, referenceId)
     .setDateTime(BaseProperties.TIME_STAMP_JSON, new Date())

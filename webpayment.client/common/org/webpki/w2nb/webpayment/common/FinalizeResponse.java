@@ -1,5 +1,5 @@
 /*
- *  Copyright 2006-2015 WebPKI.org (http://webpki.org).
+ *  Copyright 2006-2016 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -97,7 +97,7 @@ public class FinalizeResponse implements BaseProperties {
                            RequestHash.getRequestHash(new JSONObjectWriter(finalizeRequest.root))))
             .setString(REFERENCE_ID_JSON, referenceId)
             .setDateTime(TIME_STAMP_JSON, new Date(), true)
-            .setObject(SOFTWARE_JSON, Software.encode (SOFTWARE_NAME, SOFTWARE_VERSION))
+            .setObject(SOFTWARE_JSON, Software.encode(SOFTWARE_NAME, SOFTWARE_VERSION))
             .setSignature(signer);
     }
 }

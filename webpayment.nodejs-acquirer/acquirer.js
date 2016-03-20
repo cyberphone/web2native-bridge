@@ -26,6 +26,7 @@ const Fs = require('fs');
 
 const Keys = require('webpki.org').Keys;
 const Jcs = require('webpki.org').Jcs;
+const Big = require('webpki.org').Big;
 
 const Config = require('./config/config');
 const ServerCertificateSigner = require('./common/ServerCertificateSigner');
@@ -37,7 +38,6 @@ const FinalizeRequest = require('./common/FinalizeRequest');
 const PaymentRequest = require('./common/PaymentRequest');
 const Currencies = require('./common/Currencies');
 const Payee = require('./common/Payee');
-const Big = require('./contributed/big/big');
 
 const ByteArray = require('webpki.org').ByteArray;
 const JsonUtil = require('webpki.org').JsonUtil;
@@ -96,7 +96,7 @@ const jsonPostProcessors = {
       return signer.sign(jsonObject);
     };
     return PaymentRequest.encode(Payee.init('Demo Merchant','#126740'),
-                                 new Big('3450.75'),
+                                 new Big('3450.00'),
                                  new Currencies('USD'),
                                  '68005',
                                  Expires.inMinutes(30),

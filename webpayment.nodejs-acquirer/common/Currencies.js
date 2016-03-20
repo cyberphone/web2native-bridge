@@ -20,9 +20,9 @@
 // Currencies used by the Web2Native Bridge PoC
 
 const CURRENCIES = [
-  'USD', '$\u200a',      true,  new RegExp(/^-?([1-9][0-9]*|0)[\.][0-9]{2}$/), 
-  'EUR', '\u2009\u20ac', false, new RegExp(/^-?([1-9][0-9]*|0)[\.][0-9]{2}$/),
-  'GBP', '\u00a3\u200a', true,  new RegExp(/^-?([1-9][0-9]*|0)[\.][0-9]{2}$/)
+  'USD', '$\u200a',      true,  2, 
+  'EUR', '\u2009\u20ac', false, 2,
+  'GBP', '\u00a3\u200a', true,  2
 ];
 
 function Currencies(currency) {
@@ -31,22 +31,19 @@ function Currencies(currency) {
           this.currency = currency;
           this.symbol = CURRENCIES[i++];
           this.symbolFirst = CURRENCIES[i++];
-          this.syntax = CURRENCIES[i];
+          this.decimals = CURRENCIES[i];
           return;
       }
   }
   throw new TypeError('Unknown currency: ' + currency);
 }
 
-Currencies.prototype.checkAmountSyntax = function(amountString) {
-  if (this.syntax.test(amountString)) {
-    return amountString;
-  }
-  throw new TypeError('Incorrect decimals or other syntax error: ' + amountString);
-};
+Currencies.prototype.getDecimals = function() {
+  return this.decimals;
+}
 
-Currencies.prototype.convertAmountToDisplayString = function(amountString) {
-  checkAmountSyntax(amountString);
+Currencies.prototype.amountToDisplayString = function(amount) {
+  var amountString = amount.toFixed(this.decimals);
   return this.symbolFirst ? this.symbol + amountString : amountString + this.symbol;
 };
 

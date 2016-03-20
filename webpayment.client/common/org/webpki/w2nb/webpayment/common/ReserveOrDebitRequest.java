@@ -1,5 +1,5 @@
 /*
- *  Copyright 2006-2015 WebPKI.org (http://webpki.org).
+ *  Copyright 2006-2016 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -136,8 +136,8 @@ public class ReserveOrDebitRequest implements BaseProperties {
             wr.setDateTime(EXPIRES_JSON, expires, true);
         }
         wr.setDateTime(TIME_STAMP_JSON, new Date(), true)
-          .setObject(SOFTWARE_JSON, Software.encode (PaymentRequest.SOFTWARE_NAME,
-                                                     PaymentRequest.SOFTWARE_VERSION))
+          .setObject(SOFTWARE_JSON, Software.encode(PaymentRequest.SOFTWARE_NAME,
+                                                    PaymentRequest.SOFTWARE_VERSION))
           .setSignature(signer);
         return wr;
     }

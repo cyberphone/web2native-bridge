@@ -1,5 +1,5 @@
 /*
- *  Copyright 2006-2015 WebPKI.org (http://webpki.org).
+ *  Copyright 2006-2016 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -36,15 +36,12 @@ public enum Currencies {
         this.decimals = decimals;
     }
 
-    public BigDecimal checkDecimals(BigDecimal amount) throws IOException {
-        if (amount.scale() != decimals) {
-            throw new IOException("Incorrect decimals");
-        }
-        return amount;
+    public int getDecimals() {
+        return decimals;
     }
 
-    public String convertAmountToString(BigDecimal amount) throws IOException {
-        checkDecimals(amount);
-        return symbolFirst ? symbol + amount.toPlainString() : amount.toPlainString() + symbol;
+    public String amountToDisplayString(BigDecimal amount) throws IOException {
+        String amountString = amount.setScale(decimals).toPlainString();
+        return symbolFirst ? symbol + amountString : amountString + symbol;
     }
 }

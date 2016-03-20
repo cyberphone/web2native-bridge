@@ -1,5 +1,5 @@
 /*
- *  Copyright 2006-2015 WebPKI.org (http://webpki.org).
+ *  Copyright 2006-2016 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -36,7 +36,8 @@ public class FinalizeRequest implements BaseProperties {
     public FinalizeRequest(JSONObjectReader rd) throws IOException, GeneralSecurityException {
         root = Messages.parseBaseMessage(Messages.FINALIZE_REQUEST, rd);
         embeddedResponse = new ReserveOrDebitResponse(rd.getObject(PROVIDER_AUTHORIZATION_JSON));
-        amount = embeddedResponse.getPaymentRequest().getCurrency().checkDecimals(rd.getBigDecimal(AMOUNT_JSON));
+        amount = rd.getBigDecimal(AMOUNT_JSON,
+                                  embeddedResponse.getPaymentRequest().getCurrency().getDecimals());
         referenceId = rd.getString(REFERENCE_ID_JSON);
         timeStamp = rd.getDateTime(TIME_STAMP_JSON);
         software = new Software(rd);
@@ -78,12 +79,14 @@ public class FinalizeRequest implements BaseProperties {
                                           ServerAsymKeySigner signer)
     throws IOException, GeneralSecurityException {
         return Messages.createBaseMessage(Messages.FINALIZE_REQUEST)
-            .setBigDecimal(AMOUNT_JSON, providerResponse.paymentRequest.getCurrency().checkDecimals(amount))
+            .setBigDecimal(AMOUNT_JSON,
+                           amount,
+                           providerResponse.getPaymentRequest().getCurrency().getDecimals())
             .setObject(PROVIDER_AUTHORIZATION_JSON, providerResponse.root)
             .setString(REFERENCE_ID_JSON, referenceId)
             .setDateTime(TIME_STAMP_JSON, new Date(), true)
-            .setObject(SOFTWARE_JSON, Software.encode (PaymentRequest.SOFTWARE_NAME,
-                                                       PaymentRequest.SOFTWARE_VERSION))
+            .setObject(SOFTWARE_JSON, Software.encode(PaymentRequest.SOFTWARE_NAME,
+                                                      PaymentRequest.SOFTWARE_VERSION))
             .setSignature(signer);
     }
 }
