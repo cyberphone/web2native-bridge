@@ -19,13 +19,15 @@
 
 // Configuration parameters fo the "Acquirer" server
 
+const Url = require('url');
+
 var config = {};
 
 config.host = 'https://localhost:8888';
 
 config.tlsKeys = {
-  keyFile:  __dirname + '/tlskeys/localhost.key.pem',
-  certFile: __dirname + '/tlskeys/localhost.cert.pem'
+  keyFile:  __dirname + '/tlskeys/' + Url.parse(config.host).hostname + '.key.pem',
+  certFile: __dirname + '/tlskeys/' + Url.parse(config.host).hostname + '.cert.pem'
 };
 
 config.ownKeys = {
