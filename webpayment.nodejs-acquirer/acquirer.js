@@ -35,6 +35,7 @@ const Authority = require('./common/AuthorityObject');
 const Expires = require('./common/Expires');
 const ErrorReturn = require('./common/ErrorReturn');
 const FinalizeRequest = require('./common/FinalizeRequest');
+const FinalizeResponse = require('./common/FinalizeResponse');
 const PaymentRequest = require('./common/PaymentRequest');
 const Currencies = require('./common/Currencies');
 const Payee = require('./common/Payee');
@@ -56,6 +57,11 @@ function readFile(path) {
 }
 
 const homePage = readFile(__dirname + '/index.html');
+
+var referenceId = 194006;
+function getReferenceId() {
+  return '#' + (referenceId++);
+}
 
 const jsonPostProcessors = {
  
@@ -85,22 +91,43 @@ const jsonPostProcessors = {
   },
 
   transact : function(reader) {
+    // Decode the finalize request message
     var finalizeRequest = new FinalizeRequest(reader);
-    logger.info(finalizeRequest.getEmbeddedResponse().getProtectedAccountData(encryptionKeys).toString());
-    logger.info(finalizeRequest.getAmount().toString());
-    function x() {
-      this.privateKey = encryptionKeys[0];
-    }
-    x.prototype.sign = function(jsonObject) {
-      var signer = new Jcs.Signer(this.privateKey);
-      return signer.sign(jsonObject);
-    };
-    return PaymentRequest.encode(Payee.init('Demo Merchant','#126740'),
-                                 new Big('3450.00'),
-                                 new Currencies('USD'),
-                                 '68005',
-                                 Expires.inMinutes(30),
-                                 new x()).getRootObject();
+
+    // Get the embedded authorization from the payer's payment provider (bank)
+    var embeddedResponse = finalizeRequest.getEmbeddedResponse();
+
+    // Verify that the provider's signature belongs to a valid payment provider trust network
+    embeddedResponse.getSignatureDecoder().verifyTrust(paymentRoot);
+
+    // Get the the account data we sent encrypted through the merchant 
+    logger.info(embeddedResponse.getProtectedAccountData(encryptionKeys).toString());
+
+    // The original request contains some required data like currency
+    var paymentRequest = embeddedResponse.getPaymentRequest();
+
+    // Verify that the merchant is one of our customers.  Simplistic "database": a single customer
+//TODO
+/*
+            paymentRequest.getSignatureDecoder().verify(AcquirerService.merchantRoot);
+            String merchantDn = paymentRequest.getSignatureDecoder().getCertificatePath()[0].getSubjectX500Principal().getName();
+            if (!merchantDn.equals(AcquirerService.merchantDN)) {
+                throw new IOException ("Unknown merchant: " + merchantDn);
+            }
+*/
+
+    ////////////////////////////////////////////////////////////////////////////
+    // We got an authentic request.  Now we need to check available funds etc.//
+    // Since we don't have a real acquirer this part is rather simplistic :-) //
+    ////////////////////////////////////////////////////////////////////////////
+
+    // Sorry but you don't appear to have a million bucks :-)
+    return paymentRequest.getAmount().cmp(new Big('1000000.00')) > 0 ?
+        FinalizeResponse.encode(new ErrorReturn(ErrorReturn.INSUFFICIENT_FUNDS))
+                                                                      :
+        FinalizeResponse.encode(finalizeRequest,
+                                getReferenceId(),
+                                serverCertificateSigner);
   }
 
 };
@@ -147,7 +174,7 @@ const authorityData = Authority.encode(Config.host + '/authority',
                                        Config.host + '/transact',
                                        encryptionKeys[0].getPublicKey(),
                                        Expires.inDays(365),
-                                       serverCertificateSigner).getRootObject();
+                                       serverCertificateSigner);
   
 /////////////////////////////////
 // Core HTTP server code
@@ -164,10 +191,9 @@ function serverError(response, message) {
   response.end();
 }
 
-function returnJsonData(request, response, jsonObject) {
-  var jsonOut = JSON.stringify(jsonObject);
-  console.log('Sent message [' + request.url + ']:\n' + jsonOut);
-  var output = ByteArray.stringToUtf8(jsonOut);
+function returnJsonData(request, response, writer) {
+  console.log('Sent message [' + request.url + ']:\n' + JSON.stringify(writer.getRootObject()));
+  var output = writer.getNormalizedData();
   response.writeHead(200, {'Content-Type'  : BaseProperties.JSON_CONTENT_TYPE,
                            'Connection'    : 'close',
                            'Content-Length': output.length});
