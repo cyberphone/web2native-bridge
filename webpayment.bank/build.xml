@@ -78,13 +78,13 @@
          <exclude name="web.xml"/>
       </classes>
       <lib dir="${zip.webpki.lib.dir}">
-         <include name="webpki.org-libext*.jar"/>
+         <include name="${webpki-libext.jar}"/>
       </lib>
        <lib dir="${zip.bc.lib.dir}">
-         <include name="bcprov-*.jar"/>
+         <include name="${bcprovider.jar}"/>
        </lib>
       <lib dir="${zip.util.lib.dir}">
-         <include name="webpki.org-webutil*.jar"/>
+         <include name="${webpki-webutil.jar}"/>
       </lib>
       <zipfileset dir="${zip.key.dir}" prefix="${class_war_path}">
          <include name="${encryptionkey_rsa}${keyfilext}"/>

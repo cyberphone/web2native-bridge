@@ -2,41 +2,37 @@
 
   <!-- set global properties for this build -->
 
-  <property name="temp_dir" location=".tmp" />
-  <property name="src_dir" value="src.java"/>
-  <property name="lib_dir" value="install/libs"/>
-  <property name="library" value="webpki.org-libext-1.00.jar"/>
+  <property name="temp.dir" location=".tmp" />
+  <property name="src.dir" value="src.java"/>
   <property name="app_name" value="proxy-support.jar"/>
   <property name="javaversion" value="1.7" />
   <property name="debug" value="on"/>
   
+  <property file="../webpayment.resources/common.properties"/>
+  
   <path id="compile.classpath">
-	 <fileset dir="${lib_dir}">
-	   <include name="${library}"/>
+	 <fileset dir="${common.lib.dir}">
+	   <include name="${webpki-libext.jar}"/>
     </fileset>
   </path>
   
   <target name="clean">
-    <delete dir="${temp_dir}"/>
-    <delete file="${lib_dir}/${app_name}"/>
+    <delete dir="${temp.dir}"/>
+    <delete file="${common.lib.dir}/${app_name}"/>
   </target>
   
   <target name="build" depends="clean">
-    <mkdir dir="${temp_dir}" />
+    <mkdir dir="${temp.dir}" />
     <javac debug="${debug}"
            source="${javaversion}"
            target="${javaversion}"
-           srcdir="${src_dir}"
-           destdir="${temp_dir}" 
+           srcdir="${src.dir}"
+           destdir="${temp.dir}" 
            classpathref="compile.classpath"
            includeAntRuntime="false">
     </javac>
-    <jar jarfile="${lib_dir}/${app_name}">
-      <fileset dir="${temp_dir}"/>
-      <manifest>
-        <attribute name="Main-Class" value="t.b.d"/>
-        <attribute name="Class-path" value="${library}"/>
-      </manifest>
+    <jar jarfile="${common.lib.dir}/${app_name}">
+      <fileset dir="${temp.dir}"/>
     </jar>
   </target>
   

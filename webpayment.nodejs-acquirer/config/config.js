@@ -23,6 +23,8 @@ const Url = require('url');
 
 var config = {};
 
+config.logging = true;
+
 config.host = 'https://localhost:8888';
 
 config.tlsKeys = {

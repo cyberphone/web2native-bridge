@@ -4,8 +4,7 @@
 
   <property name="temp.dir" location=".tmp" />
   <property name="src.dir" value="src"/>
-  <property name="image.dir" value="images"/>
-  <property name="client.package.dir" value="org/webpki/w2nb/webpayment/client"/>
+  <property name="client.package.dir" value="org/webpki/w2nb/webpayment/test"/>
   <property name="dist.dir" value="../proxy/install/apps"/>
   <property name="javaversion" value="1.7" />
   <property name="debug" value="on"/>
@@ -20,22 +19,19 @@
   
   <target name="clean">
     <delete dir="${temp.dir}"/>
-    <delete dir="${dist.dir}/${w2nb.webwallet}"/>
+    <delete dir="${dist.dir}"/>
   </target>
   
   <target name="build" depends="clean">
     <echo message="${src.dir}:${common.src.dir}"/>
-	<loadresource property="java.dotted.path">
-	  <propertyresource name="client.package.dir"/>
-	  <filterchain>
-	    <tokenfilter>
-	      <filetokenizer/>
-	      <replacestring from="/" to="."/>
-	    </tokenfilter>
-	  </filterchain>
-	</loadresource>
     <mkdir dir="${temp.dir}" />
-    <mkdir dir="${dist.dir}/${w2nb.webwallet}" />
+    <mkdir dir="${dist.dir}" />
+    <copy todir="${dist.dir}/lib" preservelastmodified="true" includeEmptyDirs="false">
+      <fileset dir="${common.lib.dir}">
+        <include name="${webpki-libext.jar}"/>
+        <include name="${bcprovider.jar}"/>
+      </fileset>
+    </copy>
     <fixcrlf srcdir="${src.dir}"
        tab="remove"
        tablength="4"
@@ -49,20 +45,13 @@
            destdir="${temp.dir}" 
            classpathref="compile.classpath"
            includeAntRuntime="false">
-	       <include name="**/Wallet.java"/>
     </javac>
     <jar jarfile="${dist.dir}/${w2nb.webwallet}/${w2nb.webwallet}.jar">
-      <fileset dir="${temp.dir}">
-        <exclude name="**/AccountTypes.class"/>
-        <exclude name="**/DecryptionKeyHolder.class"/>
-      </fileset>
-      <zipfileset dir="${image.dir}" prefix="${client.package.dir}"/>
-      <zipfileset dir="${credentials.dir}" prefix="${client.package.dir}">
-        <include name="${credentials_store}"/>
-      </zipfileset>
+      <fileset dir="${temp.dir}"/>
+      <zipfileset dir="${key.dir}" prefix="${client.package.dir}"/>
       <manifest>
-        <attribute name="Main-Class" value="${java.dotted.path}.Wallet"/>
-        <attribute name="Class-path" value="../../libs/${webpki-libext.jar} ../../libs/${bcprovider.jar} ../../libs/proxy-support.jar"/>
+        <attribute name="Main-Class" value="${client.package.dir}.Test"/>
+        <attribute name="Class-path" value="./lib/${webpki-libext.jar} ./lib/${bcprovider.jar}"/>
       </manifest>
     </jar>
   </target>

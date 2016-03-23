@@ -88,11 +88,11 @@
       <replacefilter token="@version-check@" value="${plugin.ejbca.ant.custom.logon.version-check}"/>
       <replacefilter token="@security@" value="${security.actual}"/>
       <replacefilter token="@paycred1@"
-        value="${clientkey_ec}${keyfilext},SUPER_CARD,6875056745552109,supercard.png,${encryptionkey_rsa}.cer"/>
+        value="${clientkey_super}${keyfilext},SUPER_CARD,${account_id_super},supercard.png,${encryptionkey_rsa}.cer"/>
       <replacefilter token="@paycred2@"
-        value="${clientkey_rsa}${keyfilext},BANK_DIRECT,!8645-7800239403,bankdirect.png,${encryptionkey_ec}.cer"/>
+        value="${clientkey_bankdir}${keyfilext},BANK_DIRECT,!${account_id_bankdir},bankdirect.png,${encryptionkey_ec}.cer"/>
       <replacefilter token="@paycred3@"
-        value="${clientkey_ec2}${keyfilext},UNUSUAL_CARD,1111222233334444,unusualcard.png,${encryptionkey_ec}.cer"/>
+        value="${clientkey_unusual}${keyfilext},UNUSUAL_CARD,${account_id_unusual},unusualcard.png,${encryptionkey_ec}.cer"/>
       <replacefilter token="@keyprov-kmk@" value="${kg2kmkey_ec}${keyfilext}"/>
     </replace>
     <war destfile="${dist.dir}/${application}" webxml="${temp.dir}/web.xml">
@@ -100,20 +100,20 @@
          <exclude name="web.xml"/>
       </classes>
       <lib dir="${zip.webpki.lib.dir}">
-         <include name="webpki.org-libext*.jar"/>
+         <include name="${webpki-libext.jar}"/>
       </lib>
        <lib dir="${zip.bc.lib.dir}">
-         <include name="bcprov-*.jar"/>
+         <include name="${bcprovider.jar}"/>
        </lib>
       <lib dir="${zip.util.lib.dir}">
-         <include name="webpki.org-webutil*.jar"/>
+         <include name="${webpki-webutil.jar}"/>
       </lib>
       <zipfileset dir="${zip.key.dir}" prefix="${class_war_path}">
          <include name="${encryptionkey_rsa}.cer"/>
          <include name="${encryptionkey_ec}.cer"/>
-         <include name="${clientkey_ec}${keyfilext}"/>
-         <include name="${clientkey_rsa}${keyfilext}"/>
-         <include name="${clientkey_ec2}${keyfilext}"/>
+         <include name="${clientkey_super}${keyfilext}"/>
+         <include name="${clientkey_bankdir}${keyfilext}"/>
+         <include name="${clientkey_unusual}${keyfilext}"/>
          <include name="${kg2kmkey_ec}${keyfilext}"/>
       </zipfileset>
       <zipfileset dir="${zip.card-images.dir}" prefix="${class_war_path}"/>

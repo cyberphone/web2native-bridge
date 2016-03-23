@@ -192,7 +192,9 @@ function serverError(response, message) {
 }
 
 function returnJsonData(request, response, writer) {
-  console.log('Sent message [' + request.url + ']:\n' + JSON.stringify(writer.getRootObject()));
+  if (Config.logging) {
+    logger.info('Sent message [' + request.url + ']:\n' + JSON.stringify(writer.getRootObject()));
+  }
   var output = writer.getNormalizedData();
   response.writeHead(200, {'Content-Type'  : BaseProperties.JSON_CONTENT_TYPE,
                            'Connection'    : 'close',
@@ -243,7 +245,9 @@ Https.createServer(options, (request, response) => {
     });
     request.on('end', () => {
       try {
-        logger.info('Received message [' + request.url + ']:\n' + jsonIn);
+        if (Config.logging) {
+          logger.info('Received message [' + request.url + ']:\n' + jsonIn);
+        }
         returnJsonData(request,
                        response,
                        jsonPostProcessors[pathname](new JsonUtil.ObjectReader(JSON.parse(jsonIn))));

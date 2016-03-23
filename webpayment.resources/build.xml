@@ -215,6 +215,7 @@
   <target name="initwallet">
     <delete file="${credentials.dir}/${credentials_store}"/>
     <delete file="${credentials.dir}/${credentials_db}"/>
+    <mkdir dir="${credentials.dir}"/>
     <delete dir="${temp.dir}"/>
     <mkdir dir="${temp.dir}"/>
     <javac debug="${debug}"
