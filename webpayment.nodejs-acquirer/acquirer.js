@@ -171,11 +171,17 @@ function serverError(response, message) {
   response.end();
 }
 
-function returnJsonData(request, response, writer) {
+function successLog(returnOrReceived, request, jsonReaderOrWriter) {
   if (Config.logging) {
-    logger.info('Returned data [' + request.socket.remoteAddress + '] [' + request.url + ']:\n' + writer.toString());
+    logger.info(returnOrReceived + ' [' +
+                request.socket.remoteAddress + '] [' + request.url + ']:\n' +
+                jsonReaderOrWriter.toString());
   }
-  var output = writer.getNormalizedData();
+}
+
+function returnJsonData(request, response, jsonWriter) {
+  successLog('Returned data', request, jsonWriter);
+  var output = jsonWriter.getNormalizedData();
   response.writeHead(200, {'Content-Type'  : BaseProperties.JSON_CONTENT_TYPE,
                            'Connection'    : 'close',
                            'Content-Length': output.length});
@@ -231,9 +237,7 @@ Https.createServer(options, (request, response) => {
     request.on('end', () => {
       try {
         var jsonReader = new JsonUtil.ObjectReader(JSON.parse(jsonIn));
-        if (Config.logging) {
-          logger.info('Received data [' + request.socket.remoteAddress + '] [' + request.url + ']:\n' + jsonReader.toString());
-        }
+        successLog('Received data', request, jsonReader);
         returnJsonData(request, response, jsonPostProcessors[pathname](jsonReader));
       } catch (e) {
         logger.error(e.stack)
