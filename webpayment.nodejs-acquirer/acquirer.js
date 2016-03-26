@@ -163,7 +163,8 @@ function serverError(response, message) {
   if (message === undefined || typeof message != 'string') {
     message = 'Unrecoverable error message';
   }
-  response.writeHead(500, {'Content-Type'  : 'text/plain',
+  message = new Buffer(message);
+  response.writeHead(500, {'Content-Type'  : 'text/plain; charset=UTF-8',
                            'Connection'    : 'close',
                            'Content-Length': message.length});
   response.write(message);
@@ -172,7 +173,7 @@ function serverError(response, message) {
 
 function returnJsonData(request, response, writer) {
   if (Config.logging) {
-    logger.info('Sent message [' + request.url + ']:\n' + writer.toString());
+    logger.info('Sent message [' + request.socket.remoteAddress + '] [' + request.url + ']:\n' + writer.toString());
   }
   var output = writer.getNormalizedData();
   response.writeHead(200, {'Content-Type'  : BaseProperties.JSON_CONTENT_TYPE,
@@ -198,7 +199,12 @@ Https.createServer(options, (request, response) => {
   }
   if (request.method == 'GET') {
     if (pathname in jsonGetProcessors) {
-      returnJsonData(request, response, jsonGetProcessors[pathname]());
+      try {
+        returnJsonData(request, response, jsonGetProcessors[pathname]());
+      } catch (e) {
+        logger.error(e.stack)
+        serverError(response, e.message);
+      }
     } else if (pathname == '') {
       response.writeHead(200, {'Content-Type': 'text/html'});
       response.write(homePage);
@@ -226,7 +232,7 @@ Https.createServer(options, (request, response) => {
       try {
         var jsonReader = new JsonUtil.ObjectReader(JSON.parse(jsonIn));
         if (Config.logging) {
-          logger.info('Received message [' + request.url + ']:\n' + jsonReader.toString());
+          logger.info('Received message [' + request.socket.remoteAddress + '] [' + request.url + ']:\n' + jsonReader.toString());
         }
         returnJsonData(request, response, jsonPostProcessors[pathname](jsonReader));
       } catch (e) {
