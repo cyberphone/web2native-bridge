@@ -50,7 +50,7 @@ ProtectedAccountData.prototype.getAccountSecurityCode = function() {
 };
  
 ProtectedAccountData.prototype.toString = function() {
-    return JSON.stringify(this.root.getRootObject());
+    return this.root.toString();
 };
 
 ProtectedAccountData.encode = function(accountDescriptor,

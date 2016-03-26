@@ -60,6 +60,8 @@ import org.webpki.w2nb.webpayment.common.ServerAsymKeySigner;
 
 public class Test {
     
+    enum STEP {payee2payeebank, payee2payerbank};
+    
     static Properties properties = new Properties();
     
     static LinkedHashMap<PayerAccountTypes,Credential> credentials = new LinkedHashMap<PayerAccountTypes,Credential>();
@@ -87,12 +89,6 @@ public class Test {
         addCredential(PayerAccountTypes.SUPER_CARD, "super");
         addCredential(PayerAccountTypes.BANK_DIRECT, "bankdir");
         addCredential(PayerAccountTypes.UNUSUAL_CARD, "unusual");
-        System.out.println("Content Encryption");
-        new ServerAsymKeySigner(new KeyStoreEnumerator(getResource("mybank-client-key-ec-bankdir.p12"),"foo123"));
-        new ServerAsymKeySigner(new KeyStoreEnumerator(getResource("wrongkeys/mybank-client-key-ec-bankdir.p12"),"foo123"));
-        for (Object key : properties.keySet()) {
-            System.out.println("Prop=" + (String)key);
-        }
     }
     
      void addCredential(PayerAccountTypes payerAccountTypes, String cardType) throws Exception {

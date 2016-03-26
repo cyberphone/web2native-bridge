@@ -27,22 +27,21 @@ const Fs = require('fs');
 const Keys = require('webpki.org').Keys;
 const Jcs = require('webpki.org').Jcs;
 const Big = require('webpki.org').Big;
-
-const Config = require('./config/config');
-const ServerCertificateSigner = require('./common/ServerCertificateSigner');
-const BaseProperties = require('./common/BaseProperties');
-const Authority = require('./common/AuthorityObject');
-const Expires = require('./common/Expires');
-const ErrorReturn = require('./common/ErrorReturn');
-const FinalizeRequest = require('./common/FinalizeRequest');
-const FinalizeResponse = require('./common/FinalizeResponse');
-const PaymentRequest = require('./common/PaymentRequest');
-const Currencies = require('./common/Currencies');
-const Payee = require('./common/Payee');
-
 const ByteArray = require('webpki.org').ByteArray;
 const JsonUtil = require('webpki.org').JsonUtil;
 const Logging = require('webpki.org').Logging;
+
+const Config = require('./config/config');
+const ServerCertificateSigner = require('../webpayment.nodejs-common/ServerCertificateSigner');
+const BaseProperties = require('../webpayment.nodejs-common/BaseProperties');
+const Authority = require('../webpayment.nodejs-common/AuthorityObject');
+const Expires = require('../webpayment.nodejs-common/Expires');
+const ErrorReturn = require('../webpayment.nodejs-common/ErrorReturn');
+const FinalizeRequest = require('../webpayment.nodejs-common/FinalizeRequest');
+const FinalizeResponse = require('../webpayment.nodejs-common/FinalizeResponse');
+const PaymentRequest = require('../webpayment.nodejs-common/PaymentRequest');
+const Currencies = require('../webpayment.nodejs-common/Currencies');
+const Payee = require('../webpayment.nodejs-common/Payee');
 
 const logger = new Logging.Logger(__filename);
 logger.info('Initializing...');
@@ -101,7 +100,7 @@ const jsonPostProcessors = {
     embeddedResponse.getSignatureDecoder().verifyTrust(paymentRoot);
 
     // Get the the account data we sent encrypted through the merchant 
-    logger.info(embeddedResponse.getProtectedAccountData(encryptionKeys).toString());
+    logger.info('Account:\n' + embeddedResponse.getProtectedAccountData(encryptionKeys).toString());
 
     // The original request contains some required data like currency
     var paymentRequest = embeddedResponse.getPaymentRequest();
@@ -193,7 +192,7 @@ function serverError(response, message) {
 
 function returnJsonData(request, response, writer) {
   if (Config.logging) {
-    logger.info('Sent message [' + request.url + ']:\n' + JSON.stringify(writer.getRootObject()));
+    logger.info('Sent message [' + request.url + ']:\n' + writer.toString());
   }
   var output = writer.getNormalizedData();
   response.writeHead(200, {'Content-Type'  : BaseProperties.JSON_CONTENT_TYPE,
@@ -245,12 +244,11 @@ Https.createServer(options, (request, response) => {
     });
     request.on('end', () => {
       try {
+        var jsonReader = new JsonUtil.ObjectReader(JSON.parse(jsonIn));
         if (Config.logging) {
-          logger.info('Received message [' + request.url + ']:\n' + jsonIn);
+          logger.info('Received message [' + request.url + ']:\n' + jsonReader.toString());
         }
-        returnJsonData(request,
-                       response,
-                       jsonPostProcessors[pathname](new JsonUtil.ObjectReader(JSON.parse(jsonIn))));
+        returnJsonData(request, response, jsonPostProcessors[pathname](jsonReader));
       } catch (e) {
         logger.error(e.stack)
         serverError(response, e.message);
