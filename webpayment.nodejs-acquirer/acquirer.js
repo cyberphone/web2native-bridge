@@ -32,6 +32,7 @@ const JsonUtil = require('webpki.org').JsonUtil;
 const Logging = require('webpki.org').Logging;
 
 const Config = require('./config/config');
+
 const ServerCertificateSigner = require('../webpayment.nodejs-common/ServerCertificateSigner');
 const BaseProperties = require('../webpayment.nodejs-common/BaseProperties');
 const Authority = require('../webpayment.nodejs-common/AuthorityObject');
@@ -39,9 +40,6 @@ const Expires = require('../webpayment.nodejs-common/Expires');
 const ErrorReturn = require('../webpayment.nodejs-common/ErrorReturn');
 const FinalizeRequest = require('../webpayment.nodejs-common/FinalizeRequest');
 const FinalizeResponse = require('../webpayment.nodejs-common/FinalizeResponse');
-const PaymentRequest = require('../webpayment.nodejs-common/PaymentRequest');
-const Currencies = require('../webpayment.nodejs-common/Currencies');
-const Payee = require('../webpayment.nodejs-common/Payee');
 
 const logger = new Logging.Logger(__filename);
 logger.info('Initializing...');
@@ -64,31 +62,6 @@ function getReferenceId() {
 
 const jsonPostProcessors = {
  
-  // To be used with "test/sample.json"  
-  sample : function(reader) {
-    // Just some demo/test for now...
-    reader.getDateTime('now');
-    reader.getString('escapeMe');
-    reader.getSignature();
-    return serverCertificateSigner.sign({t:8});
-  },
-
-  // To be used with "test/utf8.json"  
-  utf8 : function(reader) {
-    // Just some demo/test for now...
-    reader.getInt('\u20ac\u00e5\u00f6k');
-    reader.getSignature();
-    return serverCertificateSigner.sign({t:8});
-  },
-  
-  error : function(reader) {
-    var errorReturn = new ErrorReturn(reader);
-    errorReturn = new ErrorReturn(ErrorReturn.BLOCKED_ACCOUNT,"extra");
-    var wr = new JsonUtil.ObjectWriter();
-    errorReturn.write(wr);
-    return wr.getRootObject();
-  },
-
   transact : function(reader) {
     // Decode the finalize request message
     var finalizeRequest = new FinalizeRequest(reader);
@@ -98,22 +71,29 @@ const jsonPostProcessors = {
 
     // Verify that the provider's signature belongs to a valid payment provider trust network
     embeddedResponse.getSignatureDecoder().verifyTrust(paymentRoot);
+    var payeeBank = embeddedResponse.getSignatureDecoder().getCertificatePath()[0].getSubject();
 
-    // Get the the account data we sent encrypted through the merchant 
-    logger.info('Account:\n' + embeddedResponse.getProtectedAccountData(encryptionKeys).toString());
+    // Get the the account data we sent encrypted through the merchant
+    var protectedAccountData = embeddedResponse.getProtectedAccountData(encryptionKeys);
+    if (Config.logging) {
+      logger.info('Account:\n' + protectedAccountData.toString());
+    }
 
     // The original request contains some required data like currency
     var paymentRequest = embeddedResponse.getPaymentRequest();
+    var payee = paymentRequest.getPayee();
 
-    // Verify that the merchant is one of our customers.  Simplistic "database": a single customer
-//TODO
-/*
-            paymentRequest.getSignatureDecoder().verify(AcquirerService.merchantRoot);
-            String merchantDn = paymentRequest.getSignatureDecoder().getCertificatePath()[0].getSubjectX500Principal().getName();
-            if (!merchantDn.equals(AcquirerService.merchantDN)) {
-                throw new IOException ("Unknown merchant: " + merchantDn);
-            }
-*/
+    // Verify that the merchant is one of our customers.
+    // Simplistic "database": a single customer!
+    // Note that since a payee (merchant) is "certified" by a bank it is the
+    // combination of a payee ID and the name of the bank that comprise a valid key.
+    // The payee's public key is only of interest to the payee's bank.
+    if (payee.getId() != '86344') {
+      throw new TypeError('Unknown merchant: ID=' + payee.getId() + ', Common Name=' + payee.getCommonName());
+    }
+    if (payeeBank != 'CN=mybank.com,2.5.4.5=#130434353031,C=FR') {
+      throw new TypeError("Merchant: ID=" + payee.getId() + ' does not match bank: ' + payeeBank);
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     // We got an authentic request.  Now we need to check available funds etc.//
@@ -123,7 +103,7 @@ const jsonPostProcessors = {
     // Sorry but you don't appear to have a million bucks :-)
     return paymentRequest.getAmount().cmp(new Big('1000000.00')) > 0 ?
         FinalizeResponse.encode(new ErrorReturn(ErrorReturn.INSUFFICIENT_FUNDS))
-                                                                      :
+                                                                     :
         FinalizeResponse.encode(finalizeRequest,
                                 getReferenceId(),
                                 serverCertificateSigner);
