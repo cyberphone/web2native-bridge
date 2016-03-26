@@ -17,8 +17,10 @@
  
 'use strict';
 
-// This is a node.js version of the "Acquirer" server used in the Web2Native Bridge
-// proof-of-concept payment system.
+//////////////////////////////////////////////////////////////////////////////////////
+// This is a Node.js version of the "Acquirer" server used in the Web2Native Bridge //
+// proof-of-concept payment system.                                                 //
+//////////////////////////////////////////////////////////////////////////////////////
 
 const Https = require('https');
 const Url = require('url');
@@ -31,8 +33,6 @@ const ByteArray = require('webpki.org').ByteArray;
 const JsonUtil = require('webpki.org').JsonUtil;
 const Logging = require('webpki.org').Logging;
 
-const Config = require('./config/config');
-
 const ServerCertificateSigner = require('../webpayment.nodejs-common/ServerCertificateSigner');
 const BaseProperties = require('../webpayment.nodejs-common/BaseProperties');
 const Authority = require('../webpayment.nodejs-common/AuthorityObject');
@@ -41,9 +41,10 @@ const ErrorReturn = require('../webpayment.nodejs-common/ErrorReturn');
 const FinalizeRequest = require('../webpayment.nodejs-common/FinalizeRequest');
 const FinalizeResponse = require('../webpayment.nodejs-common/FinalizeResponse');
 
+const Config = require('./config/config');
+
 const logger = new Logging.Logger(__filename);
 logger.info('Initializing...');
-
 
 /////////////////////////////////
 // Initiate static data
@@ -59,6 +60,46 @@ var referenceId = 194006;
 function getReferenceId() {
   return '#' + (referenceId++);
 }
+
+var port = Url.parse(Config.host).port;
+if (port == null) {
+  port = 443;
+}
+var applicationPath = Url.parse(Config.host).path;
+if (applicationPath == '/') {
+  applicationPath = '';
+}
+
+/////////////////////////////////
+// Initiate cryptographic keys
+/////////////////////////////////
+
+const options = {
+  key: readFile(Config.tlsKeys.keyFile),
+  cert: readFile(Config.tlsKeys.certFile)
+};
+
+const keyData = readFile(Config.ownKeys.certAndKey);
+
+const serverCertificateSigner =
+  new ServerCertificateSigner(Keys.createPrivateKeyFromPem(keyData),
+                              Keys.createCertificatesFromPem(keyData));
+
+const paymentRoot = Keys.createCertificatesFromPem(readFile(Config.trustAnchors));
+
+const encryptionKeys = [];
+encryptionKeys.push(Keys.createPrivateKeyFromPem(readFile(Config.ownKeys.ecEncryptionKey)));
+encryptionKeys.push(Keys.createPrivateKeyFromPem(readFile(Config.ownKeys.rsaEncryptionKey)));
+
+const authorityData = Authority.encode(Config.host + '/authority',
+                                       Config.host + '/transact',
+                                       encryptionKeys[0].getPublicKey(),
+                                       Expires.inDays(365),
+                                       serverCertificateSigner);
+  
+/////////////////////////////////
+// The request processors
+/////////////////////////////////
 
 const jsonPostProcessors = {
  
@@ -84,9 +125,9 @@ const jsonPostProcessors = {
     var payee = paymentRequest.getPayee();
 
     // Verify that the merchant is one of our customers.
-    // Simplistic "database": a single customer!
-    // Note that since a payee (merchant) is "certified" by a bank it is the
-    // combination of a payee ID and the name of the bank that comprise a valid key.
+    // Rudimentary customer "database": a single customer!
+    // Note that since a payee (merchant) is vouched for by a bank it is the combination
+    // of a payee ID and the name of the certifying bank that comprise a valid customer.
     // The payee's public key is only of interest to the payee's bank.
     if (payee.getId() != '86344') {
       throw new TypeError('Unknown merchant: ID=' + payee.getId() + ', Common Name=' + payee.getCommonName());
@@ -95,18 +136,13 @@ const jsonPostProcessors = {
       throw new TypeError("Merchant: ID=" + payee.getId() + ' does not match bank: ' + payeeBank);
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    // We got an authentic request.  Now we need to check available funds etc.//
-    // Since we don't have a real acquirer this part is rather simplistic :-) //
-    ////////////////////////////////////////////////////////////////////////////
-
-    // Sorry but you don't appear to have a million bucks :-)
+    // We got an authentic request.  Now we need to check available funds etc.
+    // Since we don't have a real acquirer this part is rather simplistic :-)
     return paymentRequest.getAmount().cmp(new Big('1000000.00')) > 0 ?
+        // Sorry but you don't appear to have a million bucks :-)
         FinalizeResponse.encode(new ErrorReturn(ErrorReturn.INSUFFICIENT_FUNDS))
                                                                      :
-        FinalizeResponse.encode(finalizeRequest,
-                                getReferenceId(),
-                                serverCertificateSigner);
+        FinalizeResponse.encode(finalizeRequest, getReferenceId(), serverCertificateSigner);
   }
 
 };
@@ -119,42 +155,6 @@ const jsonGetProcessors = {
 
 };
 
-var port = Url.parse(Config.host).port;
-if (port == null) {
-  port = 443;
-}
-var applicationPath = Url.parse(Config.host).path;
-if (applicationPath == '/') {
-  applicationPath = '';
-}
-
-/////////////////////////////////
-// Initiate cryptographic keys
-/////////////////////////////////
-
-const options = {
-  key: readFile(Config.tlsKeys.keyFile),
-  cert: readFile(Config.tlsKeys.certFile)
-};
-
-var keyData = readFile(Config.ownKeys.certAndKey);
-
-const serverCertificateSigner =
-  new ServerCertificateSigner(Keys.createPrivateKeyFromPem(keyData),
-                              Keys.createCertificatesFromPem(keyData));
-
-const paymentRoot = Keys.createCertificatesFromPem(readFile(Config.trustAnchors));
-
-const encryptionKeys = [];
-encryptionKeys.push(Keys.createPrivateKeyFromPem(readFile(Config.ownKeys.ecEncryptionKey)));
-encryptionKeys.push(Keys.createPrivateKeyFromPem(readFile(Config.ownKeys.rsaEncryptionKey)));
-
-const authorityData = Authority.encode(Config.host + '/authority',
-                                       Config.host + '/transact',
-                                       encryptionKeys[0].getPublicKey(),
-                                       Expires.inDays(365),
-                                       serverCertificateSigner);
-  
 /////////////////////////////////
 // Core HTTP server code
 /////////////////////////////////
@@ -173,7 +173,7 @@ function serverError(response, message) {
 
 function returnJsonData(request, response, writer) {
   if (Config.logging) {
-    logger.info('Sent message [' + request.socket.remoteAddress + '] [' + request.url + ']:\n' + writer.toString());
+    logger.info('Returned data [' + request.socket.remoteAddress + '] [' + request.url + ']:\n' + writer.toString());
   }
   var output = writer.getNormalizedData();
   response.writeHead(200, {'Content-Type'  : BaseProperties.JSON_CONTENT_TYPE,
@@ -232,7 +232,7 @@ Https.createServer(options, (request, response) => {
       try {
         var jsonReader = new JsonUtil.ObjectReader(JSON.parse(jsonIn));
         if (Config.logging) {
-          logger.info('Received message [' + request.socket.remoteAddress + '] [' + request.url + ']:\n' + jsonReader.toString());
+          logger.info('Received data [' + request.socket.remoteAddress + '] [' + request.url + ']:\n' + jsonReader.toString());
         }
         returnJsonData(request, response, jsonPostProcessors[pathname](jsonReader));
       } catch (e) {
