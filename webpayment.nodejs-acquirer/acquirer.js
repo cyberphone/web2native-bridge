@@ -128,7 +128,7 @@ const jsonPostProcessors = {
     // Rudimentary customer "database": a single customer!
     // Note that since a payee (merchant) is vouched for by a bank it is the combination
     // of a payee ID and the name of the certifying bank that comprise a valid customer.
-    // The payee's public key is only of interest to the payee's bank.
+    // The payee's public key is only of interest to the certifying bank.
     if (payee.getId() != '86344') {
       throw new TypeError('Unknown merchant: ID=' + payee.getId() + ', Common Name=' + payee.getCommonName());
     }
@@ -139,10 +139,10 @@ const jsonPostProcessors = {
     // We got an authentic request.  Now we need to check available funds etc.
     // Since we don't have a real acquirer this part is rather simplistic :-)
     return paymentRequest.getAmount().cmp(new Big('1000000.00')) > 0 ?
-        // Sorry but you don't appear to have a million bucks :-)
-        FinalizeResponse.encode(new ErrorReturn(ErrorReturn.INSUFFICIENT_FUNDS))
+      // Sorry but you don't appear to have a million bucks :-)
+      FinalizeResponse.encode(new ErrorReturn(ErrorReturn.INSUFFICIENT_FUNDS))
                                                                      :
-        FinalizeResponse.encode(finalizeRequest, getReferenceId(), serverCertificateSigner);
+      FinalizeResponse.encode(finalizeRequest, getReferenceId(), serverCertificateSigner);
   }
 
 };
@@ -180,13 +180,13 @@ function successLog(returnOrReceived, request, jsonReaderOrWriter) {
 }
 
 function returnJsonData(request, response, jsonWriter) {
-  successLog('Returned data', request, jsonWriter);
   var output = jsonWriter.getNormalizedData();
   response.writeHead(200, {'Content-Type'  : BaseProperties.JSON_CONTENT_TYPE,
                            'Connection'    : 'close',
                            'Content-Length': output.length});
   response.write(new Buffer(output));
   response.end();
+  successLog('Returned data', request, jsonWriter);
 }
 
 function noSuchFileResponse(response, request) {
