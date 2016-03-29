@@ -8,7 +8,7 @@
   <property name="javaversion" value="1.7" />
   <property name="debug" value="on"/>
   
-  <property file="../webpayment.resources/common.properties"/>
+  <property file="common.properties"/>
   
   <path id="compile.classpath">
 	 <fileset dir="${common.lib.dir}">
