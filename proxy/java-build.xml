@@ -1,4 +1,4 @@
-<project name="web2name bridge proxy java support" default="build" basedir=".">
+<project name="Web2Native Bridge proxy java support" default="build" basedir=".">
 
   <!-- set global properties for this build -->
 
