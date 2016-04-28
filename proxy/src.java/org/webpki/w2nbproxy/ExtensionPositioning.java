@@ -81,9 +81,9 @@ public class ExtensionPositioning {
     public static String encode(HORIZONTAL_ALIGNMENT horizontalAlignment,
                                 VERTICAL_ALIGNMENT verticalAlignment,
                                 String optionalTargetElementId) {
-        return "setExtensionPosition(\"" + horizontalAlignment.toString() +
-                                  "\", \"" + verticalAlignment.toString() + "\"" +
-                        (optionalTargetElementId == null ? "" : ", \"" + optionalTargetElementId + "\"") + ")";
+        return "setExtensionPosition('" + horizontalAlignment.toString() +
+                                  "', '" + verticalAlignment.toString() + "'" +
+                        (optionalTargetElementId == null ? "" : ", '" + optionalTargetElementId + "'") + ")";
     }
     
     public static final String SET_EXTENSION_POSITION_FUNCTION_TEXT =
