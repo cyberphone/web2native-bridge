@@ -1,5 +1,5 @@
 /*
- *  Copyright 2006-2015 WebPKI.org (http://webpki.org).
+ *  Copyright 2006-2016 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -81,9 +81,9 @@ public class ExtensionPositioning {
     public static String encode(HORIZONTAL_ALIGNMENT horizontalAlignment,
                                 VERTICAL_ALIGNMENT verticalAlignment,
                                 String optionalTargetElementId) {
-        return "setExtensionPosition(\"" + horizontalAlignment.toString() +
-                                  "\", \"" + verticalAlignment.toString() + "\"" +
-                        (optionalTargetElementId == null ? "" : ", \"" + optionalTargetElementId + "\"") + ")";
+        return "setExtensionPosition('" + horizontalAlignment.toString() +
+                                  "', '" + verticalAlignment.toString() + "'" +
+                        (optionalTargetElementId == null ? "" : ", '" + optionalTargetElementId + "'") + ")";
     }
     
     public static final String SET_EXTENSION_POSITION_FUNCTION_TEXT =
