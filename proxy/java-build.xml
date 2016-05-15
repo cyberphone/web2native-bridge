@@ -5,7 +5,7 @@
   <property name="temp.dir" location=".tmp" />
   <property name="src.dir" value="src.java"/>
   <property name="app_name" value="proxy-support.jar"/>
-  <property name="javaversion" value="1.7" />
+  <property name="javaversion" value="1.6" />
   <property name="debug" value="on"/>
   
   <property file="common.properties"/>
