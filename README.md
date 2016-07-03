@@ -25,7 +25,7 @@ The **port** object supports the following methods and events:
 * **addMessageListener**(function(*message*))
 * **addDisconnectListener**(function())
 
-*optionalArgument* and *message* must be a valid JSON-serializable JavaScript objects.
+*optionalArgument* and *message* must be valid JSON-serializable JavaScript objects.
 
 An example which could be hosted in an ordinary (*non-privileged*) web page:
 ```javascript
