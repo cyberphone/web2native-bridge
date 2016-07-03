@@ -15,17 +15,17 @@ if you accidentally navigate to a malicious page since
 an improperly designed native message extension could enable web access to *any* local application!
 
 ### API
-The Web2Native Bridge emulator extends the **navigator** object by a *single* method<br>
-**nativeConnect**('*Name of target application*' [, *optionalArgument*]) which
-returns a JavaScript **Promise** to a **port** object.
+The Web2Native Bridge emulator extends the <code>navigator</code> object by a *single* method<br>
+<code>nativeConnect</code>('*Name of target application*' [, *optionalArgument*]) which
+returns a JavaScript <code>Promise</code> to a <code>port</code> object.
 
-The **port** object supports the following methods and events:
-* **postMessage**(*message*)
-* **disconnect**()
-* **addMessageListener**(function(*message*))
-* **addDisconnectListener**(function())
+The <code>port</code> object supports the following methods and events:
+* <code>postMessage</code>(*message*)
+* <code>disconnect</code>()
+* <code>addMessageListener</code>(function(*message*))
+* <code>addDisconnectListener</code>(function())
 
-*optionalArgument* and *message* must be valid JSON-serializable JavaScript objects.
+*optionalArgument* and *message* **must** be valid JSON-serializable JavaScript objects.
 
 An example which could be hosted in an ordinary (*non-privileged*) web page:
 ```javascript
@@ -48,7 +48,7 @@ navigator.nativeConnect('com.example.myapp').then(function(port) {
     console.debug(err);
 });
 ```
-The argument to **nativeConnect** holds the name of the specifically adapted local application to invoke.   The current scheme uses a Java-inspired dotted path pointing to a subdirectory and JAR-application having this name.
+The argument to <code>nativeConnect</code> holds the name of the specifically adapted local application to invoke.   The current scheme uses a Java-inspired dotted path pointing to a subdirectory and JAR-application having this name.
 
 ### Architecture
 The Web2Native Bridge emulator always invokes a central proxy located at <code>proxy/install/w2nb-proxy</code>.<br>
