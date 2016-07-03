@@ -110,6 +110,10 @@ https://test.webpki.org/webpay-merchant
 The wallet application features a virtual smart card, signed messages, and is effectively doing the
 same thing as a payment terminal + card in a brick-and-mortar shop.
 
+### Single Page Application
+Although not a design goal, the Web2Native Bridge API is also compliant with the SPA concept:<br>
+https://en.wikipedia.org/wiki/Single-page_application
+
 ### Security Considerations
 Since an emulator *by definition* isn't the "real thing" some limitations apply. That is, the Web2Native Bridge
 emulator is *not intended for production* since it doesn't support the following security measures:
