@@ -3,7 +3,7 @@
 <table><tr><td><i>Note: this is a system in development, the specification may change anytime without notice</i></td></tr></table>
 This repository contains all code for building and testing an emulation of
 the Web2Native Bridge concept
-(https://cyberphone.github.io/openkeystore/resources/docs/web2native-bridge.pdf)
+(https://cyberphone.github.io/doc/web/web2native-bridge.pdf)
 using the Google **Chrome** desktop browser.  It also runs on the Open Source **Chromium** browser. 
 
 The emulator code exploits Chrome's native messaging (https://developer.chrome.com/extensions/nativeMessaging)
