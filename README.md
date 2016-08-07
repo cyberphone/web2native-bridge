@@ -60,7 +60,7 @@ Common Java libraries may be stored in <code>proxy/install/libs</code>.
 
 For debugging purposes there is also a logging system writing data in <code>proxy/install/logs</code>.
 
-All local I/O is between the browser, proxy and the callable applications
+All local I/O between the browser, proxy and the callable applications
 is performed through <code>stdin</code> and <code>stdout</code>.
 
 ### Native Application Interface
