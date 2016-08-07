@@ -1,4 +1,4 @@
-# Web2Native Bridge - Emulator
+# Web2Native Bridge - Uniting the "Web" and "App" worlds
 
 <table><tr><td><i>Note: this is a system in development, the specification may change anytime without notice</i></td></tr></table>
 This repository contains all code for building and testing an emulation of
