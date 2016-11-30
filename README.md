@@ -4,7 +4,7 @@
 This repository contains all code for building and testing an <i>emulation</i> of
 the Web2Native Bridge concept
 (https://cyberphone.github.io/doc/web/web2native-bridge.pdf)
-using the Google **Chrome** desktop browser.  It also runs on the Open Source **Chromium** browser. 
+using the Google **Chrome** <i>desktop</i> browser.  It also runs on the Open Source **Chromium** browser. 
 
 The emulator code exploits Chrome's native messaging (https://developer.chrome.com/extensions/nativeMessaging)
 featured in a single universal Chrome extension.
@@ -80,7 +80,7 @@ Prerequisites: You need to have Java SE version 7 or 8 installed to run the Web2
 installations also presume that **clang** respectively **g++** is available.
 
 1. Install the Web2Native Bridge browser extension from the Chrome Web Store:
-https://chrome.google.com/webstore/search/web2native
+https://chrome.google.com/webstore/detail/web2native-bridge-emulato/jphfmfbdedghfhhjijaogeloiehomfni
 2. In Chrome, go to Settings->Extensions and check "Allow access to file URLs" for the Web2Native Bridge extension
 3. Clone the **web2native-bridge** master repository or just download the ZIP via GitHub to any free directory
 4. Start a terminal window and move to <code>proxy/install</code>. Then run the <code>install-proxy</code> script that suits your platform
