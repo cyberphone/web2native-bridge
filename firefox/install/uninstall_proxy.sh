@@ -37,8 +37,11 @@ else
 fi
 
 HOST_NAME=org.webpki.w2nb
+EXECUTABLE=w2nb-proxy
+HOST_PATH=$DIR/$EXECUTABLE
 MANIFEST=$HOST_NAME.json
 
+rm -f "$HOST_PATH"
 rm "$TARGET_DIR/$MANIFEST"
 echo "Native messaging host $TARGET_DIR/$MANIFEST has been uninstalled."
 

@@ -1,0 +1,7 @@
+{
+  "name": "org.webpki.w2nb.moz",
+  "description": "Web2Native Bridge emulator",
+  "path": "w2nb-proxy.exe",
+  "type": "stdio",
+  "allowed_extensions": ["w2nb@webpki.org"]
+ }

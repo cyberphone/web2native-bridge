@@ -9,12 +9,16 @@ set -e
 
 DIR="$( cd "$( dirname "$0" )" && pwd )"
 if [ "$(uname -s)" = "Darwin" ]; then
+  CPP=clang
+  CPP_OPTION=-lc++
   if [ "$(whoami)" = "root" ]; then
     TARGET_DIR="/Library/Google/Chrome/NativeMessagingHosts"
   else
     TARGET_DIR="$HOME/Library/Application Support/Google/Chrome/NativeMessagingHosts"
   fi
 else
+  CPP=g++
+  CPP_OPTION=
   if [ "$(whoami)" = "root" ]; then
     TARGET_DIR="/etc/opt/chrome/native-messaging-hosts"
   else
@@ -37,8 +41,23 @@ else
 fi
 
 HOST_NAME=org.webpki.w2nb
+EXECUTABLE=w2nb-proxy
+HOST_PATH=$DIR/$EXECUTABLE
 MANIFEST=$HOST_NAME.json
 
-rm "$TARGET_DIR/$MANIFEST"
-echo "Native messaging host $TARGET_DIR/$MANIFEST has been uninstalled."
+echo "Compiling proxy source to $HOST_PATH"
+$CPP $CPP_OPTION -w -o $HOST_PATH $DIR/../src.cpp/$EXECUTABLE.cpp
 
+# Create directory to store native messaging host.
+mkdir -p "$TARGET_DIR"
+
+# Copy native messaging host manifest.
+cp "$DIR/$MANIFEST" "$TARGET_DIR"
+
+# Update host path in the manifest.
+sed -i -e "s%$EXECUTABLE.exe%$HOST_PATH%" "$TARGET_DIR/$MANIFEST"
+
+# Set permissions for the manifest so that all users can read it.
+chmod o+r "$TARGET_DIR/$MANIFEST"
+
+echo "Native messaging host $TARGET_DIR/$MANIFEST has been installed"
