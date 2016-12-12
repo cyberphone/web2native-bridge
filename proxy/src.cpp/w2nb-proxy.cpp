@@ -232,7 +232,7 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-	// Create a path to the application directory including / or \ 
+	// Create a path to the application directory including /
 	char appPath[500];
 	strcpy(appPath, path);
 	strcat(appPath, fs);
