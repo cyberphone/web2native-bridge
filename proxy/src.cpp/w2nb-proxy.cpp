@@ -40,142 +40,259 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 
 #define PROXY_VERSION "1.00"
 
+#define MANIFEST_SIZE 1000
+
 static char *res;
 
+static FILE* logFile;
+
+static void loggedError(const char* format, ...) {
+	if (logFile) {
+		va_list args;
+		va_start(args, format);
+		vfprintf(logFile, format, args);
+		va_end(args);
+		fclose(logFile);
+	}
+	exit(EXIT_FAILURE);
+}
+
 // "Budget" JSON parser
-static char* getJSONProperty (char *name) {
-    char *start = strstr(res, name);
-    if (!start)    {
-        exit(EXIT_FAILURE);
-    }
-    start += strlen(name);
-    if (*start++ != '"') {
-        exit(EXIT_FAILURE);
-    }
-    char *end = strstr(start, "\"");
-    if (!end) {
-        exit(EXIT_FAILURE);
-    }
-    int length = end - start + 1;
-    char *property = new char[length--];
-    strncpy(property, start, length);
-    property[length] = 0;
-    return property;
+static char* getJSONProperty(char *name, char beginChar, char endChar) {
+	char *start = strstr(res, name);
+	if (!start) {
+		loggedError("Property %s missing\nJSON=\n%s", name, res);
+	}
+	start += strlen(name);
+	if (*start++ != beginChar) {
+		loggedError("Expected: %c\nJSON=\n%s", beginChar, res);
+	}
+	char *end = strchr(start, endChar);
+	if (!end) {
+		loggedError("Expected: %c\nJSON=\n%s", endChar, res);
+	}
+	int length = end - start + 1;
+	char *property = new char[length--];
+	strncpy(property, start, length);
+	property[length] = 0;
+	return property;
+}
+
+static char* getJSONString(char *name) {
+	return getJSONProperty(name, '\"', '\"');
+}
+
+static char* getJSONArray(char *name) {
+	return getJSONProperty(name, '[', ']');
+}
+
+static bool matching(char* accessDescriptor, char* calledBy) {
+	while (*accessDescriptor) {
+		if (*accessDescriptor == '*') {
+			accessDescriptor++;
+			while (*calledBy != *accessDescriptor) {
+				if (*calledBy) {
+					calledBy++;
+				} else {
+					return false;
+				}
+			}
+		} else {
+			if (*calledBy != *accessDescriptor) {
+				return false;
+			}
+			accessDescriptor++;
+			calledBy++;
+		}
+	}
+	return !*calledBy;
+}
+
+static void checkAccess(char* appPath, char* calledBy) {
+	char manifest[MANIFEST_SIZE + 1];
+	int c;
+	int l = 0;
+	bool quote = false;
+
+	strcat(appPath, "manifest.json");
+	FILE* manifestFile = fopen(appPath, "r");
+	if (!manifestFile) {
+		loggedError("Error: 'manifest.json' not found!");
+	}
+	while ((c = fgetc(manifestFile)) != EOF) {
+		if (l == MANIFEST_SIZE) {
+			loggedError("Error: manifest bigger than: %d", MANIFEST_SIZE);
+		}
+		if (c == '\"') {
+			quote = !quote;
+		}
+		else if (c == '\\') {
+			if (!quote || fgetc(manifestFile) != '\\') {
+				loggedError("Error: unexpected \\ in manifest");
+			}
+		}
+		else if (!quote && (c == ' ' || c == '\n' || c == '\t' || c == '\r')) {
+			continue;
+		}
+		manifest[l++] = (char)c;
+	}
+	manifest[l] = (char)0;
+	fclose(manifestFile);
+	res = manifest;
+	char* callableFrom = getJSONArray("\"callableFrom\":");
+	l = 0;
+	int arrayLength = strlen(callableFrom) - 4;
+	bool next = false;
+	while (l < arrayLength) {
+		if (next) {
+			if (callableFrom[l++] != ',') {
+				loggedError("Error: missing ',' in manifest");
+			}
+		}
+		next = true;
+		if (callableFrom[l++] != '\"') {
+			loggedError("Error: missing '\"' in manifest");
+		}
+		char* startString = callableFrom + l;
+		char* endString = strchr(startString, '\"');
+		if (!endString) {
+			loggedError("Error: missing '\"' in manifest");
+		}
+		*endString = 0;
+		if (matching(startString, calledBy)) {
+			return;
+		}
+		l += strlen(startString) + 1;
+	}
+	loggedError("Error: not allowed: %s", calledBy);
 }
 
 int main(int argc, char *argv[]) {
-    // Reading an initial JSON message which can be of two kinds:
-    // 1. Proxy verification which consists of an object {"proxyVersion":"n.nn"}
-    // 2. Java application call which consists of an object ("application":"dotted-path",
-    //                                                       "url":"invocation-url",
-    //                                                       "windowB64":"base64url-encoded-json-object",
-    //                                                       "argumentsB64":"base64url-encoded-json-object"}
+	// Reading an initial JSON message which can be of two kinds:
+	// 1. Proxy verification which consists of an object {"proxyVersion":"n.nn"}
+	// 2. Java application call which consists of an object ("application":"dotted-path",
+	//                                                       "url":"invocation-url",
+	//                                                       "windowB64":"base64url-encoded-json-object",
+	//                                                       "argumentsB64":"base64url-encoded-json-object"}
 
-    // Chrome presumes message length in native order. Not very cool.
-    // The following code therefore only runs on little-endian CPUs.
-    int length = 0;
-    for (int i = 0; i < 32; i += 8)    {
-        length += getchar() << i;
-    }
+	// Chrome presumes message length in native order. Not very cool.
+	// The following code therefore only runs on little-endian CPUs.
+	int length = 0;
+	for (int i = 0; i < 32; i += 8) {
+		length += getchar() << i;
+	}
 
-    // We expect a tiny JSON object
-    if (length > 10000) {
-        exit(EXIT_FAILURE);
-    }
+	// We expect a tiny JSON object
+	if (length > 10000) {
+		exit(EXIT_FAILURE);
+	}
 
-    // OK. Read the JSON string
-    res = new char[length + 1];
-    for (int n = 0; n < length; n++) {
-        res[n] = getchar();
-    }
-    res[length] = 0;
+	// OK. Read the JSON string
+	res = new char[length + 1];
+	for (int n = 0; n < length; n++) {
+		res[n] = getchar();
+	}
+	res[length] = 0;
 
-    // Are we doing proxy verification?
-    if (strstr(res, "\"proxyVersion\":")) {
-        if (strcmp(PROXY_VERSION, getJSONProperty("\"proxyVersion\":"))) {
-            exit(EXIT_FAILURE);
-        }
-        char zeroObject[] = { 2,0,0,0,'{','}' };
-        for (int n = 0; n < sizeof(zeroObject); n++) {
-            putchar(zeroObject[n]);
-        }
-        fclose(stdout);
-        exit(EXIT_SUCCESS);
-    }
+	// Are we doing proxy verification?
+	if (strstr(res, "\"proxyVersion\":")) {
+		if (strcmp(PROXY_VERSION, getJSONString("\"proxyVersion\":"))) {
+			exit(EXIT_FAILURE);
+		}
+		char zeroObject[] = { 2,0,0,0,'{','}' };
+		for (int n = 0; n < sizeof(zeroObject); n++) {
+			putchar(zeroObject[n]);
+		}
+		fclose(stdout);
+		exit(EXIT_SUCCESS);
+	}
 
-    // No, we are executing a Java target application
-    char cmd[2000] = "java" JAVA_LOG JAVA_PLAF " -jar ";
-    char path[500] = "\"";
-    strcat(path, argv[0]);
-    int i = strlen (path);
-    while (path[--i] != FILE_SEPARATOR)
-      ;
-    path[i] = 0;
-    char fs[] = {FILE_SEPARATOR,0};
+	// No, we are executing a Java target application
+	char cmd[2000] = "java" JAVA_LOG JAVA_PLAF " -jar \"";
+	char path[500];
+	strcpy(path, argv[0]);
+	int i = strlen(path);
+	while (path[--i] != FILE_SEPARATOR)
+		;
+	path[i] = 0;
+	char fs[] = { FILE_SEPARATOR,0 };
 
-    char *application = getJSONProperty("\"application\":");
+	char *application = getJSONString("\"application\":");
 
-    // Check that the caller isn't trying to get outside the sandbox
-    i = 0;
-    char c;
-    while(c = application[i++]) {
-        if ((c > 'Z' || c < 'A') && (c > 'z' || c < 'a') && (c > '9' || c < '0') && c != '.' && c != '_') {
-            exit(EXIT_FAILURE);
-        }
-    }
+	// Check that the caller isn't trying to get outside the sandbox
+	i = 0;
+	char c;
+	while (c = application[i++]) {
+		if ((c > 'Z' || c < 'A') && (c > 'z' || c < 'a') && (c > '9' || c < '0') && c != '.' && c != '_') {
+			exit(EXIT_FAILURE);
+		}
+	}
 
-    strcat(cmd, path);
-    strcat(cmd, fs);
-    strcat(cmd, "apps");
-    strcat(cmd, fs);
-    strcat(cmd, application);
-    strcat(cmd, fs);
-    strcat(cmd, application);
-    strcat(cmd, ".jar\" ");
+	// Create a path to the application directory including / or \ 
+	char appPath[500];
+	strcpy(appPath, path);
+	strcat(appPath, fs);
+	strcat(appPath, "apps");
+	strcat(appPath, fs);
+	strcat(appPath, application);
+	strcat(appPath, fs);
 
-    // Parameters to called Java program
+	// The actual JAR to call
+	strcat(cmd, appPath);
+	strcat(cmd, application);
+	strcat(cmd, ".jar\" \"");
 
-    // args[0] => Full path to proxy/install
-    strcat(cmd, path);
-    strcat(cmd, "\" ");
+	// Parameters to called Java program
 
-    // args[1] => Dotted path (=application name)
-    strcat(cmd, application);
-    strcat(cmd, " \"");
+	// args[0] => Full path to proxy/install
+	strcat(cmd, path);
+	strcat(cmd, "\" ");
 
-    // args[2] => invoking URL
-    strcat(cmd, getJSONProperty("\"url\":"));
-    strcat(cmd, "\" ");
+	// args[1] => Dotted path (=application name)
+	strcat(cmd, application);
+	strcat(cmd, " \"");
 
-    // args[3] => Invoking window core data
-    strcat(cmd, getJSONProperty("\"windowB64\":"));
-    strcat(cmd, " ");
+	// args[2] => invoking URL
+	char* calledBy = getJSONString("\"url\":");
+	strcat(cmd, calledBy);
+	strcat(cmd, "\" ");
 
-    // args[4] => Optional arguments to navigator.nativeConnect
-    strcat(cmd, getJSONProperty("\"argumentsB64\":"));
-    
-    // args[5..n] => Chrome standard arguments
-    for (int i = 1; i < argc; i++) {
-        strcat(cmd," ");
-        strcat(cmd, argv[i]);
-    }
-    char fileName[500];
-    strcpy(fileName, path + 1);
-    strcat(fileName, fs);
-    strcat(fileName, "logs");
-    strcat(fileName, fs);
-    strcat(fileName, "w2nb-proxy-init.log");
-    FILE* logFile = fopen(fileName, "w");
-    fprintf(logFile, "commmand: %s\n", cmd);
+	// args[3] => Invoking window core data
+	strcat(cmd, getJSONString("\"windowB64\":"));
+	strcat(cmd, " ");
 
-    // This is not the recommended solution for POSIX-compliant systems but hey, this is a PoC...
-    int returnCode = system(cmd);
-    if (returnCode)    {
-        fprintf(logFile, "Error: '%s' %d\n", strerror(returnCode), returnCode);
-    }
-    fclose(logFile);
-    return 0;
+	// args[4] => Optional arguments to navigator.nativeConnect
+	strcat(cmd, getJSONString("\"argumentsB64\":"));
+
+	// args[5..n] => Chrome standard arguments
+	for (int i = 1; i < argc; i++) {
+		strcat(cmd, " ");
+		strcat(cmd, argv[i]);
+	}
+
+	// Log file to last executed command
+	char fileName[500];
+	strcpy(fileName, path);
+	strcat(fileName, fs);
+	strcat(fileName, "logs");
+	strcat(fileName, fs);
+	strcat(fileName, "w2nb-proxy-init.log");
+	logFile = fopen(fileName, "w");
+	fprintf(logFile, "commmand: %s\n", cmd);
+
+	// We need to read the manifest now
+//	fprintf(logFile, "called by: %s\n", calledBy);
+	checkAccess(appPath, calledBy);
+
+	// This is not the recommended solution for POSIX-compliant systems but hey, this is a PoC...
+	int returnCode = system(cmd);
+	if (returnCode) {
+		fprintf(logFile, "Error: '%s' %d\n", strerror(returnCode), returnCode);
+	}
+	fclose(logFile);
+	return 0;
 }

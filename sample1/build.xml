@@ -39,6 +39,7 @@
         <attribute name="Class-path" value="../../libs/${webpki-libext.jar} ../../libs/proxy-support.jar"/>
       </manifest>
     </jar>
+    <copy file="manifest.json" todir="${common.app.dir}/${app_path}" overwrite="true" preservelastmodified="true"/>
   </target>
   
 </project>
