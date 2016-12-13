@@ -62,12 +62,15 @@ static void loggedError(const char* format, ...) {
 }
 
 // "Budget" JSON parser
-static char* getJSONProperty(char *name, char beginChar, char endChar) {
-    char *start = strstr(res, name);
+static char* getJSONProperty(char *property, char beginChar, char endChar) {
+    char buffer[100] = "\"";
+    strcat(buffer, property);
+    strcat(buffer, "\":");
+    char *start = strstr(res, buffer);
     if (!start) {
-        loggedError("Property %s missing\nJSON=\n%s", name, res);
+        loggedError("Property %s missing\nJSON=\n%s", property, res);
     }
-    start += strlen(name);
+    start += strlen(buffer);
     if (*start++ != beginChar) {
         loggedError("Expected: %c\nJSON=\n%s", beginChar, res);
     }
@@ -76,18 +79,18 @@ static char* getJSONProperty(char *name, char beginChar, char endChar) {
         loggedError("Expected: %c\nJSON=\n%s", endChar, res);
     }
     int length = end - start + 1;
-    char *property = new char[length--];
-    strncpy(property, start, length);
-    property[length] = 0;
-    return property;
+    char *value = new char[length--];
+    strncpy(value, start, length);
+    value[length] = 0;
+    return value;
 }
 
-static char* getJSONString(char *name) {
-    return getJSONProperty(name, '\"', '\"');
+static char* getJSONString(char *property) {
+    return getJSONProperty(property, '\"', '\"');
 }
 
-static char* getJSONArray(char *name) {
-    return getJSONProperty(name, '[', ']');
+static char* getJSONArray(char *property) {
+    return getJSONProperty(property, '[', ']');
 }
 
 static bool matching(char* accessDescriptor, char* calledBy) {
@@ -115,7 +118,7 @@ static bool matching(char* accessDescriptor, char* calledBy) {
 static void checkAccess(char* appPath, char* calledBy) {
     char manifest[MANIFEST_SIZE + 1];
     int c;
-    int l = 0;
+    int index = 0;
     bool quote = false;
 
     strcat(appPath, "manifest.json");
@@ -124,7 +127,7 @@ static void checkAccess(char* appPath, char* calledBy) {
         loggedError("Error: 'manifest.json' not found!");
     }
     while ((c = fgetc(manifestFile)) != EOF) {
-        if (l == MANIFEST_SIZE) {
+        if (index == MANIFEST_SIZE) {
             loggedError("Error: manifest bigger than: %d", MANIFEST_SIZE);
         }
         if (c == '\"') {
@@ -138,26 +141,26 @@ static void checkAccess(char* appPath, char* calledBy) {
         else if (!quote && (c == ' ' || c == '\n' || c == '\t' || c == '\r')) {
             continue;
         }
-        manifest[l++] = (char)c;
+        manifest[index++] = (char)c;
     }
-    manifest[l] = (char)0;
+    manifest[index] = (char)0;
     fclose(manifestFile);
     res = manifest;
-    char* callableFrom = getJSONArray("\"callableFrom\":");
-    l = 0;
+    char* callableFrom = getJSONArray("callableFrom");
+    index = 0;
     int arrayLength = strlen(callableFrom) - 4;
     bool next = false;
-    while (l < arrayLength) {
+    while (index < arrayLength) {
         if (next) {
-            if (callableFrom[l++] != ',') {
+            if (callableFrom[index++] != ',') {
                 loggedError("Error: missing ',' in manifest");
             }
         }
         next = true;
-        if (callableFrom[l++] != '\"') {
+        if (callableFrom[index++] != '\"') {
             loggedError("Error: missing '\"' in manifest");
         }
-        char* startString = callableFrom + l;
+        char* startString = callableFrom + index;
         char* endString = strchr(startString, '\"');
         if (!endString) {
             loggedError("Error: missing '\"' in manifest");
@@ -166,7 +169,7 @@ static void checkAccess(char* appPath, char* calledBy) {
         if (matching(startString, calledBy)) {
             return;
         }
-        l += strlen(startString) + 1;
+        index += strlen(startString) + 1;
     }
     loggedError("Error: not allowed: %s", calledBy);
 }
@@ -200,7 +203,7 @@ int main(int argc, char *argv[]) {
 
     // Are we doing proxy verification?
     if (strstr(res, "\"proxyVersion\":")) {
-        if (strcmp(PROXY_VERSION, getJSONString("\"proxyVersion\":"))) {
+        if (strcmp(PROXY_VERSION, getJSONString("proxyVersion"))) {
             exit(EXIT_FAILURE);
         }
         char zeroObject[] = { 2,0,0,0,'{','}' };
@@ -221,7 +224,7 @@ int main(int argc, char *argv[]) {
     path[i] = 0;
     char fs[] = { FILE_SEPARATOR,0 };
 
-    char *application = getJSONString("\"application\":");
+    char *application = getJSONString("application");
 
     // Check that the caller isn't trying to get outside the sandbox
     i = 0;
@@ -257,16 +260,16 @@ int main(int argc, char *argv[]) {
     strcat(cmd, " \"");
 
     // args[2] => invoking URL
-    char* calledBy = getJSONString("\"url\":");
+    char* calledBy = getJSONString("url");
     strcat(cmd, calledBy);
     strcat(cmd, "\" ");
 
     // args[3] => Invoking window core data
-    strcat(cmd, getJSONString("\"windowB64\":"));
+    strcat(cmd, getJSONString("windowB64"));
     strcat(cmd, " ");
 
     // args[4] => Optional arguments to navigator.nativeConnect
-    strcat(cmd, getJSONString("\"argumentsB64\":"));
+    strcat(cmd, getJSONString("argumentsB64"));
 
     // args[5..n] => Chrome standard arguments
     for (int i = 1; i < argc; i++) {
