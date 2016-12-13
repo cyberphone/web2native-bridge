@@ -51,7 +51,7 @@ navigator.nativeConnect('com.example.myapp').then(function(port) {
 The argument to <code>nativeConnect</code> holds the name of the specifically adapted local application to invoke.   The current scheme uses a Java-inspired dotted path pointing to a subdirectory and JAR-application having this name.
 
 ### Manifest
-For specifying access to native applications there is a *manifest* for each application.
+For specifying access to native applications there is a JSON-formatted *manifest* file associated with each application.
 The following *manifest* provides universal access to an application:
 ```json
 {
@@ -71,7 +71,7 @@ The Web2Native Bridge emulator always invokes a central proxy located at <code>p
 The proxy in turn dispatches a call to the specific target application located at<br><code>
 proxy/install/apps/</code>*dottedpath*<code>/</code>*dottedpath*<code>.jar</code>.
 
-The mandatory *manifest* is located at<br><code>
+The mandatory *manifest* file must be stored at<br><code>
 proxy/install/apps/</code>*dottedpath*<code>/manifest.json</code>.
 
 Common Java libraries may be stored in <code>proxy/install/libs</code>.
