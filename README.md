@@ -61,7 +61,7 @@ The following *manifest* provides universal access to an application:
 A more restrictive *manifest* could limit access to a single domain and https operation:
 ```json
 {
-  "callableFrom": ["https://*.example.com/*"]
+  "callableFrom": ["https://example.com/*", "https://*.example.com/*"]
 }
 ```
 
