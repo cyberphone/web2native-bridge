@@ -50,15 +50,15 @@ navigator.nativeConnect('com.example.myapp').then(function(port) {
 ```
 The argument to <code>nativeConnect</code> holds the name of the specifically adapted local application to invoke.   The current scheme uses a Java-inspired dotted path pointing to a subdirectory and JAR-application having this name.
 
-### Metafile
-For specifying access to native applications there is a *metafile* for each application.
-The following *metafile* provides universal access to an application:
+### Manifest
+For specifying access to native applications there is a *manifest* for each application.
+The following *manifest* provides universal access to an application:
 ```json
 {
   "callableFrom": ["*://*/*", "file:///*"]
 }
 ```
-A more restrictive *metafile* could limit access to a single domain and https operation:
+A more restrictive *manifest* could limit access to a single domain and https operation:
 ```json
 {
   "callableFrom": ["https://*.example.com/*"]
@@ -71,8 +71,8 @@ The Web2Native Bridge emulator always invokes a central proxy located at <code>p
 The proxy in turn dispatches a call to the specific target application located at<br><code>
 proxy/install/apps/</code>*dottedpath*<code>/</code>*dottedpath*<code>.jar</code>.
 
-The mandatory *metafile* is located at<br><code>
-proxy/install/apps/</code>*dottedpath*<code>/metafile.json</code>.
+The mandatory *manifest* is located at<br><code>
+proxy/install/apps/</code>*dottedpath*<code>/manifest.json</code>.
 
 Common Java libraries may be stored in <code>proxy/install/libs</code>.
 
