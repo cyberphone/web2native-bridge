@@ -287,8 +287,7 @@ int main(int argc, char *argv[]) {
     logFile = fopen(fileName, "w");
     fprintf(logFile, "commmand: %s\n", cmd);
 
-    // We need to read the manifest now
-//	fprintf(logFile, "called by: %s\n", calledBy);
+    // Read the manifest and verify that the caller is legitimate before calling application
     checkAccess(appPath, calledBy);
 
     // This is not the recommended solution for POSIX-compliant systems but hey, this is a PoC...
