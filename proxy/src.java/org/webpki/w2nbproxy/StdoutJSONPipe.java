@@ -25,7 +25,7 @@ import org.webpki.json.JSONOutputFormats;
 public class StdoutJSONPipe {
 
     public String writeJSONObject (JSONObjectWriter ow) throws IOException {
-        byte[] utf8 = ow.serializeJSONObject(JSONOutputFormats.NORMALIZED);
+        byte[] utf8 = ow.serializeToBytes(JSONOutputFormats.NORMALIZED);
         int l = utf8.length;
         // Code only works for little-endian machines
         // Network order, heard of that Google?
