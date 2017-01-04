@@ -108,9 +108,9 @@ https://chrome.google.com/webstore/detail/web2native-bridge-emulato/jphfmfbdedgh
 3. In Chrome, go to Settings->Extensions and check "Allow access to file URLs" for the Web2Native Bridge extension 
 
 ### Firefox specific steps
-1. Install the Web2Native Bridge browser extension from the Mozilla Add-on Store:
+1. Start a terminal window and move to <code>firefox/install</code>. Then run the <code>install-proxy</code> script that suits your platform
+2. Install the Web2Native Bridge browser extension from the Mozilla Add-on Store:
 https://addons.mozilla.org/addon/web2native-bridge-emulator/
-2. Start a terminal window and move to <code>firefox/install</code>. Then run the <code>install-proxy</code> script that suits your platform
 
 ### Testing the installation
 Now you can try the two sample applications (see next sections) since they are installed by default.
