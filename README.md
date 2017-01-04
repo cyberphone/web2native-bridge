@@ -94,18 +94,26 @@ Native applications (in the prototype Java applications hosted in JAR-files) are
 For detailed information about the format of these fields, turn to the code :-)
 
 ## Installation
-Prerequisites: You need to have Java SE version 7 or 8 installed to run the Web2Native Bridge emulator. OS/X and Linux
-installations also presume that **clang** respectively **g++** is available.
-
-1. Install the Web2Native Bridge browser extension from the Chrome Web Store:
-https://chrome.google.com/webstore/detail/web2native-bridge-emulato/jphfmfbdedghfhhjijaogeloiehomfni
-2. In Chrome, go to Settings->Extensions and check "Allow access to file URLs" for the Web2Native Bridge extension
-3. Clone the **web2native-bridge** master repository or just download the ZIP via GitHub to any free directory
-4. Start a terminal window and move to <code>proxy/install</code>. Then run the <code>install-proxy</code> script that suits your platform
-
-That's it!  Now you can try the two sample applications (see next sections) since they are installed by default.
+### Prerequisites
+* You need to have Java SE version 7 or 8 installed to run the Web2Native Bridge emulator
+* OS/X and Linux installations presume that **clang** respectively **g++** is available
+* Clone the **web2native-bridge** master repository or just download the ZIP via GitHub to any free directory
 
 Note: If you are using Oracle Java you must install the **Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy Files** as well.
+
+### Chrome/Chromium specific steps
+1. Start a terminal window and move to <code>proxy/install</code>. Then run the <code>install-proxy</code> script that suits your platform
+2. Install the Web2Native Bridge browser extension from the Chrome Web Store:
+https://chrome.google.com/webstore/detail/web2native-bridge-emulato/jphfmfbdedghfhhjijaogeloiehomfni
+3. In Chrome, go to Settings->Extensions and check "Allow access to file URLs" for the Web2Native Bridge extension 
+
+### Firefox specific steps
+1. Install the Web2Native Bridge browser extension from the Mozilla Add-on Store:
+https://addons.mozilla.org/addon/web2native-bridge-emulator/
+2. Start a terminal window and move to <code>firefox/install</code>. Then run the <code>install-proxy</code> script that suits your platform
+
+### Testing the installation
+Now you can try the two sample applications (see next sections) since they are installed by default.
 
 Please don't hesitate contacting me if you run into problems during installation or execution of the emulator!
 
