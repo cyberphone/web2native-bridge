@@ -4,17 +4,17 @@
 This repository contains all code for building and testing an <i>emulation</i> of
 the Web2Native Bridge concept
 (https://cyberphone.github.io/doc/web/web2native-bridge.pdf)
-using the Google **Chrome** <i>desktop</i> browser.  It also runs on the Open Source **Chromium** browser. 
+using the Google **Chrome** and Mozilla **Firefox** <i>desktop</i> browsers.  It also runs on the Open Source **Chromium** browser. 
 
 The emulator code exploits Chrome's native messaging (https://developer.chrome.com/extensions/nativeMessaging)
-featured in a single universal Chrome extension.
+featured in a single universal Chrome/Firefox extension.
 
 Applications callable by the Web2Native Bridge emulator **must** be written in Java and stored in a for the purpose
 dedicated directory.  This limits unpleasant surprises
 if you accidentally navigate to a malicious page since
 an improperly designed native message extension could enable web access to *any* local application!
 
-### API
+## API
 The Web2Native Bridge emulator extends the <code>navigator</code> object by a *single* method<br>
 <code>nativeConnect</code>('*Name of target application*' [, *optionalArgument*]) which
 returns a JavaScript <code>Promise</code> to a <code>port</code> object.
@@ -50,7 +50,7 @@ navigator.nativeConnect('com.example.myapp').then(function(port) {
 ```
 The argument to <code>nativeConnect</code> holds the name of the specifically adapted local application to invoke.   The current scheme uses a Java-inspired dotted path pointing to a subdirectory and JAR-application having this name.
 
-### Manifest
+## Manifest
 For specifying access to native applications there is a JSON-formatted *manifest* file associated with each application.
 The following *manifest* provides universal access to an application:
 ```json
@@ -65,7 +65,7 @@ A more restrictive *manifest* could limit access to a single domain and https op
 }
 ```
 
-### Architecture
+## Architecture
 The Web2Native Bridge emulator always invokes a central proxy located at <code>proxy/install/w2nb-proxy</code>.<br>
 
 The proxy in turn dispatches a call to the specific target application located at<br><code>
@@ -81,7 +81,7 @@ For debugging purposes there is also a logging system writing data in <code>prox
 All local I/O between the browser, proxy and the callable applications
 is performed through <code>stdin</code> and <code>stdout</code>.
 
-### Native Application Interface
+## Native Application Interface
 Native applications (in the prototype Java applications hosted in JAR-files) are called as follows:
 <table>
 <tr><td>args[0]</td><td>Absolute path to the proxy/install directory</td></tr>
@@ -93,7 +93,7 @@ Native applications (in the prototype Java applications hosted in JAR-files) are
 </table>
 For detailed information about the format of these fields, turn to the code :-)
 
-### Installation
+## Installation
 Prerequisites: You need to have Java SE version 7 or 8 installed to run the Web2Native Bridge emulator. OS/X and Linux
 installations also presume that **clang** respectively **g++** is available.
 
@@ -109,7 +109,7 @@ Note: If you are using Oracle Java you must install the **Java Cryptography Exte
 
 Please don't hesitate contacting me if you run into problems during installation or execution of the emulator!
 
-### Basic Sample Application
+## Basic Sample Application
 The HTML file <code>sample1/demo/sample1.html</code> does approximately
 the same thing as the application depicted in
 http://www.cnet.com/news/google-paves-over-hole-left-by-chrome-plug-in-ban/
@@ -120,7 +120,7 @@ albeit with a few significant enhancements:
 
 The native part of the sample application resides in <code>proxy/install/apps/org.webpki.w2nb.sample1/org.webpki.w2nb.sample1.jar</code>.
 
-### "Wallet" Application
+## "Wallet" Application
 In addition to the basic sample application which highlights the core, the installation also makes a digital wallet
 available for testing over the web which can be invoking by clicking the URL:
 https://test.webpki.org/webpay-merchant
@@ -128,11 +128,11 @@ https://test.webpki.org/webpay-merchant
 The wallet application features a virtual smart card, signed messages, and is effectively doing the
 same thing as a payment terminal + card in a brick-and-mortar shop.
 
-### Single Page Application
+## Single Page Application
 Although not a design goal, the Web2Native Bridge API is also compliant with the SPA concept:<br>
 https://en.wikipedia.org/wiki/Single-page_application
 
-### Security Considerations
+## Security Considerations
 Since an emulator *by definition* isn't the "real thing" some limitations apply. That is, the Web2Native Bridge
 emulator is *not intended for production* since it doesn't support the following security measures:
 * Native application vetting infrastructure
