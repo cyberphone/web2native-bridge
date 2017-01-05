@@ -9,7 +9,7 @@ using the Google **Chrome** and Mozilla **Firefox** <i>desktop</i> browsers.  It
 The emulator code exploits Chrome's native messaging (https://developer.chrome.com/extensions/nativeMessaging)
 featured in a single universal Chrome/Firefox extension.
 
-Applications callable by the Web2Native Bridge emulator **must** be written in Java and stored in a for the purpose
+Applications callable by the Web2Native Bridge emulator must be written in Java and stored in a for the purpose
 dedicated directory.
 
 ## API
