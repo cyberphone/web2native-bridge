@@ -10,9 +10,7 @@ The emulator code exploits Chrome's native messaging (https://developer.chrome.c
 featured in a single universal Chrome/Firefox extension.
 
 Applications callable by the Web2Native Bridge emulator **must** be written in Java and stored in a for the purpose
-dedicated directory.  This limits unpleasant surprises
-if you accidentally navigate to a malicious page since
-an improperly designed native message extension could enable web access to *any* local application!
+dedicated directory.
 
 ## API
 The Web2Native Bridge emulator extends the <code>navigator</code> object by a *single* method<br>
@@ -143,7 +141,7 @@ https://en.wikipedia.org/wiki/Single-page_application
 ## Security Considerations
 Since an emulator *by definition* isn't the "real thing" some limitations apply. That is, the Web2Native Bridge
 emulator is *not intended for production* since it doesn't support the following security measures:
-* Native application vetting infrastructure
+* Native application vetting infrastructure. An improperly designed native message extension could enable web access to the entire computer!
 * HTTPS information
 * Site-blocking support and associated administration
  
