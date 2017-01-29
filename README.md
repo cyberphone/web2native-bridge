@@ -107,7 +107,7 @@ https://chrome.google.com/webstore/detail/web2native-bridge-emulato/jphfmfbdedgh
 
 ### Firefox specific steps
 1. Start a terminal window and move to <code>firefox/install</code>. Then run the <code>install-proxy</code> script that suits your platform
-2. Install the Web2Native Bridge browser extension from the file <code>firefox/install/xpi/web2native_bridge_emulator-1.0.xpi</code> using the Firefox menu option: *Firefox Add-ons->Extensions->Install Add-on from file*.
+2. Install the Web2Native Bridge browser extension from the file <code>firefox/install/xpi/web2native_bridge_emulator-1.0.xpi</code> using the Firefox menu option: *Add-ons->Extensions->Install Add-on from file*.
 
 ### Testing the installation
 Now you can try the two sample applications (see next sections) since they are installed by default.
