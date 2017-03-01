@@ -93,7 +93,7 @@ For detailed information about the format of these fields, turn to the code :-)
 
 ## Installation
 ### Prerequisites
-* You need to have Java SE version 7 or 8 installed to run the Web2Native Bridge emulator
+* You need to have **Java SE version 8** installed to run the Web2Native Bridge emulator
 * OS/X and Linux installations presume that **clang** respectively **g++** is available
 * Clone the **web2native-bridge** master repository or just download the ZIP via GitHub to any free directory
 
