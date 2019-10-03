@@ -126,14 +126,6 @@ albeit with a few significant enhancements:
 
 The native part of the sample application resides in <code>proxy/install/apps/org.webpki.w2nb.sample1/org.webpki.w2nb.sample1.jar</code>.
 
-## "Wallet" Application
-In addition to the basic sample application which highlights the core, the installation also makes a digital wallet
-available for testing over the web which can be invoking by clicking the URL:
-https://test.webpki.org/webpay-merchant
-
-The wallet application features a virtual smart card, signed messages, and is effectively doing the
-same thing as a payment terminal + card in a brick-and-mortar shop.
-
 ## Single Page Application
 Although not a design goal, the Web2Native Bridge API is also compliant with the SPA concept:<br>
 https://en.wikipedia.org/wiki/Single-page_application
