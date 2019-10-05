@@ -31,7 +31,7 @@ import java.awt.event.WindowAdapter;
 
 import java.io.IOException;
 
-import java.util.Date;
+import java.util.GregorianCalendar;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -127,7 +127,7 @@ class ApplicationFrame extends Thread {
     }
 
     void update(String text) {
-        String localTime = ISODateTime.formatDateTime(new Date(), false);
+        String localTime = ISODateTime.formatDateTime(new GregorianCalendar(), ISODateTime.LOCAL_NO_SUBSECONDS);
         textArea.setText(localTime.substring(0, 10) + " " + localTime.substring(11, 19) +
             " " + text + "\n" + textArea.getText());
         NativeClient.logger.info(text);
