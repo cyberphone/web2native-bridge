@@ -5,7 +5,6 @@
   <property name="temp.dir" location=".tmp" />
   <property name="src.dir" value="src.java"/>
   <property name="app_name" value="proxy-support.jar"/>
-  <property name="javaversion" value="1.6" />
   <property name="debug" value="on"/>
   
   <property file="common.properties"/>
@@ -24,8 +23,6 @@
   <target name="build" depends="clean">
     <mkdir dir="${temp.dir}" />
     <javac debug="${debug}"
-           source="${javaversion}"
-           target="${javaversion}"
            srcdir="${src.dir}"
            destdir="${temp.dir}" 
            classpathref="compile.classpath"
